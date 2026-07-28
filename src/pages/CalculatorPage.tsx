@@ -1,10 +1,9 @@
-import { useState } from "react";
+ import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Calculator,
   Sparkles,
-  TrendingUp,
-  Home,
+  PiggyBank,
 } from "lucide-react";
 
 import {
@@ -19,7 +18,7 @@ import {
 
 import { Layout, DisclaimerBanner } from "@/components/layout/Layout";
 import { Card, CardContent, Button } from "@/components/ui/primitives";
-import { cn } from "@/lib/utils";
+
 
 import {
   ASSET_CLASSES,
@@ -29,52 +28,53 @@ import {
   type ProjectionResult,
 } from "@/lib/calculatorEngine";
 
-import {
-  LOAN_PRESETS,
-  parseLoanQuery,
-  computeSchpitzer,
-  type AmortizationResult,
-} from "@/lib/loanEngine";
-
-
-type Mode = "growth" | "loan";
-
 
 export function CalculatorPage() {
 
-  const [mode,setMode] = useState<Mode>("loan");
-
-
   return (
+
     <Layout>
 
       <section className="container max-w-3xl py-16 md:py-24">
 
 
         <motion.div
+
           initial={{opacity:0,y:12}}
+
           animate={{opacity:1,y:0}}
+
           transition={{duration:0.5}}
+
           className="text-center"
+
         >
+
 
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-xs font-semibold text-muted-foreground">
 
             <Sparkles className="h-3.5 w-3.5 text-primary"/>
 
-            מחשבון חכם בשפה חופשית
+            מחשבון השקעות חכם בשפה חופשית
 
           </span>
 
 
+
           <h1 className="mt-5 font-display text-3xl font-extrabold md:text-4xl">
-            כתבו את הסיטואציה שלכם — קבלו תשובה
+
+            כתבו את הסיטואציה שלכם — קבלו תחזית
+
           </h1>
 
 
+
           <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
-            בלי טפסים מסובכים. לדוגמה:
-            "השקעתי 100,000 ש״ח ל-10 שנים ב-Apple"
+
+            בלי טפסים מסובכים.
+            לדוגמה:
+            "השקעתי 100,000 ש״ח ל-10 שנים ב־S&P 500"
+
           </p>
 
 
@@ -82,53 +82,7 @@ export function CalculatorPage() {
 
 
 
-        <div className="mx-auto mt-8 flex w-fit rounded-xl border border-border bg-muted/30 p-1">
-
-
-          <button
-            onClick={()=>setMode("loan")}
-            className={cn(
-              "flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold",
-              mode==="loan"
-              ?"bg-primary text-primary-foreground"
-              :"text-muted-foreground"
-            )}
-          >
-
-            <Home className="h-4 w-4"/>
-            הלוואה / משכנתא
-
-          </button>
-
-
-
-          <button
-            onClick={()=>setMode("growth")}
-            className={cn(
-              "flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-semibold",
-              mode==="growth"
-              ?"bg-primary text-primary-foreground"
-              :"text-muted-foreground"
-            )}
-          >
-
-            <TrendingUp className="h-4 w-4"/>
-            צמיחת חיסכון
-
-          </button>
-
-
-        </div>
-
-
-
-        {
-          mode==="loan"
-          ?
-          <LoanCalculator/>
-          :
-          <GrowthCalculator/>
-        }
+        <GrowthCalculator />
 
 
 
@@ -139,143 +93,8 @@ export function CalculatorPage() {
 
 
     </Layout>
+
   );
-
-}
-
-
-
-
-function LoanCalculator(){
-
-const [query,setQuery]=useState("");
-const [result,setResult]=useState<AmortizationResult|null>(null);
-
-
-const analyze=(text:string)=>{
-
-setQuery(text);
-
-const p=parseLoanQuery(text);
-
-setResult(
-computeSchpitzer(
-p.loanAmount,
-p.annualRatePct,
-p.years
-)
-);
-
-};
-
-
-return (
-
-<Card className="mt-6">
-
-<CardContent className="pt-6">
-
-
-<textarea
-
-value={query}
-
-onChange={(e)=>setQuery(e.target.value)}
-
-rows={3}
-
-className="w-full rounded-xl border p-4"
-
-placeholder="לקחתי משכנתא ל-20 שנה בריבית 4.5% בשווי 800 אלף"
-
-/>
-
-
-<div className="mt-3 flex flex-wrap gap-2">
-
-
-{
-LOAN_PRESETS.map(p=>(
-
-<button
-
-key={p}
-
-onClick={()=>analyze(p)}
-
-className="rounded-full border px-3 py-1 text-xs"
-
->
-
-{p}
-
-</button>
-
-))
-}
-
-
-</div>
-
-
-
-<Button
-
-className="mt-4"
-
-onClick={()=>analyze(query)}
-
->
-
-<Calculator className="h-4 w-4"/>
-
-נתח את המשפט שלי
-
-</Button>
-
-
-
-{
-result &&
-
-<div className="mt-6 border-t pt-6">
-
-
-<p>
-החזר חודשי:
-<b>
-₪{result.firstMonthlyPayment.toLocaleString()}
-</b>
-</p>
-
-
-<p>
-סה"כ החזר:
-<b>
-₪{result.totalRepayment.toLocaleString()}
-</b>
-</p>
-
-
-<p>
-סה"כ ריבית:
-<b>
-₪{result.totalInterest.toLocaleString()}
-</b>
-</p>
-
-
-</div>
-
-}
-
-
-</CardContent>
-
-</Card>
-
-);
-
 
 }
 
@@ -293,37 +112,85 @@ const [asset,setAsset]=useState<any>(null);
 
 
 
+const [detected,setDetected]=useState({
+
+  principal:0,
+
+  years:0,
+
+  monthly:0,
+
+  returnPct:0
+
+});
+
+
+
+
 const analyze=(text:string)=>{
 
 
 setQuery(text);
 
 
+
 const parsed=parseCalculatorQuery(text);
 
 
+
 const found =
+
 ASSET_CLASSES.find(
+
 a=>a.key===parsed.assetClassKey
+
 )
+
 ??
+
 ASSET_CLASSES[ASSET_CLASSES.length-1];
+
 
 
 setAsset(found);
 
 
+
+setDetected({
+
+principal:parsed.principal,
+
+years:parsed.years,
+
+monthly:parsed.monthlyContribution,
+
+returnPct:found.annualReturnPct
+
+});
+
+
+
 setResult(
+
 computeProjection(
+
 parsed.principal,
+
 parsed.monthlyContribution,
+
 parsed.years,
+
 found.annualReturnPct
+
 )
+
 );
 
 
+
 };
+
+
 
 
 
@@ -331,7 +198,9 @@ return (
 
 <Card className="mt-6">
 
+
 <CardContent className="pt-6">
+
 
 
 <textarea
@@ -342,18 +211,22 @@ onChange={(e)=>setQuery(e.target.value)}
 
 rows={3}
 
-className="w-full rounded-xl border p-4"
+className="w-full resize-none rounded-xl border border-border bg-background p-4 text-sm"
 
-placeholder="השקעתי 100,000 ש״ח ל-10 שנים ב-Apple"
+placeholder="השקעתי 100,000 ש״ח ל-10 שנים ב־Apple"
 
 />
 
 
 
+
 <div className="mt-3 flex flex-wrap gap-2">
 
+
 {
+
 CALCULATOR_PRESETS.map(p=>(
+
 
 <button
 
@@ -361,19 +234,24 @@ key={p}
 
 onClick={()=>analyze(p)}
 
-className="rounded-full border px-3 py-1 text-xs"
+className="rounded-full border border-border px-3 py-1.5 text-xs hover:bg-accent"
 
 >
 
+
 {p}
 
+
 </button>
+
 
 ))
 
 }
 
+
 </div>
+
 
 
 
@@ -383,29 +261,113 @@ className="mt-4"
 
 onClick={()=>analyze(query)}
 
+disabled={!query.trim()}
+
 >
 
-<Calculator/>
+
+<Calculator className="h-4 w-4"/>
 
 נתח את המשפט שלי
 
+
 </Button>
-
-
-
 
 {
 result && asset &&
 
-<div className="mt-6">
+<div className="mt-6 border-t pt-6">
 
 
-<h3 className="font-bold">
+<div className="rounded-xl bg-muted p-4 text-sm">
+
+
+<div className="flex items-center gap-2 font-semibold">
+
+<PiggyBank className="h-4 w-4"/>
+
+זיהינו מהמשפט שלך:
+
+</div>
+
+
+
+<div className="mt-3 space-y-1">
+
+
+<p>
+
+נכס:
+
+<b>
+
+{asset.label}
+
+</b>
+
+</p>
+
+
+
+<p>
+
+השקעה התחלתית:
+
+<b>
+
+₪{detected.principal.toLocaleString()}
+
+</b>
+
+</p>
+
+
+
+<p>
+
+תקופה:
+
+<b>
+
+{detected.years} שנים
+
+</b>
+
+</p>
+
+
+
+<p>
+
+תשואה שנתית משוערת:
+
+<b>
+
+{detected.returnPct}%
+
+</b>
+
+</p>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<h3 className="mt-6 font-bold">
+
 שווי משוער בסוף התקופה
+
 </h3>
 
 
-<p className="text-3xl font-bold text-primary">
+
+<p className="mt-2 text-4xl font-extrabold text-primary">
 
 ₪{result.finalBalance.toLocaleString()}
 
@@ -413,55 +375,119 @@ result && asset &&
 
 
 
+
+<div className="mt-4 space-y-2 text-sm">
+
+
 <p>
+
 סה"כ הפקדה:
+
+<b>
+
 ₪{result.totalContributed.toLocaleString()}
+
+</b>
+
 </p>
+
 
 
 <p>
+
 רווח:
+
+<b>
+
 ₪{result.growth.toLocaleString()}
+
+</b>
+
 </p>
 
 
 
-<div className="h-56 mt-5">
+<p>
 
-<ResponsiveContainer width="100%" height="100%">
+שווי ריאלי לאחר אינפלציה:
 
-<AreaChart data={result.series}>
+<b>
 
-<CartesianGrid strokeDasharray="3 3"/>
+₪{result.realValueAfterInflation.toLocaleString()}
 
-<XAxis dataKey="year"/>
+</b>
 
-<YAxis hide/>
+</p>
 
-<RTooltip/>
-
-<Area
-dataKey="balance"
-stroke="#22b17d"
-fill="#22b17d"
-/>
-
-
-</AreaChart>
-
-</ResponsiveContainer>
 
 </div>
 
 
 
+
+
+<div className="mt-6 h-64">
+
+
+<ResponsiveContainer width="100%" height="100%">
+
+
+<AreaChart data={result.series}>
+
+
+<CartesianGrid strokeDasharray="3 3"/>
+
+
+
+<XAxis dataKey="year"/>
+
+
+
+<YAxis hide />
+
+
+
+<RTooltip />
+
+
+
+<Area
+
+type="monotone"
+
+dataKey="balance"
+
+stroke="#22b17d"
+
+fill="#22b17d"
+
+/>
+
+
+
+</AreaChart>
+
+
+</ResponsiveContainer>
+
+
+</div>
+
+
+
+
+
 <div className="mt-5 rounded-lg bg-muted p-3 text-sm">
+
 
 <b>{asset.label}</b>
 
+
 <br/>
 
+
 {asset.blurb}
+
 
 </div>
 
