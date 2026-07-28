@@ -13,3 +13,8 @@ npm-debug.log*
 .vscode/*
 !.vscode/extensions.json
 .idea
+
+.vercel/
+*.tsbuildinfo
+vite.config.js
+vite.config.d.ts

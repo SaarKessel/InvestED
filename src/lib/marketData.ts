@@ -163,3 +163,19 @@ export async function fetchMarketAssets(interests: InterestArea[] = []): Promise
     return { assets: buildMockAssets(interests), isLive: false };
   }
 }
+export async function fetchMarketAssetBySymbol(
+  symbol: string,
+  _period?: string,
+  _interval?: string
+) {
+  const result = await fetchMarketAssets();
+
+  const normalized = symbol.toUpperCase();
+
+  const asset = result.assets.find(
+    (item) =>
+      item.symbol.toUpperCase() === normalized
+  );
+
+  return asset ?? null;
+}
