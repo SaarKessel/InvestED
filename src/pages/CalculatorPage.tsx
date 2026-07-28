@@ -1,23 +1,27 @@
- import { useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
+
+import { InvestmentGrowthChart } from "@/components/InvestmentGrowthChart";
+import { InvestmentInsightCard } from "@/components/InvestmentInsightCard";
+
 import {
   Calculator,
   Sparkles,
   PiggyBank,
 } from "lucide-react";
 
-import {
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  ResponsiveContainer,
-  Tooltip as RTooltip,
-  CartesianGrid,
-} from "recharts";
 
-import { Layout, DisclaimerBanner } from "@/components/layout/Layout";
-import { Card, CardContent, Button } from "@/components/ui/primitives";
+import {
+  Layout,
+  DisclaimerBanner,
+} from "@/components/layout/Layout";
+
+
+import {
+  Card,
+  CardContent,
+  Button,
+} from "@/components/ui/primitives";
 
 
 import {
@@ -26,77 +30,80 @@ import {
   parseCalculatorQuery,
   computeProjection,
   type ProjectionResult,
+  type AssetClassOption,
 } from "@/lib/calculatorEngine";
 
 
-export function CalculatorPage() {
 
-  return (
+export function CalculatorPage(){
 
-    <Layout>
+return (
 
-      <section className="container max-w-3xl py-16 md:py-24">
+<Layout>
 
-
-        <motion.div
-
-          initial={{opacity:0,y:12}}
-
-          animate={{opacity:1,y:0}}
-
-          transition={{duration:0.5}}
-
-          className="text-center"
-
-        >
+<section className="container max-w-3xl py-16 md:py-24">
 
 
-          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-xs font-semibold text-muted-foreground">
+<motion.div
 
-            <Sparkles className="h-3.5 w-3.5 text-primary"/>
+initial={{opacity:0,y:12}}
 
-            מחשבון השקעות חכם בשפה חופשית
+animate={{opacity:1,y:0}}
 
-          </span>
+transition={{duration:0.5}}
+
+className="text-center"
+
+>
 
 
+<span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-xs font-semibold text-muted-foreground">
 
-          <h1 className="mt-5 font-display text-3xl font-extrabold md:text-4xl">
+<Sparkles className="h-3.5 w-3.5 text-primary"/>
 
-            כתבו את הסיטואציה שלכם — קבלו תחזית
+מחשבון השקעות חכם בשפה חופשית
 
-          </h1>
+</span>
 
 
 
-          <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
+<h1 className="mt-5 font-display text-3xl font-extrabold md:text-4xl">
 
-            בלי טפסים מסובכים.
-            לדוגמה:
-            "השקעתי 100,000 ש״ח ל-10 שנים ב־S&P 500"
+כתבו את הסיטואציה שלכם — קבלו תחזית
 
-          </p>
-
-
-        </motion.div>
+</h1>
 
 
 
-        <GrowthCalculator />
+<p className="mx-auto mt-3 max-w-xl text-muted-foreground">
+
+בלי טפסים מסובכים.
+לדוגמה:
+"השקעתי 100,000 ש״ח ל-10 שנים ב־S&P 500"
+
+</p>
+
+
+</motion.div>
 
 
 
-        <DisclaimerBanner className="mt-6"/>
+<GrowthCalculator />
 
 
-      </section>
+<DisclaimerBanner className="mt-6"/>
 
 
-    </Layout>
+</section>
 
-  );
+
+</Layout>
+
+);
 
 }
+
+
 
 
 
@@ -108,21 +115,22 @@ const [query,setQuery]=useState("");
 
 const [result,setResult]=useState<ProjectionResult|null>(null);
 
-const [asset,setAsset]=useState<any>(null);
+const [asset,setAsset]=useState<AssetClassOption|null>(null);
 
 
 
 const [detected,setDetected]=useState({
 
-  principal:0,
+principal:0,
 
-  years:0,
+years:0,
 
-  monthly:0,
+monthly:0,
 
-  returnPct:0
+returnPct:0
 
 });
+
 
 
 
@@ -170,9 +178,7 @@ returnPct:found.annualReturnPct
 
 
 
-setResult(
-
-computeProjection(
+const projection = computeProjection(
 
 parsed.principal,
 
@@ -182,13 +188,15 @@ parsed.years,
 
 found.annualReturnPct
 
-)
-
 );
 
 
 
+setResult(projection);
+
+
 };
+
 
 
 
@@ -220,12 +228,11 @@ placeholder="השקעתי 100,000 ש״ח ל-10 שנים ב־Apple"
 
 
 
+
 <div className="mt-3 flex flex-wrap gap-2">
 
 
-{
-
-CALCULATOR_PRESETS.map(p=>(
+{CALCULATOR_PRESETS.map((p)=>(
 
 
 <button
@@ -238,19 +245,16 @@ className="rounded-full border border-border px-3 py-1.5 text-xs hover:bg-accent
 
 >
 
-
 {p}
-
 
 </button>
 
 
-))
-
-}
+))}
 
 
 </div>
+
 
 
 
@@ -273,10 +277,15 @@ disabled={!query.trim()}
 
 </Button>
 
+
+
+
+
 {
 result && asset &&
 
 <div className="mt-6 border-t pt-6">
+
 
 
 <div className="rounded-xl bg-muted p-4 text-sm">
@@ -299,11 +308,7 @@ result && asset &&
 
 נכס:
 
-<b>
-
-{asset.label}
-
-</b>
+<b>{asset.label}</b>
 
 </p>
 
@@ -315,7 +320,21 @@ result && asset &&
 
 <b>
 
-₪{detected.principal.toLocaleString()}
+₪{detected.principal.toLocaleString("he-IL")}
+
+</b>
+
+</p>
+
+
+
+<p>
+
+הפקדה חודשית:
+
+<b>
+
+₪{detected.monthly.toLocaleString("he-IL")}
 
 </b>
 
@@ -367,11 +386,45 @@ result && asset &&
 
 
 
+
 <p className="mt-2 text-4xl font-extrabold text-primary">
 
-₪{result.finalBalance.toLocaleString()}
+₪{result.finalBalance.toLocaleString("he-IL")}
 
 </p>
+
+
+
+
+
+<InvestmentGrowthChart
+
+data={result.series}
+
+/>
+
+
+
+
+
+<div className="mt-6">
+
+
+<InvestmentInsightCard
+
+finalBalance={result.finalBalance}
+
+totalContributed={result.totalContributed}
+
+growth={result.growth}
+
+years={detected.years}
+
+/>
+
+
+</div>
+
 
 
 
@@ -385,7 +438,7 @@ result && asset &&
 
 <b>
 
-₪{result.totalContributed.toLocaleString()}
+₪{result.totalContributed.toLocaleString("he-IL")}
 
 </b>
 
@@ -399,7 +452,7 @@ result && asset &&
 
 <b>
 
-₪{result.growth.toLocaleString()}
+₪{result.growth.toLocaleString("he-IL")}
 
 </b>
 
@@ -413,62 +466,11 @@ result && asset &&
 
 <b>
 
-₪{result.realValueAfterInflation.toLocaleString()}
+₪{result.realValueAfterInflation.toLocaleString("he-IL")}
 
 </b>
 
 </p>
-
-
-</div>
-
-
-
-
-
-<div className="mt-6 h-64">
-
-
-<ResponsiveContainer width="100%" height="100%">
-
-
-<AreaChart data={result.series}>
-
-
-<CartesianGrid strokeDasharray="3 3"/>
-
-
-
-<XAxis dataKey="year"/>
-
-
-
-<YAxis hide />
-
-
-
-<RTooltip />
-
-
-
-<Area
-
-type="monotone"
-
-dataKey="balance"
-
-stroke="#22b17d"
-
-fill="#22b17d"
-
-/>
-
-
-
-</AreaChart>
-
-
-</ResponsiveContainer>
 
 
 </div>
@@ -490,6 +492,7 @@ fill="#22b17d"
 
 
 </div>
+
 
 
 
