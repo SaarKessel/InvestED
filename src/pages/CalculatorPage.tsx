@@ -3,6 +3,9 @@ import { motion } from "framer-motion";
 
 import { InvestmentGrowthChart } from "@/components/InvestmentGrowthChart";
 import { InvestmentInsightCard } from "@/components/InvestmentInsightCard";
+import { InvestmentComparison } from "@/components/calculators/InvestmentComparison";
+import { GoalPlannerCard } from "@/components/GoalPlannerCard";
+import { calculateGoalPlan } from "@/lib/goal/goalEngine";
 
 import {
   Calculator,
@@ -116,7 +119,8 @@ const [query,setQuery]=useState("");
 const [result,setResult]=useState<ProjectionResult|null>(null);
 
 const [asset,setAsset]=useState<AssetClassOption|null>(null);
-
+const [goalPlan,setGoalPlan]=useState<any>(null);
+const [targetAmount,setTargetAmount]=useState(0);
 
 
 const [detected,setDetected]=useState({
@@ -143,7 +147,7 @@ setQuery(text);
 
 
 const parsed=parseCalculatorQuery(text);
-
+setTargetAmount(parsed.targetAmount);
 
 
 const found =
@@ -194,7 +198,22 @@ found.annualReturnPct
 
 setResult(projection);
 
+const goal = calculateGoalPlan(
 
+parsed.targetAmount,
+
+parsed.principal,
+
+parsed.years,
+
+found.annualReturnPct,
+
+parsed.monthlyContribution
+
+);
+
+
+setGoalPlan(goal);
 };
 
 
@@ -404,7 +423,17 @@ data={result.series}
 />
 
 
+<InvestmentComparison
 
+principal={detected.principal}
+
+monthlyContribution={detected.monthly}
+
+years={detected.years}
+
+assets={ASSET_CLASSES}
+
+/>
 
 
 <div className="mt-6">
@@ -420,13 +449,66 @@ growth={result.growth}
 
 years={detected.years}
 
-/>
+assetLabel={asset.label}
 
+annualReturnPct={detected.returnPct}
+
+monthlyContribution={detected.monthly}
+
+goal="growth"
+
+/>
 
 </div>
 
+{
+goalPlan &&
+targetAmount > 0 &&
 
+<GoalPlannerCard
 
+targetAmount={goalPlan.targetAmount}
+
+currentAmount={goalPlan.currentAmount}
+
+years={goalPlan.years}
+
+requiredMonthlyContribution={
+goalPlan.requiredMonthlyContribution
+}
+
+expectedFinalValue={
+goalPlan.expectedFinalValue
+}
+
+progressPercentage={
+goalPlan.progressPercentage
+}
+
+achievable={
+goalPlan.achievable
+}
+
+/>
+
+}
+<GoalPlannerCard
+
+targetAmount={1000000}
+
+currentAmount={detected.principal}
+
+years={detected.years}
+
+requiredMonthlyContribution={0}
+
+expectedFinalValue={result.finalBalance}
+
+progressPercentage={0}
+
+achievable={result.finalBalance >= 1000000}
+
+/>
 
 
 <div className="mt-4 space-y-2 text-sm">

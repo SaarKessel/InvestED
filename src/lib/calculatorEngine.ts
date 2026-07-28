@@ -54,7 +54,6 @@ keywords:[
 "s&p500",
 "snp",
 "אס אנד פי",
-"500",
 "מדד אמריקאי"
 ],
 blurb:"מדד הכולל 500 חברות גדולות בארה״ב."
@@ -119,35 +118,45 @@ blurb:"שילוב מניות ואג״ח."
 
 
 
-
 export interface FinancialScenario {
 
 initialInvestment:number;
+
 monthlyContribution:number;
+
 currentAge:number|null;
+
 targetAge:number|null;
+
+targetAmount:number;
+
 years:number;
+
 assetClassKey:string;
+
 annualReturnPct:number;
+
 goal:string;
 
 }
 
 
 
-
 export interface ParsedQuery {
 
 age:number|null;
+
 years:number;
+
 monthlyContribution:number;
+
 principal:number;
+
+targetAmount:number;
+
 assetClassKey:string;
 
 }
-
-
-
 
 
 
@@ -180,21 +189,15 @@ return "balanced";
 
 function detectAmount(text:string){
 
-let amount = 0;
+let amount=0;
 
 
-const normalized = text
+const normalized=text
 .toLowerCase()
 .replace(/,/g,"");
 
 
-
-// מסירים דברים שלא נחשבים השקעה התחלתית:
-// גיל,
-// יעד גיל,
-// הפקדה חודשית
-
-const cleaned = normalized
+const cleaned=normalized
 .replace(
 /(?:בן|בת)\s*\d+/g,
 ""
@@ -213,62 +216,103 @@ const cleaned = normalized
 );
 
 
-
-const matches = cleaned.matchAll(
+const matches=cleaned.matchAll(
 /(\d+(?:\.\d+)?)\s*(אלף|מיליון|k|m)?/g
 );
 
 
-
 for(const match of matches){
 
+let value=Number(match[1]);
 
-let value = Number(match[1]);
 
-
-if(isNaN(value)){
-continue;
+if(match[2]==="אלף" || match[2]==="k"){
+value*=1000;
 }
 
 
-
-if(
-match[2] === "אלף" ||
-match[2] === "k"
-){
-
-value *= 1000;
-
+if(match[2]==="מיליון" || match[2]==="m"){
+value*=1000000;
 }
 
 
-
-if(
-match[2] === "מיליון" ||
-match[2] === "m"
-){
-
-value *= 1000000;
+amount=Math.max(amount,value);
 
 }
 
 
+if(normalized.includes("חצי מיליון")){
+amount=Math.max(amount,500000);
+}
 
-amount = Math.max(
-amount,
-value
+
+if(normalized.includes("רבע מיליון")){
+amount=Math.max(amount,250000);
+}
+
+
+return Math.round(amount);
+
+}
+
+function detectTargetAmount(text:string){
+
+const normalized=text
+.toLowerCase()
+.replace(/,/g,"");
+
+
+let amount=0;
+
+
+const targetMatch=normalized.match(
+/(?:להגיע|להגיע ל|יעד|מטרה|רוצה להגיע|צריך להגיע)\s*(?:ל)?\s*(\d+(?:\.\d+)?)\s*(אלף|מיליון|k|m)?/
 );
 
 
+
+if(targetMatch){
+
+amount=Number(targetMatch[1]);
+
+
+if(
+targetMatch[2]==="אלף" ||
+targetMatch[2]==="k"
+){
+
+amount*=1000;
+
+}
+
+
+if(
+targetMatch[2]==="מיליון" ||
+targetMatch[2]==="m"
+){
+
+amount*=1000000;
+
+}
+
 }
 
 
 
-// ביטויים מיוחדים
+if(normalized.includes("מיליון")){
+
+amount=Math.max(
+amount,
+1000000
+);
+
+}
+
+
 
 if(normalized.includes("חצי מיליון")){
 
-amount = Math.max(
+amount=Math.max(
 amount,
 500000
 );
@@ -279,7 +323,7 @@ amount,
 
 if(normalized.includes("רבע מיליון")){
 
-amount = Math.max(
+amount=Math.max(
 amount,
 250000
 );
@@ -291,6 +335,11 @@ amount,
 return Math.round(amount);
 
 }
+
+
+
+
+
 function detectMonthly(text:string){
 
 const normalized=text
@@ -298,10 +347,6 @@ const normalized=text
 .replace(/,/g,"");
 
 
-
-// 2000 בחודש
-// 2000 ש"ח בחודש
-// 2000 כל חודש
 
 const match=normalized.match(
 /(\d+)\s*(?:ש"ח|שח|₪|שקל|שקלים)?\s*(?:בחודש|לחודש|כל חודש|חודשי)/
@@ -316,11 +361,6 @@ return Number(match[1]);
 }
 
 
-
-
-// חיסכון חודשי של 1000
-// הפקדה חודשית 2000
-// מפקיד 1500
 
 const reverseMatch=normalized.match(
 /(?:חיסכון חודשי|הפקדה חודשית|מפקיד|משקיע)\s*(?:של)?\s*(\d+)/
@@ -344,9 +384,6 @@ return 0;
 
 
 
-
-
-
 function detectAge(text:string){
 
 const match=text.match(
@@ -361,10 +398,7 @@ Number(match[1])
 :
 null;
 
-
 }
-
-
 
 
 
@@ -384,11 +418,7 @@ Number(match[1])
 :
 null;
 
-
 }
-
-
-
 
 
 
@@ -413,7 +443,6 @@ return "retirement";
 
 
 
-
 if(
 lower.includes("ילד") ||
 lower.includes("ילדים") ||
@@ -424,7 +453,6 @@ lower.includes("לימודים")
 return "child";
 
 }
-
 
 
 
@@ -441,7 +469,6 @@ return "home";
 
 
 
-
 if(
 lower.includes("חופש כלכלי") ||
 lower.includes("עושר") ||
@@ -455,14 +482,9 @@ return "wealth";
 
 
 
-
 return "growth";
 
 }
-
-
-
-
 
 
 
@@ -483,10 +505,6 @@ const lower=text.toLowerCase();
 
 
 
-// 10 שנים
-// ל-10 שנים
-// במשך 20 שנה
-
 const yearsMatch=lower.match(
 /(?:ל-?|במשך\s*)?(\d+)\s*(?:שנה|שנים)/
 );
@@ -501,10 +519,7 @@ return Number(yearsMatch[1]);
 
 
 
-
-if(
-lower.includes("עשור")
-){
+if(lower.includes("עשור")){
 
 return 10;
 
@@ -512,15 +527,11 @@ return 10;
 
 
 
-
-if(
-lower.includes("חמש עשרה")
-){
+if(lower.includes("חמש עשרה")){
 
 return 15;
 
 }
-
 
 
 
@@ -542,14 +553,6 @@ return 10;
 
 }
 
-
-
-
-
-
-
-
-
 export function analyzeFinancialScenario(
 
 text:string
@@ -558,7 +561,6 @@ text:string
 
 
 const assetKey=detectAsset(text);
-
 
 
 const asset=
@@ -571,38 +573,28 @@ ASSET_CLASSES.length-1
 ];
 
 
-
 const currentAge=
 detectAge(text);
-
 
 
 const targetAge=
 detectTargetAge(text);
 
 
-
-
 return {
-
 
 initialInvestment:
 detectAmount(text),
 
-
-
 monthlyContribution:
 detectMonthly(text),
 
-
-
 currentAge,
-
-
 
 targetAge,
 
-
+targetAmount:
+detectTargetAmount(text),
 
 years:
 detectYears(
@@ -611,31 +603,18 @@ currentAge,
 targetAge
 ),
 
-
-
 assetClassKey:
 asset.key,
-
-
 
 annualReturnPct:
 asset.annualReturnPct,
 
-
-
 goal:
 detectGoal(text)
 
-
-
 };
 
-
 }
-
-
-
-
 
 
 
@@ -652,38 +631,37 @@ const scenario=
 analyzeFinancialScenario(rawText);
 
 
-
 return {
-
 
 age:
 scenario.currentAge,
 
-
-
 years:
 scenario.years,
-
-
 
 monthlyContribution:
 scenario.monthlyContribution,
 
-
-
 principal:
 scenario.initialInvestment,
 
-
+targetAmount:
+scenario.targetAmount,
 
 assetClassKey:
 scenario.assetClassKey
 
-
 };
 
-
 }
+
+
+
+
+
+// ---------------------------------------------------------------------------
+// Projection Engine
+// ---------------------------------------------------------------------------
 
 export interface ProjectionPoint{
 
@@ -694,10 +672,6 @@ contributed:number;
 balance:number;
 
 }
-
-
-
-
 
 
 
@@ -719,10 +693,6 @@ series:ProjectionPoint[];
 
 
 
-
-
-
-
 export function computeProjection(
 
 principal:number,
@@ -738,26 +708,20 @@ inflationPct=3
 ):ProjectionResult{
 
 
-const monthlyRate =
-annualReturnPct / 100 / 12;
+const monthlyRate=
+annualReturnPct/100/12;
 
 
-
-const months =
-years * 12;
-
+const months=
+years*12;
 
 
-let balance =
+let balance=
 principal;
 
 
-
-let contributed =
+let contributed=
 principal;
-
-
-
 
 
 const series:ProjectionPoint[]=[
@@ -776,35 +740,21 @@ balance:Math.round(balance)
 
 
 
-
-
-
-
-
 for(let i=1;i<=months;i++){
 
-
-
-balance =
-balance * (1 + monthlyRate)
+balance=
+balance*(1+monthlyRate)
 +
 monthlyContribution;
 
+contributed+=monthlyContribution;
 
 
-contributed += monthlyContribution;
-
-
-
-
-
-if(i % 12 === 0){
-
-
+if(i%12===0){
 
 series.push({
 
-year:i / 12,
+year:i/12,
 
 contributed:Math.round(contributed),
 
@@ -812,71 +762,40 @@ balance:Math.round(balance)
 
 });
 
-
+}
 
 }
 
 
 
-}
-
-
-
-
-
-
-
-
-
-const finalBalance =
+const finalBalance=
 Math.round(balance);
 
 
-
-
-
-
-
-
-return {
-
+return{
 
 finalBalance,
-
-
 
 totalContributed:
 Math.round(contributed),
 
-
-
-
 growth:
 Math.round(
-finalBalance - contributed
+finalBalance-contributed
 ),
-
-
-
 
 realValueAfterInflation:
 Math.round(
-finalBalance /
+finalBalance/
 Math.pow(
-1 + inflationPct / 100,
+1+inflationPct/100,
 years
 )
 ),
 
-
-
-
 series
 
-
-
 };
-
 
 }
 
@@ -884,44 +803,26 @@ series
 
 
 
-
-
-
+// ---------------------------------------------------------------------------
+// Calculator Presets
+// ---------------------------------------------------------------------------
 
 export const CALCULATOR_PRESETS=[
 
-
-
 "אני בן 27, יש לי 100,000 ש״ח להשקיע ל-10 שנים במדד S&P 500",
-
-
 
 "אני בן 30, מפקיד 2,000 ש״ח בחודש במדד עולמי עד גיל 60",
 
-
-
 "השקעתי 100,000 ש״ח ל-10 שנים ב-Apple",
-
-
 
 "השקעתי 100000 שקל ל-20 שנה ב-Microsoft",
 
-
-
 "יש לי 500 אלף שקל להשקיע ל-20 שנה בתיק מאוזן",
-
-
 
 "חיסכון חודשי של 1000 ש״ח לילד עד גיל 18",
 
-
-
 "אני בן 35 ורוצה לפרוש בגיל 55 עם השקעה במדד S&P 500",
 
-
-
 "יש לי 300 אלף שקל ואני רוצה לבנות הון ל-15 שנה"
-
-
 
 ];

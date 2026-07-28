@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+﻿import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { AnalysisProvider } from "@/context/AnalysisContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
