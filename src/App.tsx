@@ -5,7 +5,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { LandingPage } from "@/pages/LandingPage";
 import { InputPage } from "@/pages/InputPage";
 import { DashboardPage } from "@/pages/DashboardPage";
-import { CalculatorPage } from "@/pages/CalculatorPage";
+import CalculatorPage from "@/pages/CalculatorPage";
 import { AboutPage } from "@/pages/AboutPage";
 import { FaqPage } from "@/pages/FaqPage";
 import { PrivacyPage } from "@/pages/PrivacyPage";

@@ -49,55 +49,208 @@ function renormalize(raw: RawAllocation): RawAllocation {
   return Object.fromEntries(Object.entries(rounded).filter(([, v]) => v > 0));
 }
 
-export function buildAllocation(investorType: InvestorType, flags: ProfileFlags): AllocationItem[] {
-  const allocation: RawAllocation = { ...(BASE_TEMPLATES[investorType] ?? BASE_TEMPLATES["משקיע מאוזן"]) };
+
+function adjustByProfile(
+  allocation: RawAllocation,
+  flags: ProfileFlags
+): RawAllocation {
+
+  const result = { ...allocation };
+
+  const age = flags.age;
+
+  // צעירים עם אופק ארוך יכולים לשאת יותר מניות
+  if (age !== null && age < 35 && flags.horizon === "long") {
+
+    const bonds = result["אג\"ח (ETF)"] ?? 0;
+
+    const shift = Math.min(10, bonds);
+
+    result["אג\"ח (ETF)"] = bonds - shift;
+
+    result["מניות ארה\"ב (ETF)"] =
+      (result["מניות ארה\"ב (ETF)"] ?? 0) + shift;
+
+  }
+
+
+  // משקיע מבוגר או אופק קצר
+  if (
+    (age !== null && age > 55) ||
+    flags.horizon === "short"
+  ) {
+
+    const stocks =
+      result["מניות ארה\"ב (ETF)"] ?? 0;
+
+    const shift = Math.min(15, stocks);
+
+    result["מניות ארה\"ב (ETF)"] =
+      stocks - shift;
+
+    result["אג\"ח (ETF)"] =
+      (result["אג\"ח (ETF)"] ?? 0) + shift;
+
+  }
+
+
+  return result;
+}
+export function buildAllocation(
+  investorType: InvestorType,
+  flags: ProfileFlags
+): AllocationItem[] {
+
+  let allocation: RawAllocation = {
+    ...(BASE_TEMPLATES[investorType] ?? BASE_TEMPLATES["משקיע מאוזן"])
+  };
+
+
   const prefs = new Set(flags.preferences);
 
+
+  // התאמות לפי העדפות משתמש
   if (prefs.has("dividend")) {
-    const shift = Math.min(10, allocation["מניות ארה\"ב (ETF)"] ?? 0);
-    allocation["מניות ארה\"ב (ETF)"] = (allocation["מניות ארה\"ב (ETF)"] ?? 0) - shift;
-    allocation["דיבידנד (ETF)"] = (allocation["דיבידנד (ETF)"] ?? 0) + shift;
+
+    const shift = Math.min(
+      10,
+      allocation["מניות ארה\"ב (ETF)"] ?? 0
+    );
+
+    allocation["מניות ארה\"ב (ETF)"] =
+      (allocation["מניות ארה\"ב (ETF)"] ?? 0) - shift;
+
+    allocation["דיבידנד (ETF)"] =
+      (allocation["דיבידנד (ETF)"] ?? 0) + shift;
   }
+
+
 
   if (prefs.has("bonds")) {
+
     const cash = allocation["מזומן"] ?? 0;
-    const shift = Math.min(10, cash + 5);
-    allocation["מזומן"] = Math.max(0, cash - Math.min(5, cash));
-    allocation["אג\"ח (ETF)"] = (allocation["אג\"ח (ETF)"] ?? 0) + shift;
+
+    const shift = Math.min(
+      10,
+      cash + 5
+    );
+
+
+    allocation["מזומן"] =
+      Math.max(
+        0,
+        cash - Math.min(5, cash)
+      );
+
+
+    allocation["אג\"ח (ETF)"] =
+      (allocation["אג\"ח (ETF)"] ?? 0) + shift;
+
   }
 
-  const sectorInterests = flags.interests.filter((i) => i === "טכנולוגיה" || i === "בריאות");
+
+
+  // התאמה לפי תחומי עניין
+  const sectorInterests =
+    flags.interests.filter(
+      (i) =>
+        i === "טכנולוגיה" ||
+        i === "בריאות"
+    );
+
+
   if (sectorInterests.length) {
-    const usAlloc = allocation["מניות ארה\"ב (ETF)"] ?? 0;
-    const carve = Math.min(15, usAlloc * 0.4);
-    allocation["מניות ארה\"ב (ETF)"] = usAlloc - carve;
-    const label = `קרנות סקטוריאליות (${sectorInterests.join("/")})`;
-    allocation[label] = (allocation[label] ?? 0) + carve;
+
+    const usAlloc =
+      allocation["מניות ארה\"ב (ETF)"] ?? 0;
+
+
+    const carve =
+      Math.min(
+        15,
+        usAlloc * 0.4
+      );
+
+
+    allocation["מניות ארה\"ב (ETF)"] =
+      usAlloc - carve;
+
+
+    const label =
+      `קרנות סקטוריאליות (${sectorInterests.join("/")})`;
+
+
+    allocation[label] =
+      (allocation[label] ?? 0) + carve;
   }
 
-  const normalized = renormalize(allocation);
 
-  return Object.entries(normalized).map(([name, value]) => ({
-    name,
-    value,
-    color: colorFor(name),
-  }));
+
+  // ⭐ חדש: התאמה חכמה לפי גיל ואופק השקעה
+  allocation = adjustByProfile(
+    allocation,
+    flags
+  );
+
+
+
+  const normalized =
+    renormalize(allocation);
+
+
+
+  return Object.entries(normalized).map(
+    ([name, value]) => ({
+      name,
+      value,
+      color: colorFor(name),
+    })
+  );
 }
 
-export function portfolioNarrative(investorType: InvestorType, allocation: AllocationItem[]): string {
-  const top = [...allocation].sort((a, b) => b.value - a.value)[0];
+export function portfolioNarrative(
+  investorType: InvestorType,
+  allocation: AllocationItem[]
+): string {
+
+  const top = [...allocation]
+    .sort((a, b) => b.value - a.value)[0];
+
+
   const parts: string[] = [
     `ההקצאה לדוגמה הזו משקפת פרופיל של "${investorType}".`,
     `הרכיב הגדול ביותר הוא ${top.name} (${top.value}%), שמעגן את אופי הסיכון-תשואה הכללי של התיק.`,
   ];
-  const bonds = allocation.find((a) => a.name.includes("אג\"ח"));
+
+
+  const bonds = allocation.find(
+    (a) => a.name.includes("אג\"ח")
+  );
+
+
   if (bonds && bonds.value >= 25) {
-    parts.push("הקצאת אג\"ח משמעותית נכללת כדי לרסן תנודתיות בזמן ירידות בשוק המניות.");
+    parts.push(
+      "הקצאת אג\"ח משמעותית נכללת כדי לרסן תנודתיות בזמן ירידות בשוק המניות."
+    );
   }
-  const intl = allocation.find((a) => a.name.includes("בינלאומ"));
+
+
+  const intl = allocation.find(
+    (a) => a.name.includes("בינלאומ")
+  );
+
+
   if (intl && intl.value >= 15) {
-    parts.push("רכיב בינלאומי בולט מוסיף פיזור גאוגרפי ומפחית תלות בכלכלה בודדת.");
+    parts.push(
+      "רכיב בינלאומי בולט מוסיף פיזור גאוגרפי ומפחית תלות בכלכלה בודדת."
+    );
   }
-  parts.push("זכור: זוהי דוגמה חינוכית בלבד — לא המלצת השקעה.");
+
+
+  parts.push(
+    "זכור: זוהי דוגמה חינוכית בלבד — לא המלצת השקעה."
+  );
+
+
   return parts.join(" ");
 }

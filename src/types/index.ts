@@ -19,6 +19,7 @@ export type InvestorType =
 
 export type HorizonBucket = "קצר" | "בינוני" | "ארוך";
 
+
 export interface ProfileFlags {
   rawText: string;
   age: number | null;
@@ -29,16 +30,19 @@ export interface ProfileFlags {
   preferences: string[];
 }
 
+
 export interface RiskDescription {
   band: string;
   volatility: string;
   psychology: string;
 }
 
+
 export interface InvestorClassification {
   type: InvestorType;
   reason: string;
 }
+
 
 export interface AllocationItem {
   name: string;
@@ -46,26 +50,30 @@ export interface AllocationItem {
   color: string;
 }
 
+
 export interface Strategy {
   id: string;
   name: string;
   whatItIs: string;
   pros: string[];
   cons: string[];
-  riskLevel: number; // 1-10
+  riskLevel: number;
   suitableFor: string;
-  stocks: string[]; // דוגמאות מוכרות בלבד — לא המלצת השקעה
+  stocks: string[];
 }
+
 
 export interface FinanceConcept {
   term: string;
   definition: string;
 }
 
+
 export interface Mistake {
   title: string;
   detail: string;
 }
+
 
 export interface RoadmapStage {
   stage: string;
@@ -73,19 +81,78 @@ export interface RoadmapStage {
   topics: string[];
 }
 
+
+// ---------------------------------------------------------------------------
+// Smart Scenario Engine Types
+// ---------------------------------------------------------------------------
+
+
+export interface FinancialScenario {
+  initialInvestment: number;
+  monthlyContribution: number;
+  currentAge: number | null;
+  targetAge: number | null;
+  targetAmount: number | null;
+  years: number;
+  assetClassKey: string;
+  annualReturnPct: number;
+  goal: string;
+}
+
+
+export interface ProjectionPoint {
+  year: number;
+  contributed: number;
+  balance: number;
+}
+
+
+export interface ProjectionResult {
+  finalBalance: number;
+  totalContributed: number;
+  growth: number;
+  realValueAfterInflation: number;
+  series: ProjectionPoint[];
+}
+
+
+
+// ---------------------------------------------------------------------------
+// Analysis Result
+// ---------------------------------------------------------------------------
+
+
 export interface AnalysisResult {
   profileText: string;
+
   flags: ProfileFlags;
+
   riskScore: number;
+
   riskDescription: RiskDescription;
+
   horizon: HorizonBucket;
+
   horizonExplanation: string;
+
   investor: InvestorClassification;
+
   allocation: AllocationItem[];
+
   explainability: {
     signals: string[];
     summary: string;
   };
+
+
+  // חדש 🚀
+  // תרחיש השקעה חכם
+  scenario: FinancialScenario;
+
+  // תחזית צמיחה
+  projection: ProjectionResult;
+
+
   aiNarration: {
     profileSummary: string;
     portfolioSummary: string;
@@ -93,10 +160,19 @@ export interface AnalysisResult {
   };
 }
 
+
+
 export interface MarketAsset {
   symbol: string;
   name: string;
   price: number;
   changePercent: number;
-  history: { date: string; price: number; open?: number; high?: number; low?: number; close?: number }[];
+  history: {
+    date: string;
+    price: number;
+    open?: number;
+    high?: number;
+    low?: number;
+    close?: number;
+  }[];
 }
