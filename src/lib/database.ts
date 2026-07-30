@@ -1,173 +1,54 @@
-﻿import { supabase } from "./supabase";
-
-import { ScenarioRecord } from "../types/database";
+﻿const STORAGE_KEY = "invested_scenarios";
 
 
+export async function getScenarioById(id:string){
 
-export async function saveScenarioToCloud(
-
-scenario: ScenarioRecord
-
-){
+  const saved =
+    localStorage.getItem(STORAGE_KEY);
 
 
-const {
-
-data,
-
-error
-
-}= await supabase
-
-.from("scenarios")
-
-.insert(scenario)
-
-.select()
-
-.single();
+  if(!saved){
+    return null;
+  }
 
 
+  const scenarios = JSON.parse(saved);
 
-if(error){
 
-throw error;
+  return scenarios.find(
+    (item:any)=>item.id === id
+  ) ?? null;
 
 }
 
 
 
-return data;
+export async function saveScenario(data:any){
 
+  const saved =
+    localStorage.getItem(STORAGE_KEY);
 
-}
 
+  const scenarios =
+    saved ? JSON.parse(saved) : [];
 
 
+  const scenario = {
+    id: crypto.randomUUID(),
+    createdAt:new Date().toISOString(),
+    ...data
+  };
 
 
-export async function getUserScenarios(
+  scenarios.unshift(scenario);
 
-userId:string
 
-){
+  localStorage.setItem(
+    STORAGE_KEY,
+    JSON.stringify(scenarios)
+  );
 
 
-const {
-
-data,
-
-error
-
-}= await supabase
-
-.from("scenarios")
-
-.select("*")
-
-.eq("user_id",userId)
-
-.order(
-
-"created_at",
-
-{
-
-ascending:false
-
-}
-
-);
-
-
-
-if(error){
-
-throw error;
-
-}
-
-
-
-return data ?? [];
-
-
-}
-
-
-
-
-
-
-export async function getScenarioById(
-
-id:string
-
-){
-
-
-const {
-
-data,
-
-error
-
-}= await supabase
-
-.from("scenarios")
-
-.select("*")
-
-.eq("id",id)
-
-.single();
-
-
-
-if(error){
-
-throw error;
-
-}
-
-
-
-return data;
-
-
-}
-
-
-
-
-
-
-export async function deleteScenarioFromCloud(
-
-id:string
-
-){
-
-
-const {
-
-error
-
-}= await supabase
-
-.from("scenarios")
-
-.delete()
-
-.eq("id",id);
-
-
-
-if(error){
-
-throw error;
-
-}
-
+  return scenario;
 
 }

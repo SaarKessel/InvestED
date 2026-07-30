@@ -1,356 +1,64 @@
-﻿import { useEffect, useState } from "react";
-
-import { useAuth } from "./useAuth";
-
-import {
-  saveScenarioToCloud,
-  getUserScenarios,
-  deleteScenarioFromCloud
-} from "../lib/database";
-
-
-const KEY = "invested_scenarios";
-
-
-
-export interface SavedScenario {
-
-  id:string;
-
-  createdAt:string;
-
-  data:any;
-
-}
-
-
-
-
-
-export function useScenarioHistory(){
-
-
-const {
-
-user
-
-}=useAuth();
-
-
-
-const [
-
-scenarios,
-
-setScenarios
-
-]=useState<SavedScenario[]>([]);
-
-
-
-
-
-useEffect(()=>{
-
-
-loadScenarios();
-
-
-},[user]);
-
-
-
-
-
-
-async function loadScenarios(){
-
-
-
-if(user){
-
-
-
-const cloudScenarios =
-
-await getUserScenarios(user.id);
-
-
-
-setScenarios(
-
-cloudScenarios.map((item:any)=>({
-
-
-id:item.id,
-
-
-createdAt:item.created_at,
-
-
-data:item
-
-
-
-}))
-
-);
-
-
-
-return;
-
-
-}
-
-
-
-
-const saved =
-
-localStorage.getItem(KEY);
-
-
-
-setScenarios(
-
-saved
-
-?
-
-JSON.parse(saved)
-
-:
-
-[]
-
-);
-
-
-
-}
-
-
-
-
-
-
-
-async function saveScenario(data:any){
-
-
-
-if(user){
-
-
-
-await saveScenarioToCloud({
-
-
-user_id:user.id,
-
-
-initial_investment:
-
-data.scenario.initialInvestment,
-
-
-
-future_value:
-
-data.projection.finalBalance,
-
-
-
-profit:
-
-data.projection.finalBalance -
-
-data.scenario.initialInvestment,
-
-
-
-investor_type:
-
-data.investor,
-
-
-
-risk_score:
-
-data.riskScore ?? 0,
-
-
-
-horizon:
-
-data.horizon,
-
-
-
-allocation:
-
-data.allocation,
-
-
-
-projection:
-
-data.projection
-
-
-
-});
-
-
-
-await loadScenarios();
-
-
-
-return;
-
-
-}
-
-
-
-
-
-
-const newScenario:SavedScenario={
-
-
-id:crypto.randomUUID(),
-
-
-createdAt:new Date().toISOString(),
-
-
-data
-
-
+﻿import { useState } from "react";
+
+export type ScenarioItem = {
+  id: string;
+  createdAt: string;
+  data: any;
 };
 
+const STORAGE_KEY = "invested_scenarios";
+
+export function useScenarioHistory() {
+
+  const [scenarios, setScenarios] = useState<ScenarioItem[]>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    return saved ? JSON.parse(saved) : [];
+  });
 
 
+  function saveScenario(data: any) {
 
-const updated=[
+    const newScenario = {
+      id: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+      data,
+    };
 
-newScenario,
+    const updated = [
+      newScenario,
+      ...scenarios,
+    ];
 
-...scenarios
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(updated)
+    );
 
-];
+    setScenarios(updated);
 
-
-
-localStorage.setItem(
-
-KEY,
-
-JSON.stringify(updated)
-
-);
-
-
-
-setScenarios(updated);
-
-
-
-}
+    return newScenario;
+  }
 
 
+  function deleteScenario(id: string) {
+
+    const updated = scenarios.filter(
+      item => item.id !== id
+    );
+
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(updated)
+    );
+
+    setScenarios(updated);
+  }
 
 
-
-
-
-async function deleteScenario(id:string){
-
-
-
-if(user){
-
-
-await deleteScenarioFromCloud(id);
-
-
-await loadScenarios();
-
-
-return;
-
-
-}
-
-
-
-
-const updated =
-
-scenarios.filter(
-
-item=>item.id!==id
-
-);
-
-
-
-localStorage.setItem(
-
-KEY,
-
-JSON.stringify(updated)
-
-);
-
-
-
-setScenarios(updated);
-
+  return {
+    scenarios,
+    saveScenario,
+    deleteScenario,
+  };
 
 }
-
-
-
-
-
-
-function clearScenarios(){
-
-
-
-localStorage.removeItem(KEY);
-
-
-setScenarios([]);
-
-
-}
-
-
-
-
-return {
-
-
-scenarios,
-
-
-saveScenario,
-
-
-deleteScenario,
-
-
-clearScenarios
-
-
-};
-
-
-
-}
-
