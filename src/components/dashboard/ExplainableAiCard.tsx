@@ -1,53 +1,47 @@
-import { motion } from "framer-motion";
-import { BrainCircuit, CheckCircle2 } from "lucide-react";
-import type { AnalysisResult } from "@/types";
-import { Card, CardContent, CardHeader, CardTitle, Badge } from "@/components/ui/primitives";
-import { InfoBadge } from "@/components/ui/InfoBadge";
+interface Props {
+  result: any;
+}
 
-export function ExplainableAiCard({ result }: { result: AnalysisResult }) {
+export function ExplainableAICard({ result }: Props) {
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.1 }}
-    >
-      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
-        <CardHeader>
-          <div className="flex items-center gap-2 text-primary">
-            <BrainCircuit className="h-4 w-4" />
-            <span className="text-xs font-bold uppercase tracking-wide">Explainable AI</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <CardTitle className="text-xl">למה הגענו למסקנה הזאת?</CardTitle>
-            <InfoBadge description='רכיב שמסביר בדיוק אילו מילים בסיפור שכתבת גרמו לבינה המלאכותית להמליץ על רמת הסיכון והפרופיל הזה — בלי "קופסה שחורה".' />
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-5">
-          <p className="rounded-xl border border-border bg-card p-4 text-sm leading-relaxed">
-            {result.explainability.summary}
-          </p>
+    <div className="rounded-2xl bg-white p-6 shadow">
 
-          <div>
-            <p className="mb-2 text-xs font-bold text-muted-foreground">אילו סימנים זיהינו בטקסט שלך:</p>
-            <div className="flex flex-wrap gap-2">
-              {result.explainability.signals.map((signal) => (
-                <Badge key={signal} variant="outline" className="gap-1.5">
-                  <CheckCircle2 className="h-3 w-3 text-primary" />
-                  {signal}
-                </Badge>
-              ))}
-            </div>
-          </div>
+      <h2 className="mb-4 text-xl font-bold">
+        🤖 Explainable AI
+      </h2>
 
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-            מקור הניסוח:{" "}
-            {result.aiNarration.source === "ollama"
-              ? "מודל שפה מקומי (Ollama) בשילוב מנוע כללים"
-              : "מנוע כללים חינוכי (Ollama לא זוהה מקומית)"}
-          </div>
-        </CardContent>
-      </Card>
-    </motion.div>
+      <p className="text-gray-600">
+        ניתוח הסיבות מאחורי המלצת ההשקעה:
+      </p>
+
+
+      <div className="mt-4 space-y-2 text-sm text-gray-500">
+
+        <p>
+          סוג משקיע:
+          {" "}
+          {result.investor ?? "לא זוהה"}
+        </p>
+
+
+        <p>
+          אופק השקעה:
+          {" "}
+          {result.horizon ?? "לא זוהה"}
+        </p>
+
+
+        <p>
+          רמת סיכון:
+          {" "}
+          {result.riskDescription ?? "לא זוהה"}
+        </p>
+
+
+      </div>
+
+
+    </div>
   );
 }
