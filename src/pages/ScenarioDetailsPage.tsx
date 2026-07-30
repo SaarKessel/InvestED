@@ -3,7 +3,6 @@
 import { useScenarioHistory } from "../hooks/useScenarioHistory";
 
 import { InvestmentGrowthChart } from "../components/InvestmentGrowthChart";
-import { ProfileSummaryCards } from "../components/dashboard/ProfileSummaryCards";
 import { PortfolioAllocationCard } from "../components/dashboard/PortfolioAllocationCard";
 
 
@@ -190,16 +189,6 @@ Profit
 
 
 
-
-<ProfileSummaryCards
-
-investor={data.investor ?? data.investor_type}
-
-riskDescription={data.riskDescription}
-
-horizon={data.horizon}
-
-/>
 
 
 
