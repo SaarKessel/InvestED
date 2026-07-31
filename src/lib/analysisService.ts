@@ -1,4 +1,7 @@
-import type { AnalysisResult } from "@/types";
+import type {
+  AnalysisResult,
+} from "@/types";
+
 
 import {
   extractProfileFlags,
@@ -10,15 +13,18 @@ import {
   buildExplainability,
 } from "./riskEngine";
 
+
 import {
   buildAllocation,
   portfolioNarrative,
 } from "./portfolioEngine";
 
+
 import {
   analyzeFinancialScenario,
   computeProjection,
 } from "./calculatorEngine";
+
 
 import {
   isOllamaAvailable,
@@ -27,65 +33,50 @@ import {
 } from "./ollamaClient";
 
 
+
 // ---------------------------------------------------------------------------
-// InvestED — Analysis Service
-//
-// שכבת האורקסטרציה הראשית:
-// User Text
-//    ↓
-// Risk Engine
-//    ↓
-// Portfolio Engine
-//    ↓
-// Scenario Engine
-//    ↓
-// Dashboard Result
-//
-// Rule Based תמיד זמין.
-// Ollama רק משפר ניסוח ברקע.
+// InvestED Analysis Service
 // ---------------------------------------------------------------------------
 
 
 export function buildRuleBasedAnalysis(
-  profileText: string
-): AnalysisResult {
+  profileText:string
+):AnalysisResult {
 
-
-  // -----------------------------
-  // Risk Analysis
-  // -----------------------------
 
   const flags =
     extractProfileFlags(profileText);
+
 
 
   const riskScore =
     computeRiskScore(flags);
 
 
+
   const riskDescription =
-    riskScoreDescription(riskScore);
-
-
-  const horizon =
-    horizonBucket(flags);
-
-
-  const hExplanation =
-    horizonExplanation(horizon);
-
-
-  const investor =
-    classifyInvestor(
-      flags,
+    riskScoreDescription(
       riskScore
     );
 
 
+const horizon =
+  horizonBucket(
+    flags.horizon ?? "medium"
+  );
 
-  // -----------------------------
-  // Portfolio Construction
-  // -----------------------------
+
+const hExplanation =
+  horizonExplanation(
+    flags.horizon ?? "medium"
+  );
+
+
+const investor =
+  classifyInvestor(
+    riskScore
+  );
+
 
   const allocation =
     buildAllocation(
@@ -94,12 +85,14 @@ export function buildRuleBasedAnalysis(
     );
 
 
+
   const explainability =
     buildExplainability(
       flags,
-      riskScore,
-      investor
+      investor,
+      riskScore
     );
+
 
 
   const fallbackPortfolioText =
@@ -110,14 +103,11 @@ export function buildRuleBasedAnalysis(
 
 
 
-  // -----------------------------
-  // Investment Scenario Engine
-  // -----------------------------
-
   const scenario =
     analyzeFinancialScenario(
       profileText
     );
+
 
 
   const projection =
@@ -132,33 +122,46 @@ export function buildRuleBasedAnalysis(
 
   return {
 
+
     profileText,
+
 
     flags,
 
+
     riskScore,
+
 
     riskDescription,
 
+
     horizon,
+
 
     horizonExplanation:
       hExplanation,
 
+
     investor,
+
 
     allocation,
 
-    explainability,
+
+    explainability:{
+      signals: explainability,
+      summary: explainability.join(" ")
+    },
 
 
-    // חדש:
     scenario,
+
 
     projection,
 
 
-    aiNarration: {
+
+    aiNarration:{
 
       profileSummary:
         investor.reason,
@@ -169,13 +172,16 @@ export function buildRuleBasedAnalysis(
 
 
       source:
-        "rule-based",
+        "rule-based"
 
-    },
+    }
+
 
   };
 
+
 }
+
 
 
 
@@ -185,16 +191,20 @@ export function buildRuleBasedAnalysis(
 
 
 export async function tryEnhanceWithOllama(
-  result: AnalysisResult
-): Promise<AnalysisResult["aiNarration"] | null> {
+  result:AnalysisResult
+):Promise<AnalysisResult["aiNarration"] | null>{
+
 
 
   const ollamaUp =
     await isOllamaAvailable();
 
 
-  if (!ollamaUp) {
+
+  if(!ollamaUp){
+
     return null;
+
   }
 
 
@@ -202,7 +212,7 @@ export async function tryEnhanceWithOllama(
   const allocationSummary =
     result.allocation
       .map(
-        (a) =>
+        (a)=>
           `${a.name}: ${a.value}%`
       )
       .join(", ");
@@ -211,40 +221,46 @@ export async function tryEnhanceWithOllama(
 
   const [
     profileSummary,
-    portfolioSummary,
+    portfolioSummary
 
   ] =
-    await Promise.all([
+  await Promise.all([
 
 
-      explainInvestorProfile(
-        result.investor.type,
-        result.riskScore,
-        result.investor.reason,
-        result.profileText
-      ),
+    explainInvestorProfile(
+      result.investor.type,
+      result.riskScore,
+      result.investor.reason,
+      result.profileText
+    ),
 
 
 
-      explainPortfolio(
-        result.investor.type,
-        allocationSummary,
-        result.aiNarration.portfolioSummary
-      ),
+    explainPortfolio(
+      result.investor.type,
+      allocationSummary,
+      result.aiNarration.portfolioSummary
+    )
 
-    ]);
+
+  ]);
 
 
 
   return {
 
+
     profileSummary,
+
 
     portfolioSummary,
 
+
     source:
-      "ollama",
+      "ollama"
+
 
   };
+
 
 }
