@@ -51,48 +51,34 @@ export function StrategiesCard(){
 
       <Card>
 
-
         <CardHeader>
-
 
           <div className="flex items-center gap-2 text-primary">
 
             <Layers className="h-4 w-4" />
 
             <span className="text-xs font-bold uppercase tracking-wide">
-
               אסטרטגיות השקעה
-
             </span>
-
 
           </div>
 
 
-
           <CardTitle className="text-xl">
-
             היכרות עם סגנונות השקעה מרכזיים
-
           </CardTitle>
-
 
 
         </CardHeader>
 
 
 
-
-
         <CardContent>
-
 
           <div className="grid gap-5 md:grid-cols-2">
 
 
-
             {STRATEGIES.map((strategy)=>(
-
 
               <div
 
@@ -109,16 +95,11 @@ export function StrategiesCard(){
               >
 
 
-
                 <div className="mb-3 flex items-center justify-between">
 
-
                   <h3 className="font-display text-lg font-bold">
-
                     {strategy.name}
-
                   </h3>
-
 
 
                   <span
@@ -137,14 +118,10 @@ export function StrategiesCard(){
 
                     סיכון {strategy.riskLevel}/10
 
-
                   </span>
 
 
-
                 </div>
-
-
 
 
 
@@ -156,14 +133,10 @@ export function StrategiesCard(){
 
 
 
-
-
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
 
 
-
                   <div>
-
 
                     <p className="mb-2 flex items-center gap-1 text-sm font-bold text-green-400">
 
@@ -174,12 +147,9 @@ export function StrategiesCard(){
                     </p>
 
 
-
                     <ul className="space-y-2">
 
-
                       {strategy.pros.map((item)=>(
-
 
                         <li
 
@@ -216,10 +186,7 @@ export function StrategiesCard(){
                     </ul>
 
 
-
                   </div>
-
-
 
 
 
@@ -235,8 +202,6 @@ export function StrategiesCard(){
                       חסרונות
 
                     </p>
-
-
 
 
                     <ul className="space-y-2">
@@ -259,7 +224,6 @@ export function StrategiesCard(){
 
                         >
 
-
                           <X
 
                             className="
@@ -279,23 +243,16 @@ export function StrategiesCard(){
                         </li>
 
 
-
                       ))}
-
 
 
                     </ul>
 
 
-
                   </div>
 
 
-
-
                 </div>
-
-
 
 
 
@@ -319,15 +276,10 @@ export function StrategiesCard(){
                     {strategy.suitableFor}
 
 
-
                   </p>
 
 
-
                 </div>
-
-
-
 
 
 
@@ -350,7 +302,6 @@ export function StrategiesCard(){
 
 
                   </p>
-
 
 
 
@@ -383,13 +334,10 @@ export function StrategiesCard(){
                       </span>
 
 
-
                     ))}
 
 
-
                   </div>
-
 
 
                 </div>
@@ -397,31 +345,24 @@ export function StrategiesCard(){
 
 
 
-
               </div>
-
 
 
             ))}
 
 
-
           </div>
-
 
 
         </CardContent>
 
 
-
       </Card>
-
 
 
     </motion.div>
 
 
   );
-
 
 }
