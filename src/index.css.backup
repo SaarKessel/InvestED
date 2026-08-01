@@ -1,0 +1,111 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 158 64% 40%;
+
+    --primary: 158 64% 40%;
+    --primary-foreground: 0 0% 100%;
+
+    --accent: 210 40% 96%;
+    --accent-foreground: 222 47% 11%;
+
+    --radius: 1rem;
+  }
+
+  .dark {
+    --background: 222 47% 6%;
+    --foreground: 210 40% 96%;
+
+    --card: 220 42% 9%;
+    --card-foreground: 210 40% 96%;
+
+    --muted: 217 33% 14%;
+    --muted-foreground: 215 20% 65%;
+
+    --border: 217 33% 18%;
+    --input: 217 33% 18%;
+    --ring: 158 64% 45%;
+
+    --primary: 158 64% 45%;
+    --primary-foreground: 220 47% 8%;
+
+    --accent: 217 33% 16%;
+    --accent-foreground: 210 40% 96%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "ss01", "ss02";
+  }
+
+  /* scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.4);
+  }
+}
+
+@layer utilities {
+  .skeleton {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 25%,
+      hsl(var(--accent)) 37%,
+      hsl(var(--muted)) 63%
+    );
+    background-size: 400% 100%;
+    animation: shimmer 1.6s ease infinite;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .gradient-brand {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, #3ecfff 100%);
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, #3ecfff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .bg-grid {
+    background-image: radial-gradient(hsl(var(--border)) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+}
