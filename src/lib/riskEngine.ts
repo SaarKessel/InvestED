@@ -33,12 +33,13 @@ const RISK_KEYWORDS = {
 
 
   high:[
-    "׳׳•׳›׳ ׳׳”׳×׳׳•׳“׳“ ׳¢׳ ׳×׳ ׳•׳“׳×׳™׳•׳×",
-    "׳¦׳׳™׳—׳”",
-    "growth",
-    "high risk",
-    "׳׳’׳¨׳¡׳™׳‘׳™"
-  ],
+  "מוכן לסיכון גבוה",
+  "סיכון גבוה",
+  "צמיחה",
+  "אגרסיבי",
+  "growth",
+  "high risk"
+],
 
 
   very_high:[
@@ -55,35 +56,32 @@ const RISK_KEYWORDS = {
 const HORIZON_KEYWORDS = {
 
   long:[
-    "׳˜׳•׳•׳— ׳׳¨׳•׳",
-    "׳׳˜׳•׳•׳— ׳׳¨׳•׳",
-    "30 ׳©׳ ׳”",
-    "20 ׳©׳ ׳”",
-    "10 ׳©׳ ׳™׳",
-    "׳¢׳¦׳׳׳•׳× ׳›׳׳›׳׳™׳×",
-    "׳₪׳¨׳™׳©׳”",
-    "׳₪׳ ׳¡׳™׳”",
+    "טווח ארוך",
+    "לטווח ארוך",
+    "30 שנה",
+    "20 שנה",
+    "10 שנים",
+    "עצמאות כלכלית",
+    "פרישה",
+    "פנסיה",
     "long term"
   ],
 
-
   medium:[
-    "5 ׳©׳ ׳™׳",
-    "׳‘׳™׳ ׳•׳ ׳™",
+    "5 שנים",
+    "בינוני",
     "medium term"
   ],
 
-
   short:[
-    "׳©׳ ׳×׳™׳™׳",
-    "׳©׳ ׳”",
-    "׳¦׳¨׳™׳ ׳׳× ׳”׳›׳¡׳£ ׳‘׳§׳¨׳•׳‘",
-    "׳‘׳˜׳•׳•׳— ׳”׳§׳¦׳¨",
+    "שנתיים",
+    "שנה",
+    "צריך את הכסף בקרוב",
+    "טווח קצר",
     "short term"
   ]
 
 } as const;
-
 
 
 function containsAny(
@@ -203,7 +201,7 @@ export function extractProfileFlags(
   if(
     text.includes("׳׳×׳—׳™׳") ||
     text.includes("׳׳™׳ ׳׳™ ׳™׳“׳¢") ||
-    text.includes("beginner")
+    text.includes("beginner") || text.includes("אין לי ניסיון") || text.includes("ללא ניסיון") || text.includes("חדש בשוק ההון") || text.includes("מתחיל")
   ){
 
     knowledgeLevel =
@@ -216,7 +214,7 @@ export function extractProfileFlags(
     text.includes("׳‘׳™׳ ׳•׳ ׳™") ||
     text.includes("׳‘׳™׳ ׳•׳ ׳™׳×") ||
     text.includes("׳™׳“׳¢ ׳‘׳™׳ ׳•׳ ׳™") ||
-    text.includes("some") ||
+    text.includes("some") || text.includes("ידע בינוני") || text.includes("כמה שנים") || text.includes("משקיע כבר") || text.includes("ניסיון בינוני") ||
     text.includes("intermediate")
   ){
 
@@ -229,7 +227,7 @@ export function extractProfileFlags(
   if(
     text.includes("׳ ׳™׳¡׳™׳•׳") ||
     text.includes("׳׳ ׳•׳¡׳”") ||
-    text.includes("experienced")
+    text.includes("experienced") || text.includes("מנוסה") || text.includes("ותיק") || text.includes("10 שנים") || text.includes("עשור")
   ){
 
     knowledgeLevel =
@@ -238,62 +236,58 @@ export function extractProfileFlags(
   }
 
 
-
-  const interests:InterestArea[] = [];
-
+const interests: InterestArea[] = [];
 
 
-  if(
-    text.includes("׳˜׳›׳ ׳•׳׳•׳’׳™׳”") ||
-    text.includes("tech")
-  ){
+if(
+  text.includes("טכנולוגיה") ||
+  text.includes("tech") ||
+  text.includes("technology")
+){
 
-    interests.push(
-      "׳˜׳›׳ ׳•׳׳•׳’׳™׳”" as InterestArea
-    );
+  interests.push(
+    "טכנולוגיה" as InterestArea
+  );
 
-  }
-
-
-
-  if(
-    text.includes("׳₪׳™׳ ׳ ׳¡׳™׳") ||
-    text.includes("finance")
-  ){
-
-    interests.push(
-      "׳₪׳™׳ ׳ ׳¡׳™׳" as InterestArea
-    );
-
-  }
+}
 
 
+if(
+  text.includes("פיננסים") ||
+  text.includes("finance") ||
+  text.includes("bank")
+){
 
-  if(
-    text.includes("׳׳ ׳¨׳’׳™׳”") ||
-    text.includes("energy")
-  ){
+  interests.push(
+    "פיננסים" as InterestArea
+  );
 
-    interests.push(
-      "׳׳ ׳¨׳’׳™׳”" as InterestArea
-    );
-
-  }
+}
 
 
+if(
+  text.includes("אנרגיה") ||
+  text.includes("energy")
+){
 
-  if(
-    text.includes("׳ ׳“׳׳") ||
-    text.includes("׳ ׳“׳\"׳") ||
-    text.includes("real estate")
-  ){
+  interests.push(
+    "אנרגיה" as InterestArea
+  );
 
-    interests.push(
-      "׳ ׳“׳\"׳" as InterestArea
-    );
+}
 
-  }
 
+if(
+  text.includes("נדלן") ||
+  text.includes("נדל״ן") ||
+  text.includes("real estate")
+){
+
+  interests.push(
+    "נדל״ן" as InterestArea
+  );
+
+}
 
 
   return {
@@ -488,58 +482,49 @@ export function classifyInvestor(
 // Explainability Engine
 // ------------------------------------------------------------
 
-
 export function buildExplainability(
-  flags:ProfileFlags,
-  classification:InvestorClassification,
-  score:number
-):string[] {
+  flags: ProfileFlags,
+  classification: InvestorClassification,
+  score: number
+): string[] {
 
-
-  const reasons:string[] = [];
-
-
+  const reasons: string[] = [];
 
   reasons.push(
-    `׳¡׳™׳•׳•׳’ ׳׳©׳§׳™׳¢: ${classification}`
+    `סיווג משקיע: ${classification.type}`
   );
-
 
   reasons.push(
-    `׳¦׳™׳•׳ ׳¡׳™׳›׳•׳: ${score}/10`
+    `הסבר: ${classification.reason}`
   );
 
-
+  reasons.push(
+    `ציון סיכון: ${score}/10`
+  );
 
   if(flags.riskLevel){
 
     reasons.push(
-      `׳”׳¢׳“׳₪׳× ׳¡׳™׳›׳•׳ ׳©׳–׳•׳”׳×׳”: ${flags.riskLevel}`
+      `העדפת סיכון שזוהתה: ${flags.riskLevel}`
     );
 
   }
-
-
 
   if(flags.horizon){
 
     reasons.push(
-      `׳׳•׳₪׳§ ׳”׳©׳§׳¢׳” ׳©׳–׳•׳”׳”: ${flags.horizon}`
+      `אופק השקעה שזוהה: ${flags.horizon}`
     );
 
   }
 
-
-
-  if(flags.age){
+  if(flags.age !== null){
 
     reasons.push(
-      `׳’׳™׳ ׳׳©׳×׳׳©: ${flags.age}`
+      `גיל משתמש: ${flags.age}`
     );
 
   }
-
-
 
   if(
     flags.interests &&
@@ -547,103 +532,79 @@ export function buildExplainability(
   ){
 
     reasons.push(
-      `׳×׳—׳•׳׳™ ׳¢׳ ׳™׳™׳: ${flags.interests.join(", ")}`
+      `תחומי עניין: ${flags.interests.join(", ")}`
     );
 
   }
-
-
 
   return reasons;
 
 }
 
-
 // ------------------------------------------------------------
 // Investment Strategy Recommendation Engine
 // ------------------------------------------------------------
 
-
 export function recommendStrategies(
-  score:number,
-  flags:ProfileFlags
-):string[] {
+  score: number,
+  flags: ProfileFlags
+): string[] {
 
-
-  const strategies:string[] = [];
-
-
-  // Conservative profile
+  const strategies: string[] = [];
 
   if(score <= 3){
 
     strategies.push(
-      "׳”׳©׳§׳¢׳” ׳₪׳¡׳™׳‘׳™׳× ׳‘׳׳“׳“׳™׳ ׳¨׳—׳‘׳™׳",
-      "׳§׳¨׳ ׳•׳× ׳׳’׳´׳— ׳׳™׳›׳•׳×׳™׳•׳×",
-      "׳©׳׳™׳¨׳” ׳¢׳ ׳ ׳–׳™׳׳•׳× ׳’׳‘׳•׳”׳”"
+      "השקעה פסיבית במדדים רחבים",
+      "שילוב קרנות אג״ח איכותיות",
+      "שמירה על רמת נזילות גבוהה"
     );
 
   }
 
-
-
-  // Balanced profile
 
   if(score > 3 && score <= 6){
 
     strategies.push(
-      "׳”׳©׳§׳¢׳” ׳₪׳¡׳™׳‘׳™׳× ׳‘׳׳“׳“׳™׳",
-      "׳©׳™׳׳•׳‘ ׳׳ ׳™׳•׳× ׳•׳׳’׳´׳—",
-      "׳₪׳™׳–׳•׳¨ ׳‘׳™׳ ׳©׳•׳•׳§׳™׳ ׳©׳•׳ ׳™׳"
+      "השקעה פסיבית במדדים",
+      "שילוב מניות ואג״ח",
+      "פיזור בין שווקים שונים"
     );
 
   }
 
-
-
-  // Growth profile
 
   if(score > 6){
 
     strategies.push(
-      "׳”׳©׳§׳¢׳” ׳‘׳׳“׳“׳™ ׳׳ ׳™׳•׳×",
-      "׳—׳©׳™׳₪׳” ׳׳¡׳§׳˜׳•׳¨׳™ ׳¦׳׳™׳—׳”",
-      "׳”׳©׳§׳¢׳” ׳׳˜׳•׳•׳— ׳׳¨׳•׳"
+      "השקעה במדדי מניות",
+      "חשיפה לסקטורי צמיחה",
+      "השקעה לטווח ארוך"
     );
 
   }
-
-
-
-  // Interest based adjustment
 
 
   if(
-    flags.interests.includes(
-      "׳˜׳›׳ ׳•׳׳•׳’׳™׳”" as InterestArea
-    )
+    flags.interests.includes("טכנולוגיה" as InterestArea)
   ){
 
     strategies.push(
-      "׳—׳©׳™׳₪׳” ׳׳™׳׳•׳“׳™׳× ׳׳×׳—׳•׳ ׳”׳˜׳›׳ ׳•׳׳•׳’׳™׳”"
+      "למידה על תחום הטכנולוגיה והשפעתו על שוק ההון"
     );
 
   }
-
 
 
   if(
-    flags.interests.includes(
-      "׳₪׳™׳ ׳ ׳¡׳™׳" as InterestArea
-    )
+    flags.interests.includes("פיננסים" as InterestArea)
   ){
 
     strategies.push(
-      "׳׳¢׳§׳‘ ׳׳—׳¨ ׳¡׳§׳˜׳•׳¨ ׳₪׳™׳ ׳ ׳¡׳™"
+      "מעקב אחר סקטור הפיננסים"
     );
 
   }
-
 
 
   return strategies;
@@ -651,70 +612,65 @@ export function recommendStrategies(
 }
 
 
-
-
-
 // ------------------------------------------------------------
 // Learning Path Generator
 // ------------------------------------------------------------
-
-
 export function generateLearningPath(
-  flags:ProfileFlags
-):string[] {
+  flags: ProfileFlags
+): string[] {
+
+  const path: string[] = [];
 
 
-  const path:string[] = [];
-
-
-
-  if(
-    flags.knowledgeLevel === "beginner"
-  ){
+  if(flags.knowledgeLevel === "beginner"){
 
     path.push(
-      "׳”׳™׳›׳¨׳•׳× ׳¢׳ ׳׳ ׳™׳•׳×, ׳׳’׳´׳— ׳•׳§׳¨׳ ׳•׳× ׳¡׳",
-      "׳”׳‘׳ ׳× ׳׳•׳©׳’׳™ ׳¡׳™׳›׳•׳ ׳•׳×׳©׳•׳׳”",
-      "׳‘׳ ׳™׳™׳× ׳‘׳¡׳™׳¡ ׳₪׳™׳ ׳ ׳¡׳™"
+      "היכרות עם מניות, אג״ח וקרנות סל",
+      "הבנת מושגי סיכון ותשואה",
+      "בניית בסיס פיננסי אישי"
     );
 
   }
 
 
-
-  if(
-    flags.knowledgeLevel === "some"
-  ){
+  if(flags.knowledgeLevel === "some"){
 
     path.push(
-      "׳‘׳ ׳™׳™׳× ׳׳¡׳˜׳¨׳˜׳’׳™׳™׳× ׳”׳©׳§׳¢׳”",
-      "׳”׳§׳¦׳׳× ׳ ׳›׳¡׳™׳",
-      "׳₪׳™׳–׳•׳¨ ׳•׳ ׳™׳”׳•׳ ׳¡׳™׳›׳•׳ ׳™׳"
+      "בניית אסטרטגיית השקעה",
+      "הקצאת נכסים וניהול תיק",
+      "פיזור וניהול סיכונים"
     );
 
   }
 
 
-
-  if(
-    flags.knowledgeLevel === "experienced"
-  ){
+  if(flags.knowledgeLevel === "experienced"){
 
     path.push(
-      "׳ ׳™׳×׳•׳— ׳׳×׳§׳“׳ ׳©׳ ׳×׳™׳§ ׳”׳©׳§׳¢׳•׳×",
-      "׳׳“׳“׳™ ׳‘׳™׳¦׳•׳¢ ׳›׳׳• Sharpe ׳•-Beta",
-      "׳׳•׳₪׳˜׳™׳׳™׳–׳¦׳™׳™׳× ׳×׳™׳§"
+      "ניתוח מתקדם של תיק השקעות",
+      "מדדי ביצוע כמו Sharpe ו-Beta",
+      "אופטימיזציה של הקצאת נכסים"
     );
 
   }
 
+
+  // במקרה שלא זוהתה רמת ידע
+  if(path.length === 0){
+
+    path.push(
+      "בסיס פיננסי",
+      "היכרות עם שוק ההון",
+      "בניית אסטרטגיית השקעה",
+      "העמקה בניהול סיכונים"
+    );
+
+  }
 
 
   return path;
 
 }
-
-
 
 // ------------------------------------------------------------
 // Portfolio Style Explanation
@@ -782,3 +738,9 @@ export function horizonExplanation(
 
   return "אופק השקעה בינוני מאפשר שילוב בין צמיחה לבין ניהול סיכון.";
 }
+
+
+
+
+
+
