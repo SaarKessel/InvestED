@@ -16,35 +16,37 @@
 const RISK_KEYWORDS = {
 
   very_low:[
-    "׳׳ ׳׳•׳”׳‘ ׳¡׳™׳›׳•׳",
-    "׳©׳•׳׳¨ ׳¢׳ ׳”׳”׳•׳",
-    "׳¡׳•׳׳™׳“׳™",
+    "שמרני",
+    "סיכון נמוך",
+    "שמירת הון",
+    "יציבות",
     "conservative",
     "low risk"
   ],
 
 
   moderate:[
-    "׳׳׳•׳–׳",
-    "׳¡׳™׳›׳•׳ ׳‘׳™׳ ׳•׳ ׳™",
-    "moderate",
-    "balanced"
+    "מאוזן",
+    "סיכון בינוני",
+    "balanced",
+    "moderate"
   ],
 
 
   high:[
-  "מוכן לסיכון גבוה",
-  "סיכון גבוה",
-  "צמיחה",
-  "אגרסיבי",
-  "growth",
-  "high risk"
-],
+    "מוכן לסיכון גבוה",
+    "סיכון גבוה",
+    "צמיחה",
+    "אגרסיבי",
+    "growth",
+    "high risk"
+  ],
 
 
   very_high:[
-    "׳¡׳₪׳§׳•׳׳˜׳™׳‘׳™",
-    "׳׳¡׳—׳¨ ׳™׳•׳׳™",
+    "ספקולטיבי",
+    "מסחר יומי",
+    "סיכון קיצוני",
     "very aggressive",
     "very high risk"
   ]
@@ -196,45 +198,45 @@ export function extractProfileFlags(
   let knowledgeLevel:
     ProfileFlags["knowledgeLevel"] = null;
 
+if(
+  text.includes("מתחיל") ||
+  text.includes("חדש בשוק ההון") ||
+  text.includes("אין לי ניסיון") ||
+  text.includes("ללא ניסיון") ||
+  text.includes("beginner")
+){
+
+  knowledgeLevel =
+    "beginner";
+
+}
 
 
-  if(
-    text.includes("׳׳×׳—׳™׳") ||
-    text.includes("׳׳™׳ ׳׳™ ׳™׳“׳¢") ||
-    text.includes("beginner") || text.includes("אין לי ניסיון") || text.includes("ללא ניסיון") || text.includes("חדש בשוק ההון") || text.includes("מתחיל")
-  ){
+if(
+  text.includes("ידע בינוני") ||
+  text.includes("ניסיון בינוני") ||
+  text.includes("משקיע כבר") ||
+  text.includes("כמה שנים") ||
+  text.includes("intermediate")
+){
 
-    knowledgeLevel =
-      "beginner";
+  knowledgeLevel =
+    "some";
 
-  }
-
-
-  if(
-    text.includes("׳‘׳™׳ ׳•׳ ׳™") ||
-    text.includes("׳‘׳™׳ ׳•׳ ׳™׳×") ||
-    text.includes("׳™׳“׳¢ ׳‘׳™׳ ׳•׳ ׳™") ||
-    text.includes("some") || text.includes("ידע בינוני") || text.includes("כמה שנים") || text.includes("משקיע כבר") || text.includes("ניסיון בינוני") ||
-    text.includes("intermediate")
-  ){
-
-    knowledgeLevel =
-      "some";
-
-  }
+}
 
 
-  if(
-    text.includes("׳ ׳™׳¡׳™׳•׳") ||
-    text.includes("׳׳ ׳•׳¡׳”") ||
-    text.includes("experienced") || text.includes("מנוסה") || text.includes("ותיק") || text.includes("10 שנים") || text.includes("עשור")
-  ){
+if(
+  text.includes("מנוסה") ||
+  text.includes("ותיק") ||
+  text.includes("ניסיון רב") ||
+  text.includes("experienced")
+){
 
-    knowledgeLevel =
-      "experienced";
+  knowledgeLevel =
+    "experienced";
 
-  }
-
+}
 
 const interests: InterestArea[] = [];
 

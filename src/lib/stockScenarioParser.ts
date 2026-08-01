@@ -14,7 +14,7 @@ const ASSET_ALIASES: AssetAlias[] = [
   {
     symbol: "AAPL",
     label: "Apple",
-    aliases: ["apple", "aapl", "׳׳₪׳"],
+   aliases: ["apple", "aapl", "אפל"],
   },
   {
     symbol: "VOO",
@@ -25,8 +25,8 @@ const ASSET_ALIASES: AssetAlias[] = [
       "s&p 500",
       "s and p 500",
       "s&p",
-      "׳׳¡ ׳׳ ׳“ ׳₪׳™",
-      "׳׳¡ ׳׳ ׳“ ׳₪׳™ 500",
+      "סנופי",
+       "סנופי 500",
     ],
   },
   {
@@ -40,7 +40,7 @@ const ASSET_ALIASES: AssetAlias[] = [
     aliases: [
       "qqq",
       "nasdaq",
-      "׳ ׳׳¡׳“׳§",
+      "מדד",
     ],
   },
 ];
@@ -49,7 +49,7 @@ const DEFAULT_YEARS = 10;
 
 function extractYears(text: string): number | null {
   const match = text.match(
-    /(\d+)\s*(?:׳©׳ ׳™׳|׳©׳ ׳”|year|years|׳©׳ ')/i
+    /(\d+)\s*(?:שנים|שנה|year|years|ש׳)/i
   );
 
   if (!match) return null;
@@ -111,14 +111,14 @@ function parseAmount(
     const normalized = unit.toLowerCase();
 
     if (
-      normalized.includes("׳׳™׳׳™׳•׳") ||
+      normalized.includes("מיליון") ||
       normalized.includes("million")
     ) {
       amount *= 1_000_000;
     }
 
     if (
-      normalized.includes("׳׳׳£") ||
+      normalized.includes("אלף") ||
       normalized.includes("k")
     ) {
       amount *= 1_000;
@@ -133,11 +133,11 @@ function extractContribution(
 ): StockContributionPlan {
 
   const monthlyShares = text.match(
-    /(\d+)\s*(?:׳׳ ׳™׳•׳×|shares)/i
-  );
+  /(\d+)\s*(?:מניות|shares)/i
+);
 
-  const monthly =
-    /(?:׳›׳ ׳—׳•׳“׳©|׳‘׳—׳•׳“׳©|׳׳—׳•׳“׳©|monthly)/i.test(text);
+const monthly =
+  /(?:כל חודש|בחודש|לחודש|monthly)/i.test(text);
 
 
   if (monthly && monthlyShares) {
@@ -149,10 +149,10 @@ function extractContribution(
 
 
   const amounts = [
-    ...text.matchAll(
-      /(\d[\d,]*)\s*(׳׳׳£|k|׳׳™׳׳™׳•׳)?/gi
-    ),
-  ];
+  ...text.matchAll(
+    /(\d[\d,]*)\s*(אלף|k|מיליון)?/gi
+  ),
+];
 
   const values = amounts
     .map((match) =>
@@ -184,7 +184,7 @@ function detectMode(
 ): StockSimulationMode {
 
   const historicalWords =
-    /(?:׳׳₪׳ ׳™|׳‘׳¢׳‘׳¨|׳”׳™׳™׳×׳™ ׳׳©׳§׳™׳¢|׳׳ ׳”׳™׳™׳×׳™ ׳§׳•׳ ׳”|historical|backtest)/i;
+    /(?:לפני|בעבר|הייתי משקיע|אם הייתי קונה|historical|backtest)/i;
 
 
   return historicalWords.test(text)
@@ -209,10 +209,9 @@ function extractStartDate(
 
 
   const yearsAgo =
-    text.match(
-      /׳׳₪׳ ׳™\s+(\d+)\s+׳©׳ ׳™׳?/i
-    );
-
+  text.match(
+    /לפני\s+(\d+)\s+שנים?/i
+  );
 
   if (yearsAgo) {
     const date = new Date(now);
@@ -261,39 +260,37 @@ export function parseStockScenario(
 
 
   if (!asset.symbol) {
-    ambiguities.push(
-      "׳׳ ׳–׳•׳”׳” ׳ ׳›׳¡ ׳׳• ׳¡׳™׳׳•׳ ׳׳¡׳—׳¨."
-    );
-  }
+  ambiguities.push(
+    "לא זוהה נכס או סימול מסחר."
+  );
+}
 
 
-  if (!extractYears(text)) {
-    ambiguities.push(
-      "׳׳ ׳–׳•׳”׳” ׳׳•׳₪׳§ ׳–׳׳ ׳×׳§׳™׳."
-    );
-  }
+if (!extractYears(text)) {
+  ambiguities.push(
+    "לא זוהה אופק זמן תקין."
+  );
+}
 
 
-  if (
-    contribution.cadence === "one_time" &&
-    !contribution.initialInvestment
-  ) {
-    ambiguities.push(
-      "׳׳ ׳–׳•׳”׳” ׳¡׳›׳•׳ ׳”׳©׳§׳¢׳”."
-    );
-  }
+if (
+  contribution.cadence === "one_time" &&
+  !contribution.initialInvestment
+) {
+  ambiguities.push(
+    "לא זוהה סכום השקעה."
+  );
+}
 
 
-  if (
-    text.toLowerCase().includes("s&p") &&
-    asset.symbol === "VOO"
-  ) {
-    ambiguities.push(
-      "S&P 500 ׳–׳•׳”׳” ׳‘׳׳׳¦׳¢׳•׳× VOO ׳›׳₪׳¨׳•׳§׳¡׳™"
-    );
-  }
-
-
+if (
+  text.toLowerCase().includes("s&p") &&
+  asset.symbol === "VOO"
+) {
+  ambiguities.push(
+    "S&P 500 זוהה באמצעות VOO כפרוקסי"
+  );
+}
   return {
     rawText,
     symbol: asset.symbol,
@@ -307,4 +304,4 @@ export function parseStockScenario(
         : null,
     ambiguities,
   };
-}
+} 
