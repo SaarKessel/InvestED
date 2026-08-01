@@ -17,5 +17,3 @@ export function useTheme(): ThemeContextValue {
 
   return ctx;
 }
-
-export { ThemeProvider } from '@/context/themeContext';

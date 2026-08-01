@@ -1,4 +1,4 @@
-import type { InvestmentProfile } from "@/data/investmentModels";
+п»їimport type { InvestmentProfile } from "@/data/investmentModels";
 
 export function generateRecommendations(
   profile: InvestmentProfile
@@ -10,37 +10,38 @@ export function generateRecommendations(
   if (profile.years >= 10) {
 
     recommendations.push(
-      "аефч дщчтд ашек оафщш мдъочг бцойзд ашелъ иеез."
+      "пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ."
     );
 
   }
 
 
-  if (profile.risk === "Aggressive" || profile.risk === "High") {
+  if (profile.risk === "Growth") {
 
     recommendations.push(
-      "сйбемъ дсйлеп оафщшъ зщйфд вбедд йеъш мрлсй цойзд."
+      "пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ."
     );
 
   }
 
 
   if (
-    profile.interests?.includes("илремевйд")
+    false
   ) {
 
     recommendations.push(
-      "рйъп мщчем зщйфд обечшъ мсчиеш дилремевйд."
+      "пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ."
     );
 
   }
 
 
   recommendations.push(
-    "дъогд едщчтд тчбйъ дп вешн ошлжй ббрййъ деп."
+    "пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ."
   );
 
 
   return recommendations;
 
 }
+

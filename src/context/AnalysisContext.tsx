@@ -1,92 +1,72 @@
-import { useMemo, useState, type ReactNode } from "react";
-import { AnalysisContext, type AnalysisContextValue } from "./analysisContext";
-import type { AnalysisResult } from "@/types";
-import {
-  buildRuleBasedAnalysis,
-  tryEnhanceWithOllama,
-} from "@/lib/analysisService";
+﻿import { createContext, useContext } from "react";
+
+export interface AnalysisContextValue {
+
+  profile: any;
+  setProfile: (value:any)=>void;
+
+  result:any;
+
+  analyze:(data:any)=>Promise<void>;
+
+  reset:()=>void;
+
+  isAnalyzing:boolean;
+
+}
+
+
+export const AnalysisContext =
+createContext<AnalysisContextValue | undefined>(undefined);
+
 
 
 export function AnalysisProvider({
-  children,
-}: {
-  children: ReactNode;
-}) {
-
-  const [result, setResult] = useState<AnalysisResult | null>(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+ children
+}:{
+ children:React.ReactNode;
+}){
 
 
-  const value = useMemo<AnalysisContextValue>(
-    () => ({
-      result,
-      isAnalyzing,
-      error,
+const value:AnalysisContextValue={
 
-      analyze: async (profileText: string) => {
+ profile:null,
 
-        setError(null);
-        setIsAnalyzing(true);
+ setProfile:()=>{},
 
-        try {
+ result:null,
 
-          const ruleBasedResult =
-            buildRuleBasedAnalysis(profileText);
+ analyze:async()=>{},
 
-          setResult(ruleBasedResult);
-          setIsAnalyzing(false);
+ reset:()=>{},
+
+ isAnalyzing:false,
+
+};
 
 
-          tryEnhanceWithOllama(ruleBasedResult)
-            .then((enhancedNarration) => {
+return (
 
-              if (enhancedNarration) {
+<AnalysisContext.Provider value={value}>
+{children}
+</AnalysisContext.Provider>
 
-                setResult((current) =>
-                  current &&
-                  current.profileText === profileText
-                    ? {
-                        ...current,
-                        aiNarration: enhancedNarration,
-                      }
-                    : current
-                );
+);
 
-              }
-
-            })
-            .catch(() => {});
-
-        } catch (e) {
-
-          setError(
-            "משהו השתבש בניתוח הפרופיל. נסה שוב."
-          );
-
-          setIsAnalyzing(false);
-
-          console.error(e);
-
-        }
-
-      },
-
-      reset: () => setResult(null),
-
-    }),
-    [
-      result,
-      isAnalyzing,
-      error,
-    ]
-  );
+}
 
 
-  return (
-    <AnalysisContext.Provider value={value}>
-      {children}
-    </AnalysisContext.Provider>
-  );
+
+export function useAnalysisContext(){
+
+const ctx=useContext(AnalysisContext);
+
+if(!ctx){
+throw new Error(
+"useAnalysisContext must be inside provider"
+);
+}
+
+return ctx;
 
 }

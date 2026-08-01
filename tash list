@@ -1,0 +1,20 @@
+[33maa8e70d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfix-mojibake-hebrew[m[33m)[m HEAD@{0}: reset: moving to HEAD
+[33m7e25ca9[m[33m ([m[1;35mrefs/stash[m[33m)[m refs/stash@{0}: On fix-mojibake-hebrew: before restore attempt
+[33maa8e70d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfix-mojibake-hebrew[m[33m)[m refs/heads/fix-mojibake-hebrew@{0}: commit: Remove unused source dump file
+[33maa8e70d[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mfix-mojibake-hebrew[m[33m)[m HEAD@{1}: commit: Remove unused source dump file
+[33mbdd79b0[m refs/heads/fix-mojibake-hebrew@{1}: commit: Complete TypeScript cleanup and eslint fixes
+[33mbdd79b0[m HEAD@{2}: commit: Complete TypeScript cleanup and eslint fixes
+[33m0eec744[m refs/heads/fix-mojibake-hebrew@{2}: commit: Finalize Hebrew cleanup in stock simulator
+[33m0eec744[m HEAD@{3}: commit: Finalize Hebrew cleanup in stock simulator
+[33m7f5b1e1[m refs/heads/fix-mojibake-hebrew@{3}: commit: Fix remaining Hebrew encoding issues in brokers and tests
+[33m7f5b1e1[m HEAD@{4}: commit: Fix remaining Hebrew encoding issues in brokers and tests
+[33m518acf2[m refs/heads/fix-mojibake-hebrew@{4}: commit: Fix Hebrew mojibake in stock simulator UI
+[33m518acf2[m HEAD@{5}: commit: Fix Hebrew mojibake in stock simulator UI
+[33m87f79c5[m refs/heads/fix-mojibake-hebrew@{5}: commit: Fix Hebrew mojibake in risk and stock parsers
+[33m87f79c5[m HEAD@{6}: commit: Fix Hebrew mojibake in risk and stock parsers
+[33me9bffb3[m[33m ([m[1;32mmaster[m[33m, [m[1;32mencoding-cleanup[m[33m)[m refs/heads/fix-mojibake-hebrew@{6}: branch: Created from HEAD
+[33me9bffb3[m[33m ([m[1;32mmaster[m[33m, [m[1;32mencoding-cleanup[m[33m)[m HEAD@{7}: checkout: moving from encoding-cleanup to fix-mojibake-hebrew
+[33me9bffb3[m[33m ([m[1;32mmaster[m[33m, [m[1;32mencoding-cleanup[m[33m)[m refs/heads/encoding-cleanup@{0}: branch: Created from HEAD
+[33me9bffb3[m[33m ([m[1;32mmaster[m[33m, [m[1;32mencoding-cleanup[m[33m)[m HEAD@{8}: checkout: moving from master to encoding-cleanup
+[33me9bffb3[m[33m ([m[1;32mmaster[m[33m, [m[1;32mencoding-cleanup[m[33m)[m refs/heads/master@{0}: commit: upgrade UI primitives premium design
+[33me9bffb3[m[33m ([m[1;32mmaster[m[33m, [m[1;32mencoding-cleanup[m[33m)[m HEAD@{9}: commit: upgrade UI primitives premium design
