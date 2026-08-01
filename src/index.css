@@ -1,4 +1,4 @@
-﻿@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap');
+﻿@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -8,27 +8,30 @@
 
   :root {
 
-    --background: 210 40% 98%;
+    --background: 220 25% 98%;
     --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
     --card-foreground: 222 47% 11%;
 
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+
+    --primary: 158 64% 40%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 199 89% 48%;
+    --secondary-foreground: 0 0% 100%;
+
     --muted: 210 40% 96%;
     --muted-foreground: 215 16% 47%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-
-    /* InvestED Brand */
-    --primary: 221 83% 53%;
-    --primary-foreground: 0 0% 100%;
-
-    /* AI Accent */
-    --accent: 250 95% 95%;
+    --accent: 199 89% 96%;
     --accent-foreground: 222 47% 11%;
 
-    --ring: 221 83% 53%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 158 64% 40%;
 
     --radius: 1rem;
   }
@@ -39,22 +42,28 @@
     --background: 222 47% 6%;
     --foreground: 210 40% 96%;
 
-    --card: 222 47% 9%;
+    --card: 222 40% 10%;
     --card-foreground: 210 40% 96%;
+
+    --popover: 222 40% 10%;
+    --popover-foreground: 210 40% 96%;
+
+    --primary: 158 64% 45%;
+    --primary-foreground: 222 47% 8%;
+
+    --secondary: 199 89% 55%;
+    --secondary-foreground: 222 47% 8%;
 
     --muted: 217 33% 14%;
     --muted-foreground: 215 20% 65%;
 
-    --border: 217 33% 18%;
-    --input: 217 33% 18%;
-
-    --primary: 217 91% 60%;
-    --primary-foreground: 222 47% 8%;
-
-    --accent: 250 40% 20%;
+    --accent: 217 33% 16%;
     --accent-foreground: 210 40% 96%;
 
-    --ring: 217 91% 60%;
+    --border: 217 33% 20%;
+    --input: 217 33% 20%;
+
+    --ring: 158 64% 45%;
   }
 
 
@@ -72,102 +81,62 @@
 
     @apply bg-background text-foreground antialiased;
 
-    font-family: 'Heebo', sans-serif;
-
-    font-feature-settings:
-      "ss01",
-      "ss02";
+    font-family:
+      "Heebo",
+      sans-serif;
   }
 
 
-  ::-webkit-scrollbar {
+  h1,
+  h2,
+  h3,
+  h4 {
 
-    width:10px;
-    height:10px;
+    font-family:
+      "Heebo",
+      sans-serif;
 
+    letter-spacing:
+      -0.03em;
   }
 
 
-  ::-webkit-scrollbar-track {
+  ::selection {
 
-    background:transparent;
+    background:
+      hsl(var(--primary));
 
-  }
-
-
-  ::-webkit-scrollbar-thumb {
-
-    background:hsl(var(--border));
-
-    border-radius:999px;
-
-  }
-
-
-  ::-webkit-scrollbar-thumb:hover {
-
-    background:hsl(var(--muted-foreground) / 0.4);
-
+    color:white;
   }
 
 }
 
 
-
 @layer utilities {
-
-
-  .skeleton {
-
-    background:
-      linear-gradient(
-        90deg,
-        hsl(var(--muted)) 25%,
-        hsl(var(--accent)) 37%,
-        hsl(var(--muted)) 63%
-      );
-
-    background-size:400% 100%;
-
-    animation:
-      shimmer 1.6s ease infinite;
-
-  }
-
-
-
-  .text-balance {
-
-    text-wrap:balance;
-
-  }
-
 
 
   .gradient-brand {
 
     background:
-      linear-gradient(
-        135deg,
-        hsl(var(--primary)),
-        #8b5cf6
-      );
+    linear-gradient(
+      135deg,
+      hsl(var(--primary)),
+      hsl(var(--secondary))
+    );
 
   }
-
 
 
   .gradient-text {
 
     background:
-      linear-gradient(
-        135deg,
-        hsl(var(--primary)),
-        #8b5cf6
-      );
+    linear-gradient(
+      135deg,
+      hsl(var(--primary)),
+      hsl(var(--secondary))
+    );
 
     -webkit-background-clip:text;
-
     background-clip:text;
 
     color:transparent;
@@ -175,30 +144,38 @@
   }
 
 
+  .card-premium {
+
+    background:
+    linear-gradient(
+      145deg,
+      hsl(var(--card)),
+      hsl(var(--muted))
+    );
+
+
+    border:
+    1px solid hsl(var(--border));
+
+
+    box-shadow:
+    0 20px 40px rgba(0,0,0,.08);
+
+  }
+
 
   .bg-grid {
 
     background-image:
-      radial-gradient(
-        hsl(var(--border)) 1px,
-        transparent 1px
-      );
-
-    background-size:24px 24px;
-
-  }
+    radial-gradient(
+      hsl(var(--border)) 1px,
+      transparent 1px
+    );
 
 
-
-  .card-premium {
-
-    @apply rounded-2xl border bg-card;
-
-    box-shadow:
-      0 10px 30px rgba(15,23,42,0.08);
+    background-size:
+    24px 24px;
 
   }
-
 
 }
-
