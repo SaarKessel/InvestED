@@ -36,7 +36,6 @@ export function StockSimulator() {
   const [error, setError] = useState("");
 
 
-
   async function handleAnalyze() {
 
     try {
@@ -46,23 +45,17 @@ export function StockSimulator() {
       setResult(null);
 
 
-      const scenario =
-        parseStockScenario(query);
-
+      const scenario = parseStockScenario(query);
 
 
       if (!scenario.symbol) {
         throw new Error(
-          "׳׳ ׳–׳•׳”׳” ׳¡׳™׳׳•׳ ׳׳ ׳™׳”"
+          "לא זוהה סימול מניה"
         );
       }
 
 
-
-      if (
-        scenario.mode === "historical"
-      ) {
-
+      if (scenario.mode === "historical") {
 
         const market =
           await fetchMarketAssetBySymbol(
@@ -71,28 +64,31 @@ export function StockSimulator() {
             "1mo"
           );
 
-if (!market) {
-  throw new Error("Stock data not found");
-}
+
+        if (!market) {
+          throw new Error(
+            "לא נמצאו נתוני מניה"
+          );
+        }
+
 
         const simulation =
           simulateHistoricalInvestment({
 
-            symbol:
-              scenario.symbol,
+            symbol: scenario.symbol,
 
-           prices:
-  market.history.map(
-   (p: { date: string; price: number }) => ({
-      date: p.date,
-      price: p.price,
-    })
-  ),
+            prices:
+              market.history.map(
+                (p: { date: string; price: number }) => ({
+                  date: p.date,
+                  price: p.price,
+                })
+              ),
+
             contribution:
               scenario.contribution,
 
           });
-
 
 
         setResult(simulation);
@@ -104,8 +100,7 @@ if (!market) {
         const projection =
           projectStockInvestment({
 
-            symbol:
-              scenario.symbol,
+            symbol: scenario.symbol,
 
             years:
               scenario.years ?? 10,
@@ -132,8 +127,9 @@ if (!market) {
       setError(
         err instanceof Error
           ? err.message
-          : "׳©׳’׳™׳׳” ׳‘׳—׳™׳©׳•׳‘"
+          : "שגיאה בחישוב"
       );
+
 
     } finally {
 
@@ -157,7 +153,7 @@ if (!market) {
           <TrendingUp className="h-5 w-5 text-primary"/>
 
           <h2 className="font-bold text-lg">
-            ׳¡׳™׳׳•׳׳˜׳•׳¨ ׳”׳©׳§׳¢׳•׳× ׳׳ ׳™׳•׳×
+            סימולטור השקעות מניות
           </h2>
 
         </div>
@@ -168,12 +164,12 @@ if (!market) {
 
           value={query}
 
-          onChange={(e)=>
+          onChange={(e) =>
             setQuery(e.target.value)
           }
 
           placeholder=
-          "׳׳“׳•׳’׳׳”: ׳׳ ׳”׳™׳™׳×׳™ ׳׳©׳§׳™׳¢ 100 ׳׳׳£ ׳©׳§׳ ׳‘-VOO ׳׳₪׳ ׳™ 10 ׳©׳ ׳™׳"
+          "לדוגמה: אם הייתי משקיע 100 אלף שקל ב-VOO לפני 10 שנים"
 
           rows={3}
 
@@ -202,8 +198,8 @@ if (!market) {
           <Calculator className="h-4 w-4"/>
 
           {loading
-            ? "׳׳—׳©׳‘..."
-            : "׳—׳©׳‘ ׳¡׳™׳׳•׳׳¦׳™׳”"
+            ? "מחשב..."
+            : "חשב סימולציה"
           }
 
         </Button>
@@ -255,12 +251,12 @@ if (!market) {
               ">
 
                 <p className="text-xs text-muted-foreground">
-                  ׳”׳©׳§׳¢׳”
+                  השקעה
                 </p>
 
                 <p className="text-xl font-bold">
 
-                  ג‚×
+                  ₪
                   {(
                     result.invested ??
                     result.contributed ??
@@ -278,12 +274,12 @@ if (!market) {
               ">
 
                 <p className="text-xs text-muted-foreground">
-                  ׳©׳•׳•׳™ ׳¡׳•׳₪׳™
+                  שווי סופי
                 </p>
 
                 <p className="text-xl font-bold text-primary">
 
-                  ג‚×
+                  ₪
                   {(
                     result.finalValue ??
                     result.projectedValue ??
@@ -296,7 +292,6 @@ if (!market) {
 
 
             </div>
-
 
 
 
@@ -319,12 +314,15 @@ if (!market) {
                       strokeDasharray="3 3"
                     />
 
+
                     <XAxis
+
                       dataKey={
                         result.series[0]?.date
                           ? "date"
                           : "month"
                       }
+
                     />
 
 
