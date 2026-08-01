@@ -42,11 +42,23 @@ export function InputPage() {
   const { analyze, isAnalyzing } = useAnalysis();
   const navigate = useNavigate();
 
-  const handleSubmit = async () => {
-    if (!text.trim()) return;
+const handleSubmit = async () => {
+  if (!text.trim()) return;
+
+  console.log("1 - button clicked");
+
+  try {
     await analyze(text.trim());
+
+    console.log("2 - analyze finished");
+
     navigate("/dashboard");
-  };
+
+    console.log("3 - navigation called");
+  } catch (error) {
+    console.error("ANALYZE ERROR:", error);
+  }
+};
 
   const addChip = (chip: string) => setText((t) => (t ? `${t}\n${chip}.` : `${chip}.`));
 

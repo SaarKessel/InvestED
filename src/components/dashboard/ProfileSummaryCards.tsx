@@ -5,6 +5,7 @@ import {
   Clock,
   Sparkles,
   ShieldCheck,
+  TrendingUp,
 } from "lucide-react";
 
 import type {
@@ -32,13 +33,17 @@ const fadeUp = {
 };
 
 
+
 const INTEREST_ICONS: Record<InterestArea,string> = {
+
   "טכנולוגיה":"💻",
   "פיננסים":"💰",
   "בריאות":"🩺",
   "אנרגיה":"⚡",
   "נדל\"ן":"🏢",
+
 };
+
 
 
 function getHorizonLabel(horizon:string){
@@ -62,7 +67,21 @@ function getHorizonLabel(horizon:string){
 }
 
 
-export function WelcomeCard({result}:{result:AnalysisResult}){
+
+
+const cardStyle =
+"h-full border-border transition-all duration-300 hover:-translate-y-1 hover:shadow-lg";
+
+
+
+
+
+export function WelcomeCard({
+  result
+}:{
+  result:AnalysisResult
+}){
+
 
 return (
 
@@ -72,9 +91,12 @@ initial="hidden"
 animate="show"
 >
 
-<Card className="overflow-hidden border-[#1E3A5F]">
 
-<div className="bg-gradient-to-br from-[#0D1B2A] to-[#102A43] p-6 text-white">
+<Card className="overflow-hidden border-[#1E3A5F] shadow-md">
+
+
+<div className="bg-gradient-to-br from-[#0D1B2A] via-[#102A43] to-[#1E3A5F] p-6 text-white">
+
 
 <div className="inline-flex items-center gap-2 rounded-full bg-emerald-400/20 px-3 py-1 text-xs font-bold text-emerald-300">
 
@@ -84,35 +106,56 @@ AI Investor Profile
 
 </div>
 
+
+
 <h2 className="mt-4 text-2xl font-extrabold">
+
 הפרופיל הפיננסי שלך מוכן 🚀
+
 </h2>
 
+
+
 <p className="mt-3 max-w-xl text-sm leading-7 text-slate-200">
+
 InvestED ניתח את הנתונים שלך ובנה תמונת מצב אישית:
 סגנון השקעה, רמת סיכון, אופק השקעה ותובנות פעולה.
+
 </p>
+
 
 </div>
 
 
-<CardContent className="pt-5">
 
-<p className="text-sm italic leading-7 text-muted-foreground">
+
+<CardContent className="space-y-4 pt-6">
+
+
+<p className="rounded-xl bg-muted p-4 text-sm italic leading-7">
+
 "{result.profileText}"
+
 </p>
+
+
 
 {result.aiNarration?.profileSummary &&
 
-<p className="mt-4 rounded-xl bg-muted p-4 text-sm leading-7">
+<div className="rounded-xl border bg-gradient-to-r from-blue-50 to-white p-4 text-sm leading-7">
+
 🤖 {result.aiNarration.profileSummary}
-</p>
+
+</div>
 
 }
 
+
 </CardContent>
 
+
 </Card>
+
 
 </motion.div>
 
@@ -121,37 +164,68 @@ InvestED ניתח את הנתונים שלך ובנה תמונת מצב אישי
 }
 
 
-export function InvestorTypeCard({result}:{result:AnalysisResult}){
+
+
+
+
+
+
+export function InvestorTypeCard({
+result
+}:{
+result:AnalysisResult
+}){
+
 
 return (
 
-<Card className="h-full border-[#1E3A5F]">
+<Card className={cardStyle}>
+
 
 <CardHeader>
 
+
 <div className="flex items-center gap-2 text-primary">
 
-<Target className="h-4 w-4"/>
+<Target className="h-5 w-5"/>
 
 <span className="text-xs font-bold">
+
 סוג המשקיע
+
 </span>
 
 </div>
 
-<CardTitle className="text-2xl">
+
+
+<CardTitle className="mt-2 text-2xl font-extrabold">
+
 {result.investor.type}
+
 </CardTitle>
+
 
 </CardHeader>
 
+
+
 <CardContent>
 
+
+<div className="rounded-xl bg-blue-50 p-4">
+
 <p className="text-sm leading-7 text-muted-foreground">
+
 {result.investor.reason}
+
 </p>
 
+</div>
+
+
 </CardContent>
+
 
 </Card>
 
@@ -160,37 +234,73 @@ return (
 }
 
 
-export function RiskScoreCard({result}:{result:AnalysisResult}){
+
+
+
+
+
+
+export function RiskScoreCard({
+result
+}:{
+result:AnalysisResult
+}){
+
 
 return (
 
-<Card className="h-full border-[#1E3A5F]">
+<Card className={cardStyle}>
+
 
 <CardHeader>
 
+
 <div className="flex items-center gap-2 text-primary">
 
-<ShieldCheck className="h-4 w-4"/>
+<ShieldCheck className="h-5 w-5"/>
 
 <span className="text-xs font-bold">
+
 רמת סיכון
+
 </span>
 
 </div>
 
-<CardTitle className="text-2xl">
+
+
+<CardTitle className="mt-2 text-3xl font-extrabold">
+
 {result.riskScore}/10
+
 </CardTitle>
+
 
 </CardHeader>
 
+
+
 <CardContent>
 
+
+<div className="flex items-center gap-2 rounded-xl bg-amber-50 p-4">
+
+
+<TrendingUp className="h-5 w-5 text-amber-600"/>
+
+
 <p className="text-sm leading-7 text-muted-foreground">
+
 {result.riskDescription?.volatility}
+
 </p>
 
+
+</div>
+
+
 </CardContent>
+
 
 </Card>
 
@@ -199,38 +309,64 @@ return (
 }
 
 
-export function HorizonCard({result}:{result:AnalysisResult}){
+
+
+
+
+
+
+export function HorizonCard({
+result
+}:{
+result:AnalysisResult
+}){
+
 
 return (
 
-<Card className="h-full border-[#1E3A5F]">
+<Card className={cardStyle}>
+
 
 <CardHeader>
+
 
 <div className="flex items-center gap-2 text-primary">
 
-<Clock className="h-4 w-4"/>
+<Clock className="h-5 w-5"/>
 
 <span className="text-xs font-bold">
+
 אופק השקעה
+
 </span>
 
 </div>
 
-<CardTitle className="text-2xl">
+
+
+<CardTitle className="mt-2 text-2xl font-extrabold">
+
 {getHorizonLabel(result.horizon)}
+
 </CardTitle>
+
 
 </CardHeader>
 
 
+
 <CardContent>
 
-<p className="text-sm leading-7 text-muted-foreground">
+
+<p className="rounded-xl bg-muted p-4 text-sm leading-7 text-muted-foreground">
+
 {result.horizonExplanation}
+
 </p>
 
+
 </CardContent>
+
 
 </Card>
 
@@ -239,53 +375,87 @@ return (
 }
 
 
-export function InterestsCard({result}:{result:AnalysisResult}){
 
-const areas:InterestArea[] = result.flags.interests ?? [];
+
+
+
+
+
+export function InterestsCard({
+result
+}:{
+result:AnalysisResult
+}){
+
+
+const areas:InterestArea[] =
+result.flags.interests ?? [];
+
+
 
 return (
 
-<Card className="border-[#1E3A5F]">
+<Card className={cardStyle}>
+
 
 <CardHeader>
 
-<CardTitle>
+<CardTitle className="text-xl">
+
 תחומי עניין
+
 </CardTitle>
 
 </CardHeader>
 
+
+
 <CardContent>
+
 
 <div className="flex flex-wrap gap-3">
 
+
 {
+
 areas.length ?
 
 areas.map(area=>(
 
+
 <div
+
 key={area}
-className="rounded-xl bg-muted px-4 py-2 text-sm"
+
+className="rounded-xl border bg-muted/50 px-4 py-2 text-sm font-medium transition hover:bg-muted"
+
 >
 
 {INTEREST_ICONS[area]} {area}
 
 </div>
 
+
 ))
+
 
 :
 
 <p className="text-sm text-muted-foreground">
+
 לא זוהו תחומי עניין עדיין.
+
 </p>
+
 
 }
 
+
 </div>
 
+
 </CardContent>
+
 
 </Card>
 
