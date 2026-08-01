@@ -1,4 +1,4 @@
-ο»Ώimport { InvestmentProfile } from "../../data/investmentModels";
+import type { InvestmentProfile } from "@/data/investmentModels";
 
 export function generateRecommendations(
   profile: InvestmentProfile
@@ -10,7 +10,7 @@ export function generateRecommendations(
   if (profile.years >= 10) {
 
     recommendations.push(
-      "ΧΧ•Χ¤Χ§ Χ”Χ©Χ§ΧΆΧ” ΧΧ¨Χ•Χ ΧΧΧ¤Χ©Χ¨ ΧΧ”ΧªΧΧ§Χ“ Χ‘Χ¦ΧΧ™Χ—Χ” ΧΧ¨Χ•Χ›Χª ΧΧ•Χ•Χ—."
+      "ΰετχ δωχςδ ΰψεκ ξΰτωψ μδϊξχγ αφξιηδ ΰψελϊ θεεη."
     );
 
   }
@@ -19,25 +19,25 @@ export function generateRecommendations(
   if (profile.risk === "Aggressive" || profile.risk === "High") {
 
     recommendations.push(
-      "Χ΅Χ™Χ‘Χ•ΧΧª Χ”Χ΅Χ™Χ›Χ•Χ ΧΧΧ¤Χ©Χ¨Χª Χ—Χ©Χ™Χ¤Χ” Χ’Χ‘Χ•Χ”Χ” Χ™Χ•ΧªΧ¨ ΧΧ Χ›Χ΅Χ™ Χ¦ΧΧ™Χ—Χ”."
+      "ριαεμϊ δριλεο ξΰτωψϊ ηωιτδ βαεδδ ιεϊψ μπλρι φξιηδ."
     );
 
   }
 
 
   if (
-    profile.interests?.includes("ΧΧ›Χ Χ•ΧΧ•Χ’Χ™Χ”")
+    profile.interests?.includes("θλπεμεβιδ")
   ) {
 
     recommendations.push(
-      "Χ Χ™ΧªΧ ΧΧ©Χ§Χ•Χ Χ—Χ©Χ™Χ¤Χ” ΧΧ‘Χ•Χ§Χ¨Χª ΧΧ΅Χ§ΧΧ•Χ¨ Χ”ΧΧ›Χ Χ•ΧΧ•Χ’Χ™Χ”."
+      "πιϊο μωχεμ ηωιτδ ξαεχψϊ μρχθεψ δθλπεμεβιδ."
     );
 
   }
 
 
   recommendations.push(
-    "Χ”ΧªΧΧ“Χ” Χ•Χ”Χ©Χ§ΧΆΧ” ΧΆΧ§Χ‘Χ™Χª Χ”Χ Χ’Χ•Χ¨Χ ΧΧ¨Χ›Χ–Χ™ Χ‘Χ‘Χ Χ™Χ™Χª Χ”Χ•Χ."
+    "δϊξγδ εδωχςδ ςχαιϊ δο βεψν ξψλζι ααπιιϊ δεο."
   );
 
 

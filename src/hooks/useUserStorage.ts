@@ -5,7 +5,7 @@ const STORAGE_KEY = "invested_user";
 
 export function useUserStorage() {
 
- const [user, setUser] = useState<Record<string, unknown> | null>(() => {
+const [user, setUser] = useState<Record<string, unknown> | null>(() => {
 
     const saved =
       localStorage.getItem(STORAGE_KEY);
@@ -31,7 +31,7 @@ export function useUserStorage() {
   }, [user]);
 
 
-  function saveUser(data: Record<string, unknown>){
+function saveUser(data: Record<string, unknown>){
 
     setUser(data);
 

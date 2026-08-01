@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Layout, DisclaimerBanner } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/primitives";
-import { useAnalysis } from "@/context/AnalysisContext";
+import { useAnalysis } from "@/context/useAnalysis";
 import {
   WelcomeCard,
   InvestorTypeCard,

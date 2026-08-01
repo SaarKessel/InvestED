@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Sparkles, Loader2 } from "lucide-react";
 import { Layout, DisclaimerBanner } from "@/components/layout/Layout";
 import { Button, Card, CardContent } from "@/components/ui/primitives";
-import { useAnalysis } from "@/context/AnalysisContext";
+import { useAnalysis } from "@/context/useAnalysis";
 
 const EXAMPLE =
   `אני בן 27.\nאני רוצה להשקיע לטווח ארוך.\nאין לי הרבה ידע בהשקעות.\nאני מוכן לקחת סיכון בינוני.\nאני מתעניין בטכנולוגיה ובריאות.\nאני רוצה להבין איך לבנות תיק השקעות.`;
