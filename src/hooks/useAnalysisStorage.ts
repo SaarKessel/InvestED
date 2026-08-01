@@ -4,7 +4,7 @@ const KEY = "invested_analysis";
 
 export function useAnalysisStorage() {
 
-  const [analysis, setAnalysis] = useState<any>(() => {
+const [analysis, setAnalysis] = useState<Record<string, unknown> | null>(() => {
 
     const saved = localStorage.getItem(KEY);
 
@@ -15,8 +15,7 @@ export function useAnalysisStorage() {
   });
 
 
-  function saveAnalysis(data:any){
-
+function saveAnalysis(data: Record<string, unknown>){
     localStorage.setItem(
       KEY,
       JSON.stringify(data)

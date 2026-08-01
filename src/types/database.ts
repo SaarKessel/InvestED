@@ -18,8 +18,7 @@
 
   horizon: string;
 
-  allocation: any;
-
-  projection: any;
+  allocation: Record<string, unknown>;
+projection: Record<string, unknown>;
 
 }

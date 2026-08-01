@@ -1,9 +1,13 @@
-﻿export function generateRecommendations(result:any){
+﻿import { InvestmentProfile } from "../../data/investmentModels";
 
-  const recommendations:string[] = [];
+export function generateRecommendations(
+  profile: InvestmentProfile
+): string[] {
+
+  const recommendations: string[] = [];
 
 
-  if(result?.horizon === "ארוך"){
+  if (profile.years >= 10) {
 
     recommendations.push(
       "אופק השקעה ארוך מאפשר להתמקד בצמיחה ארוכת טווח."
@@ -12,7 +16,7 @@
   }
 
 
-  if(result?.riskScore >= 7){
+  if (profile.risk === "Aggressive" || profile.risk === "High") {
 
     recommendations.push(
       "סיבולת הסיכון מאפשרת חשיפה גבוהה יותר לנכסי צמיחה."
@@ -21,7 +25,9 @@
   }
 
 
-  if(result?.flags?.interests?.includes("טכנולוגיה")){
+  if (
+    profile.interests?.includes("טכנולוגיה")
+  ) {
 
     recommendations.push(
       "ניתן לשקול חשיפה מבוקרת לסקטור הטכנולוגיה."

@@ -1,6 +1,7 @@
 ﻿import { useState } from "react";
 import { motion } from "framer-motion";
 import { Calculator, TrendingUp } from "lucide-react";
+
 import {
   AreaChart,
   Area,
@@ -15,14 +16,29 @@ import { Card, CardContent, Button } from "@/components/ui/primitives";
 
 import { parseStockScenario } from "@/lib/stockScenarioParser";
 
-import {
-  fetchMarketAssetBySymbol,
-} from "@/lib/marketData";
+import { fetchMarketAssetBySymbol } from "@/lib/marketData";
 
 import {
   simulateHistoricalInvestment,
   projectStockInvestment,
 } from "@/lib/stockSimulationEngine";
+
+
+interface SimulationSeriesPoint {
+  date?: string;
+  month?: number;
+  value?: number;
+  projectedValue?: number;
+}
+
+
+interface SimulationResult {
+  invested?: number;
+  contributed?: number;
+  finalValue?: number;
+  projectedValue?: number;
+  series?: SimulationSeriesPoint[];
+}
 
 
 export function StockSimulator() {
@@ -31,7 +47,7 @@ export function StockSimulator() {
 
   const [loading, setLoading] = useState(false);
 
-  const [result, setResult] = useState<any>(null);
+  const [result, setResult] = useState<SimulationResult | null>(null);
 
   const [error, setError] = useState("");
 
@@ -49,9 +65,11 @@ export function StockSimulator() {
 
 
       if (!scenario.symbol) {
+
         throw new Error(
           "לא זוהה סימול מניה"
         );
+
       }
 
 
@@ -66,9 +84,11 @@ export function StockSimulator() {
 
 
         if (!market) {
+
           throw new Error(
             "לא נמצאו נתוני מניה"
           );
+
         }
 
 
@@ -85,8 +105,7 @@ export function StockSimulator() {
                 })
               ),
 
-            contribution:
-              scenario.contribution,
+            contribution: scenario.contribution,
 
           });
 
@@ -168,8 +187,7 @@ export function StockSimulator() {
             setQuery(e.target.value)
           }
 
-          placeholder=
-          "לדוגמה: אם הייתי משקיע 100 אלף שקל ב-VOO לפני 10 שנים"
+          placeholder="לדוגמה: אם הייתי משקיע 100 אלף שקל ב-VOO לפני 10 שנים"
 
           rows={3}
 
@@ -240,7 +258,6 @@ export function StockSimulator() {
           >
 
 
-
             <div className="
             grid grid-cols-2 gap-3
             ">
@@ -253,6 +270,7 @@ export function StockSimulator() {
                 <p className="text-xs text-muted-foreground">
                   השקעה
                 </p>
+
 
                 <p className="text-xl font-bold">
 
@@ -276,6 +294,7 @@ export function StockSimulator() {
                 <p className="text-xs text-muted-foreground">
                   שווי סופי
                 </p>
+
 
                 <p className="text-xl font-bold text-primary">
 
@@ -360,11 +379,9 @@ export function StockSimulator() {
             )}
 
 
-
           </motion.div>
 
         )}
-
 
 
       </CardContent>
