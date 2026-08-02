@@ -1,9 +1,9 @@
-// ---------------------------------------------------------------------------
-// InvestED — Goal Planning Engine
+﻿ // ---------------------------------------------------------------------------
+// InvestED - Goal Planning Engine
 // ---------------------------------------------------------------------------
 
 
-export interface FinancialGoal {
+export interface GoalAnalysis {
 
   targetAmount:number;
 
@@ -20,7 +20,6 @@ export interface FinancialGoal {
   achievable:boolean;
 
 }
-
 
 
 
@@ -96,18 +95,20 @@ amount=value;
 
 
 
-if(normalized.includes("מיליון")){
 
 const millionMatch = normalized.match(
-/(\d+)\s*מיליון/
+
+/(\d+(?:\.\d+)?)\s*מיליון/
+
 );
+
 
 
 if(millionMatch){
 
-amount = Number(millionMatch[1]) * 1000000;
-
-}
+amount =
+Number(millionMatch[1]) *
+1000000;
 
 }
 
@@ -189,7 +190,9 @@ targetAmount - futureCurrentAmount,
 if(monthlyRate === 0){
 
 return Math.round(
+
 remainingAmount / months
+
 );
 
 }
@@ -207,8 +210,11 @@ monthlyRate /
 (
 
 Math.pow(
+
 1 + monthlyRate,
+
 months
+
 )
 
 -1
@@ -280,7 +286,7 @@ annualReturnPct:number = 8,
 
 monthlyContribution:number = 0
 
-):FinancialGoal{
+):GoalAnalysis{
 
 
 
@@ -306,7 +312,8 @@ annualReturnPct
 
 
 
-const months = years * 12;
+const months =
+years * 12;
 
 
 
@@ -331,21 +338,39 @@ months
 
 +
 
+(
+
+monthlyRate === 0
+
+?
+
+monthlyContribution * months
+
+:
+
 monthlyContribution *
 
 (
 
 (
+
 Math.pow(
+
 1 + monthlyRate,
+
 months
+
 )
+
 -1
+
 )
 
 /
 
 monthlyRate
+
+)
 
 );
 
@@ -365,7 +390,6 @@ currentAmount,
 
 
 years,
-
 
 
 requiredMonthlyContribution:
@@ -400,5 +424,5 @@ futureValue >= targetAmount
 };
 
 
-
 }
+

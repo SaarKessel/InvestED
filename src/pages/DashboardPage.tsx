@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+﻿import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Layout, DisclaimerBanner } from "@/components/layout/Layout";
@@ -27,6 +27,36 @@ import {
 
 import { QuizCard } from "@/components/dashboard/QuizCard";
 import { RotateCcw } from "lucide-react";
+import { GoalPlannerCard } from "@/components/GoalPlannerCard";
+
+
+// =====================================================
+// Horizon Display Helper
+// =====================================================
+
+function horizonLabel(
+  horizon: string | null
+){
+
+  switch(horizon){
+
+    case "short":
+      return "׳§׳¦׳¨";
+
+    case "medium":
+      return "׳‘׳™׳ ׳•׳ ׳™";
+
+    case "long":
+      return "׳׳¨׳•׳";
+
+    default:
+      return "׳׳ ׳”׳•׳’׳“׳¨";
+
+  }
+
+}
+
+
 
 
 export function DashboardPage() {
@@ -70,15 +100,15 @@ export function DashboardPage() {
 
             <h1 className="font-display text-3xl font-extrabold">
 
-              🚀 פרופיל המשקיע שלך מוכן
+              נ€ ׳₪׳¨׳•׳₪׳™׳ ׳”׳׳©׳§׳™׳¢ ׳©׳׳ ׳׳•׳›׳
 
             </h1>
 
 
             <p className="mt-2 max-w-xl text-sm text-muted-foreground">
 
-              AI ניתח את המטרות, רמת הסיכון וסגנון ההשקעה שלך
-              ויצר עבורך תמונת מצב פיננסית ומסלול למידה אישי.
+              AI ׳ ׳™׳×׳— ׳׳× ׳”׳׳˜׳¨׳•׳×, ׳¨׳׳× ׳”׳¡׳™׳›׳•׳ ׳•׳¡׳’׳ ׳•׳ ׳”׳”׳©׳§׳¢׳” ׳©׳׳
+              ׳•׳™׳¦׳¨ ׳¢׳‘׳•׳¨׳ ׳×׳׳•׳ ׳× ׳׳¦׳‘ ׳₪׳™׳ ׳ ׳¡׳™׳× ׳•׳׳¡׳׳•׳ ׳׳׳™׳“׳” ׳׳™׳©׳™.
 
             </p>
 
@@ -105,9 +135,9 @@ export function DashboardPage() {
 
           >
 
-            <RotateCcw className="h-3.5 w-3 w-3.5" />
+            <RotateCcw className="h-3.5 w-3.5" />
 
-            נתח פרופיל מחדש
+            ׳ ׳×׳— ׳₪׳¨׳•׳₪׳™׳ ׳׳—׳“׳©
 
           </Button>
 
@@ -133,7 +163,7 @@ export function DashboardPage() {
 
             <span className="text-2xl">
 
-              🤖
+              נ₪–
 
             </span>
 
@@ -149,7 +179,7 @@ export function DashboardPage() {
 
               <p className="text-sm text-muted-foreground">
 
-                תמונת מצב ראשונית לפי הנתונים שסיפקת
+                ׳×׳׳•׳ ׳× ׳׳¦׳‘ ׳¨׳׳©׳•׳ ׳™׳× ׳׳₪׳™ ׳”׳ ׳×׳•׳ ׳™׳ ׳©׳¡׳™׳₪׳§׳×
 
               </p>
 
@@ -170,14 +200,14 @@ export function DashboardPage() {
 
               <p className="text-xs text-muted-foreground">
 
-                סגנון השקעה
+                ׳¡׳’׳ ׳•׳ ׳”׳©׳§׳¢׳”
 
               </p>
 
 
               <p className="mt-1 text-lg font-bold">
 
-                {result.investor?.type ?? "משקיע"}
+                {result.investor?.type ?? "׳׳©׳§׳™׳¢"}
 
               </p>
 
@@ -194,7 +224,7 @@ export function DashboardPage() {
 
               <p className="text-xs text-muted-foreground">
 
-                רמת סיכון
+                ׳¨׳׳× ׳¡׳™׳›׳•׳
 
               </p>
 
@@ -218,14 +248,14 @@ export function DashboardPage() {
 
               <p className="text-xs text-muted-foreground">
 
-                אופק השקעה
+                ׳׳•׳₪׳§ ׳”׳©׳§׳¢׳”
 
               </p>
 
 
               <p className="mt-1 text-lg font-bold">
 
-                {result.horizon ?? "ארוך"}
+                {horizonLabel(result.horizon)}
 
               </p>
 
@@ -298,6 +328,50 @@ export function DashboardPage() {
           <div className="lg:col-span-2">
 
             <PortfolioCard result={result} />
+
+
+{
+result.goalPlan && (
+
+<div className="lg:col-span-2">
+
+<GoalPlannerCard
+
+targetAmount={
+result.goalPlan.targetAmount
+}
+
+currentAmount={
+result.goalPlan.currentAmount
+}
+
+years={
+result.goalPlan.years
+}
+
+requiredMonthlyContribution={
+result.goalPlan.requiredMonthlyContribution
+}
+
+expectedFinalValue={
+result.goalPlan.expectedFinalValue
+}
+
+progressPercentage={
+result.goalPlan.progressPercentage
+}
+
+achievable={
+result.goalPlan.achievable
+}
+
+/>
+
+</div>
+
+)
+}
+
 
           </div>
 

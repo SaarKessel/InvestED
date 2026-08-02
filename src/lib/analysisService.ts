@@ -1,4 +1,4 @@
-import type {
+﻿import type {
   AnalysisResult,
   AnalysisSignal,
 } from "@/types";
@@ -28,6 +28,12 @@ import {
 
 
 import {
+  detectTargetAmount,
+  analyzeFinancialGoal,
+} from "./goalEngine";
+
+
+import {
   isOllamaAvailable,
   explainInvestorProfile,
   explainPortfolio,
@@ -37,7 +43,7 @@ import {
 
 
 // =====================================================
-// Normalize Hebrew Horizon
+// Normalize Horizon
 // =====================================================
 
 function normalizeHorizon(
@@ -48,7 +54,7 @@ function normalizeHorizon(
     | null
 ) {
 
-  switch(horizon){
+  switch (horizon) {
 
     case "קצר":
       return "short";
@@ -65,6 +71,8 @@ function normalizeHorizon(
   }
 
 }
+
+
 
 
 
@@ -131,7 +139,6 @@ export function buildRuleBasedAnalysis(
 
 
 
-
   // =====================================================
   // Explainable AI
   // =====================================================
@@ -150,9 +157,17 @@ export function buildRuleBasedAnalysis(
     rawSignals.map(
       (signal:string)=>({
 
-        title:signal,
+        title:
+          signal.includes(":")
+            ? signal.split(":")[0].trim()
+            : "AI Signal",
 
-        description:signal,
+
+        description:
+          signal.includes(":")
+            ? signal.split(":").slice(1).join(":").trim()
+            : signal,
+
 
         type:"rule"
 
@@ -161,15 +176,11 @@ export function buildRuleBasedAnalysis(
 
 
 
-
-
   const fallbackPortfolioText =
     portfolioNarrative(
       investor.type,
       allocation
     );
-
-
 
 
 
@@ -200,11 +211,43 @@ export function buildRuleBasedAnalysis(
 
 
 
+  // =====================================================
+  // Goal Planner
+  // =====================================================
+
+
+  const targetAmount =
+    detectTargetAmount(
+      profileText
+    );
 
 
 
+  const goalPlan =
 
-  return {
+    targetAmount > 0
+
+    ?
+
+    analyzeFinancialGoal(
+
+      scenario.initialInvestment,
+
+      targetAmount,
+
+      scenario.years,
+
+      scenario.annualReturnPct,
+
+      scenario.monthlyContribution
+
+    )
+
+    :
+
+    undefined;
+
+   return {
 
 
     profileText,
@@ -226,12 +269,10 @@ export function buildRuleBasedAnalysis(
       hExplanation,
 
 
-
     investor,
 
 
     allocation,
-
 
 
     explainability:{
@@ -245,7 +286,7 @@ export function buildRuleBasedAnalysis(
         explainability
           .map(
             (signal:AnalysisSignal)=>
-              signal.title
+              `${signal.title}: ${signal.description}`
           )
           .join(" ")
 
@@ -259,6 +300,10 @@ export function buildRuleBasedAnalysis(
 
 
     projection,
+
+
+
+    goalPlan,
 
 
 
@@ -284,8 +329,6 @@ export function buildRuleBasedAnalysis(
 
 
 }
-
-
 
 
 
@@ -323,12 +366,11 @@ export async function tryEnhanceWithOllama(
     result.allocation
 
       .map(
-        (a)=> 
+        (a)=>
           `${a.name}: ${a.value}%`
       )
 
       .join(", ");
-
 
 
 
@@ -360,7 +402,6 @@ export async function tryEnhanceWithOllama(
 
 
 
-
     explainPortfolio(
 
       result.investor.type,
@@ -374,7 +415,6 @@ export async function tryEnhanceWithOllama(
 
 
   ]);
-
 
 
 

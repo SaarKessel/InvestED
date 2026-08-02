@@ -223,6 +223,16 @@ export interface AnalysisResult {
 
   projection:Projection;
 
+  goalPlan?: {
+    targetAmount:number;
+    currentAmount:number;
+    years:number;
+    requiredMonthlyContribution:number;
+    expectedFinalValue:number;
+    progressPercentage:number;
+    achievable:boolean;
+  };
+
   explainability:{
     summary?:string;
     signals:AnalysisSignal[];
