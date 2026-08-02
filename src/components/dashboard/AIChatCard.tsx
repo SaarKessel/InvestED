@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 interface Props {
-result: Record<string, unknown>;
+  result: Record<string, unknown>;
 }
 
 export function AIChatCard({ result }: Props) {

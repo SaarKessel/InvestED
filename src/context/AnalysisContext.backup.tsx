@@ -4,10 +4,6 @@
   useState
 } from "react";
 
-import type {
-  AnalysisResult
-} from "@/types";
-
 import {
   buildRuleBasedAnalysis,
   tryEnhanceWithOllama,
@@ -16,17 +12,13 @@ import {
 
 export interface AnalysisContextValue {
 
-  profile: AnalysisResult | null;
+  profile: any;
 
-  setProfile: (
-    value: AnalysisResult | null
-  ) => void;
+  setProfile: (value: any) => void;
 
-  result: AnalysisResult | null;
+  result: any;
 
-  analyze: (
-    data: string
-  ) => Promise<void>;
+  analyze: (data: string) => Promise<void>;
 
   reset: () => void;
 
@@ -35,12 +27,8 @@ export interface AnalysisContextValue {
 }
 
 
-
 export const AnalysisContext =
-  createContext<AnalysisContextValue | undefined>(
-    undefined
-  );
-
+  createContext<AnalysisContextValue | undefined>(undefined);
 
 
 
@@ -51,31 +39,31 @@ export function AnalysisProvider({
 }) {
 
 
-  const [profile,setProfile] =
-    useState<AnalysisResult | null>(null);
+  const [profile, setProfile] =
+    useState<any>(null);
 
 
-
-  const [result,setResult] =
-    useState<AnalysisResult | null>(null);
-
+  const [result, setResult] =
+    useState<any>(null);
 
 
-  const [isAnalyzing,setIsAnalyzing] =
+  const [isAnalyzing, setIsAnalyzing] =
     useState(false);
 
 
 
-
-  const analyze = async (
-    data:string
-  ) => {
+  const analyze = async (data: string) => {
 
 
     setIsAnalyzing(true);
 
 
     try {
+
+
+      console.log(
+        "Starting analysis..."
+      );
 
 
       const ruleResult =
@@ -85,7 +73,6 @@ export function AnalysisProvider({
 
       let finalResult =
         ruleResult;
-
 
 
 
@@ -99,7 +86,7 @@ export function AnalysisProvider({
 
 
 
-        if(aiResult){
+        if (aiResult) {
 
 
           finalResult = {
@@ -107,7 +94,7 @@ export function AnalysisProvider({
             ...ruleResult,
 
             aiNarration:
-              aiResult
+              aiResult,
 
           };
 
@@ -115,12 +102,11 @@ export function AnalysisProvider({
         }
 
 
-
-      } catch(error){
+      } catch(error) {
 
 
         console.log(
-          "Ollama unavailable",
+          "Ollama unavailable, using rules",
           error
         );
 
@@ -130,19 +116,37 @@ export function AnalysisProvider({
 
 
 
+      const completedResult = {
+
+        ...finalResult,
+
+        createdAt:
+          new Date().toISOString(),
+
+      };
+
+
+
+
+      console.log(
+        "Analysis finished:",
+        completedResult
+      );
+
+
+
       setProfile(
-        finalResult
+        completedResult
       );
 
 
       setResult(
-        finalResult
+        completedResult
       );
 
 
 
-    }
-    finally {
+    } finally {
 
 
       setIsAnalyzing(false);
@@ -195,10 +199,10 @@ export function AnalysisProvider({
 
       {children}
 
+
     </AnalysisContext.Provider>
 
   );
-
 
 }
 
@@ -206,23 +210,27 @@ export function AnalysisProvider({
 
 
 
-export function useAnalysisContext(){
+export function useAnalysisContext() {
+
 
   const ctx =
-    useContext(
-      AnalysisContext
-    );
+    useContext(AnalysisContext);
 
 
-  if(!ctx){
+
+  if (!ctx) {
+
 
     throw new Error(
       "useAnalysisContext must be inside AnalysisProvider"
     );
 
+
   }
 
 
+
   return ctx;
+
 
 }
