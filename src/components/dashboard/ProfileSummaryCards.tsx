@@ -46,9 +46,11 @@ const INTEREST_ICONS: Record<InterestArea,string> = {
 
 
 
-function getHorizonLabel(horizon:string){
+function getHorizonLabel(
+  horizon: AnalysisResult["horizon"]
+): string {
 
-  switch(horizon){
+  switch (horizon) {
 
     case "short":
       return "קצר";
@@ -60,7 +62,7 @@ function getHorizonLabel(horizon:string){
       return "ארוך";
 
     default:
-      return horizon;
+      return "לא הוגדר";
 
   }
 
@@ -68,9 +70,9 @@ function getHorizonLabel(horizon:string){
 
 
 
-
 const cardStyle =
-"h-full border-border transition-all duration-300 hover:-translate-y-1 hover:shadow-lg";
+  "h-full border-border transition-all duration-300 hover:-translate-y-1 hover:shadow-lg";
+
 
 
 
@@ -79,7 +81,7 @@ const cardStyle =
 export function WelcomeCard({
   result
 }:{
-  result:AnalysisResult
+  result: AnalysisResult
 }){
 
 
@@ -170,6 +172,7 @@ InvestED ניתח את הנתונים שלך ובנה תמונת מצב אישי
 
 
 
+
 export function InvestorTypeCard({
 result
 }:{
@@ -232,6 +235,7 @@ return (
 );
 
 }
+
 
 
 
@@ -315,6 +319,7 @@ return (
 
 
 
+
 export function HorizonCard({
 result
 }:{
@@ -360,7 +365,7 @@ return (
 
 <p className="rounded-xl bg-muted p-4 text-sm leading-7 text-muted-foreground">
 
-{result.horizonExplanation}
+{result.horizonExplanation ?? "לא קיימת הסברית זמינה."}
 
 </p>
 
@@ -373,6 +378,7 @@ return (
 );
 
 }
+
 
 
 

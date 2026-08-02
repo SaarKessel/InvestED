@@ -184,22 +184,16 @@ export default function CalculatorPage(){
 
     null;
 
-
-
-
   return (
 
     <div
-
       dir="rtl"
-
       className="
       min-h-screen
-      bg-[#050B16]
-      text-white
+      bg-background
+      text-foreground
       p-6
       "
-
     >
 
 
@@ -224,8 +218,7 @@ export default function CalculatorPage(){
 
         >
 
-          🧮 InvestED Calculator
-
+🧮 מחשבון ההשקעות החכם של InvestED
         </h1>
 
 
@@ -239,7 +232,7 @@ export default function CalculatorPage(){
 
         >
 
-          הזן תרחיש השקעה בשפה טבעית וקבל ניתוח פיננסי חכם.
+          תאר תרחיש השקעה בשפה טבעית וקבל הדמיה, השוואת מסלולים ותובנות מבוססות AI.
 
         </p>
 
@@ -249,13 +242,13 @@ export default function CalculatorPage(){
         <div
 
           className="
-          bg-[#0B1628]
-          border
-          border-[#1E3A5F]
-          rounded-3xl
-          p-6
-          shadow-xl
-          mb-8
+          bg-card
+border
+border-border
+rounded-3xl
+p-6
+shadow-soft
+mb-8
           "
 
         >
@@ -344,6 +337,20 @@ export default function CalculatorPage(){
 
             >
 
+<InvestmentInsightCard
+  finalBalance={projection.finalBalance}
+  totalContributed={projection.totalContributed}
+  growth={projection.growth}
+  years={scenario.years}
+  assetLabel={
+    ASSET_CLASSES.find(
+      a => a.key === scenario.assetClassKey
+    )?.label
+  }
+  annualReturnPct={scenario.annualReturnPct}
+  monthlyContribution={scenario.monthlyContribution}
+  goal={scenario.goal}
+/>    
 
               <InfoCard
 
@@ -366,41 +373,22 @@ export default function CalculatorPage(){
     )
   }
 />
-
-<InvestmentInsightCard
-  finalBalance={projection.finalBalance}
-  totalContributed={projection.totalContributed}
-  growth={projection.growth}
-  years={scenario.years}
-  assetLabel={
-    ASSET_CLASSES.find(
-      a => a.key === scenario.assetClassKey
-    )?.label
-  }
-  annualReturnPct={scenario.annualReturnPct}
-  monthlyContribution={scenario.monthlyContribution}
-  goal={scenario.goal}
-/>          
-
-
+      
             </div>
 
 
 
 
 
-            <div
-
-              className="
-              bg-[#0B1628]
-              border
-              border-[#1E3A5F]
-              rounded-3xl
-              p-6
-              mb-8
-              "
-
-            >
+<div
+  className="
+  bg-[#050B16]
+  border
+  border-[#1E3A5F]
+  rounded-2xl
+  p-5
+  "
+>
 
 
               <h2
@@ -496,24 +484,18 @@ export default function CalculatorPage(){
             </div>
 
 
+<div
+  className="
+  bg-card
+  border
+  border-border
+  rounded-xl
+  p-4
+  shadow-sm
+  "
+>
 
 
-
-
-            <div
-
-              className="
-              bg-gradient-to-br
-              from-[#0B1628]
-              to-[#102A43]
-              border
-              border-emerald-500/30
-              rounded-3xl
-              p-6
-              mb-8
-              "
-
-            >
 
 
               <h2
@@ -537,7 +519,7 @@ export default function CalculatorPage(){
               <p
 
                 className="
-                text-slate-300
+                text-muted-foreground
                 leading-8
                 "
 

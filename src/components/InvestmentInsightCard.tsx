@@ -1,6 +1,14 @@
 // ---------------------------------------------------------------------------
-// InvestED — Smart Investment Insight Card
+// InvestED — Smart Investment Insight Card (Premium UI)
 // ---------------------------------------------------------------------------
+
+import {
+  TrendingUp,
+  Wallet,
+  Target,
+  Sparkles,
+  Lightbulb,
+} from "lucide-react";
 
 
 interface Props {
@@ -22,7 +30,6 @@ interface Props {
   goal?:string;
 
 }
-
 
 
 
@@ -55,9 +62,7 @@ finalBalance > 0
 ?
 
 Math.round(
-
 (growth / finalBalance) * 100
-
 )
 
 :
@@ -90,9 +95,7 @@ finalBalance > 0
 ?
 
 Math.round(
-
 (totalContributed / finalBalance) * 100
-
 )
 
 :
@@ -103,9 +106,10 @@ Math.round(
 
 
 
-let insight="";
 
-let icon="💡";
+let insight = "";
+
+let icon = "💡";
 
 
 
@@ -113,45 +117,42 @@ let icon="💡";
 
 if(years >= 20){
 
-insight=
+  insight =
+  "אופק השקעה ארוך מאפשר לריבית דריבית להשפיע בצורה משמעותית יותר על צמיחת ההון.";
 
-"אופק השקעה ארוך מאפשר לריבית דריבית להשפיע בצורה משמעותית יותר על הצמיחה.";
+  icon="🚀";
 
-icon="🚀";
 
 }
 
 else if(years >= 10){
 
-insight=
+  insight =
+  "תקופת השקעה בינונית מאפשרת לשוק ההון לעבוד לטובת המשקיע לאורך זמן.";
 
-"תקופת השקעה בינונית מאפשרת לשוק ההון לעבוד לטובת המשקיע לאורך זמן.";
+  icon="📈";
 
-icon="📈";
 
 }
 
 else{
 
-insight=
+  insight =
+  "בתקופות קצרות יותר, לתנודתיות השוק יכולה להיות השפעה גדולה יותר על התוצאה.";
 
-"בתקופות קצרות יותר, לתנודתיות השוק יכולה להיות השפעה גדולה יותר על התוצאה.";
-
-icon="⚠️";
+  icon="⚠️";
 
 }
-
 
 
 
 
 if(goal==="retirement"){
 
-insight=
+  insight =
+  "המטרה היא פרישה — זמן השקעה ארוך והגדלת ההון לאורך שנים הם הגורמים המרכזיים.";
 
-"המטרה היא פרישה — במקרה כזה זמן ההשקעה והגדלת ההון לאורך שנים הם הגורמים המרכזיים.";
-
-icon="🏖️";
+  icon="🏖️";
 
 }
 
@@ -159,39 +160,90 @@ icon="🏖️";
 
 if(goal==="child"){
 
-insight=
+  insight =
+  "חיסכון לילד נהנה במיוחד מהשפעת הזמן, מכיוון שגם סכומים קטנים יכולים לצמוח משמעותית.";
 
-"חיסכון לילד נהנה במיוחד מהשפעת הזמן, מכיוון שגם סכומים קטנים יכולים לצמוח משמעותית לאורך שנים.";
-
-icon="👶";
+  icon="👶";
 
 }
 
 
 
 
-
 return (
 
+<div
+className="
+mt-8
+overflow-hidden
+rounded-3xl
+border
+border-border
+bg-card
+shadow-soft
+"
+>
 
-<div className="mt-6 rounded-2xl border bg-white p-6 shadow-sm space-y-5">
+<div
+className="
+border-b
+border-border
+bg-muted/40
+p-6
+"
+>
+
+<div
+className="
+inline-flex
+items-center
+gap-2
+rounded-full
+bg-primary/10
+px-3
+py-1
+text-sm
+font-bold
+text-primary
+"
+>
+
+<Sparkles className="h-4 w-4"/>
+
+AI Simulation
+
+
+</div>
 
 
 
-<div>
+<h3
+className="
+mt-3
+text-2xl
+font-extrabold
+"
+>
 
-<h3 className="text-xl font-bold">
-
-🧠 תובנת InvestED
+ניתוח חכם של תרחיש ההשקעה שלך
 
 </h3>
 
 
-<p className="mt-1 text-sm text-muted-foreground">
 
-ניתוח חכם של תרחיש ההשקעה שלך
+<p
+className="
+mt-2
+text-sm
+text-white/80
+"
+>
+
+המערכת ניתחה את הנתונים והמחישה איך הזמן,
+התשואה וההפקדות משפיעים על התוצאה.
 
 </p>
+
 
 </div>
 
@@ -199,17 +251,54 @@ return (
 
 
 
-<div className="rounded-xl bg-muted p-4">
+<div
+className="
+space-y-5
+p-6
+"
+>
 
 
-<p className="text-sm text-muted-foreground">
+<div
+className="
+rounded-2xl
+border
+border-slate-200
+bg-white/80
+p-5
+dark:border-slate-700
+dark:bg-slate-800/60
+"
+>
+
+
+<div
+className="
+flex
+items-center
+gap-2
+text-sm
+font-semibold
+text-slate-500
+dark:text-slate-300
+"
+>
+
+<Target className="h-4 w-4"/>
 
 נכס שנבחר
 
-</p>
+</div>
 
 
-<p className="font-bold text-lg">
+
+<p
+className="
+mt-2
+text-xl
+font-extrabold
+"
+>
 
 {assetLabel}
 
@@ -217,17 +306,29 @@ return (
 
 
 
-{annualReturnPct && (
+{
+annualReturnPct &&
 
-<p className="text-sm mt-1">
+<p
+className="
+mt-2
+text-sm
+text-slate-600
+dark:text-slate-300
+"
+>
 
-תשואה שנתית משוערת:{" "}
+תשואה שנתית משוערת:
 
-<b>{annualReturnPct}%</b>
+{" "}
+
+<b>
+{annualReturnPct}%
+</b>
 
 </p>
 
-)}
+}
 
 
 </div>
@@ -236,23 +337,34 @@ return (
 
 
 
+<div
+className="
+grid
+gap-4
+md:grid-cols-3
+"
+>
 
 
-<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div
+className="
+rounded-2xl
+bg-slate-100
+p-5
+dark:bg-slate-800
+"
+>
 
+<div className="flex items-center gap-2 text-sm text-slate-500">
 
-
-<div className="rounded-xl bg-gray-50 p-4">
-
-
-<p className="text-sm text-gray-500">
+<Wallet className="h-4 w-4"/>
 
 סה"כ השקעה
 
-</p>
+</div>
 
 
-<p className="font-bold text-lg">
+<p className="mt-2 text-xl font-extrabold">
 
 ₪{totalContributed.toLocaleString("he-IL")}
 
@@ -261,21 +373,25 @@ return (
 
 </div>
 
+<div
+className="
+rounded-2xl
+bg-slate-100
+p-5
+dark:bg-slate-800
+"
+>
 
+<div className="flex items-center gap-2 text-sm text-slate-500">
 
-
-
-<div className="rounded-xl bg-gray-50 p-4">
-
-
-<p className="text-sm text-gray-500">
+<TrendingUp className="h-4 w-4"/>
 
 שווי סופי
 
-</p>
+</div>
 
 
-<p className="font-bold text-lg">
+<p className="mt-2 text-xl font-extrabold">
 
 ₪{finalBalance.toLocaleString("he-IL")}
 
@@ -288,17 +404,25 @@ return (
 
 
 
-<div className="rounded-xl bg-gray-50 p-4">
+<div
+className="
+rounded-2xl
+bg-slate-100
+p-5
+dark:bg-slate-800
+"
+>
 
+<div className="flex items-center gap-2 text-sm text-slate-500">
 
-<p className="text-sm text-gray-500">
+<Target className="h-4 w-4"/>
 
 מכפיל השקעה
 
-</p>
+</div>
 
 
-<p className="font-bold text-lg">
+<p className="mt-2 text-xl font-extrabold">
 
 x{multiple}
 
@@ -316,20 +440,56 @@ x{multiple}
 
 
 
+<div
+className="
+rounded-2xl
+border
+border-blue-200
+bg-blue-50
+p-5
+dark:border-blue-900
+dark:bg-blue-950/40
+"
+>
 
-<div className="rounded-xl border p-4">
+<div
+className="
+flex
+items-start
+gap-3
+"
+>
+
+<Lightbulb
+className="
+mt-1
+h-5
+w-5
+text-blue-600
+dark:text-blue-300
+"
+/>
 
 
-<p className="text-sm text-gray-700">
+<p
+className="
+text-sm
+leading-7
+text-slate-700
+dark:text-slate-200
+"
+>
 
+{icon}
 
-{icon}{" "}
+{" "}
 
 {insight}
 
-
 </p>
 
+
+</div>
 
 </div>
 
@@ -338,37 +498,166 @@ x{multiple}
 
 
 
+<div
+className="
+rounded-2xl
+border
+border-emerald-200
+bg-emerald-50
+p-5
+dark:border-emerald-900
+dark:bg-emerald-950/40
+"
+>
 
-<div className="rounded-xl bg-primary/5 p-4">
 
-
-<p className="text-sm">
-
+<p
+className="
+font-bold
+text-slate-800
+dark:text-white
+"
+>
 
 💰 מתוך השווי הסופי:
 
-
 </p>
 
 
 
-<p className="mt-1 text-lg font-bold">
+<div className="mt-4 space-y-4">
 
 
-כ־{growthPercentage}% מהסכום נוצר מצמיחת ההשקעה
+<div>
+
+<div
+className="
+mb-2
+flex
+justify-between
+text-sm
+"
+>
+
+<span>
+
+📈 צמיחת ההשקעה
+
+</span>
+
+
+<span className="font-bold">
+
+{growthPercentage}%
+
+</span>
+
+
+</div>
+
+
+<div
+className="
+h-3
+overflow-hidden
+rounded-full
+bg-white
+dark:bg-slate-700
+"
+>
+
+<div
+className="
+h-full
+rounded-full
+bg-emerald-500
+"
+style={{
+width:`${growthPercentage}%`
+}}
+/>
+
+</div>
+
+</div>
 
 
 
-</p>
+
+
+<div>
+
+
+<div
+className="
+mb-2
+flex
+justify-between
+text-sm
+"
+>
+
+<span>
+
+💰 כסף שהופקד
+
+</span>
+
+
+<span className="font-bold">
+
+{contributionPercentage}%
+
+</span>
+
+
+</div>
 
 
 
-<p className="text-sm text-muted-foreground mt-1">
+<div
+className="
+h-3
+overflow-hidden
+rounded-full
+bg-white
+dark:bg-slate-700
+"
+>
+
+<div
+className="
+h-full
+rounded-full
+bg-blue-500
+"
+style={{
+width:`${contributionPercentage}%`
+}}
+/>
+
+</div>
 
 
+</div>
+
+
+</div>
+
+
+
+<p
+className="
+mt-4
+text-sm
+text-slate-600
+dark:text-slate-300
+"
+>
+
+כ־{growthPercentage}% מהשווי הסופי נוצר מצמיחת ההשקעה,
 ורק כ־{contributionPercentage}% הגיעו מהכסף שהופקד.
 
-
 </p>
 
 
@@ -380,38 +669,47 @@ x{multiple}
 
 
 
+{
+monthlyContribution > 0 && (
 
-{monthlyContribution > 0 && (
+<div
+className="
+rounded-2xl
+border
+border-green-200
+bg-green-50
+p-5
+dark:border-green-900
+dark:bg-green-950/40
+"
+>
 
+<p className="text-sm text-slate-600 dark:text-slate-300">
 
-<div className="rounded-xl bg-green-50 p-4">
-
-
-<p className="text-sm">
-
-
-📌 הפקדה חודשית:
-
+📌 הפקדה חודשית
 
 </p>
 
 
-<p className="font-bold">
+<p className="mt-2 text-xl font-extrabold">
 
+₪{monthlyContribution.toLocaleString("he-IL")}
 
-₪{monthlyContribution.toLocaleString("he-IL")} בחודש
-
+בחודש
 
 </p>
 
 
 </div>
 
+)
 
-)}
+}
 
 
 
+
+</div>
 
 
 </div>

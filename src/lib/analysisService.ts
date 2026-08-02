@@ -1,5 +1,6 @@
 import type {
   AnalysisResult,
+  AnalysisSignal,
 } from "@/types";
 
 
@@ -34,10 +35,43 @@ import {
 
 
 
-// ---------------------------------------------------------------------------
-// InvestED Analysis Service
-// ---------------------------------------------------------------------------
 
+// =====================================================
+// Normalize Hebrew Horizon
+// =====================================================
+
+function normalizeHorizon(
+  horizon:
+    | "קצר"
+    | "בינוני"
+    | "ארוך"
+    | null
+) {
+
+  switch(horizon){
+
+    case "קצר":
+      return "short";
+
+    case "בינוני":
+      return "medium";
+
+    case "ארוך":
+      return "long";
+
+    default:
+      return "medium";
+
+  }
+
+}
+
+
+
+
+// =====================================================
+// Rule Based Analysis
+// =====================================================
 
 export function buildRuleBasedAnalysis(
   profileText:string
@@ -60,22 +94,33 @@ export function buildRuleBasedAnalysis(
     );
 
 
-const horizon =
-  horizonBucket(
-    flags.horizon ?? "medium"
-  );
+
+  const bucket =
+    horizonBucket(
+      flags.horizon ?? "medium"
+    );
 
 
-const hExplanation =
-  horizonExplanation(
-    flags.horizon ?? "medium"
-  );
+
+  const horizon =
+    normalizeHorizon(
+      bucket
+    );
 
 
-const investor =
-  classifyInvestor(
-    riskScore
-  );
+
+  const hExplanation =
+    horizonExplanation(
+      flags.horizon ?? "medium"
+    );
+
+
+
+  const investor =
+    classifyInvestor(
+      riskScore
+    );
+
 
 
   const allocation =
@@ -86,12 +131,35 @@ const investor =
 
 
 
-  const explainability =
+
+  // =====================================================
+  // Explainable AI
+  // =====================================================
+
+
+  const rawSignals =
     buildExplainability(
       flags,
       investor,
       riskScore
     );
+
+
+
+  const explainability:AnalysisSignal[] =
+    rawSignals.map(
+      (signal:string)=>({
+
+        title:signal,
+
+        description:signal,
+
+        type:"rule"
+
+      })
+    );
+
+
 
 
 
@@ -103,6 +171,13 @@ const investor =
 
 
 
+
+
+  // =====================================================
+  // Financial Scenario
+  // =====================================================
+
+
   const scenario =
     analyzeFinancialScenario(
       profileText
@@ -112,11 +187,20 @@ const investor =
 
   const projection =
     computeProjection(
+
       scenario.initialInvestment,
+
       scenario.monthlyContribution,
+
       scenario.years,
+
       scenario.annualReturnPct
+
     );
+
+
+
+
 
 
 
@@ -142,19 +226,36 @@ const investor =
       hExplanation,
 
 
+
     investor,
 
 
     allocation,
 
 
+
     explainability:{
-      signals: explainability,
-      summary: explainability.join(" ")
+
+
+      signals:
+        explainability,
+
+
+      summary:
+        explainability
+          .map(
+            (signal:AnalysisSignal)=>
+              signal.title
+          )
+          .join(" ")
+
+
     },
 
 
+
     scenario,
+
 
 
     projection,
@@ -162,6 +263,7 @@ const investor =
 
 
     aiNarration:{
+
 
       profileSummary:
         investor.reason,
@@ -174,6 +276,7 @@ const investor =
       source:
         "rule-based"
 
+
     }
 
 
@@ -185,10 +288,14 @@ const investor =
 
 
 
-// ---------------------------------------------------------------------------
-// Ollama Enhancement Layer
-// ---------------------------------------------------------------------------
 
+
+
+
+
+// =====================================================
+// Ollama Enhancement
+// =====================================================
 
 export async function tryEnhanceWithOllama(
   result:AnalysisResult
@@ -201,6 +308,7 @@ export async function tryEnhanceWithOllama(
 
 
 
+
   if(!ollamaUp){
 
     return null;
@@ -209,13 +317,21 @@ export async function tryEnhanceWithOllama(
 
 
 
+
+
   const allocationSummary =
     result.allocation
+
       .map(
-        (a)=>
+        (a)=> 
           `${a.name}: ${a.value}%`
       )
+
       .join(", ");
+
+
+
+
 
 
 
@@ -227,23 +343,41 @@ export async function tryEnhanceWithOllama(
   await Promise.all([
 
 
+
+
     explainInvestorProfile(
+
       result.investor.type,
+
       result.riskScore,
+
       result.investor.reason,
+
       result.profileText
+
     ),
 
 
 
+
+
     explainPortfolio(
+
       result.investor.type,
+
       allocationSummary,
+
       result.aiNarration.portfolioSummary
+
     )
 
 
+
   ]);
+
+
+
+
 
 
 
@@ -258,6 +392,7 @@ export async function tryEnhanceWithOllama(
 
     source:
       "ollama"
+
 
 
   };

@@ -1,12 +1,10 @@
-// ---------------------------------------------------------------------------
-// InvestED — Shared Domain Types
-// Clean UTF-8 Version
-// ---------------------------------------------------------------------------
+﻿// =====================================================
+// InvestED - Global Types
+// =====================================================
 
-
-// ---------------------------------------------------------------------------
-// Investor Profile
-// ---------------------------------------------------------------------------
+// =====================================================
+// Interests
+// =====================================================
 
 export type InterestArea =
   | "טכנולוגיה"
@@ -15,7 +13,9 @@ export type InterestArea =
   | "אנרגיה"
   | "נדל\"ן";
 
-
+// =====================================================
+// Risk / Horizon
+// =====================================================
 
 export type RiskLevel =
   | "very_low"
@@ -25,23 +25,23 @@ export type RiskLevel =
   | "very_high"
   | null;
 
-
-
 export type InvestmentHorizon =
   | "short"
   | "medium"
   | "long"
   | null;
 
-
+export type HorizonBucket =
+  | "קצר"
+  | "בינוני"
+  | "ארוך"
+  | null;
 
 export type KnowledgeLevel =
   | "beginner"
   | "some"
   | "experienced"
   | null;
-
-
 
 export type FinancialGoal =
   | "wealth_growth"
@@ -51,164 +51,9 @@ export type FinancialGoal =
   | "passive_income"
   | null;
 
-
-
-export interface ProfileFlags {
-
-  rawText:string;
-
-  age:number | null;
-
-  riskLevel:RiskLevel;
-
-  horizon:InvestmentHorizon;
-
-  knowledgeLevel:KnowledgeLevel;
-
-  interests:InterestArea[];
-
-  preferences:string[];
-
-  goal:FinancialGoal;
-
-}
-
-
-
-// ---------------------------------------------------------------------------
-// Risk Engine
-// ---------------------------------------------------------------------------
-
-
-export interface RiskDescription {
-
-  band:string;
-
-  volatility:string;
-
-  psychology:string;
-
-}
-
-
-
-
-export type HorizonBucket =
-  | "קצר"
-  | "בינוני"
-  | "ארוך";
-
-
-
-
-
-export interface InvestorClassification {
-
-  type:InvestorType;
-
-  reason:string;
-
-}
-
-// ---------------------------------------------------------------------------
-// Investor Types
-// ---------------------------------------------------------------------------
-
-
-export type InvestorType =
-  | "משקיע דיבידנדים"
-  | "משקיע פסיבי"
-  | "משקיע שמרני"
-  | "משקיע צמיחה"
-  | "משקיע ערך"
-  | "משקיע מאוזן";
-
-
-
-
-// ---------------------------------------------------------------------------
-// Portfolio Allocation
-// ---------------------------------------------------------------------------
-
-
-export interface AllocationItem {
-
-  name:string;
-
-  value:number;
-
-  color:string;
-
-}
-
-
-
-
-// ---------------------------------------------------------------------------
-// Market Data
-// ---------------------------------------------------------------------------
-
-
-export interface MarketHistoryPoint {
-
-  date:string;
-
-  price:number;
-
-  open:number;
-
-  high:number;
-
-  low:number;
-
-  close:number;
-
-}
-
-
-
-
-export interface MarketAsset {
-
-  symbol:string;
-
-  name:string;
-
-  price:number;
-
-  changePercent:number;
-
-  history:MarketHistoryPoint[];
-
-}
-
-
-
-
-// ---------------------------------------------------------------------------
-// AI Narration
-// ---------------------------------------------------------------------------
-
-
-export interface AiNarration {
-
-  source:
-    | "ollama"
-    | "fallback"
-    | "rule-based";
-
-
-  profileSummary:string;
-
-
-  portfolioSummary:string;
-
-}
-
-// ---------------------------------------------------------------------------
-// Financial Scenario & Calculator
-// ---------------------------------------------------------------------------
-
+// =====================================================
+// Financial Scenario
+// =====================================================
 
 export interface FinancialScenario {
 
@@ -230,105 +75,208 @@ export interface FinancialScenario {
 
   goal:string;
 
-}
+  confidence:number;
 
-
-
-
-export interface ProjectionPoint {
-
-  year:number;
-
-  contributed:number;
-
-  balance:number;
+  detectedInterests:string[];
 
 }
 
+// =====================================================
+// Investor
+// =====================================================
 
+export type InvestorType =
+  | "משקיע דיבידנדים"
+  | "משקיע פסיבי"
+  | "משקיע שמרני"
+  | "משקיע צמיחה"
+  | "משקיע ערך"
+  | "משקיע מאוזן";
 
+// =====================================================
+// Profile
+// =====================================================
 
-export interface ProjectionResult {
+export interface ProfileFlags {
 
-  finalBalance:number;
+  age:number | null;
+
+  interests:InterestArea[];
+
+  preferences:string[];
+
+  knowledgeLevel:KnowledgeLevel;
+
+  riskLevel:RiskLevel;
+
+  horizon:InvestmentHorizon;
+
+  goal:FinancialGoal;
+
+  rawText?:string;
+
+}
+
+// =====================================================
+// Risk
+// =====================================================
+
+export interface RiskDescription {
+
+  band:string;
+
+  volatility:string;
+
+  psychology?:string;
+
+  explanation?:string;
+
+}
+
+export interface InvestorClassification {
+
+  type:InvestorType;
+
+  reason:string;
+
+}
+
+// =====================================================
+// Explainable AI
+// =====================================================
+
+export interface AnalysisSignal {
+
+  title:string;
+
+  description:string;
+
+  type?:string;
+
+}
+
+// =====================================================
+// Portfolio
+// =====================================================
+
+export interface AllocationItem {
+
+  name:string;
+
+  value:number;
+
+  label?:string;
+
+  percentage?:number;
+
+  color?:string;
+
+}
+
+export interface Projection {
 
   totalContributed:number;
 
   growth:number;
 
-  realValueAfterInflation:number;
-
-  series:ProjectionPoint[];
+  finalBalance:number;
 
 }
 
+// =====================================================
+// AI Narration
+// =====================================================
 
+export interface AiNarration {
 
-// ---------------------------------------------------------------------------
-// Explainable AI
-// ---------------------------------------------------------------------------
+  source:string;
 
+  profileSummary?:string;
 
-export interface Explainability {
-
-  signals:string[];
-
-  summary:string;
+  portfolioSummary:string;
 
 }
 
-// ---------------------------------------------------------------------------
+// =====================================================
 // Analysis Result
-// ---------------------------------------------------------------------------
-
+// =====================================================
 
 export interface AnalysisResult {
 
   profileText:string;
 
-
   flags:ProfileFlags;
 
+  scenario:FinancialScenario | null;
 
-  riskScore:number;
+  horizon:InvestmentHorizon;
 
-
-  riskDescription:RiskDescription;
-
-
-  horizon:HorizonBucket;
-
-
-  horizonExplanation:string;
-
+  horizonExplanation?:string;
 
   investor:InvestorClassification;
 
+  riskScore:number;
+
+  riskDescription?:RiskDescription;
 
   allocation:AllocationItem[];
 
+  projection:Projection;
 
-  explainability:Explainability;
-
-
-  projection:ProjectionResult;
-
-
-  scenario?:FinancialScenario;
-
+  explainability:{
+    summary?:string;
+    signals:AnalysisSignal[];
+  };
 
   aiNarration:AiNarration;
 
 }
 
-// ---------------------------------------------------------------------------
-// Strategies
-// ---------------------------------------------------------------------------
+// =====================================================
+// Market
+// =====================================================
 
+export interface CandleDatum {
+
+  date:string;
+
+  open:number;
+
+  high:number;
+
+  low:number;
+
+  close:number;
+
+  price:number;
+
+}
+
+export interface MarketAsset {
+
+  symbol:string;
+
+  name:string;
+
+  price:number;
+
+  changePercent:number;
+
+  history:CandleDatum[];
+
+}
+
+// =====================================================
+// Strategies
+// =====================================================
 
 export interface Strategy {
 
-  id:string;
+  id:
+    | "passive"
+    | "dividend"
+    | "growth"
+    | "value";
 
   name:string;
 
@@ -336,42 +284,19 @@ export interface Strategy {
 
   whatItIs:string;
 
+  suitableFor:string;
+
   pros:string[];
 
   cons:string[];
-
-  suitableFor:string;
 
   stocks:string[];
 
 }
 
-
-
-// ---------------------------------------------------------------------------
-// Quiz System
-// ---------------------------------------------------------------------------
-
-
-export interface QuizQuestion {
-
-  id:number;
-
-  question:string;
-
-  options:string[];
-
-  correctAnswer:number;
-
-  explanation:string;
-
-}
-
-
-// ---------------------------------------------------------------------------
-// Education Content
-// ---------------------------------------------------------------------------
-
+// =====================================================
+// Education
+// =====================================================
 
 export interface FinanceConcept {
 
@@ -381,8 +306,6 @@ export interface FinanceConcept {
 
 }
 
-
-
 export interface Mistake {
 
   title:string;
@@ -390,8 +313,6 @@ export interface Mistake {
   detail:string;
 
 }
-
-
 
 export interface RoadmapStage {
 

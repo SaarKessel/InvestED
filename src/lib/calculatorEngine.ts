@@ -107,33 +107,12 @@ blurb:"שילוב מניות ואג״ח."
 // Models
 // ---------------------------------------------------------------------------
 
-export interface FinancialScenario {
 
-initialInvestment:number;
+import type {
+  FinancialScenario
+} from "@/types";
 
-monthlyContribution:number;
-
-currentAge:number|null;
-
-targetAge:number|null;
-
-targetAmount:number|null;
-
-years:number;
-
-assetClassKey:string;
-
-annualReturnPct:number;
-
-goal:string;
-
-confidence:number;
-
-detectedInterests:string[];
-
-}
-
-
+export type { FinancialScenario } from "@/types";
 export interface ParsedQuery {
 
 age:number|null;
