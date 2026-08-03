@@ -1,6 +1,7 @@
-﻿import { useEffect } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+
 import { Layout, DisclaimerBanner } from "@/components/layout/Layout";
 import { Button } from "@/components/ui/primitives";
 import { useAnalysis } from "@/context/useAnalysis";
@@ -26,8 +27,11 @@ import {
 } from "@/components/dashboard/LearningCards";
 
 import { QuizCard } from "@/components/dashboard/QuizCard";
+
 import { RotateCcw } from "lucide-react";
+
 import { GoalPlannerCard } from "@/components/GoalPlannerCard";
+
 
 
 // =====================================================
@@ -41,16 +45,16 @@ function horizonLabel(
   switch(horizon){
 
     case "short":
-      return "׳§׳¦׳¨";
+      return "קצר";
 
     case "medium":
-      return "׳‘׳™׳ ׳•׳ ׳™";
+      return "בינוני";
 
     case "long":
-      return "׳׳¨׳•׳";
+      return "ארוך";
 
     default:
-      return "׳׳ ׳”׳•׳’׳“׳¨";
+      return "לא מוגדר";
 
   }
 
@@ -61,6 +65,7 @@ function horizonLabel(
 
 export function DashboardPage() {
 
+
   const { result, reset } = useAnalysis();
 
   const navigate = useNavigate();
@@ -69,25 +74,27 @@ export function DashboardPage() {
 
   useEffect(() => {
 
-    if (!result) {
+    if(!result){
 
       navigate("/start", {
-        replace: true,
+        replace:true,
       });
 
     }
 
-  }, [result, navigate]);
+  },[result,navigate]);
 
 
 
-  if (!result) return null;
+  if(!result)
+    return null;
 
 
 
   return (
 
     <Layout>
+
 
       <section className="container max-w-6xl py-10 md:py-14">
 
@@ -96,19 +103,22 @@ export function DashboardPage() {
 
         <div className="mb-8 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
 
+
           <div>
+
 
             <h1 className="font-display text-3xl font-extrabold">
 
-              נ€ ׳₪׳¨׳•׳₪׳™׳ ׳”׳׳©׳§׳™׳¢ ׳©׳׳ ׳׳•׳›׳
+              🚀 פרופיל המשקיע שלך מוכן
 
             </h1>
 
 
+
             <p className="mt-2 max-w-xl text-sm text-muted-foreground">
 
-              AI ׳ ׳™׳×׳— ׳׳× ׳”׳׳˜׳¨׳•׳×, ׳¨׳׳× ׳”׳¡׳™׳›׳•׳ ׳•׳¡׳’׳ ׳•׳ ׳”׳”׳©׳§׳¢׳” ׳©׳׳
-              ׳•׳™׳¦׳¨ ׳¢׳‘׳•׳¨׳ ׳×׳׳•׳ ׳× ׳׳¦׳‘ ׳₪׳™׳ ׳ ׳¡׳™׳× ׳•׳׳¡׳׳•׳ ׳׳׳™׳“׳” ׳׳™׳©׳™.
+              AI ניתח את המטרות, רמת הסיכון וסגנון ההשקעה שלך
+              ויצר עבורך תמונת מצב פיננסית ומסלול למידה אישי.
 
             </p>
 
@@ -125,7 +135,7 @@ export function DashboardPage() {
 
             className="gap-2"
 
-            onClick={() => {
+            onClick={()=>{
 
               reset();
 
@@ -135,9 +145,9 @@ export function DashboardPage() {
 
           >
 
-            <RotateCcw className="h-3.5 w-3.5" />
+            <RotateCcw className="h-3.5 w-3.5"/>
 
-            ׳ ׳×׳— ׳₪׳¨׳•׳₪׳™׳ ׳׳—׳“׳©
+            נתח פרופיל מחדש
 
           </Button>
 
@@ -147,13 +157,14 @@ export function DashboardPage() {
 
 
 
-        <DisclaimerBanner className="mb-8" />
+        <DisclaimerBanner className="mb-8"/>
 
 
 
 
 
         {/* AI Summary Banner */}
+
 
         <div className="mb-8 rounded-2xl border bg-gradient-to-br from-blue-50 to-white p-6 shadow-sm">
 
@@ -163,12 +174,13 @@ export function DashboardPage() {
 
             <span className="text-2xl">
 
-              נ₪–
+              🤖
 
             </span>
 
 
             <div>
+
 
               <h2 className="text-xl font-bold">
 
@@ -179,9 +191,10 @@ export function DashboardPage() {
 
               <p className="text-sm text-muted-foreground">
 
-                ׳×׳׳•׳ ׳× ׳׳¦׳‘ ׳¨׳׳©׳•׳ ׳™׳× ׳׳₪׳™ ׳”׳ ׳×׳•׳ ׳™׳ ׳©׳¡׳™׳₪׳§׳×
+                תמונת מצב ראשונית לפי הנתונים שסיפקת
 
               </p>
+
 
             </div>
 
@@ -191,23 +204,22 @@ export function DashboardPage() {
 
 
 
-
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-
 
 
             <div className="rounded-xl bg-white p-4 shadow-sm">
 
+
               <p className="text-xs text-muted-foreground">
 
-                ׳¡׳’׳ ׳•׳ ׳”׳©׳§׳¢׳”
+                סגנון השקעה
 
               </p>
 
 
               <p className="mt-1 text-lg font-bold">
 
-                {result.investor?.type ?? "׳׳©׳§׳™׳¢"}
+                {result.investor?.type ?? "משקיע"}
 
               </p>
 
@@ -218,13 +230,12 @@ export function DashboardPage() {
 
 
 
-
             <div className="rounded-xl bg-white p-4 shadow-sm">
 
 
               <p className="text-xs text-muted-foreground">
 
-                ׳¨׳׳× ׳¡׳™׳›׳•׳
+                רמת סיכון
 
               </p>
 
@@ -242,13 +253,12 @@ export function DashboardPage() {
 
 
 
-
             <div className="rounded-xl bg-white p-4 shadow-sm">
 
 
               <p className="text-xs text-muted-foreground">
 
-                ׳׳•׳₪׳§ ׳”׳©׳§׳¢׳”
+                אופק השקעה
 
               </p>
 
@@ -263,7 +273,6 @@ export function DashboardPage() {
             </div>
 
 
-
           </div>
 
 
@@ -276,19 +285,23 @@ export function DashboardPage() {
 
         <motion.div
 
+
           initial="hidden"
 
           animate="show"
 
+
           variants={{
-            show: {
-              transition: {
-                staggerChildren: 0.05,
+            show:{
+              transition:{
+                staggerChildren:0.05,
               },
             },
           }}
 
+
           className="grid grid-cols-1 gap-5 lg:grid-cols-2"
+
 
         >
 
@@ -296,28 +309,7 @@ export function DashboardPage() {
 
           <div className="lg:col-span-2">
 
-            <WelcomeCard result={result} />
-
-          </div>
-
-
-
-
-          <InvestorTypeCard result={result} />
-
-          <RiskScoreCard result={result} />
-
-          <HorizonCard result={result} />
-
-          <InterestsCard result={result} />
-
-
-
-
-
-          <div className="lg:col-span-2">
-
-            <ExplainableAiCard result={result} />
+            <WelcomeCard result={result}/>
 
           </div>
 
@@ -325,53 +317,21 @@ export function DashboardPage() {
 
 
 
+          <InvestorTypeCard result={result}/>
+
+          <RiskScoreCard result={result}/>
+
+          <HorizonCard result={result}/>
+
+          <InterestsCard result={result}/>
+
+
+
+
+
           <div className="lg:col-span-2">
 
-            <PortfolioCard result={result} />
-
-
-{
-result.goalPlan && (
-
-<div className="lg:col-span-2">
-
-<GoalPlannerCard
-
-targetAmount={
-result.goalPlan.targetAmount
-}
-
-currentAmount={
-result.goalPlan.currentAmount
-}
-
-years={
-result.goalPlan.years
-}
-
-requiredMonthlyContribution={
-result.goalPlan.requiredMonthlyContribution
-}
-
-expectedFinalValue={
-result.goalPlan.expectedFinalValue
-}
-
-progressPercentage={
-result.goalPlan.progressPercentage
-}
-
-achievable={
-result.goalPlan.achievable
-}
-
-/>
-
-</div>
-
-)
-}
-
+            <ExplainableAiCard result={result}/>
 
           </div>
 
@@ -381,7 +341,66 @@ result.goalPlan.achievable
 
           <div className="lg:col-span-2">
 
-            <StrategiesCard />
+            <PortfolioCard result={result}/>
+
+          </div>
+
+
+
+
+
+          {
+            result.goalPlan && (
+
+              <div className="lg:col-span-2">
+
+
+                <GoalPlannerCard
+
+                  targetAmount={
+                    result.goalPlan.targetAmount
+                  }
+
+                  currentAmount={
+                    result.goalPlan.currentAmount
+                  }
+
+                  years={
+                    result.goalPlan.years
+                  }
+
+                  requiredMonthlyContribution={
+                    result.goalPlan.requiredMonthlyContribution
+                  }
+
+                  expectedFinalValue={
+                    result.goalPlan.expectedFinalValue
+                  }
+
+                  progressPercentage={
+                    result.goalPlan.progressPercentage
+                  }
+
+                  achievable={
+                    result.goalPlan.achievable
+                  }
+
+
+                />
+
+
+              </div>
+
+            )
+          }
+
+
+
+
+
+          <div className="lg:col-span-2">
+
+            <StrategiesCard/>
 
           </div>
 
@@ -391,7 +410,7 @@ result.goalPlan.achievable
 
           <div className="lg:col-span-2">
 
-            <MarketDataCard interests={result.flags.interests} />
+            <MarketDataCard interests={result.flags.interests}/>
 
           </div>
 
@@ -401,7 +420,7 @@ result.goalPlan.achievable
 
           <div className="lg:col-span-2">
 
-            <ComparisonCard />
+            <ComparisonCard/>
 
           </div>
 
@@ -411,7 +430,7 @@ result.goalPlan.achievable
 
           <div className="lg:col-span-2">
 
-            <ConceptsCard />
+            <ConceptsCard/>
 
           </div>
 
@@ -419,9 +438,9 @@ result.goalPlan.achievable
 
 
 
-          <MistakesCard />
+          <MistakesCard/>
 
-          <RoadmapCard result={result} />
+          <RoadmapCard result={result}/>
 
 
 
@@ -429,14 +448,14 @@ result.goalPlan.achievable
 
           <div className="lg:col-span-2">
 
-            <QuizCard />
+            <QuizCard/>
 
           </div>
-
 
 
 
         </motion.div>
+
 
 
       </section>
@@ -445,5 +464,6 @@ result.goalPlan.achievable
     </Layout>
 
   );
+
 
 }
