@@ -254,3 +254,291 @@ export function portfolioNarrative(
 
   return parts.join(" ");
 }
+
+
+// ---------------------------------------------------------------------------
+// Portfolio Intelligence Metrics
+// שכבת ניתוח לתיק עבור Explainable AI
+// ---------------------------------------------------------------------------
+
+export function calculatePortfolioMetrics(
+  allocation: AllocationItem[]
+) {
+
+  if (!allocation.length) {
+
+    return {
+
+      expectedReturn:0,
+
+      riskLevel:"בינוני" as const,
+
+      volatilityEstimate:"לא זמין",
+
+      diversification:"נמוך",
+
+      equityExposure:0,
+
+      fixedIncomeExposure:0,
+
+      explanation:
+        "לא קיימים נתוני הקצאה לניתוח.",
+
+      largestPosition:
+        "לא ידוע",
+
+      largestPositionWeight:0,
+
+    };
+
+  }
+
+
+
+  const equityKeywords = [
+
+    "מניות",
+
+    "דיבידנד",
+
+    "סקטור"
+
+  ];
+
+
+
+  const fixedKeywords = [
+
+    "אג\"ח",
+
+    "מזומן"
+
+  ];
+
+
+
+
+
+  const equityExposure = allocation
+
+    .filter(item =>
+      equityKeywords.some(
+        key => item.name.includes(key)
+      )
+    )
+
+    .reduce(
+      (sum,item)=>sum + item.value,
+      0
+    );
+
+
+
+
+
+  const fixedIncomeExposure = allocation
+
+    .filter(item =>
+      fixedKeywords.some(
+        key => item.name.includes(key)
+      )
+    )
+
+    .reduce(
+      (sum,item)=>sum + item.value,
+      0
+    );
+
+
+
+
+
+
+
+  const largestPosition =
+
+    [...allocation]
+
+      .sort(
+        (a,b)=>b.value-a.value
+      )[0];
+
+
+
+
+
+
+
+
+  let diversification =
+    "בינוני";
+
+
+  if(allocation.length >= 5){
+
+    diversification =
+      "גבוה";
+
+  }
+
+
+  else if(allocation.length <= 2){
+
+    diversification =
+      "נמוך";
+
+  }
+
+
+
+
+
+
+
+
+  let riskLevel:
+    | "נמוך"
+    | "בינוני"
+    | "גבוה";
+
+
+
+  if(equityExposure >= 80){
+
+    riskLevel="גבוה";
+
+  }
+
+  else if(equityExposure <=40){
+
+    riskLevel="נמוך";
+
+  }
+
+  else {
+
+    riskLevel="בינוני";
+
+  }
+
+
+
+
+
+
+
+
+
+  const expectedReturn =
+
+    Math.round(
+
+      (
+        equityExposure * 0.08 +
+
+        fixedIncomeExposure * 0.035
+
+      )
+
+      /100
+
+      *100
+
+    )
+
+    /100;
+
+
+
+
+
+
+
+
+
+  return {
+
+
+    expectedReturn,
+
+
+    riskLevel,
+
+
+    volatilityEstimate:
+
+      riskLevel === "גבוה"
+
+        ?
+
+        "תנודתיות גבוהה"
+
+        :
+
+        riskLevel === "נמוך"
+
+        ?
+
+        "תנודתיות נמוכה"
+
+        :
+
+        "תנודתיות בינונית",
+
+
+
+
+
+
+    diversification,
+
+
+
+
+    equityExposure:
+
+      Math.round(
+        equityExposure
+      ),
+
+
+
+
+    fixedIncomeExposure:
+
+      Math.round(
+        fixedIncomeExposure
+      ),
+
+
+
+
+
+    explanation:
+
+      `התיק מכיל ${Math.round(
+        equityExposure
+      )}% חשיפה מנייתית ו-${Math.round(
+        fixedIncomeExposure
+      )}% רכיבים סולידיים. רמת הפיזור: ${diversification}.`,
+
+
+
+
+
+    largestPosition:
+
+      largestPosition.name,
+
+
+
+
+
+    largestPositionWeight:
+
+      largestPosition.value,
+
+
+  };
+
+}

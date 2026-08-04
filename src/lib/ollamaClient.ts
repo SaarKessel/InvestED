@@ -23,26 +23,38 @@ const SYSTEM_PROMPT = [
   "הטון שלך חינוכי, לא מנחה ולא מכתיב.",
 ].join(" ");
 
-async function callOllama(prompt: string, model: string = DEFAULT_MODEL): Promise<string | null> {
+async function callOllama(
+  prompt: string,
+  model: string = DEFAULT_MODEL
+): Promise<string | null> {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  const timeout = setTimeout(
+    () => controller.abort(),
+    REQUEST_TIMEOUT_MS
+  );
 
   try {
     const response = await fetch(`${OLLAMA_HOST}/api/generate`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+      },
       body: JSON.stringify({
         model,
         prompt: `${SYSTEM_PROMPT}\n\n${prompt}`,
         stream: false,
-        options: { temperature: 0.6 },
+        options: {
+          temperature: 0.6,
+        },
       }),
       signal: controller.signal,
     });
 
     if (!response.ok) return null;
+
     const data = await response.json();
     const text = (data?.response ?? "").trim();
+
     return text || null;
   } catch {
     return null;
@@ -51,17 +63,40 @@ async function callOllama(prompt: string, model: string = DEFAULT_MODEL): Promis
   }
 }
 
+
+// ---------------------------------------------------------------------------
+// Public generic Ollama call
+// משמש לבדיקות ולשימושים עתידיים ב-AI Mentor
+// ---------------------------------------------------------------------------
+
+export async function askOllama(
+  prompt: string,
+  model: string = DEFAULT_MODEL
+): Promise<string | null> {
+  return callOllama(prompt, model);
+}
+
+
 export async function isOllamaAvailable(): Promise<boolean> {
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 2500);
-    const res = await fetch(`${OLLAMA_HOST}/api/tags`, { signal: controller.signal });
+    const timeout = setTimeout(
+      () => controller.abort(),
+      2500
+    );
+
+    const res = await fetch(`${OLLAMA_HOST}/api/tags`, {
+      signal: controller.signal,
+    });
+
     clearTimeout(timeout);
+
     return res.ok;
   } catch {
     return false;
   }
 }
+
 
 export async function explainInvestorProfile(
   investorType: string,
@@ -73,12 +108,14 @@ export async function explainInvestorProfile(
     `המשתמש תיאר את העדפות ההשקעה שלו כך: "${rawText}"`,
     `לפי ניתוח מבוסס כללים, הוא סווג כ"${investorType}" עם ציון סיכון ${riskScore}/10.`,
     `הנימוק הבסיסי היה: ${baseReason}`,
-    "בשלוש עד ארבעה משפטים קצרים ומעודדים, פנה למשתמש בגוף שני ('אתה') והסבר למה הפרופיל החינוכי הזה מתאים למה שהוא תיאר, תוך התייחסות לדברים ספציפיים שהוא כתב. אל תמליץ על נכסים ספציפיים.",
+    "בשלושה עד ארבעה משפטים קצרים ומעודדים, פנה למשתמש בגוף שני ('אתה') והסבר למה הפרופיל החינוכי הזה מתאים למה שהוא תיאר, תוך התייחסות לדברים ספציפיים שהוא כתב. אל תמליץ על נכסים ספציפיים.",
   ].join("\n");
 
   const result = await callOllama(prompt);
+
   return result ?? baseReason;
 }
+
 
 export async function explainPortfolio(
   investorType: string,
@@ -91,5 +128,6 @@ export async function explainPortfolio(
   ].join("\n");
 
   const result = await callOllama(prompt);
+
   return result ?? fallback;
 }

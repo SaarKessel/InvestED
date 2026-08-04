@@ -1,8 +1,16 @@
 import { motion } from "framer-motion";
-import { BrainCircuit } from "lucide-react";
+
+import {
+  BrainCircuit,
+  ShieldCheck,
+  TrendingUp,
+  Sparkles,
+  Target,
+} from "lucide-react";
+
 
 import type {
-  AnalysisResult
+  AnalysisResult,
 } from "@/types";
 
 
@@ -11,7 +19,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
-  Badge
+  Badge,
 } from "@/components/ui/primitives";
 
 
@@ -20,197 +28,677 @@ import { InfoBadge } from "@/components/ui/InfoBadge";
 
 
 
+
 export function ExplainableAiCard({
-  result
+
+  result,
+
 }:{
-  result:AnalysisResult
+
+  result:AnalysisResult;
+
 }) {
 
 
 
-return (
+  const signals =
+    result.explainability?.signals ?? [];
 
-<motion.div
 
-initial={{
-  opacity:0,
-  y:16
-}}
 
-animate={{
-  opacity:1,
-  y:0
-}}
+  const confidenceScore =
 
-transition={{
-  delay:0.1
-}}
+    Math.min(
 
->
+      95,
 
+      60 +
 
-<Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+      signals.length * 8
 
+    );
 
-<CardHeader>
 
 
-<div className="flex items-center gap-2 text-primary">
 
-<BrainCircuit className="h-4 w-4"/>
 
-<span className="text-xs font-bold uppercase tracking-wide">
-Explainable AI
-</span>
 
-</div>
+  return (
 
 
+    <motion.div
 
 
-<div className="flex items-center gap-2">
+      initial={{
+        opacity:0,
+        y:16,
+      }}
 
 
-<CardTitle className="text-xl">
+      animate={{
+        opacity:1,
+        y:0,
+      }}
 
-למה הגענו למסקנה הזאת?
 
-</CardTitle>
+      transition={{
+        duration:0.4,
+      }}
 
 
-<InfoBadge
+    >
 
-description='רכיב שמסביר אילו סימנים בטקסט השפיעו על ניתוח הפרופיל והסיכון.'
 
-/>
 
+      <Card
+        className="
+        border-primary/20
+        bg-gradient-to-br
+        from-primary/5
+        to-transparent
+        "
+      >
 
-</div>
 
 
-</CardHeader>
 
+        <CardHeader>
 
 
 
+          <div
+            className="
+            flex
+            items-center
+            gap-2
+            text-primary
+            "
+          >
 
-<CardContent className="space-y-5">
 
+            <BrainCircuit
+              className="h-5 w-5"
+            />
 
-<p className="rounded-xl border border-border bg-card p-4 text-sm leading-relaxed">
 
-{result.explainability.summary}
+            <span
+              className="
+              text-xs
+              font-bold
+              uppercase
+              tracking-wide
+              "
+            >
 
-</p>
+              Explainable AI Engine
 
+            </span>
 
 
+          </div>
 
 
-<div>
 
 
-<p className="mb-2 text-xs font-bold text-muted-foreground">
 
-אילו סימנים זוהו בטקסט:
+          <div
+            className="
+            flex
+            items-center
+            gap-2
+            "
+          >
 
-</p>
 
+            <CardTitle
+              className="text-xl"
+            >
 
+              למה AI הגיע למסקנה הזאת?
 
+            </CardTitle>
 
-<div className="flex flex-col gap-3">
 
 
-{
-result.explainability.signals.map(
-(signal,index)=>(
 
+            <InfoBadge
 
-<div
-key={`${signal.title}-${index}`}
-className="rounded-xl border bg-background p-3"
->
+              description="
+              המערכת מציגה את הגורמים שהשפיעו
+              על ניתוח פרופיל המשקיע.
+              "
 
+            />
 
-<Badge
-variant="outline"
-className="gap-1.5"
->
 
-{signal.title}
+          </div>
 
-</Badge>
 
+        </CardHeader>
 
 
-<p className="mt-2 text-sm text-muted-foreground">
 
-{signal.description}
 
-</p>
 
 
-</div>
 
+        <CardContent
+          className="space-y-5"
+        >
 
-))
-}
 
 
 
-</div>
 
 
-</div>
+          <div
+            className="
+            rounded-xl
+            border
+            bg-card
+            p-5
+            "
+          >
 
 
+            <div
+              className="
+              mb-3
+              flex
+              items-center
+              gap-2
+              "
+            >
 
 
+              <Sparkles
+                className="
+                h-4
+                w-4
+                text-primary
+                "
+              />
 
 
-<div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <p
+                className="font-semibold"
+              >
 
+                סיכום AI
 
-<span className="h-1.5 w-1.5 rounded-full bg-primary"/>
+              </p>
 
 
-מקור הניסוח:
+            </div>
 
-{" "}
 
 
-{
-result.aiNarration.source === "ollama"
 
-?
+            <p
+              className="
+              text-sm
+              leading-relaxed
+              text-muted-foreground
+              "
+            >
 
-"מודל שפה מקומי (Ollama) בשילוב מנוע כללים"
+              {result.aiNarration.profileSummary}
 
-:
+            </p>
 
-"מנוע כללים חינוכי"
 
-}
+          </div>
 
 
 
-</div>
 
 
 
 
-</CardContent>
 
 
-</Card>
 
+          <div
+            className="
+            grid
+            grid-cols-1
+            gap-4
+            md:grid-cols-2
+            "
+          >
 
 
-</motion.div>
 
+            <div
+              className="
+              rounded-xl
+              border
+              bg-card
+              p-4
+              "
+            >
 
-);
+
+              <div
+                className="
+                flex
+                items-center
+                gap-2
+                mb-2
+                "
+              >
+
+
+                <ShieldCheck
+                  className="
+                  h-4
+                  w-4
+                  text-primary
+                  "
+                />
+
+
+                <p
+                  className="font-semibold"
+                >
+
+                  סוג משקיע
+
+                </p>
+
+
+              </div>
+
+
+
+
+              <Badge
+                variant="outline"
+              >
+
+                {result.investor.type}
+
+              </Badge>
+
+
+
+
+              <p
+                className="
+                mt-3
+                text-sm
+                text-muted-foreground
+                "
+              >
+
+                {result.investor.reason}
+
+              </p>
+
+
+
+            </div>
+
+
+
+
+
+
+
+
+
+            <div
+              className="
+              rounded-xl
+              border
+              bg-card
+              p-4
+              "
+            >
+
+
+              <div
+                className="
+                flex
+                items-center
+                gap-2
+                mb-3
+                "
+              >
+
+
+                <TrendingUp
+                  className="
+                  h-4
+                  w-4
+                  text-primary
+                  "
+                />
+
+
+                <p
+                  className="font-semibold"
+                >
+
+                  ניתוח סיכון
+
+                </p>
+
+
+              </div>
+
+
+
+
+
+              <div
+                className="
+                flex
+                items-center
+                justify-between
+                "
+              >
+
+
+                <Badge
+                  variant="outline"
+                >
+
+                  {result.riskScore}/10
+
+                </Badge>
+
+
+
+                <span
+                  className="
+                  text-sm
+                  text-muted-foreground
+                  "
+                >
+
+                  Confidence {confidenceScore}%
+
+                </span>
+
+
+              </div>
+
+
+            </div>
+
+
+
+          </div>
+
+
+
+
+
+
+
+
+
+          <div>
+
+
+            <div
+              className="
+              mb-3
+              flex
+              items-center
+              gap-2
+              "
+            >
+
+
+              <Target
+                className="
+                h-4
+                w-4
+                text-primary
+                "
+              />
+
+
+              <p
+                className="
+                text-xs
+                font-bold
+                text-muted-foreground
+                "
+              >
+
+                גורמים שהשפיעו על ההחלטה
+
+              </p>
+
+
+            </div>
+
+
+
+
+
+            {
+              signals.length === 0
+
+              ?
+
+              (
+
+              <div
+                className="
+                rounded-xl
+                border
+                p-4
+                text-sm
+                text-muted-foreground
+                "
+              >
+
+                לא נמצאו גורמים להצגה.
+
+              </div>
+
+              )
+
+
+              :
+
+              (
+
+              <div
+                className="
+                flex
+                flex-col
+                gap-3
+                "
+              >
+
+
+                {
+                  signals.map(
+
+                    (signal,index)=>(
+
+
+                    <div
+
+                      key={
+                        `${signal.title}-${index}`
+                      }
+
+                      className="
+                      rounded-xl
+                      border
+                      bg-background
+                      p-4
+                      "
+
+                    >
+
+
+
+                      <Badge
+                        variant="outline"
+                      >
+
+                        {signal.title}
+
+                      </Badge>
+
+
+
+
+
+                      <p
+                        className="
+                        mt-2
+                        text-sm
+                        text-muted-foreground
+                        "
+                      >
+
+                        {signal.description}
+
+                      </p>
+
+
+                    </div>
+
+
+                    )
+
+                  )
+                }
+
+
+              </div>
+
+              )
+
+            }
+
+
+          </div>
+
+
+
+
+
+
+
+          <div
+            className="
+            border-t
+            pt-5
+            "
+          >
+
+
+            <p
+              className="
+              mb-3
+              text-xs
+              font-bold
+              text-muted-foreground
+              "
+            >
+
+              מבנה תיק שנוצר ללמידה
+
+            </p>
+
+
+
+
+            <div
+              className="
+              flex
+              flex-wrap
+              gap-2
+              "
+            >
+
+
+              {
+                result.allocation.map(
+
+                  item=>(
+
+                    <Badge
+
+                      key={item.name}
+
+                      variant="outline"
+
+                    >
+
+                      {item.name}
+
+                    </Badge>
+
+                  )
+
+                )
+              }
+
+
+            </div>
+
+
+          </div>
+
+
+
+
+
+
+          <div
+            className="
+            flex
+            items-center
+            gap-2
+            text-xs
+            text-muted-foreground
+            "
+          >
+
+
+            <span
+              className="
+              h-1.5
+              w-1.5
+              rounded-full
+              bg-primary
+              "
+            />
+
+
+            מקור:
+
+            {" "}
+
+            InvestED Explainable AI Educational Engine
+
+
+          </div>
+
+
+
+
+        </CardContent>
+
+
+      </Card>
+
+
+
+    </motion.div>
+
+
+  );
 
 
 }

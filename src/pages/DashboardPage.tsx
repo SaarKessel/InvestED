@@ -2,9 +2,33 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
-import { Layout, DisclaimerBanner } from "@/components/layout/Layout";
-import { Button } from "@/components/ui/primitives";
+import {
+  RotateCcw,
+  BrainCircuit,
+  Target,
+  TrendingUp,
+  ShieldCheck,
+  Sparkles,
+  GraduationCap,
+  Activity,
+} from "lucide-react";
+
+
+import {
+  Layout,
+  DisclaimerBanner,
+} from "@/components/layout/Layout";
+
+
+import {
+  Button,
+  Card,
+  CardContent,
+} from "@/components/ui/primitives";
+
+
 import { useAnalysis } from "@/context/useAnalysis";
+
 
 import {
   WelcomeCard,
@@ -14,11 +38,26 @@ import {
   InterestsCard,
 } from "@/components/dashboard/ProfileSummaryCards";
 
-import { ExplainableAiCard } from "@/components/dashboard/ExplainableAiCard";
-import { StrategiesCard } from "@/components/dashboard/StrategiesCard";
-import { PortfolioCard } from "@/components/dashboard/PortfolioCard";
-import { MarketDataCard } from "@/components/dashboard/MarketDataCard";
-import { ComparisonCard } from "@/components/dashboard/ComparisonCard";
+
+import { ExplainableAiCard } 
+from "@/components/dashboard/ExplainableAiCard";
+
+
+import { StrategiesCard }
+from "@/components/dashboard/StrategiesCard";
+
+
+import { PortfolioCard }
+from "@/components/dashboard/PortfolioCard";
+
+
+import { MarketDataCard }
+from "@/components/dashboard/MarketDataCard";
+
+
+import { ComparisonCard }
+from "@/components/dashboard/ComparisonCard";
+
 
 import {
   ConceptsCard,
@@ -26,35 +65,42 @@ import {
   RoadmapCard,
 } from "@/components/dashboard/LearningCards";
 
-import { QuizCard } from "@/components/dashboard/QuizCard";
 
-import { RotateCcw } from "lucide-react";
+import { QuizCard }
+from "@/components/dashboard/QuizCard";
 
-import { GoalPlannerCard } from "@/components/GoalPlannerCard";
+
+import { GoalPlannerCard }
+from "@/components/GoalPlannerCard";
+
 
 
 
 // =====================================================
-// Horizon Display Helper
+// Helpers
 // =====================================================
 
-function horizonLabel(
-  horizon: string | null
+
+function goalLabel(
+  goal:string|undefined
 ){
 
-  switch(horizon){
+  switch(goal){
 
-    case "short":
-      return "קצר";
+    case "retirement":
+      return "פרישה ועצמאות כלכלית";
 
-    case "medium":
-      return "בינוני";
+    case "home":
+      return "רכישת דירה";
 
-    case "long":
-      return "ארוך";
+    case "child":
+      return "חיסכון לילדים";
+
+    case "growth":
+      return "בניית הון";
 
     default:
-      return "לא מוגדר";
+      return "בניית עושר";
 
   }
 
@@ -63,407 +109,1126 @@ function horizonLabel(
 
 
 
-export function DashboardPage() {
+function confidenceLabel(
+  value:number|undefined
+){
 
+  if(!value)
+    return "לא מחושב";
 
-  const { result, reset } = useAnalysis();
 
-  const navigate = useNavigate();
+  if(value >= 80)
+    return "גבוה";
 
 
+  if(value >= 50)
+    return "בינוני";
 
-  useEffect(() => {
 
-    if(!result){
+  return "נמוך";
 
-      navigate("/start", {
-        replace:true,
-      });
+}
 
-    }
 
-  },[result,navigate]);
 
 
+// =====================================================
+// Dashboard Page
+// =====================================================
 
-  if(!result)
-    return null;
 
+export function DashboardPage(){
 
 
-  return (
+const {
+  result,
+  reset
+}=useAnalysis();
 
-    <Layout>
 
 
-      <section className="container max-w-6xl py-10 md:py-14">
+const navigate =
+  useNavigate();
 
 
-        {/* Header */}
 
-        <div className="mb-8 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
 
+useEffect(()=>{
 
-          <div>
 
+if(!result){
 
-            <h1 className="font-display text-3xl font-extrabold">
+  navigate("/start",{
+    replace:true
+  });
 
-              🚀 פרופיל המשקיע שלך מוכן
+}
 
-            </h1>
 
+},[
+result,
+navigate
+]);
 
 
-            <p className="mt-2 max-w-xl text-sm text-muted-foreground">
 
-              AI ניתח את המטרות, רמת הסיכון וסגנון ההשקעה שלך
-              ויצר עבורך תמונת מצב פיננסית ומסלול למידה אישי.
 
-            </p>
 
+if(!result)
+return null;
 
-          </div>
 
 
 
-          <Button
+return (
 
-            variant="outline"
+<Layout>
 
-            size="sm"
 
-            className="gap-2"
+<section
+className="
+container
+max-w-6xl
+py-10
+md:py-14
+"
+>
 
-            onClick={()=>{
 
-              reset();
 
-              navigate("/start");
+<div
+className="
+mb-10
+flex
+flex-col
+gap-5
+md:flex-row
+md:items-center
+md:justify-between
+"
+>
 
-            }}
 
-          >
 
-            <RotateCcw className="h-3.5 w-3.5"/>
+<div>
 
-            נתח פרופיל מחדש
 
-          </Button>
+<div
+className="
+mb-3
+flex
+items-center
+gap-2
+text-primary
+"
+>
 
 
-        </div>
+<Activity
+className="h-5 w-5"
+/>
 
 
+<span
+className="
+text-xs
+font-bold
+uppercase
+tracking-wide
+"
+>
 
+InvestED Intelligence Dashboard
 
-        <DisclaimerBanner className="mb-8"/>
+</span>
 
 
+</div>
 
 
 
-        {/* AI Summary Banner */}
 
+<h1
+className="
+font-display
+text-4xl
+font-extrabold
+"
+>
 
-        <div className="mb-8 rounded-2xl border bg-gradient-to-br from-blue-50 to-white p-6 shadow-sm">
+🚀 פרופיל המשקיע שלך מוכן
 
+</h1>
 
-          <div className="mb-5 flex items-center gap-3">
 
 
-            <span className="text-2xl">
+<p
+className="
+mt-3
+max-w-xl
+text-sm
+leading-relaxed
+text-muted-foreground
+"
+>
 
-              🤖
+מערכת InvestED שילבה ניתוח סיכון,
+מטרות פיננסיות,
+והסברים מבוססי AI כדי ליצור תמונת מצב לימודית.
 
-            </span>
+</p>
 
 
-            <div>
+</div>
 
 
-              <h2 className="text-xl font-bold">
 
-                AI Investor Profile
 
-              </h2>
 
+<Button
 
-              <p className="text-sm text-muted-foreground">
+variant="outline"
 
-                תמונת מצב ראשונית לפי הנתונים שסיפקת
+size="sm"
 
-              </p>
+className="gap-2"
 
+onClick={()=>{
 
-            </div>
+reset();
 
+navigate("/start");
 
-          </div>
+}}
 
+>
 
 
+<RotateCcw
+className="h-4 w-4"
+/>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
 
+נתח מחדש
 
-            <div className="rounded-xl bg-white p-4 shadow-sm">
 
+</Button>
 
-              <p className="text-xs text-muted-foreground">
 
-                סגנון השקעה
 
-              </p>
 
+</div>
 
-              <p className="mt-1 text-lg font-bold">
 
-                {result.investor?.type ?? "משקיע"}
 
-              </p>
 
 
-            </div>
+<DisclaimerBanner
+className="mb-8"
+/>
 
+{/* =====================================================
+AI PROFILE INTELLIGENCE SUMMARY
+===================================================== */}
 
 
+<Card
 
+className="
+mb-8
+overflow-hidden
+border-primary/20
+bg-gradient-to-br
+from-primary/10
+via-background
+to-transparent
+"
 
-            <div className="rounded-xl bg-white p-4 shadow-sm">
+>
 
 
-              <p className="text-xs text-muted-foreground">
+<CardContent
 
-                רמת סיכון
+className="
+p-6
+"
 
-              </p>
+>
 
 
-              <p className="mt-1 text-lg font-bold">
+<div
 
-                {result.riskScore ?? 0}/10
+className="
+mb-6
+flex
+items-center
+gap-3
+"
 
-              </p>
+>
 
 
-            </div>
+<div
 
+className="
+rounded-2xl
+bg-primary/10
+p-3
+"
 
+>
 
 
+<BrainCircuit
 
-            <div className="rounded-xl bg-white p-4 shadow-sm">
+className="
+h-7
+w-7
+text-primary
+"
 
+/>
 
-              <p className="text-xs text-muted-foreground">
 
-                אופק השקעה
+</div>
 
-              </p>
 
 
-              <p className="mt-1 text-lg font-bold">
 
-                {horizonLabel(result.horizon)}
+<div>
 
-              </p>
 
+<h2
 
-            </div>
+className="
+text-xl
+font-bold
+"
 
+>
 
-          </div>
+AI Investor Intelligence
 
+</h2>
 
-        </div>
 
 
+<p
 
+className="
+text-sm
+text-muted-foreground
+"
 
+>
 
+ניתוח מבוסס נתוני משתמש,
+סיכון,
+מטרות והרגלי השקעה
 
-        <motion.div
+</p>
 
 
-          initial="hidden"
+</div>
 
-          animate="show"
 
 
-          variants={{
-            show:{
-              transition:{
-                staggerChildren:0.05,
-              },
-            },
-          }}
+</div>
 
 
-          className="grid grid-cols-1 gap-5 lg:grid-cols-2"
 
 
-        >
 
 
 
-          <div className="lg:col-span-2">
 
-            <WelcomeCard result={result}/>
+<div
 
-          </div>
+className="
+grid
+grid-cols-1
+gap-4
+md:grid-cols-4
+"
 
+>
 
 
 
 
-          <InvestorTypeCard result={result}/>
 
-          <RiskScoreCard result={result}/>
 
-          <HorizonCard result={result}/>
+<div
 
-          <InterestsCard result={result}/>
+className="
+rounded-2xl
+border
+bg-background
+p-4
+transition
+hover:shadow-md
+"
 
+>
 
 
+<TrendingUp
 
+className="
+mb-3
+h-5
+w-5
+text-primary
+"
 
-          <div className="lg:col-span-2">
+/>
 
-            <ExplainableAiCard result={result}/>
 
-          </div>
 
+<p
 
+className="
+text-xs
+text-muted-foreground
+"
 
+>
 
+סגנון השקעה
 
-          <div className="lg:col-span-2">
+</p>
 
-            <PortfolioCard result={result}/>
 
-          </div>
 
 
+<p
 
+className="
+mt-1
+font-bold
+"
 
+>
 
-          {
-            result.goalPlan && (
+{
+result.investor?.type ??
+"משקיע"
+}
 
-              <div className="lg:col-span-2">
 
+</p>
 
-                <GoalPlannerCard
 
-                  targetAmount={
-                    result.goalPlan.targetAmount
-                  }
 
-                  currentAmount={
-                    result.goalPlan.currentAmount
-                  }
+</div>
 
-                  years={
-                    result.goalPlan.years
-                  }
 
-                  requiredMonthlyContribution={
-                    result.goalPlan.requiredMonthlyContribution
-                  }
 
-                  expectedFinalValue={
-                    result.goalPlan.expectedFinalValue
-                  }
 
-                  progressPercentage={
-                    result.goalPlan.progressPercentage
-                  }
 
-                  achievable={
-                    result.goalPlan.achievable
-                  }
 
 
-                />
 
 
-              </div>
+<div
 
-            )
-          }
+className="
+rounded-2xl
+border
+bg-background
+p-4
+transition
+hover:shadow-md
+"
 
+>
 
 
+<ShieldCheck
 
+className="
+mb-3
+h-5
+w-5
+text-primary
+"
 
-          <div className="lg:col-span-2">
+/>
 
-            <StrategiesCard/>
 
-          </div>
 
+<p
 
+className="
+text-xs
+text-muted-foreground
+"
 
+>
 
+ציון סיכון
 
-          <div className="lg:col-span-2">
+</p>
 
-            <MarketDataCard interests={result.flags.interests}/>
 
-          </div>
 
+<p
 
+className="
+mt-1
+text-xl
+font-bold
+"
 
+>
 
+{
+result.riskScore ?? 0
+}
 
-          <div className="lg:col-span-2">
+/10
 
-            <ComparisonCard/>
 
-          </div>
+</p>
 
 
+</div>
 
 
 
-          <div className="lg:col-span-2">
 
-            <ConceptsCard/>
 
-          </div>
 
 
 
 
+<div
 
-          <MistakesCard/>
+className="
+rounded-2xl
+border
+bg-background
+p-4
+transition
+hover:shadow-md
+"
 
-          <RoadmapCard result={result}/>
+>
 
 
+<Target
 
+className="
+mb-3
+h-5
+w-5
+text-primary
+"
 
+/>
 
-          <div className="lg:col-span-2">
 
-            <QuizCard/>
 
-          </div>
+<p
 
+className="
+text-xs
+text-muted-foreground
+"
 
+>
 
-        </motion.div>
+מטרה פיננסית
 
+</p>
 
 
-      </section>
 
+<p
 
-    </Layout>
+className="
+mt-1
+font-bold
+"
 
-  );
+>
+
+{
+goalLabel(
+result.scenario?.goal
+)
+}
+
+
+</p>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+<div
+
+className="
+rounded-2xl
+border
+bg-background
+p-4
+transition
+hover:shadow-md
+"
+
+>
+
+
+<Sparkles
+
+className="
+mb-3
+h-5
+w-5
+text-primary
+"
+
+/>
+
+
+
+<p
+
+className="
+text-xs
+text-muted-foreground
+"
+
+>
+
+AI Confidence
+
+</p>
+
+
+
+<p
+
+className="
+mt-1
+font-bold
+"
+
+>
+
+{
+confidenceLabel(
+result.scenario?.confidence
+)
+}
+
+
+</p>
+
+
+</div>
+
+
+
+
+
+
+</div>
+
+
+
+
+
+</CardContent>
+
+
+</Card>
+
+
+
+
+
+
+
+
+{/* =====================================================
+MAIN DASHBOARD GRID
+===================================================== */}
+
+
+
+<motion.div
+
+
+initial={{
+opacity:0,
+y:20
+}}
+
+
+animate={{
+opacity:1,
+y:0
+}}
+
+
+transition={{
+duration:0.5
+}}
+
+
+
+className="
+grid
+grid-cols-1
+gap-5
+lg:grid-cols-2
+"
+
+>
+
+
+
+
+
+
+
+<div
+
+className="
+lg:col-span-2
+"
+
+>
+
+<WelcomeCard
+
+result={result}
+
+/>
+
+</div>
+
+
+
+
+
+
+
+
+
+<InvestorTypeCard
+
+result={result}
+
+/>
+
+
+
+
+<RiskScoreCard
+
+result={result}
+
+/>
+
+
+
+
+<HorizonCard
+
+result={result}
+
+/>
+
+
+
+
+<InterestsCard
+
+result={result}
+
+/>
+
+
+
+
+
+
+
+
+
+{/* =====================================================
+EXPLAINABLE AI
+===================================================== */}
+
+
+
+<div
+
+className="
+lg:col-span-2
+"
+
+>
+
+
+<ExplainableAiCard
+
+result={result}
+
+/>
+
+
+</div>
+
+
+
+
+
+
+
+
+{/* =====================================================
+PORTFOLIO ANALYSIS
+===================================================== */}
+
+
+
+<div
+
+className="
+lg:col-span-2
+"
+
+>
+
+
+<PortfolioCard
+
+result={result}
+
+/>
+
+
+</div>
+
+
+
+
+
+
+
+
+{/* =====================================================
+GOAL PLANNER
+===================================================== */}
+
+
+
+{
+result.goalPlan &&
+
+(
+
+<div
+
+className="
+lg:col-span-2
+"
+
+>
+
+
+<GoalPlannerCard
+
+
+targetAmount={
+result.goalPlan.targetAmount
+}
+
+
+currentAmount={
+result.goalPlan.currentAmount
+}
+
+
+years={
+result.goalPlan.years
+}
+
+
+requiredMonthlyContribution={
+result.goalPlan.requiredMonthlyContribution
+}
+
+
+expectedFinalValue={
+result.goalPlan.expectedFinalValue
+}
+
+
+progressPercentage={
+result.goalPlan.progressPercentage
+}
+
+
+achievable={
+result.goalPlan.achievable
+}
+
+
+/>
+
+
+</div>
+
+)
+
+}
+
+{/* =====================================================
+STRATEGIES
+===================================================== */}
+
+
+<div
+
+className="
+lg:col-span-2
+"
+
+>
+
+
+<StrategiesCard/>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+{/* =====================================================
+MARKET INTELLIGENCE
+===================================================== */}
+
+
+
+<div
+
+className="
+lg:col-span-2
+"
+
+>
+
+
+<MarketDataCard
+
+
+interests={
+result.flags.interests
+}
+
+
+/>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+{/* =====================================================
+BROKER COMPARISON
+===================================================== */}
+
+
+
+<div
+
+className="
+lg:col-span-2
+"
+
+>
+
+
+<ComparisonCard/>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+{/* =====================================================
+FINANCIAL EDUCATION CENTER
+===================================================== */}
+
+
+
+<div
+
+className="
+lg:col-span-2
+"
+
+>
+
+
+<div
+
+className="
+mb-4
+flex
+items-center
+gap-2
+"
+
+>
+
+
+<GraduationCap
+
+className="
+h-5
+w-5
+text-primary
+"
+
+/>
+
+
+
+<h2
+
+className="
+text-xl
+font-bold
+"
+
+>
+
+Learning Center
+
+</h2>
+
+
+</div>
+
+
+
+
+<ConceptsCard/>
+
+
+</div>
+
+
+
+
+
+
+
+
+<div>
+
+
+<MistakesCard/>
+
+
+</div>
+
+
+
+
+
+
+
+<div>
+
+
+<RoadmapCard
+
+result={result}
+
+/>
+
+
+</div>
+
+
+
+
+
+
+
+
+
+{/* =====================================================
+KNOWLEDGE QUIZ
+===================================================== */}
+
+
+
+<div
+
+className="
+lg:col-span-2
+"
+
+>
+
+
+<QuizCard/>
+
+
+</div>
+
+
+
+
+
+
+
+</motion.div>
+
+
+
+
+
+</section>
+
+
+</Layout>
+
+
+);
 
 
 }

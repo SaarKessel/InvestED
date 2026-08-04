@@ -1,6 +1,7 @@
-﻿// =====================================================
+// =====================================================
 // InvestED - Global Types
 // =====================================================
+
 
 // =====================================================
 // Interests
@@ -12,6 +13,9 @@ export type InterestArea =
   | "בריאות"
   | "אנרגיה"
   | "נדל\"ן";
+
+
+
 
 // =====================================================
 // Risk / Horizon
@@ -25,11 +29,13 @@ export type RiskLevel =
   | "very_high"
   | null;
 
+
 export type InvestmentHorizon =
   | "short"
   | "medium"
   | "long"
   | null;
+
 
 export type HorizonBucket =
   | "קצר"
@@ -37,11 +43,13 @@ export type HorizonBucket =
   | "ארוך"
   | null;
 
+
 export type KnowledgeLevel =
   | "beginner"
   | "some"
   | "experienced"
   | null;
+
 
 export type FinancialGoal =
   | "wealth_growth"
@@ -50,6 +58,9 @@ export type FinancialGoal =
   | "house_purchase"
   | "passive_income"
   | null;
+
+
+
 
 // =====================================================
 // Financial Scenario
@@ -79,7 +90,12 @@ export interface FinancialScenario {
 
   detectedInterests:string[];
 
+  riskProfile?:RiskLevel | string;
+
 }
+
+
+
 
 // =====================================================
 // Investor
@@ -92,6 +108,20 @@ export type InvestorType =
   | "משקיע צמיחה"
   | "משקיע ערך"
   | "משקיע מאוזן";
+
+
+
+export interface InvestorClassification {
+
+  type:InvestorType;
+
+  reason:string;
+
+}
+
+
+
+
 
 // =====================================================
 // Profile
@@ -117,6 +147,10 @@ export interface ProfileFlags {
 
 }
 
+
+
+
+
 // =====================================================
 // Risk
 // =====================================================
@@ -133,13 +167,9 @@ export interface RiskDescription {
 
 }
 
-export interface InvestorClassification {
 
-  type:InvestorType;
 
-  reason:string;
 
-}
 
 // =====================================================
 // Explainable AI
@@ -154,6 +184,10 @@ export interface AnalysisSignal {
   type?:string;
 
 }
+
+
+
+
 
 // =====================================================
 // Portfolio
@@ -173,6 +207,83 @@ export interface AllocationItem {
 
 }
 
+
+
+
+
+// =====================================================
+// Portfolio Intelligence Metrics
+// =====================================================
+
+export interface PortfolioMetrics {
+
+  /**
+   * Expected annual return estimate
+   */
+  expectedReturn:number;
+
+
+  /**
+   * Educational risk classification
+   */
+  riskLevel:
+    | "נמוך"
+    | "בינוני"
+    | "גבוה";
+
+
+  /**
+   * Estimated volatility description
+   */
+  volatilityEstimate:string;
+
+
+  /**
+   * Portfolio diversification quality
+   */
+  diversification:string;
+
+
+  /**
+   * Equity allocation percentage
+   */
+  equityExposure:number;
+
+
+  /**
+   * Fixed income + cash percentage
+   */
+  fixedIncomeExposure:number;
+
+
+  /**
+   * Largest portfolio position
+   */
+  largestPosition:string;
+
+
+  /**
+   * Largest position percentage
+   */
+  largestPositionWeight:number;
+
+
+  /**
+   * Human readable explanation
+   */
+  explanation:string;
+
+}
+
+
+
+
+
+
+// =====================================================
+// Projection
+// =====================================================
+
 export interface Projection {
 
   totalContributed:number;
@@ -182,6 +293,10 @@ export interface Projection {
   finalBalance:number;
 
 }
+
+
+
+
 
 // =====================================================
 // AI Narration
@@ -197,50 +312,97 @@ export interface AiNarration {
 
 }
 
+
+
+
+
 // =====================================================
 // Analysis Result
 // =====================================================
 
 export interface AnalysisResult {
 
+
   profileText:string;
+
 
   flags:ProfileFlags;
 
+
   scenario:FinancialScenario | null;
+
 
   horizon:InvestmentHorizon;
 
+
   horizonExplanation?:string;
+
 
   investor:InvestorClassification;
 
+
   riskScore:number;
+
 
   riskDescription?:RiskDescription;
 
+
   allocation:AllocationItem[];
+
+
+  /**
+   * Portfolio Intelligence Layer
+   * Optional because older analysis flows
+   * may not calculate metrics yet.
+   */
+  portfolioMetrics?:PortfolioMetrics;
+
 
   projection:Projection;
 
+
+
   goalPlan?: {
+
     targetAmount:number;
+
     currentAmount:number;
+
     years:number;
+
     requiredMonthlyContribution:number;
+
     expectedFinalValue:number;
+
     progressPercentage:number;
+
     achievable:boolean;
+
   };
 
+
+
+
   explainability:{
+
     summary?:string;
+
     signals:AnalysisSignal[];
+
   };
+
+
+
 
   aiNarration:AiNarration;
 
+
 }
+
+
+
+
+
 
 // =====================================================
 // Market
@@ -262,6 +424,8 @@ export interface CandleDatum {
 
 }
 
+
+
 export interface MarketAsset {
 
   symbol:string;
@@ -276,6 +440,10 @@ export interface MarketAsset {
 
 }
 
+
+
+
+
 // =====================================================
 // Strategies
 // =====================================================
@@ -288,21 +456,33 @@ export interface Strategy {
     | "growth"
     | "value";
 
+
   name:string;
+
 
   riskLevel:number;
 
+
   whatItIs:string;
+
 
   suitableFor:string;
 
+
   pros:string[];
 
+
   cons:string[];
+
 
   stocks:string[];
 
 }
+
+
+
+
+
 
 // =====================================================
 // Education
@@ -316,6 +496,8 @@ export interface FinanceConcept {
 
 }
 
+
+
 export interface Mistake {
 
   title:string;
@@ -323,6 +505,8 @@ export interface Mistake {
   detail:string;
 
 }
+
+
 
 export interface RoadmapStage {
 

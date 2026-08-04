@@ -13,6 +13,7 @@ import type {
   InterestArea,
 } from "@/types";
 
+
 import {
   Card,
   CardContent,
@@ -21,20 +22,42 @@ import {
 } from "@/components/ui/primitives";
 
 
+
+// =====================================================
+// Helpers
+// =====================================================
+
+
 const fadeUp = {
-  hidden: {
-    opacity: 0,
-    y: 16,
+
+  hidden:{
+    opacity:0,
+    y:16,
   },
-  show: {
-    opacity: 1,
-    y: 0,
+
+  show:{
+    opacity:1,
+    y:0,
   },
+
 };
 
 
 
-const INTEREST_ICONS: Record<InterestArea,string> = {
+const cardStyle =
+`
+h-full
+border-border
+transition-all
+duration-300
+hover:-translate-y-1
+hover:shadow-lg
+`;
+
+
+
+
+const INTEREST_ICONS:Record<InterestArea,string> = {
 
   "טכנולוגיה":"💻",
   "פיננסים":"💰",
@@ -46,42 +69,41 @@ const INTEREST_ICONS: Record<InterestArea,string> = {
 
 
 
+
+
 function getHorizonLabel(
-  horizon: AnalysisResult["horizon"]
-): string {
+  horizon:AnalysisResult["horizon"]
+){
 
-  switch (horizon) {
+switch(horizon){
 
-    case "short":
-      return "קצר";
+case "short":
+return "קצר";
 
-    case "medium":
-      return "בינוני";
+case "medium":
+return "בינוני";
 
-    case "long":
-      return "ארוך";
+case "long":
+return "ארוך";
 
-    default:
-      return "לא הוגדר";
+default:
+return "לא הוגדר";
 
-  }
+}
 
 }
 
 
 
-const cardStyle =
-  "h-full border-border transition-all duration-300 hover:-translate-y-1 hover:shadow-lg";
-
-
-
-
+// =====================================================
+// Welcome
+// =====================================================
 
 
 export function WelcomeCard({
-  result
+result
 }:{
-  result: AnalysisResult
+result:AnalysisResult
 }){
 
 
@@ -94,15 +116,26 @@ animate="show"
 >
 
 
-<Card className="overflow-hidden border-[#1E3A5F] shadow-md">
+<Card className="overflow-hidden border-primary/20">
 
 
-<div className="bg-gradient-to-br from-[#0D1B2A] via-[#102A43] to-[#1E3A5F] p-6 text-white">
+<div className="
+bg-gradient-to-br
+from-primary/20
+to-transparent
+p-6
+">
 
 
-<div className="inline-flex items-center gap-2 rounded-full bg-emerald-400/20 px-3 py-1 text-xs font-bold text-emerald-300">
+<div className="
+flex
+items-center
+gap-2
+text-primary
+font-bold
+">
 
-<Sparkles className="h-3.5 w-3.5"/>
+<Sparkles className="h-4 w-4"/>
 
 AI Investor Profile
 
@@ -110,7 +143,11 @@ AI Investor Profile
 
 
 
-<h2 className="mt-4 text-2xl font-extrabold">
+<h2 className="
+mt-4
+text-2xl
+font-extrabold
+">
 
 הפרופיל הפיננסי שלך מוכן 🚀
 
@@ -118,10 +155,14 @@ AI Investor Profile
 
 
 
-<p className="mt-3 max-w-xl text-sm leading-7 text-slate-200">
+<p className="
+mt-3
+text-sm
+leading-7
+text-muted-foreground
+">
 
-InvestED ניתח את הנתונים שלך ובנה תמונת מצב אישית:
-סגנון השקעה, רמת סיכון, אופק השקעה ותובנות פעולה.
+InvestED ניתח את הנתונים שלך ויצר תמונת מצב פיננסית אישית.
 
 </p>
 
@@ -134,17 +175,28 @@ InvestED ניתח את הנתונים שלך ובנה תמונת מצב אישי
 <CardContent className="space-y-4 pt-6">
 
 
-<p className="rounded-xl bg-muted p-4 text-sm italic leading-7">
+<p className="
+rounded-xl
+bg-muted
+p-4
+text-sm
+italic
+">
 
 "{result.profileText}"
 
 </p>
 
 
-
 {result.aiNarration?.profileSummary &&
 
-<div className="rounded-xl border bg-gradient-to-r from-blue-50 to-white p-4 text-sm leading-7">
+<div className="
+rounded-xl
+border
+p-4
+text-sm
+leading-7
+">
 
 🤖 {result.aiNarration.profileSummary}
 
@@ -169,8 +221,9 @@ InvestED ניתח את הנתונים שלך ובנה תמונת מצב אישי
 
 
 
-
-
+// =====================================================
+// Investor Type
+// =====================================================
 
 
 export function InvestorTypeCard({
@@ -187,22 +240,21 @@ return (
 
 <CardHeader>
 
-
-<div className="flex items-center gap-2 text-primary">
+<div className="
+flex
+items-center
+gap-2
+text-primary
+">
 
 <Target className="h-5 w-5"/>
 
-<span className="text-xs font-bold">
-
-סוג המשקיע
-
-</span>
+סוג משקיע
 
 </div>
 
 
-
-<CardTitle className="mt-2 text-2xl font-extrabold">
+<CardTitle className="mt-2 text-2xl">
 
 {result.investor.type}
 
@@ -216,15 +268,17 @@ return (
 <CardContent>
 
 
-<div className="rounded-xl bg-blue-50 p-4">
-
-<p className="text-sm leading-7 text-muted-foreground">
+<p className="
+rounded-xl
+bg-muted
+p-4
+text-sm
+leading-7
+">
 
 {result.investor.reason}
 
 </p>
-
-</div>
 
 
 </CardContent>
@@ -242,6 +296,9 @@ return (
 
 
 
+// =====================================================
+// Risk
+// =====================================================
 
 
 export function RiskScoreCard({
@@ -259,21 +316,21 @@ return (
 <CardHeader>
 
 
-<div className="flex items-center gap-2 text-primary">
+<div className="
+flex
+items-center
+gap-2
+text-primary
+">
 
 <ShieldCheck className="h-5 w-5"/>
 
-<span className="text-xs font-bold">
-
 רמת סיכון
-
-</span>
 
 </div>
 
 
-
-<CardTitle className="mt-2 text-3xl font-extrabold">
+<CardTitle className="mt-2 text-3xl">
 
 {result.riskScore}/10
 
@@ -284,18 +341,27 @@ return (
 
 
 
+
 <CardContent>
 
 
-<div className="flex items-center gap-2 rounded-xl bg-amber-50 p-4">
+<div className="
+flex
+items-center
+gap-2
+rounded-xl
+bg-muted
+p-4
+">
 
 
-<TrendingUp className="h-5 w-5 text-amber-600"/>
+<TrendingUp className="h-5 w-5"/>
 
 
-<p className="text-sm leading-7 text-muted-foreground">
+<p className="text-sm">
 
-{result.riskDescription?.volatility}
+{result.riskDescription?.volatility ??
+"ניתוח סיכון זמין"}
 
 </p>
 
@@ -318,6 +384,9 @@ return (
 
 
 
+// =====================================================
+// Horizon
+// =====================================================
 
 
 export function HorizonCard({
@@ -335,21 +404,21 @@ return (
 <CardHeader>
 
 
-<div className="flex items-center gap-2 text-primary">
+<div className="
+flex
+items-center
+gap-2
+text-primary
+">
 
 <Clock className="h-5 w-5"/>
 
-<span className="text-xs font-bold">
-
 אופק השקעה
-
-</span>
 
 </div>
 
 
-
-<CardTitle className="mt-2 text-2xl font-extrabold">
+<CardTitle className="mt-2 text-2xl">
 
 {getHorizonLabel(result.horizon)}
 
@@ -363,9 +432,16 @@ return (
 <CardContent>
 
 
-<p className="rounded-xl bg-muted p-4 text-sm leading-7 text-muted-foreground">
+<p className="
+rounded-xl
+bg-muted
+p-4
+text-sm
+leading-7
+">
 
-{result.horizonExplanation ?? "לא קיימת הסברית זמינה."}
+{result.horizonExplanation ??
+"לא נמצא מידע"}
 
 </p>
 
@@ -385,6 +461,9 @@ return (
 
 
 
+// =====================================================
+// Interests
+// =====================================================
 
 
 export function InterestsCard({
@@ -394,7 +473,7 @@ result:AnalysisResult
 }){
 
 
-const areas:InterestArea[] =
+const areas =
 result.flags.interests ?? [];
 
 
@@ -406,11 +485,13 @@ return (
 
 <CardHeader>
 
-<CardTitle className="text-xl">
+
+<CardTitle>
 
 תחומי עניין
 
 </CardTitle>
+
 
 </CardHeader>
 
@@ -419,7 +500,11 @@ return (
 <CardContent>
 
 
-<div className="flex flex-wrap gap-3">
+<div className="
+flex
+flex-wrap
+gap-3
+">
 
 
 {
@@ -428,16 +513,22 @@ areas.length ?
 
 areas.map(area=>(
 
-
 <div
 
 key={area}
 
-className="rounded-xl border bg-muted/50 px-4 py-2 text-sm font-medium transition hover:bg-muted"
+className="
+rounded-xl
+border
+bg-muted
+px-4
+py-2
+text-sm
+"
 
 >
 
-{INTEREST_ICONS[area]} {area}
+{INTEREST_ICONS[area] ?? "📊"} {area}
 
 </div>
 
@@ -449,7 +540,7 @@ className="rounded-xl border bg-muted/50 px-4 py-2 text-sm font-medium transitio
 
 <p className="text-sm text-muted-foreground">
 
-לא זוהו תחומי עניין עדיין.
+לא זוהו תחומי עניין
 
 </p>
 
@@ -458,6 +549,57 @@ className="rounded-xl border bg-muted/50 px-4 py-2 text-sm font-medium transitio
 
 
 </div>
+
+
+</CardContent>
+
+
+</Card>
+
+);
+
+}
+
+
+
+
+
+
+
+// =====================================================
+// Additional Cards
+// =====================================================
+
+
+export function ConfidenceCard({
+result
+}:{
+result:AnalysisResult
+}){
+
+
+return (
+
+<Card className={cardStyle}>
+
+<CardHeader>
+
+<CardTitle>
+
+Confidence AI
+
+</CardTitle>
+
+</CardHeader>
+
+
+<CardContent>
+
+<p className="text-3xl font-bold">
+
+{result.scenario?.confidence ?? 0}%
+
+</p>
 
 
 </CardContent>

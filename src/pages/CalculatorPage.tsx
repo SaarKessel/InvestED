@@ -13,35 +13,29 @@ import type {
 
 import { InvestmentInsightCard } from "@/components/InvestmentInsightCard";
 
+
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-
-function formatMoney(value:number){
-
+function formatMoney(value: number) {
   return new Intl.NumberFormat(
     "he-IL",
     {
-      style:"currency",
-      currency:"ILS",
-      maximumFractionDigits:0
+      style: "currency",
+      currency: "ILS",
+      maximumFractionDigits: 0
     }
-  ).format(value);
-
+  ).format(value || 0);
 }
 
 
-
-function percent(value:number){
-
-  return Math.round(value);
-
+function percent(value: number) {
+  return `${Math.round(value || 0)}%`;
 }
 
 
-
-function goalLabel(goal:string){
+function goalLabel(goal?: string) {
 
   switch(goal){
 
@@ -62,28 +56,21 @@ function goalLabel(goal:string){
 
     default:
       return "השקעה כללית";
-
   }
 
 }
-
 
 
 // ---------------------------------------------------------------------------
 // Calculator Page
 // ---------------------------------------------------------------------------
 
-
 export default function CalculatorPage(){
 
-
-  const [input,setInput] =
-    useState<string>("");
-
+  const [input,setInput] = useState("");
 
   const [scenario,setScenario] =
     useState<FinancialScenario | null>(null);
-
 
   const [projection,setProjection] =
     useState<ProjectionResult | null>(null);
@@ -92,7 +79,6 @@ export default function CalculatorPage(){
 
   function calculate(){
 
-
     if(!input.trim()){
       return;
     }
@@ -100,6 +86,17 @@ export default function CalculatorPage(){
 
     const parsed =
       analyzeFinancialScenario(input);
+
+
+
+    if(
+      Number.isNaN(parsed.initialInvestment) ||
+      Number.isNaN(parsed.monthlyContribution) ||
+      Number.isNaN(parsed.years) ||
+      Number.isNaN(parsed.annualReturnPct)
+    ){
+      return;
+    }
 
 
 
@@ -112,10 +109,9 @@ export default function CalculatorPage(){
       );
 
 
+
     setScenario(parsed);
-
     setProjection(result);
-
 
   }
 
@@ -123,14 +119,11 @@ export default function CalculatorPage(){
 
 
 
-  const comparison =
-
-    scenario
+  const comparison = scenario
 
     ?
 
-    ASSET_CLASSES.map(asset=>{
-
+    ASSET_CLASSES.map(asset => {
 
       const result =
         computeProjection(
@@ -145,7 +138,6 @@ export default function CalculatorPage(){
         ...asset,
         result
       };
-
 
     })
 
@@ -165,24 +157,26 @@ export default function CalculatorPage(){
 
     comparison.reduce(
 
-      (a,b)=>
+      (a,b) =>
 
-        a.result.finalBalance >
-        b.result.finalBalance
+      a.result.finalBalance >
+      b.result.finalBalance
 
-        ?
+      ?
 
-        a
+      a
 
-        :
+      :
 
-        b
+      b
 
     )
 
     :
 
     null;
+
+
 
   return (
 
@@ -198,41 +192,36 @@ export default function CalculatorPage(){
 
 
       <div
-
         className="
         max-w-6xl
         mx-auto
         "
-
       >
 
 
-
         <h1
-
           className="
           text-4xl
           font-bold
           mb-3
           "
-
         >
 
-🧮 מחשבון ההשקעות החכם של InvestED
+          🧮 מחשבון ההשקעות החכם של InvestED
+
         </h1>
 
 
 
         <p
-
           className="
           text-slate-300
           mb-8
           "
-
         >
 
-          תאר תרחיש השקעה בשפה טבעית וקבל הדמיה, השוואת מסלולים ותובנות מבוססות AI.
+          תאר תרחיש השקעה בשפה טבעית וקבל הדמיה,
+          השוואת מסלולים ותובנות מבוססות AI.
 
         </p>
 
@@ -240,35 +229,27 @@ export default function CalculatorPage(){
 
 
         <div
-
           className="
           bg-card
-border
-border-border
-rounded-3xl
-p-6
-shadow-soft
-mb-8
+          border
+          border-border
+          rounded-3xl
+          p-6
+          shadow-soft
+          mb-8
           "
-
         >
-
 
 
           <textarea
 
-
             value={input}
 
-
             onChange={
-              e=>setInput(e.target.value)
+              e => setInput(e.target.value)
             }
 
-
             placeholder='לדוגמה: "יש לי 300 אלף להשקיע ל-15 שנה במדד S&P 500"'
-
-
 
             className="
             w-full
@@ -283,16 +264,13 @@ mb-8
             resize-none
             "
 
-
           />
 
 
 
           <button
 
-
             onClick={calculate}
-
 
             className="
             mt-5
@@ -306,11 +284,9 @@ mb-8
             transition
             "
 
-
           >
 
             חשב תרחיש 🚀
-
 
           </button>
 
@@ -320,749 +296,592 @@ mb-8
 
 
 
-
         {
           scenario && projection && (
 
-            <>
+          <>
 
-            <div
-
-              className="
-              grid
-              md:grid-cols-4
-              gap-5
-              mb-8
-              "
-
-            >
+<div
+  className="
+  grid
+  md:grid-cols-3
+  gap-5
+  mb-8
+  "
+>
 
 <InvestmentInsightCard
+
   finalBalance={projection.finalBalance}
+
   totalContributed={projection.totalContributed}
+
   growth={projection.growth}
+
   years={scenario.years}
+
   assetLabel={
     ASSET_CLASSES.find(
       a => a.key === scenario.assetClassKey
-    )?.label
+    )?.label ?? scenario.assetClassKey
   }
+
   annualReturnPct={scenario.annualReturnPct}
+
   monthlyContribution={scenario.monthlyContribution}
+
   goal={scenario.goal}
-/>    
 
-              <InfoCard
-
-                title="השקעה התחלתית"
-
-                value={
-                  formatMoney(
-                    scenario.initialInvestment
-                  )
-                }
-
-              />
+/>
 
 
-              <InfoCard
+<InfoCard
+
+  title="השקעה התחלתית"
+
+  value={
+    formatMoney(
+      scenario.initialInvestment
+    )
+  }
+
+/>
+
+
+
+<InfoCard
+
   title="שווי עתידי"
+
   value={
     formatMoney(
       projection.finalBalance
     )
   }
+
 />
-      
-            </div>
+
+
+</div>
+
+
+
+
+<div
+className="
+bg-[#050B16]
+border
+border-[#1E3A5F]
+rounded-2xl
+p-5
+mb-8
+"
+>
+
+<h2
+className="
+text-2xl
+font-bold
+mb-5
+"
+>
+
+🤖 InvestED הבין אותך
+
+</h2>
+
+
+
+<div
+className="
+grid
+md:grid-cols-4
+gap-4
+"
+>
+
+
+<MiniCard
+
+label="נכס"
+
+value={
+ASSET_CLASSES.find(
+asset => asset.key === scenario.assetClassKey
+)?.label ?? scenario.assetClassKey
+}
+
+/>
+
+
+
+<MiniCard
+
+label="תשואה משוערת"
+
+value={
+`${scenario.annualReturnPct}%`
+}
+
+/>
+
+
+
+<MiniCard
+
+label="אופק השקעה"
+
+value={
+`${scenario.years} שנים`
+}
+
+/>
+
+
+
+<MiniCard
+
+label="מטרה"
+
+value={
+goalLabel(scenario.goal)
+}
+
+/>
+
+
+</div>
+
+</div>
+
+
+
+
+<div
+className="
+bg-card
+border
+border-border
+rounded-xl
+p-4
+shadow-sm
+mb-8
+"
+>
+
+<h2
+className="
+text-2xl
+font-bold
+mb-4
+"
+>
+
+🧠 תובנת InvestED
+
+</h2>
+
+
+
+<p
+className="
+text-muted-foreground
+leading-8
+"
+>
+
+
+השקעה של{" "}
+
+
+<span className="text-white font-bold">
+
+{
+formatMoney(
+scenario.initialInvestment
+)
+}
+
+</span>
+
+
+{" "}עם הפקדה חודשית של{" "}
+
+
+<span className="text-white font-bold">
+
+{
+formatMoney(
+scenario.monthlyContribution
+)
+}
+
+</span>
+
+
+צפויה להגיע לשווי עתידי של{" "}
+
+
+<span className="text-emerald-400 font-bold">
+
+{
+formatMoney(
+projection.finalBalance
+)
+}
+
+</span>
+
+
+</p>
+
+
+
+<p
+className="
+mt-4
+text-slate-300
+"
+>
+
+💰 מתוך השווי הסופי:
+
+
+<span
+className="
+text-emerald-400
+font-bold
+"
+>
+
+{" "}
+
+{
+percent(
+projection.finalBalance > 0
+
+?
+
+projection.growth /
+projection.finalBalance *
+100
+
+:
+
+0
+)
+}
+
+</span>
+
+
+נוצר מצמיחת ההשקעה.
+
+
+</p>
+
+
+</div>
 
 
 
 
 
 <div
-  className="
-  bg-[#050B16]
-  border
-  border-[#1E3A5F]
-  rounded-2xl
-  p-5
-  "
+className="
+bg-[#0B1628]
+border
+border-[#1E3A5F]
+rounded-3xl
+p-6
+mb-8
+"
 >
 
 
-              <h2
+<h2
+className="
+text-2xl
+font-bold
+mb-3
+"
+>
 
-                className="
-                text-2xl
-                font-bold
-                mb-5
-                "
+📈 השוואת מסלולי השקעה
 
-              >
-
-                🤖 InvestED הבין אותך
-
-              </h2>
+</h2>
 
 
+<p
+className="
+text-slate-400
+mb-6
+"
+>
 
-              <div
+אותה השקעה, מסלולים שונים — לראות כיצד התשואה משפיעה לאורך זמן.
 
-                className="
-                grid
-                md:grid-cols-4
-                gap-4
-                "
-
-              >
-
-
-                <MiniCard
-
-                  label="נכס"
-
-                  value={
-
-                    ASSET_CLASSES.find(
-
-                      asset =>
-                        asset.key === scenario.assetClassKey
-
-                    )?.label
-
-                    ??
-
-                    scenario.assetClassKey
-
-                  }
-
-                />
+</p>
 
 
-
-                <MiniCard
-
-                  label="תשואה משוערת"
-
-                  value={
-                    `${scenario.annualReturnPct}%`
-                  }
-
-                />
-
-
-
-                <MiniCard
-
-                  label="אופק השקעה"
-
-                  value={
-                    `${scenario.years} שנים`
-                  }
-
-                />
-
-
-
-                <MiniCard
-
-                  label="מטרה"
-
-                  value={
-                    goalLabel(
-                      scenario.goal
-                    )
-                  }
-
-                />
-
-
-              </div>
-
-
-            </div>
 
 
 <div
-  className="
-  bg-card
-  border
-  border-border
-  rounded-xl
-  p-4
-  shadow-sm
-  "
+className="
+grid
+md:grid-cols-2
+gap-5
+"
 >
 
 
+{
+comparison.map(asset => (
 
+<div
 
-              <h2
+key={asset.key}
 
-                className="
-                text-2xl
-                font-bold
-                mb-4
-                "
+className={`
 
-              >
+rounded-2xl
+p-5
+border
 
-                🧠 תובנת InvestED
+${
+asset.key === scenario.assetClassKey
 
-              </h2>
+?
 
+"border-emerald-400 bg-emerald-400/10"
 
+:
 
+asset.key === bestAsset?.key
 
+?
 
-              <p
+"border-yellow-400 bg-yellow-400/10"
 
-                className="
-                text-muted-foreground
-                leading-8
-                "
+:
 
-              >
+"border-[#1E3A5F] bg-[#050B16]"
 
+}
 
-              {
+`}
 
-                scenario.initialInvestment > 0 &&
-                scenario.monthlyContribution > 0
+>
 
-                ?
 
-                <>
-                  השקעה התחלתית של{" "}
+<h3
+className="
+text-xl
+font-bold
+"
+>
 
-                  <span className="text-white font-bold">
+{asset.label}
 
-                    {
-                      formatMoney(
-                        scenario.initialInvestment
-                      )
-                    }
+</h3>
 
-                  </span>
 
+<p className="text-slate-400 mt-2">
 
-                  {" "}והפקדה חודשית של{" "}
+תשואה שנתית משוערת:
+{" "}
+{asset.annualReturnPct}%
 
+</p>
 
-                  <span className="text-white font-bold">
 
-                    {
-                      formatMoney(
-                        scenario.monthlyContribution
-                      )
-                    }
+<p
+className="
+text-2xl
+font-bold
+mt-4
+"
+>
 
-                  </span>
+{
+formatMoney(
+asset.result.finalBalance
+)
+}
 
+</p>
 
-                  צפויות להגיע לשווי עתידי של{" "}
 
+<p
+className="
+text-emerald-400
+mt-2
+"
+>
 
-                  <span className="text-emerald-400 font-bold">
+רווח:
 
-                    {
-                      formatMoney(
-                        projection.finalBalance
-                      )
-                    }
+{" "}
 
-                  </span>
+{
+formatMoney(
+asset.result.growth
+)
+}
 
-                </>
+</p>
 
 
 
-                :
+{
+asset.key === bestAsset?.key &&
 
+<span className="text-yellow-400 text-sm">
 
-                scenario.initialInvestment > 0
+🏆 מוביל
 
-
-                ?
-
-                <>
-
-                  השקעה התחלתית של{" "}
-
-
-                  <span className="text-white font-bold">
-
-                    {
-                      formatMoney(
-                        scenario.initialInvestment
-                      )
-                    }
-
-                  </span>
-
-
-                  צפויה להגיע לשווי עתידי של{" "}
-
-
-                  <span className="text-emerald-400 font-bold">
-
-                    {
-                      formatMoney(
-                        projection.finalBalance
-                      )
-                    }
-
-                  </span>
-
-                </>
-
-
-
-                :
-
-
-                <>
-
-                  הפקדה חודשית של{" "}
-
-
-                  <span className="text-white font-bold">
-
-                    {
-                      formatMoney(
-                        scenario.monthlyContribution
-                      )
-                    }
-
-                  </span>
-
-
-                  לאורך{" "}
-
-
-                  <span className="text-white font-bold">
-
-                    {
-                      scenario.years
-                    }
-
-                    {" "}שנים
-
-                  </span>
-
-
-                  צפויה להגיע לשווי עתידי של{" "}
-
-
-                  <span className="text-emerald-400 font-bold">
-
-                    {
-                      formatMoney(
-                        projection.finalBalance
-                      )
-                    }
-
-                  </span>
-
-                </>
-
-              }
-
-
-              </p>
-
-
-
-
-
-              <p
-
-                className="
-                mt-4
-                text-slate-300
-                "
-
-              >
-
-                💰 מתוך השווי הסופי:
-
-
-                <span
-
-                  className="
-                  text-emerald-400
-                  font-bold
-                  "
-
-                >
-
-                  {" "}
-
-                  {
-
-                    projection.finalBalance > 0
-
-                    ?
-
-                    percent(
-
-                      projection.growth /
-
-                      projection.finalBalance *
-
-                      100
-
-                    )
-
-                    :
-
-                    0
-
-                  }
-
-                  %
-
-                </span>
-
-
-                {" "}נוצר מצמיחת ההשקעה.
-
-
-              </p>
-
-
-            </div>
-
-
-
-
-
-
-            <div
-
-              className="
-              bg-[#0B1628]
-              border
-              border-[#1E3A5F]
-              rounded-3xl
-              p-6
-              mb-8
-              "
-
-            >
-
-
-              <h2
-
-                className="
-                text-2xl
-                font-bold
-                mb-3
-                "
-
-              >
-
-                📈 השוואת מסלולי השקעה
-
-              </h2>
-
-
-
-              <p
-
-                className="
-                text-slate-400
-                mb-6
-                "
-
-              >
-
-                אותה השקעה, מסלולים שונים — לראות כיצד התשואה משפיעה לאורך זמן.
-
-              </p>
-
-
-
-
-
-              <div
-
-                className="
-                grid
-                md:grid-cols-2
-                gap-5
-                "
-
-              >
-
-
-                {
-                  comparison.map(asset=>(
-
-                    <div
-
-                      key={asset.key}
-
-                      className={`
-
-                      rounded-2xl
-                      p-5
-                      border
-
-                      ${
-                        asset.key === scenario.assetClassKey
-
-                        ?
-
-                        "border-emerald-400 bg-emerald-400/10"
-
-                        :
-
-                        asset.key === bestAsset?.key
-
-                        ?
-
-                        "border-yellow-400 bg-yellow-400/10"
-
-                        :
-
-                        "border-[#1E3A5F] bg-[#050B16]"
-
-                      }
-
-                      `}
-
-                    >
-
-
-                      <h3
-
-                        className="
-                        text-xl
-                        font-bold
-                        "
-
-                      >
-
-                        {asset.label}
-
-                      </h3>
-
-
-                      <p className="text-slate-400 mt-2">
-
-                        תשואה שנתית משוערת:
-                        {" "}
-                        {asset.annualReturnPct}%
-
-                      </p>
-
-
-                      <p
-
-                        className="
-                        text-2xl
-                        font-bold
-                        mt-4
-                        "
-
-                      >
-
-                        {
-                          formatMoney(
-                            asset.result.finalBalance
-                          )
-                        }
-
-                      </p>
-
-
-                      <p
-
-                        className="
-                        text-emerald-400
-                        mt-2
-                        "
-
-                      >
-
-                        רווח:
-
-                        {" "}
-
-                        {
-                          formatMoney(
-                            asset.result.growth
-                          )
-                        }
-
-                      </p>
-
-
-                      {
-                        asset.key === bestAsset?.key &&
-
-                        <span className="text-yellow-400 text-sm">
-
-                          🏆 מוביל
-
-                        </span>
-                      }
-
-
-                    </div>
-
-                  ))
-                }
-
-
-              </div>
-
-
-            </div>
-
-            <div
-
-              className="
-              bg-[#0B1628]
-              border
-              border-[#1E3A5F]
-              rounded-3xl
-              p-6
-              mb-8
-              "
-
-            >
-
-
-              <h2
-
-                className="
-                text-2xl
-                font-bold
-                mb-5
-                "
-
-              >
-
-                📊 סיכום השקעה
-
-              </h2>
-
-
-
-
-              <div
-
-                className="
-                grid
-                md:grid-cols-3
-                gap-5
-                "
-
-              >
-
-
-                <InfoCard
-
-                  title="סה״כ הפקדה"
-
-                  value={
-                    formatMoney(
-                      projection.totalContributed
-                    )
-                  }
-
-                />
-
-
-
-                <InfoCard
-
-                  title="רווח"
-
-                  value={
-                    formatMoney(
-                      projection.growth
-                    )
-                  }
-
-                />
-
-
-
-                <InfoCard
-
-                  title="שווי לאחר אינפלציה"
-
-                  value={
-                    formatMoney(
-                      projection.realValueAfterInflation
-                    )
-                  }
-
-                />
-
-
-              </div>
-
-
-            </div>
-
-
-
-
-
-
-
-            <div
-
-              className="
-              text-center
-              text-xs
-              text-slate-500
-              leading-6
-              mb-8
-              "
-
-            >
-
-              לצורכי לימוד בלבד.
-
-              <br/>
-
-              InvestED אינה מייעצת בהשקעות ואינה ממליצה לקנות או למכור נכס כלשהו.
-
-              <br/>
-
-              יש להתייעץ עם בעל רישיון מוסמך לפני קבלת החלטות השקעה.
-
-            </div>
-
-
-
-            </>
-
-          )
-
-        }
-
-
-
-      </div>
-
-
-    </div>
-
-
-  );
-
+</span>
 
 }
 
 
+</div>
 
+))
+}
+
+
+</div>
+
+</div>
+
+
+
+
+
+<div
+className="
+bg-[#0B1628]
+border
+border-[#1E3A5F]
+rounded-3xl
+p-6
+mb-8
+"
+>
+
+
+<h2
+className="
+text-2xl
+font-bold
+mb-5
+"
+>
+
+📊 סיכום השקעה
+
+</h2>
+
+
+
+<div
+className="
+grid
+md:grid-cols-3
+gap-5
+"
+>
+
+
+<InfoCard
+
+title="סה״כ הפקדה"
+
+value={
+formatMoney(
+projection.totalContributed
+)
+}
+
+/>
+
+
+
+<InfoCard
+
+title="רווח"
+
+value={
+formatMoney(
+projection.growth
+)
+}
+
+/>
+
+
+
+<InfoCard
+
+title="שווי לאחר אינפלציה"
+
+value={
+formatMoney(
+projection.realValueAfterInflation
+)
+}
+
+/>
+
+
+</div>
+
+
+</div>
+
+
+
+
+
+<div
+className="
+text-center
+text-xs
+text-slate-500
+leading-6
+mb-8
+"
+>
+
+לצורכי לימוד בלבד.
+
+<br/>
+
+InvestED אינה מייעצת בהשקעות ואינה ממליצה לקנות או למכור נכס כלשהו.
+
+<br/>
+
+יש להתייעץ עם בעל רישיון מוסמך לפני קבלת החלטות השקעה.
+
+</div>
+
+
+
+</>
+
+)
+
+}
+
+
+</div>
+
+</div>
+
+);
+
+}
 
 
 
@@ -1075,69 +894,64 @@ mb-8
 
 function InfoCard({
 
-  title,
+title,
 
-  value
+value
 
 }:{
 
-  title:string;
+title:string;
 
-  value:string;
+value:string;
 
 }){
 
 
-  return (
+return (
 
-    <div
+<div
 
-      className="
-      bg-[#050B16]
-      border
-      border-[#1E3A5F]
-      rounded-2xl
-      p-5
-      "
+className="
+bg-[#050B16]
+border
+border-[#1E3A5F]
+rounded-2xl
+p-5
+"
 
-    >
+>
 
 
-      <p
+<p
+className="
+text-slate-400
+text-sm
+mb-2
+"
+>
 
-        className="
-        text-slate-400
-        text-sm
-        mb-2
-        "
+{title}
 
-      >
-
-        {title}
-
-      </p>
+</p>
 
 
 
-      <p
+<p
+className="
+text-2xl
+font-bold
+text-white
+"
+>
 
-        className="
-        text-2xl
-        font-bold
-        text-white
-        "
+{value}
 
-      >
-
-        {value}
-
-      </p>
+</p>
 
 
-    </div>
+</div>
 
-  );
-
+);
 
 }
 
@@ -1145,73 +959,64 @@ function InfoCard({
 
 
 
-
-
-
 function MiniCard({
 
-  label,
+label,
 
-  value
+value
 
 }:{
 
-  label:string;
+label:string;
 
-  value:string;
+value:string;
 
 }){
 
 
-  return (
+return (
 
-    <div
+<div
 
-      className="
-      bg-[#050B16]
-      border
-      border-[#1E3A5F]
-      rounded-xl
-      p-4
-      "
+className="
+bg-[#050B16]
+border
+border-[#1E3A5F]
+rounded-xl
+p-4
+"
 
-    >
+>
 
 
-      <p
+<p
+className="
+text-xs
+text-slate-400
+mb-2
+"
+>
 
-        className="
-        text-xs
-        text-slate-400
-        mb-2
-        "
+{label}
 
-      >
-
-        {label}
-
-      </p>
+</p>
 
 
 
+<p
+className="
+font-bold
+text-white
+"
+>
 
-      <p
+{value}
 
-        className="
-        font-bold
-        text-white
-        "
-
-      >
-
-        {value}
-
-      </p>
+</p>
 
 
-    </div>
+</div>
 
-  );
-
+);
 
 }

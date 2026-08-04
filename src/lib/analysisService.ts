@@ -1,6 +1,10 @@
 ﻿import type {
   AnalysisResult,
   AnalysisSignal,
+  AiNarration,
+  AllocationItem,
+  ProfileFlags,
+  InvestorClassification,
 } from "@/types";
 
 
@@ -54,17 +58,15 @@ function normalizeHorizon(
     | null
 ) {
 
-  switch (horizon) {
+  switch(horizon){
 
     case "קצר":
       return "short";
 
-    case "בינוני":
-      return "medium";
-
     case "ארוך":
       return "long";
 
+    case "בינוני":
     default:
       return "medium";
 
@@ -76,10 +78,312 @@ function normalizeHorizon(
 
 
 
+// =====================================================
+// AI Insight Engine v3
+// =====================================================
+
+
+type InsightType =
+  | "risk"
+  | "horizon"
+  | "portfolio"
+  | "goal";
+
+
+
+function createSignal(
+  title:string,
+  description:string,
+  type:InsightType
+):AnalysisSignal {
+
+  return {
+
+    title,
+
+    description,
+
+    type
+
+  };
+
+}
+
+
+
+
+
+function generateAIInsights(
+
+  flags:ProfileFlags,
+
+  investor:InvestorClassification,
+
+  riskScore:number,
+
+  allocation:AllocationItem[]
+
+):AnalysisSignal[] {
+
+
+  const insights:AnalysisSignal[] = [];
+
+
+
+  // Risk Insight
+
+  if(riskScore >= 7){
+
+    insights.push(
+
+      createSignal(
+
+        "Risk Insight",
+
+        "המערכת זיהתה פרופיל עם יכולת להתמודד עם תנודתיות גבוהה והתמקדות בצמיחה ארוכת טווח.",
+
+        "risk"
+
+      )
+
+    );
+
+  }
+
+
+  else if(riskScore <=3){
+
+    insights.push(
+
+      createSignal(
+
+        "Risk Insight",
+
+        "המערכת זיהתה העדפה ליציבות ושמירה על הון עם רמת סיכון נמוכה.",
+
+        "risk"
+
+      )
+
+    );
+
+  }
+
+
+  else {
+
+
+    insights.push(
+
+      createSignal(
+
+        "Risk Insight",
+
+        "המערכת זיהתה איזון בין רצון לצמיחה לבין ניהול סיכונים.",
+
+        "risk"
+
+      )
+
+    );
+
+  }
+
+
+
+
+  // Horizon Insight
+
+  if(flags.horizon === "long"){
+
+    insights.push(
+
+      createSignal(
+
+        "Horizon Insight",
+
+        "אופק השקעה ארוך מאפשר להתמקד בתהליך השקעה הדרגתי ולהתמודד טוב יותר עם תנודתיות.",
+
+        "horizon"
+
+      )
+
+    );
+
+  }
+
+
+
+  if(flags.horizon === "short"){
+
+    insights.push(
+
+      createSignal(
+
+        "Horizon Insight",
+
+        "אופק השקעה קצר דורש דגש גבוה יותר על נזילות וניהול תנודתיות.",
+
+        "horizon"
+
+      )
+
+    );
+
+  }
+
+
+
+
+
+  // Portfolio Insight
+
+  const allocationText =
+
+    allocation
+
+      .map(
+        item =>
+          `${item.name} ${item.value}%`
+      )
+
+      .join(", ");
+
+
+
+  insights.push(
+
+    createSignal(
+
+      "Portfolio Insight",
+
+      `מבנה התיק הותאם לסגנון ${investor.type}. הקצאת הנכסים הנוכחית: ${allocationText}.`,
+
+      "portfolio"
+
+    )
+
+  );
+
+
+
+
+  // Goal Insight
+
+  if(flags.goal){
+
+    insights.push(
+
+      createSignal(
+
+        "Goal Insight",
+
+        "המערכת שילבה את מטרת המשתמש כחלק מתהליך בניית התמונה הפיננסית.",
+
+        "goal"
+
+      )
+
+    );
+
+  }
+
+
+
+  return insights;
+
+
+}
+
+
+
+
+
+
+// =====================================================
+// AI Narration Engine v3
+// =====================================================
+
+
+function generateAiNarration(
+
+  flags:ProfileFlags,
+
+  investor:InvestorClassification,
+
+  riskScore:number,
+
+  allocation:AllocationItem[]
+
+):AiNarration {
+
+
+
+  const ageText =
+
+    flags.age
+
+      ? `גיל המשתמש ${flags.age}`
+
+      :
+
+      "גיל המשתמש לא הוזן";
+
+
+
+
+
+  const allocationText =
+
+    allocation
+
+      .map(
+        item =>
+        `${item.name} (${item.value}%)`
+      )
+
+      .join(", ");
+
+
+
+
+
+  return {
+
+
+    source:
+      "InvestED Explainable AI Engine v3",
+
+
+
+    profileSummary:
+
+      `${ageText}.
+      סגנון השקעה שזוהה: ${investor.type}.
+      ציון סיכון: ${riskScore}/10.
+      המערכת התאימה את הניתוח לפי אופק ההשקעה והעדפות המשתמש.`,
+
+
+
+
+    portfolioSummary:
+
+      `התיק החינוכי נבנה לפי עקרונות של פיזור,
+      התאמת רמת סיכון ואופק השקעה.
+      הקצאת הנכסים:
+      ${allocationText}.
+      המערכת מיועדת ללמידה פיננסית בלבד ואינה מהווה ייעוץ השקעות.`
+
+
+  };
+
+
+}
 
 // =====================================================
 // Rule Based Analysis
 // =====================================================
+
 
 export function buildRuleBasedAnalysis(
   profileText:string
@@ -139,12 +443,14 @@ export function buildRuleBasedAnalysis(
 
 
 
+
+
   // =====================================================
-  // Explainable AI
+  // Explainable AI Signals
   // =====================================================
 
 
-  const rawSignals =
+  const legacySignals =
     buildExplainability(
       flags,
       investor,
@@ -153,34 +459,52 @@ export function buildRuleBasedAnalysis(
 
 
 
-  const explainability:AnalysisSignal[] =
-    rawSignals.map(
-      (signal:string)=>({
-
-        title:
-          signal.includes(":")
-            ? signal.split(":")[0].trim()
-            : "AI Signal",
-
-
-        description:
-          signal.includes(":")
-            ? signal.split(":").slice(1).join(":").trim()
-            : signal,
-
-
-        type:"rule"
-
-      })
-    );
-
-
-
-  const fallbackPortfolioText =
-    portfolioNarrative(
-      investor.type,
+  const enhancedSignals =
+    generateAIInsights(
+      flags,
+      investor,
+      riskScore,
       allocation
     );
+
+
+
+  const explainabilitySignals:AnalysisSignal[] = [
+
+    ...enhancedSignals,
+
+    ...legacySignals.map(
+      (signal:string)=>(
+
+        {
+
+          title:
+            signal.includes(":")
+              ? signal.split(":")[0].trim()
+              :
+              "AI Signal",
+
+
+          description:
+            signal.includes(":")
+              ?
+              signal.split(":").slice(1).join(":").trim()
+              :
+              signal,
+
+
+          type:"rule"
+
+        }
+
+      )
+    )
+
+  ];
+
+
+
+
 
 
 
@@ -208,6 +532,9 @@ export function buildRuleBasedAnalysis(
       scenario.annualReturnPct
 
     );
+
+
+
 
 
 
@@ -247,7 +574,51 @@ export function buildRuleBasedAnalysis(
 
     undefined;
 
-   return {
+
+
+
+
+
+
+  // =====================================================
+  // Narration
+  // =====================================================
+
+
+  const aiNarration =
+
+    generateAiNarration(
+
+      flags,
+
+      investor,
+
+      riskScore,
+
+      allocation
+
+    );
+
+
+
+
+  const fallbackPortfolioText =
+
+    portfolioNarrative(
+
+      investor.type,
+
+      allocation
+
+    );
+
+
+
+
+
+
+
+  return {
 
 
     profileText,
@@ -256,10 +627,7 @@ export function buildRuleBasedAnalysis(
     flags,
 
 
-    riskScore,
-
-
-    riskDescription,
+    scenario,
 
 
     horizon,
@@ -272,30 +640,13 @@ export function buildRuleBasedAnalysis(
     investor,
 
 
+    riskScore,
+
+
+    riskDescription,
+
+
     allocation,
-
-
-    explainability:{
-
-
-      signals:
-        explainability,
-
-
-      summary:
-        explainability
-          .map(
-            (signal:AnalysisSignal)=>
-              `${signal.title}: ${signal.description}`
-          )
-          .join(" ")
-
-
-    },
-
-
-
-    scenario,
 
 
 
@@ -307,19 +658,40 @@ export function buildRuleBasedAnalysis(
 
 
 
+    explainability:{
+
+
+      signals:
+        explainabilitySignals,
+
+
+      summary:
+
+        explainabilitySignals
+
+          .map(
+            signal =>
+              `${signal.title}: ${signal.description}`
+          )
+
+          .join(" ")
+
+    },
+
+
+
+
     aiNarration:{
 
 
-      profileSummary:
-        investor.reason,
+      ...aiNarration,
 
 
       portfolioSummary:
-        fallbackPortfolioText,
 
+        aiNarration.portfolioSummary ||
 
-      source:
-        "rule-based"
+        fallbackPortfolioText
 
 
     }
@@ -340,13 +712,17 @@ export function buildRuleBasedAnalysis(
 // Ollama Enhancement
 // =====================================================
 
+
 export async function tryEnhanceWithOllama(
+
   result:AnalysisResult
+
 ):Promise<AnalysisResult["aiNarration"] | null>{
 
 
 
   const ollamaUp =
+
     await isOllamaAvailable();
 
 
@@ -363,11 +739,12 @@ export async function tryEnhanceWithOllama(
 
 
   const allocationSummary =
+
     result.allocation
 
       .map(
-        (a)=>
-          `${a.name}: ${a.value}%`
+        item =>
+          `${item.name}: ${item.value}%`
       )
 
       .join(", ");
@@ -377,13 +754,15 @@ export async function tryEnhanceWithOllama(
 
 
 
+
   const [
+
     profileSummary,
+
     portfolioSummary
 
-  ] =
-  await Promise.all([
 
+  ] = await Promise.all([
 
 
 
@@ -413,8 +792,8 @@ export async function tryEnhanceWithOllama(
     )
 
 
-
   ]);
+
 
 
 
@@ -431,8 +810,8 @@ export async function tryEnhanceWithOllama(
 
 
     source:
-      "ollama"
 
+      "ollama"
 
 
   };

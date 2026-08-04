@@ -1,5 +1,6 @@
-﻿ // ---------------------------------------------------------------------------
-// InvestED - Goal Planning Engine
+﻿// ---------------------------------------------------------------------------
+// InvestED - Goal Planning Engine v2
+// Smart Financial Goal Detection
 // ---------------------------------------------------------------------------
 
 
@@ -25,208 +26,296 @@ export interface GoalAnalysis {
 
 
 
-export function detectTargetAmount(text:string):number{
+// ---------------------------------------------------------------------------
+// Detect Target Amount
+// ---------------------------------------------------------------------------
 
 
-const normalized = text
-.toLowerCase()
-.replace(/,/g,"");
+export function detectTargetAmount(
+  text:string
+):number {
 
 
-
-let amount = 0;
-
-
-
-const matches = normalized.matchAll(
-
-/(\d+(?:\.\d+)?)\s*(אלף|מיליון|k|m)?/g
-
-);
+  const normalized =
+    text
+      .toLowerCase()
+      .replace(/,/g,"")
+      .trim();
 
 
 
-for(const match of matches){
-
-
-let value = Number(match[1]);
+  let amount = 0;
 
 
 
-if(isNaN(value)){
+  // --------------------------------------------------
+  // Ignore age numbers
+  // --------------------------------------------------
 
-continue;
+  const cleanedText =
+    normalized.replace(
+      /בן\s+\d+/g,
+      ""
+    );
+
+
+
+
+
+  // --------------------------------------------------
+  // Half million
+  // --------------------------------------------------
+
+  if(
+    cleanedText.includes("חצי מיליון")
+  ){
+
+    amount = Math.max(
+      amount,
+      500000
+    );
+
+  }
+
+
+
+
+  // --------------------------------------------------
+  // Million and a half
+  // --------------------------------------------------
+
+  const millionHalfMatch =
+    cleanedText.match(
+      /מיליון\s+וחצי/
+    );
+
+
+  if(millionHalfMatch){
+
+    amount = Math.max(
+      amount,
+      1500000
+    );
+
+  }
+
+
+
+
+
+
+
+  // --------------------------------------------------
+  // X million
+  // Example:
+  // 2 מיליון
+  // 2.5 מיליון
+  // מיליון
+  // --------------------------------------------------
+
+
+  const millionMatch =
+    cleanedText.match(
+      /(\d+(?:\.\d+)?)\s*מיליון/
+    );
+
+
+
+  if(millionMatch){
+
+    amount =
+      Math.max(
+        amount,
+        Number(millionMatch[1]) * 1000000
+      );
+
+  }
+
+
+
+
+  if(
+    cleanedText.includes("מיליון")
+    &&
+    amount === 0
+  ){
+
+    amount =
+      Math.max(
+        amount,
+        1000000
+      );
+
+  }
+
+
+
+
+
+  // --------------------------------------------------
+  // Thousand
+  // Example:
+  // 500 אלף
+  // 150k
+  // --------------------------------------------------
+
+
+  const thousandMatch =
+    cleanedText.match(
+      /(\d+(?:\.\d+)?)\s*(אלף|k)/
+    );
+
+
+
+  if(thousandMatch){
+
+    amount =
+      Math.max(
+        amount,
+        Number(thousandMatch[1]) * 1000
+      );
+
+  }
+
+
+
+
+
+  // --------------------------------------------------
+  // Direct currency amounts
+  // Example:
+  // 1000000 שקל
+  // 500000 ₪
+  // --------------------------------------------------
+
+
+  const currencyMatch =
+    cleanedText.match(
+      /(\d{5,})\s*(שקל|₪)?/
+    );
+
+
+
+  if(currencyMatch){
+
+    amount =
+      Math.max(
+        amount,
+        Number(currencyMatch[1])
+      );
+
+  }
+
+
+
+
+
+  return Math.round(amount);
 
 }
 
 
 
-if(
-match[2]==="אלף" ||
-match[2]==="k"
-){
-
-value*=1000;
-
-}
-
-
-
-if(
-match[2]==="מיליון" ||
-match[2]==="m"
-){
-
-value*=1000000;
-
-}
-
-
-
-if(value > amount){
-
-amount=value;
-
-}
-
-
-}
 
 
 
 
 
-const millionMatch = normalized.match(
 
-/(\d+(?:\.\d+)?)\s*מיליון/
-
-);
-
-
-
-if(millionMatch){
-
-amount =
-Number(millionMatch[1]) *
-1000000;
-
-}
-
-
-
-return Math.round(amount);
-
-
-}
-
-
-
-
-
+// ---------------------------------------------------------------------------
+// Calculate Required Monthly Contribution
+// ---------------------------------------------------------------------------
 
 
 export function calculateRequiredMonthlyContribution(
 
-targetAmount:number,
+  targetAmount:number,
 
-currentAmount:number,
+  currentAmount:number,
 
-years:number,
+  years:number,
 
-annualReturnPct:number = 8
+  annualReturnPct:number = 8
 
-):number{
-
-
-if(years <= 0){
-
-return 0;
-
-}
+):number {
 
 
+  if(years <= 0){
 
-const monthlyRate =
-annualReturnPct / 100 / 12;
+    return 0;
+
+  }
 
 
 
-const months =
-years * 12;
+  const monthlyRate =
+    annualReturnPct / 100 / 12;
 
 
 
-
-const futureCurrentAmount =
-
-currentAmount *
-
-Math.pow(
-
-1 + monthlyRate,
-
-months
-
-);
+  const months =
+    years * 12;
 
 
 
 
 
-const remainingAmount =
+  const futureCurrentAmount =
 
-Math.max(
+    currentAmount *
 
-targetAmount - futureCurrentAmount,
-
-0
-
-);
-
-
-
-
-
-if(monthlyRate === 0){
-
-return Math.round(
-
-remainingAmount / months
-
-);
-
-}
+    Math.pow(
+      1 + monthlyRate,
+      months
+    );
 
 
 
 
 
-const monthlyContribution =
+  const remainingAmount =
 
-remainingAmount *
-
-monthlyRate /
-
-(
-
-Math.pow(
-
-1 + monthlyRate,
-
-months
-
-)
-
--1
-
-);
+    Math.max(
+      targetAmount - futureCurrentAmount,
+      0
+    );
 
 
 
 
 
-return Math.round(monthlyContribution);
+  if(monthlyRate === 0){
 
+    return Math.round(
+      remainingAmount / months
+    );
+
+  }
+
+
+
+
+
+  const contribution =
+
+    remainingAmount *
+
+    monthlyRate /
+
+    (
+      Math.pow(
+        1 + monthlyRate,
+        months
+      )
+      -
+      1
+    );
+
+
+
+
+
+  return Math.round(contribution);
 
 }
 
@@ -234,37 +323,41 @@ return Math.round(monthlyContribution);
 
 
 
+
+
+
+
+// ---------------------------------------------------------------------------
+// Goal Progress
+// ---------------------------------------------------------------------------
 
 
 export function calculateGoalProgress(
 
-currentAmount:number,
+  currentAmount:number,
 
-targetAmount:number
+  targetAmount:number
 
-):number{
-
-
-if(targetAmount <= 0){
-
-return 0;
-
-}
+):number {
 
 
+  if(targetAmount <= 0){
 
-return Math.min(
+    return 0;
 
-Math.round(
+  }
 
-(currentAmount / targetAmount) * 100
 
-),
 
-100
+  return Math.min(
 
-);
+    Math.round(
+      (currentAmount / targetAmount) * 100
+    ),
 
+    100
+
+  );
 
 }
 
@@ -272,157 +365,144 @@ Math.round(
 
 
 
+
+
+
+
+// ---------------------------------------------------------------------------
+// Full Goal Analysis
+// ---------------------------------------------------------------------------
 
 
 export function analyzeFinancialGoal(
 
-currentAmount:number,
+  currentAmount:number,
 
-targetAmount:number,
+  targetAmount:number,
 
-years:number,
+  years:number,
 
-annualReturnPct:number = 8,
+  annualReturnPct:number = 8,
 
-monthlyContribution:number = 0
+  monthlyContribution:number = 0
 
-):GoalAnalysis{
+):GoalAnalysis {
 
 
 
+  const monthlyRequired =
 
+    calculateRequiredMonthlyContribution(
 
-const monthlyRequired =
+      targetAmount,
 
-calculateRequiredMonthlyContribution(
+      currentAmount,
 
-targetAmount,
+      years,
 
-currentAmount,
+      annualReturnPct
 
-years,
+    );
 
-annualReturnPct
 
-);
 
 
 
+  const months =
+    years * 12;
 
 
 
+  const monthlyRate =
+    annualReturnPct / 100 / 12;
 
-const months =
-years * 12;
 
 
 
-const monthlyRate =
-annualReturnPct / 100 / 12;
 
+  const futureValue =
 
+    currentAmount *
 
+    Math.pow(
+      1 + monthlyRate,
+      months
+    )
 
+    +
 
-const futureValue =
+    (
 
-currentAmount *
+      monthlyRate === 0
 
-Math.pow(
+      ?
 
-1 + monthlyRate,
+      monthlyContribution * months
 
-months
+      :
 
-)
+      monthlyContribution *
 
-+
+      (
 
-(
+        (
+          Math.pow(
+            1 + monthlyRate,
+            months
+          )
+          -
+          1
+        )
 
-monthlyRate === 0
+        /
 
-?
+        monthlyRate
 
-monthlyContribution * months
+      )
 
-:
+    );
 
-monthlyContribution *
 
-(
 
-(
 
-Math.pow(
 
-1 + monthlyRate,
 
-months
 
-)
+  return {
 
--1
+    targetAmount,
 
-)
+    currentAmount,
 
-/
+    years,
 
-monthlyRate
 
-)
+    requiredMonthlyContribution:
+      monthlyRequired,
 
-);
 
+    expectedFinalValue:
+      Math.round(futureValue),
 
 
+    progressPercentage:
 
+      calculateGoalProgress(
 
+        currentAmount,
 
+        targetAmount
 
-return {
+      ),
 
 
-targetAmount,
 
+    achievable:
 
-currentAmount,
+      futureValue >= targetAmount
 
 
-years,
-
-
-requiredMonthlyContribution:
-
-monthlyRequired,
-
-
-
-expectedFinalValue:
-
-Math.round(futureValue),
-
-
-
-progressPercentage:
-
-calculateGoalProgress(
-
-currentAmount,
-
-targetAmount
-
-),
-
-
-
-achievable:
-
-futureValue >= targetAmount
-
-
-};
+  };
 
 
 }
-
