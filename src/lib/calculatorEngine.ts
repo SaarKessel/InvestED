@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// InvestED — Smart Financial Scenario Engine v6
+// InvestED — Smart Financial Scenario Engine v9
 // Educational Financial Simulation Engine
 // ---------------------------------------------------------------------------
 
@@ -11,7 +11,6 @@ import type {
 export type {
   FinancialScenario
 } from "@/types";
-
 
 
 // ---------------------------------------------------------------------------
@@ -83,7 +82,7 @@ export const ASSET_CLASSES:AssetClassOption[] = [
       "הייטק"
     ],
     description:
-      "מדד עם משקל גבוה לחברות טכנולוגיה."
+      "חשיפה גבוהה לחברות טכנולוגיה."
   },
 
 
@@ -96,7 +95,8 @@ export const ASSET_CLASSES:AssetClassOption[] = [
       "אגח",
       "אג״ח",
       "סולידי",
-      "יציבות"
+      "יציבות",
+      "בטוח"
     ],
     description:
       "אפיק בעל תנודתיות נמוכה יחסית."
@@ -111,15 +111,14 @@ export const ASSET_CLASSES:AssetClassOption[] = [
     keywords:[
       "מאוזן",
       "פיזור",
-      "תיק"
+      "תיק",
+      "השקעה כללית"
     ],
     description:
-      "שילוב חינוכי בין מספר סוגי נכסים."
+      "שילוב בין מספר סוגי נכסים."
   }
 
 ];
-
-
 
 
 // ---------------------------------------------------------------------------
@@ -143,38 +142,30 @@ export interface ParsedQuery {
 }
 
 
-
 // ---------------------------------------------------------------------------
 // Text Helpers
 // ---------------------------------------------------------------------------
 
-function normalizeText(
-  text:string
-):string {
+function normalizeText(text:string):string {
 
   return text
     .toLowerCase()
     .replace(/,/g,"")
+    .replace(/₪/g,"")
     .replace(/\s+/g," ")
     .trim();
 
 }
 
 
-
-
 // ---------------------------------------------------------------------------
 // Asset Detection
 // ---------------------------------------------------------------------------
 
-function detectAssetClass(
-  text:string
-):string {
-
+function detectAssetClass(text:string):string {
 
   const normalized =
     normalizeText(text);
-
 
 
   for(const asset of ASSET_CLASSES){
@@ -195,11 +186,9 @@ function detectAssetClass(
   }
 
 
-
   return "balanced";
 
 }
-
 
 
 
@@ -213,14 +202,14 @@ function parseAmount(
 ):number {
 
 
-  const normalizedUnit =
+  const normalized =
     unit.toLowerCase();
 
 
 
   if(
-    normalizedUnit === "k" ||
-    normalizedUnit === "אלף"
+    normalized==="k" ||
+    normalized==="אלף"
   ){
 
     return value * 1000;
@@ -230,9 +219,9 @@ function parseAmount(
 
 
   if(
-    normalizedUnit === "m" ||
-    normalizedUnit === "מיליון" ||
-    normalizedUnit === "מליון"
+    normalized==="m" ||
+    normalized==="מיליון" ||
+    normalized==="מליון"
   ){
 
     return value * 1000000;
@@ -247,20 +236,19 @@ function parseAmount(
 
 
 
-
 // ---------------------------------------------------------------------------
-// Smart Amount Detection
+// Advanced Amount Detection v9
 // ---------------------------------------------------------------------------
 
-function detectAmount(
-  text:string
-):number {
+function detectAmount(text:string):number {
 
 
   const normalized =
     normalizeText(text);
 
 
+
+  // Hebrew numbers
 
   if(
     normalized.includes("חצי מיליון") ||
@@ -270,7 +258,6 @@ function detectAmount(
     return 500000;
 
   }
-
 
 
   if(
@@ -283,10 +270,18 @@ function detectAmount(
   }
 
 
+  if(
+    normalized.includes("שני מיליון") ||
+    normalized.includes("שני מליון")
+  ){
+
+    return 2000000;
+
+  }
+
 
   if(
-    normalized.includes("רבע מיליון") ||
-    normalized.includes("רבע מליון")
+    normalized.includes("רבע מיליון")
   ){
 
     return 250000;
@@ -305,7 +300,9 @@ function detectAmount(
 
     /(\d+(?:\.\d+)?)\s*(אלף)/i,
 
-    /(\d+)\s*(?:שקל|₪)/i
+    /(\d+(?:\.\d+)?)\s*(?:שקל)/i,
+
+    /(\d{5,})/
 
   ];
 
@@ -321,28 +318,15 @@ function detectAmount(
     if(match){
 
       return Math.round(
+
         parseAmount(
           Number(match[1]),
           match[2] ?? ""
         )
+
       );
 
     }
-
-  }
-
-
-
-  const rawNumber =
-    normalized.match(
-      /\b\d{5,}\b/
-    );
-
-
-
-  if(rawNumber){
-
-    return Number(rawNumber[0]);
 
   }
 
@@ -354,80 +338,54 @@ function detectAmount(
 
 
 
-// המשך בחלק 2/3// ---------------------------------------------------------------------------
-// Initial Amount
+// ---------------------------------------------------------------------------
+// Initial Investment Detection FIXED
 // ---------------------------------------------------------------------------
 
 function detectInitialAmount(
   text:string
 ):number {
 
-  return detectAmount(text);
-
-}
-
-
-
-// ---------------------------------------------------------------------------
-// Target Amount Detection
-// ---------------------------------------------------------------------------
-
-function detectTargetAmount(
-  text:string
-):number|null {
-
-
   const normalized =
     normalizeText(text);
 
 
+  const hasInitialCapital =
 
-  const keywords = [
-
-    "יעד",
-    "להגיע",
-    "רוצה להגיע",
-    "מטרה",
-    "לבנות הון",
-    "עצמאות כלכלית",
-    "פרישה"
-
-  ];
+    normalized.includes("יש לי") ||
+    normalized.includes("יש ברשותי") ||
+    normalized.includes("ברשותי") ||
+    normalized.includes("הון") ||
+    normalized.includes("השקעתי") ||
+    normalized.includes("מחזיק") ||
+    normalized.includes("קיים לי");
 
 
+  const onlyMonthlyContext =
 
-  const hasTarget =
-    keywords.some(
-      keyword =>
-        normalized.includes(keyword)
-    );
+    normalized.includes("בחודש") ||
+    normalized.includes("לחודש") ||
+    normalized.includes("כל חודש") ||
+    normalized.includes("מפקיד") ||
+    normalized.includes("חוסך") ||
+    normalized.includes("מפריש");
 
 
+  if(
+    onlyMonthlyContext &&
+    !hasInitialCapital
+  ){
 
-  if(!hasTarget){
-
-    return null;
+    return 0;
 
   }
 
 
-
-  const amount =
-    detectAmount(normalized);
-
-
-
-  return amount > 0
-    ? amount
-    : null;
+  return detectAmount(text);
 
 }
-
-
-
-
 // ---------------------------------------------------------------------------
-// Monthly Contribution
+// Monthly Contribution Detection
 // ---------------------------------------------------------------------------
 
 function detectMonthlyContribution(
@@ -442,15 +400,19 @@ function detectMonthlyContribution(
 
   const patterns = [
 
-    /(\d+(?:\.\d+)?)\s*(?:שקל|₪)?\s*(?:בחודש|לחודש|כל חודש)/i,
 
-    /(?:מפקיד|מפריש|חוסך)\s*(?:של)?\s*(\d+)/i
+    /(\d+(?:\.\d+)?)\s*(?:שקל)?\s*(?:בחודש|לחודש|כל חודש)/i,
+
+
+    /(?:מפקיד|מוסיף|מפריש|חוסך)\s*(\d+(?:\.\d+)?)/i
+
 
   ];
 
 
 
   for(const pattern of patterns){
+
 
     const match =
       normalized.match(pattern);
@@ -473,8 +435,6 @@ function detectMonthlyContribution(
 
 
 
-
-
 // ---------------------------------------------------------------------------
 // Age Detection
 // ---------------------------------------------------------------------------
@@ -490,19 +450,11 @@ function detectAge(
     );
 
 
-
-  if(match){
-
-    return Number(match[1]);
-
-  }
-
-
-
-  return null;
+  return match
+    ? Number(match[1])
+    : null;
 
 }
-
 
 
 
@@ -534,6 +486,7 @@ function detectTargetAge(
 
   for(const pattern of patterns){
 
+
     const match =
       normalized.match(pattern);
 
@@ -555,10 +508,8 @@ function detectTargetAge(
 
 
 
-
-
 // ---------------------------------------------------------------------------
-// Years Detection
+// Years Detection FIXED
 // ---------------------------------------------------------------------------
 
 function detectYears(
@@ -573,16 +524,46 @@ function detectYears(
 
 
 
-  const explicit =
+  const futureMatch =
     normalized.match(
-      /(?:למשך|תקופה של|ל-)\s*(\d+)\s*(?:שנה|שנים)/i
+      /בעוד\s*(\d+)\s*(?:שנה|שנים)/i
     );
 
 
 
-  if(explicit){
+  if(futureMatch){
 
-    return Number(explicit[1]);
+    return Number(futureMatch[1]);
+
+  }
+
+
+
+  const explicitMatch =
+    normalized.match(
+      /(?:למשך|תקופה של|ל-?|ל)\s*(\d+)\s*(?:שנה|שנים)/i
+    );
+
+
+
+  if(explicitMatch){
+
+    return Number(explicitMatch[1]);
+
+  }
+
+
+
+  const simpleMatch =
+    normalized.match(
+      /(\d+)\s*(?:שנה|שנים)/i
+    );
+
+
+
+  if(simpleMatch){
+
+    return Number(simpleMatch[1]);
 
   }
 
@@ -602,27 +583,93 @@ function detectYears(
 
 
 
-  const future =
-    normalized.match(
-      /בעוד\s*(\d+)\s*(?:שנה|שנים)/i
-    );
-
-
-
-  if(future){
-
-    return Number(future[1]);
-
-  }
-
-
-
   return 10;
 
 }
 
 
 
+// ---------------------------------------------------------------------------
+// Target Amount Detection FIXED
+// ---------------------------------------------------------------------------
+
+function detectTargetAmount(
+  text:string
+):number|null {
+
+
+  const normalized =
+    normalizeText(text);
+
+
+
+  const hasGoalWords =
+
+    normalized.includes("להגיע") ||
+    normalized.includes("יעד") ||
+    normalized.includes("מטרה") ||
+    normalized.includes("לבנות הון") ||
+    normalized.includes("צריך להגיע");
+
+
+
+  if(!hasGoalWords){
+
+    return null;
+
+  }
+
+
+
+  const targetPatterns=[
+
+
+    /להגיע\s*(?:ל)?\s*(\d+(?:\.\d+)?)\s*(מיליון|מליון|אלף|m|k)?/i,
+
+
+    /יעד\s*(?:של)?\s*(\d+(?:\.\d+)?)\s*(מיליון|מליון|אלף|m|k)?/i,
+
+
+    /מטרה\s*(?:של)?\s*(\d+(?:\.\d+)?)\s*(מיליון|מליון|אלף|m|k)?/i
+
+  ];
+
+
+
+  for(const pattern of targetPatterns){
+
+
+    const match =
+      normalized.match(pattern);
+
+
+
+    if(match){
+
+      return parseAmount(
+        Number(match[1]),
+        match[2] ?? ""
+      );
+
+    }
+
+  }
+
+
+
+  if(
+    normalized.includes("חצי מיליון")
+  ){
+
+    return 500000;
+
+  }
+
+
+
+  return null;
+
+}
 
 
 // ---------------------------------------------------------------------------
@@ -642,9 +689,9 @@ function detectGoal(
   if(
 
     normalized.includes("פרישה") ||
-    normalized.includes("עצמאות כלכלית") ||
     normalized.includes("לפרוש") ||
-    normalized.includes("חופש כלכלי")
+    normalized.includes("חופש כלכלי") ||
+    normalized.includes("עצמאות כלכלית")
 
   ){
 
@@ -671,6 +718,7 @@ function detectGoal(
   if(
 
     normalized.includes("ילד") ||
+    normalized.includes("ילדים") ||
     normalized.includes("לימודים")
 
   ){
@@ -681,25 +729,9 @@ function detectGoal(
 
 
 
-  if(
-
-    normalized.includes("צמיחה") ||
-    normalized.includes("הון") ||
-    normalized.includes("השקעה")
-
-  ){
-
-    return "growth";
-
-  }
-
-
-
-  return "wealth";
+  return "growth";
 
 }
-
-
 
 
 
@@ -721,9 +753,7 @@ function detectRiskProfile(
 ):RiskProfile {
 
 
-  if(
-    assetClassKey === "bonds"
-  ){
+  if(assetClassKey==="bonds"){
 
     return "low";
 
@@ -731,14 +761,28 @@ function detectRiskProfile(
 
 
 
+  if(assetClassKey==="balanced"){
+
+    return "medium";
+
+  }
+
+
+
   if(
-
-    assetClassKey === "nasdaq" ||
-    years >= 20
-
+    assetClassKey==="sp500" ||
+    assetClassKey==="nasdaq" ||
+    assetClassKey==="world"
   ){
 
-    return "high";
+    if(years >= 15){
+
+      return "high";
+
+    }
+
+
+    return "medium";
 
   }
 
@@ -747,10 +791,6 @@ function detectRiskProfile(
   return "medium";
 
 }
-
-
-
-
 
 // ---------------------------------------------------------------------------
 // Confidence Engine
@@ -764,7 +804,9 @@ function calculateConfidence(
 
   age:number|null,
 
-  years:number
+  years:number,
+
+  asset:string
 
 ):number {
 
@@ -775,7 +817,7 @@ function calculateConfidence(
 
   if(investment > 0){
 
-    score += 30;
+    score += 25;
 
   }
 
@@ -791,7 +833,7 @@ function calculateConfidence(
 
   if(age !== null){
 
-    score += 20;
+    score += 15;
 
   }
 
@@ -799,7 +841,15 @@ function calculateConfidence(
 
   if(years > 0){
 
-    score += 30;
+    score += 25;
+
+  }
+
+
+
+  if(asset){
+
+    score += 15;
 
   }
 
@@ -812,9 +862,7 @@ function calculateConfidence(
 
 }
 
-
-
-// המשך בחלק 3/3// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 // Scenario Builder
 // ---------------------------------------------------------------------------
 
@@ -875,18 +923,23 @@ export function analyzeFinancialScenario(
 
 
 
-
   return {
+
 
     initialInvestment,
 
+
     monthlyContribution,
+
 
     currentAge,
 
+
     targetAge,
 
+
     targetAmount,
+
 
     years,
 
@@ -917,7 +970,8 @@ export function analyzeFinancialScenario(
         initialInvestment,
         monthlyContribution,
         currentAge,
-        years
+        years,
+        asset.key
       ),
 
 
@@ -926,8 +980,8 @@ export function analyzeFinancialScenario(
 
   };
 
-}
 
+}
 
 
 
@@ -947,7 +1001,6 @@ export interface ProjectionPoint {
 
 
 
-
 export interface ProjectionResult {
 
   finalBalance:number;
@@ -964,7 +1017,9 @@ export interface ProjectionResult {
 
 
 
-
+// ---------------------------------------------------------------------------
+// Compute Projection
+// ---------------------------------------------------------------------------
 
 export function computeProjection(
 
@@ -979,6 +1034,7 @@ export function computeProjection(
   inflationPct:number = 3
 
 ):ProjectionResult {
+
 
 
   const monthlyRate =
@@ -1019,8 +1075,6 @@ export function computeProjection(
 
 
 
-
-
   for(
     let month = 1;
     month <= months;
@@ -1041,8 +1095,9 @@ export function computeProjection(
 
 
 
-
-    if(month % 12 === 0){
+    if(
+      month % 12 === 0
+    ){
 
       series.push({
 
@@ -1065,9 +1120,8 @@ export function computeProjection(
 
 
 
-
-
   return {
+
 
     finalBalance:
       Math.round(balance),
@@ -1088,14 +1142,11 @@ export function computeProjection(
 
     realValueAfterInflation:
       Math.round(
-
         balance /
-
         Math.pow(
           1 + inflationPct / 100,
           years
         )
-
       ),
 
 
@@ -1105,7 +1156,6 @@ export function computeProjection(
   };
 
 }
-
 
 
 
@@ -1123,37 +1173,41 @@ export function parseCalculatorQuery(
 
 
 
-
   return {
+
 
     age:
       scenario.currentAge,
+
 
 
     years:
       scenario.years,
 
 
+
     monthlyContribution:
       scenario.monthlyContribution,
+
 
 
     principal:
       scenario.initialInvestment,
 
 
+
     targetAmount:
       scenario.targetAmount,
+
 
 
     assetClassKey:
       scenario.assetClassKey
 
+
   };
 
 }
-
-
 
 
 
@@ -1186,7 +1240,6 @@ export function debugScenario(
 
 
 
-
   return {
 
     input:text,
@@ -1201,23 +1254,113 @@ export function debugScenario(
 
 
 
+// ---------------------------------------------------------------------------
+// Goal Planner Engine
+// ---------------------------------------------------------------------------
+
+export function calculateRequiredMonthlyContribution(
+
+  targetAmount:number,
+
+  initialInvestment:number,
+
+  years:number,
+
+  annualReturnPct:number
+
+):number {
+
+
+
+  const monthlyRate =
+    annualReturnPct / 100 / 12;
+
+
+
+  const months =
+    years * 12;
+
+
+
+  if(months <= 0){
+
+    return 0;
+
+  }
+
+
+
+  const futureInitial =
+
+    initialInvestment *
+
+    Math.pow(
+      1 + monthlyRate,
+      months
+    );
+
+
+
+  const remaining =
+
+    targetAmount -
+    futureInitial;
+
+
+
+  if(remaining <= 0){
+
+    return 0;
+
+  }
+
+
+
+  const monthly =
+
+    remaining *
+
+    monthlyRate /
+
+    (
+      Math.pow(
+        1 + monthlyRate,
+        months
+      )
+      -
+      1
+    );
+
+
+
+  return Math.round(monthly);
+
+}
+
 
 
 // ---------------------------------------------------------------------------
-// Presets
+// Calculator Presets
 // ---------------------------------------------------------------------------
 
 export const CALCULATOR_PRESETS = [
 
+
   "אני בן 27, יש לי 100 אלף שקל להשקיע ל-10 שנים במדד S&P 500",
+
 
   "אני בן 30, מפקיד 2000 שקל בחודש במדד עולמי עד גיל 60",
 
-  "יש לי חצי מיליון שקל ואני רוצה לפרוש בעוד 20 שנה",
+
+  "יש לי חצי מיליון ואני רוצה לפרוש בעוד 20 שנה",
+
 
   "אני בן 35 ורוצה לבנות הון לטווח ארוך",
 
-  "אני חוסך לילד 1000 שקל בחודש עד גיל 18"
+
+  "אני חוסך לילד 1000 שקל בחודש עד גיל 18",
+
+
+  "יש לי 300 אלף להשקיע ל-15 שנה ואני מוסיף 2000 שקל בחודש במדד S&P 500"
 
 ];
-

@@ -1,8 +1,9 @@
 // ---------------------------------------------------------------------------
-// InvestED - Goal Planner Card v2
+// InvestED - Goal Planner Card v3
 // ---------------------------------------------------------------------------
 
 import { motion } from "framer-motion";
+
 import {
   Target,
   TrendingUp,
@@ -13,9 +14,16 @@ import {
 } from "lucide-react";
 
 
+
+// ---------------------------------------------------------------------------
+// Props
+// ---------------------------------------------------------------------------
+
 interface Props {
 
-  targetAmount:number;
+  targetAmount:number | null;
+
+  goalDescription?:string;
 
   currentAmount:number;
 
@@ -33,7 +41,13 @@ interface Props {
 
 
 
-function formatMoney(value:number){
+// ---------------------------------------------------------------------------
+// Money Formatter
+// ---------------------------------------------------------------------------
+
+function formatMoney(
+  value:number
+){
 
   return new Intl.NumberFormat(
     "he-IL",
@@ -48,9 +62,15 @@ function formatMoney(value:number){
 
 
 
+// ---------------------------------------------------------------------------
+// Component
+// ---------------------------------------------------------------------------
+
 export function GoalPlannerCard({
 
   targetAmount,
+
+  goalDescription,
 
   currentAmount,
 
@@ -67,23 +87,35 @@ export function GoalPlannerCard({
 }:Props){
 
 
+
+const progress = Math.min(
+  Math.max(progressPercentage,0),
+  100
+);
+
+
+
 return (
 
 <motion.div
+
 
 initial={{
   opacity:0,
   y:20
 }}
 
+
 animate={{
   opacity:1,
   y:0
 }}
 
+
 transition={{
   duration:0.4
 }}
+
 
 className="
 mt-6
@@ -98,10 +130,19 @@ shadow-sm
 space-y-6
 "
 
+
 >
 
 
-<div className="flex items-start gap-3">
+
+{/* Header */}
+
+<div className="
+flex
+items-start
+gap-3
+">
+
 
 <div className="
 rounded-xl
@@ -109,16 +150,20 @@ bg-primary/10
 p-3
 ">
 
+
 <Target className="
 h-6
 w-6
 text-primary
 "/>
 
+
 </div>
 
 
+
 <div>
+
 
 <h3 className="
 text-2xl
@@ -150,6 +195,8 @@ text-muted-foreground
 
 
 
+{/* Main Metrics */}
+
 <div className="
 grid
 grid-cols-1
@@ -158,6 +205,9 @@ gap-4
 ">
 
 
+
+{/* Target */}
+
 <div className="
 rounded-2xl
 border
@@ -165,30 +215,60 @@ bg-background
 p-4
 ">
 
-<div className="flex items-center gap-2 text-sm text-muted-foreground">
 
-<Target className="h-4 w-4"/>
+<div className="
+flex
+items-center
+gap-2
+text-sm
+text-muted-foreground
+">
+
+
+<Target className="
+h-4
+w-4
+"/>
+
 
 יעד
 
 </div>
 
 
+
 <p className="
 mt-3
 text-xl
 font-bold
 ">
 
-{formatMoney(targetAmount)}
+
+{
+
+targetAmount !== null
+
+?
+
+formatMoney(targetAmount)
+
+:
+
+goalDescription ?? "יעד פיננסי"
+
+}
+
 
 </p>
+
 
 </div>
 
 
 
 
+
+{/* Years */}
 
 <div className="
 rounded-2xl
@@ -197,13 +277,27 @@ bg-background
 p-4
 ">
 
-<div className="flex items-center gap-2 text-sm text-muted-foreground">
 
-<CalendarDays className="h-4 w-4"/>
+<div className="
+flex
+items-center
+gap-2
+text-sm
+text-muted-foreground
+">
+
+
+<CalendarDays className="
+h-4
+w-4
+"/>
+
 
 תקופה
 
+
 </div>
+
 
 
 <p className="
@@ -212,7 +306,9 @@ text-xl
 font-bold
 ">
 
+
 {years} שנים
+
 
 </p>
 
@@ -222,6 +318,8 @@ font-bold
 
 
 
+
+{/* Current Amount */}
 
 <div className="
 rounded-2xl
@@ -230,13 +328,27 @@ bg-background
 p-4
 ">
 
-<div className="flex items-center gap-2 text-sm text-muted-foreground">
 
-<Wallet className="h-4 w-4"/>
+<div className="
+flex
+items-center
+gap-2
+text-sm
+text-muted-foreground
+">
+
+
+<Wallet className="
+h-4
+w-4
+"/>
+
 
 הון קיים
 
+
 </div>
+
 
 
 <p className="
@@ -245,7 +357,9 @@ text-xl
 font-bold
 ">
 
+
 {formatMoney(currentAmount)}
+
 
 </p>
 
@@ -260,6 +374,8 @@ font-bold
 
 
 
+
+{/* Monthly Contribution */}
 
 <div className="
 rounded-2xl
@@ -277,11 +393,18 @@ text-sm
 text-muted-foreground
 ">
 
-<TrendingUp className="h-4 w-4"/>
+
+<TrendingUp className="
+h-4
+w-4
+"/>
+
 
 הפקדה חודשית נדרשת
 
+
 </div>
+
 
 
 <p className="
@@ -291,7 +414,9 @@ font-bold
 text-primary
 ">
 
+
 {formatMoney(requiredMonthlyContribution)}
+
 
 </p>
 
@@ -304,6 +429,7 @@ text-primary
 
 
 
+{/* Progress */}
 
 <div>
 
@@ -315,21 +441,28 @@ justify-between
 text-sm
 ">
 
-<span className="text-muted-foreground">
+
+<span className="
+text-muted-foreground
+">
 
 התקדמות ליעד
 
 </span>
 
 
-<span className="font-bold">
 
-{Math.round(progressPercentage)}%
+<span className="
+font-bold
+">
+
+{Math.round(progress)}%
 
 </span>
 
 
 </div>
+
 
 
 
@@ -352,11 +485,13 @@ transition-all
 duration-700
 "
 
+
 style={{
 
-width:`${Math.min(progressPercentage,100)}%`
+width:`${progress}%`
 
 }}
+
 
 />
 
@@ -371,6 +506,9 @@ width:`${Math.min(progressPercentage,100)}%`
 
 
 
+
+
+{/* Result */}
 
 <div
 
@@ -405,23 +543,35 @@ gap-3
 
 
 {
+
 achievable
 
 ?
 
-<CheckCircle2 className="
+<CheckCircle2
+
+className="
 h-6
 w-6
 text-green-500
-"/>
+"
+
+/>
+
 
 :
 
-<AlertTriangle className="
+
+<AlertTriangle
+
+className="
 h-6
 w-6
 text-yellow-500
-"/>
+"
+
+/>
+
 
 }
 
@@ -431,7 +581,9 @@ text-yellow-500
 font-bold
 ">
 
+
 {
+
 achievable
 
 ?
@@ -444,10 +596,12 @@ achievable
 
 }
 
+
 </p>
 
 
 </div>
+
 
 
 
@@ -458,16 +612,20 @@ text-sm
 text-muted-foreground
 ">
 
+
 שווי עתידי משוער:
 
 {" "}
+
 
 <span className="
 font-bold
 text-primary
 ">
 
+
 {formatMoney(expectedFinalValue)}
+
 
 </span>
 
@@ -481,6 +639,10 @@ text-primary
 
 
 
+
+
+{/* Disclaimer */}
+
 <div className="
 text-xs
 text-muted-foreground
@@ -488,10 +650,11 @@ border-t
 pt-4
 ">
 
+
 ⚠️ סימולציה חינוכית בלבד. אינה מהווה ייעוץ השקעות או הבטחת תשואה.
 
-</div>
 
+</div>
 
 
 
