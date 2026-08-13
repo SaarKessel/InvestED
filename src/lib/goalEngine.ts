@@ -506,3 +506,420 @@ export function analyzeFinancialGoal(
 
 
 }
+
+
+// ---------------------------------------------------------------------------
+// Retirement Planning Engine
+// ---------------------------------------------------------------------------
+
+export interface RetirementPlanInput {
+
+  currentAge:number;
+
+  expectedRetirementAge:number;
+
+  currentAssets:number;
+
+  monthlyInvestment:number;
+
+  annualReturnPct:number;
+
+  inflationPct:number;
+
+  targetMonthlyIncome:number;
+
+}
+
+
+export interface RetirementScenarioAlternative {
+
+  label:string;
+
+  annualReturnPct:number;
+
+  futureValue:number;
+
+  monthlyIncomeDuringRetirement:number;
+
+}
+
+
+export interface RetirementPlan {
+
+  yearsRemaining:number;
+
+  currentAssets:number;
+
+  monthlyInvestment:number;
+
+  futureValue:number;
+
+  requiredMonthlyContribution:number;
+
+  monthlyIncomeDuringRetirement:number;
+
+  probabilityOfSuccess:number;
+
+  scenarioAlternatives:RetirementScenarioAlternative[];
+
+  recommendations:string[];
+
+}
+
+
+export function buildRetirementPlan(
+  input:RetirementPlanInput
+):RetirementPlan {
+
+  const yearsRemaining = Math.max(
+    input.expectedRetirementAge - input.currentAge,
+    0
+  );
+
+  const months = yearsRemaining * 12;
+
+  const annualReturn = Math.max(
+    input.annualReturnPct,
+    0
+  ) / 100;
+
+  const monthlyRate =
+    annualReturn / 12;
+
+  const inflationRate = Math.max(
+    input.inflationPct,
+    0
+  ) / 100;
+
+  const monthlyInvestment = Math.max(
+    input.monthlyInvestment,
+    0
+  );
+
+  const currentAssets = Math.max(
+    input.currentAssets,
+    0
+  );
+
+  const targetMonthlyIncome = Math.max(
+    input.targetMonthlyIncome,
+    0
+  );
+
+
+  // --------------------------------------------------
+  // Future value of existing assets + contributions
+  // --------------------------------------------------
+
+  let futureValue = currentAssets;
+
+  if(months > 0){
+
+    if(monthlyRate > 0){
+
+      futureValue =
+        currentAssets *
+        Math.pow(
+          1 + monthlyRate,
+          months
+        )
+        +
+        monthlyInvestment *
+        (
+          (
+            Math.pow(
+              1 + monthlyRate,
+              months
+            ) - 1
+          )
+          /
+          monthlyRate
+        );
+
+    } else {
+
+      futureValue =
+        currentAssets +
+        monthlyInvestment * months;
+
+    }
+
+  }
+
+
+  futureValue = Math.round(
+    futureValue
+  );
+
+
+  // --------------------------------------------------
+  // Retirement income estimate
+  // --------------------------------------------------
+
+  const annualWithdrawalRate = 0.04;
+
+  const monthlyIncomeDuringRetirement =
+    Math.round(
+      (
+        futureValue *
+        annualWithdrawalRate
+      ) / 12
+    );
+
+
+  // --------------------------------------------------
+  // Inflation-adjusted target
+  // --------------------------------------------------
+
+  const futureMonthlyIncomeTarget =
+    targetMonthlyIncome *
+    Math.pow(
+      1 + inflationRate,
+      yearsRemaining
+    );
+
+
+  const targetRetirementCapital =
+    futureMonthlyIncomeTarget *
+    12 /
+    annualWithdrawalRate;
+
+
+  // --------------------------------------------------
+  // Required monthly contribution
+  // --------------------------------------------------
+
+  let requiredMonthlyContribution = 0;
+
+  if(
+    targetRetirementCapital >
+    futureValue
+  ){
+
+    const remainingCapital =
+      targetRetirementCapital -
+      (
+        currentAssets *
+        Math.pow(
+          1 + monthlyRate,
+          months
+        )
+      );
+
+    if(months > 0){
+
+      if(monthlyRate > 0){
+
+        requiredMonthlyContribution =
+          remainingCapital *
+          monthlyRate /
+          (
+            Math.pow(
+              1 + monthlyRate,
+              months
+            ) - 1
+          );
+
+      } else {
+
+        requiredMonthlyContribution =
+          remainingCapital / months;
+
+      }
+
+    }
+
+  }
+
+  requiredMonthlyContribution = Math.max(
+    Math.round(requiredMonthlyContribution),
+    0
+  );
+
+
+  // --------------------------------------------------
+  // Scenario alternatives
+  // --------------------------------------------------
+
+  const scenarioReturns = [
+    {
+      label:"שמרני",
+      annualReturnPct:5
+    },
+    {
+      label:"בסיס",
+      annualReturnPct:input.annualReturnPct
+    },
+    {
+      label:"צמיחה",
+      annualReturnPct:10
+    }
+  ];
+
+
+  const scenarioAlternatives =
+    scenarioReturns.map(
+      scenario => {
+
+        const rate =
+          scenario.annualReturnPct /
+          100 /
+          12;
+
+        let value = currentAssets;
+
+        if(months > 0){
+
+          if(rate > 0){
+
+            value =
+              currentAssets *
+              Math.pow(
+                1 + rate,
+                months
+              )
+              +
+              monthlyInvestment *
+              (
+                (
+                  Math.pow(
+                    1 + rate,
+                    months
+                  ) - 1
+                )
+                /
+                rate
+              );
+
+          } else {
+
+            value =
+              currentAssets +
+              monthlyInvestment * months;
+
+          }
+
+        }
+
+        value = Math.round(value);
+
+        return {
+          label:scenario.label,
+          annualReturnPct:
+            scenario.annualReturnPct,
+          futureValue:value,
+          monthlyIncomeDuringRetirement:
+            Math.round(
+              value *
+              annualWithdrawalRate /
+              12
+            )
+        };
+
+      }
+    );
+
+
+  // --------------------------------------------------
+  // Success probability
+  // --------------------------------------------------
+
+  let probabilityOfSuccess = 0;
+
+  if(targetRetirementCapital > 0){
+
+    probabilityOfSuccess =
+      Math.round(
+        Math.min(
+          futureValue /
+          targetRetirementCapital *
+          100,
+          100
+        )
+      );
+
+  } else {
+
+    probabilityOfSuccess = 100;
+
+  }
+
+
+  // --------------------------------------------------
+  // Recommendations
+  // --------------------------------------------------
+
+  const recommendations:string[] = [];
+
+
+  if(
+    yearsRemaining >= 20
+  ){
+
+    recommendations.push(
+      "אופק השקעה ארוך מאפשר לריבית דריבית להיות מנוע מרכזי בבניית ההון."
+    );
+
+  } else if(
+    yearsRemaining > 0
+  ){
+
+    recommendations.push(
+      "אופק ההשקעה משמעותי, ולכן עקביות בהפקדות יכולה להשפיע מהותית על התוצאה."
+    );
+
+  } else {
+
+    recommendations.push(
+      "יש לבחון מחדש את יעד הפרישה ואת מקורות ההכנסה הצפויים."
+    );
+
+  }
+
+
+  if(
+    monthlyInvestment <
+    requiredMonthlyContribution
+  ){
+
+    recommendations.push(
+      "הגדלת ההפקדה החודשית עשויה לשפר את הסיכוי להגיע ליעד."
+    );
+
+  } else {
+
+    recommendations.push(
+      "רמת ההפקדה הנוכחית תואמת או עולה על ההפקדה המחושבת לפי ההנחות."
+    );
+
+  }
+
+
+  recommendations.push(
+    "התרחיש הוא הדמיה חינוכית המבוססת על תשואה והנחות אינפלציה ואינו מהווה הבטחת תשואה."
+  );
+
+
+  return {
+
+    yearsRemaining,
+
+    currentAssets,
+
+    monthlyInvestment,
+
+    futureValue,
+
+    requiredMonthlyContribution,
+
+    monthlyIncomeDuringRetirement,
+
+    probabilityOfSuccess,
+
+    scenarioAlternatives,
+
+    recommendations
+
+  };
+
+}

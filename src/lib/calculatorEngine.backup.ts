@@ -663,6 +663,11 @@ detectGoal(text);
 
 
 
+const targetMonthlyIncome =
+null;
+
+
+
 return {
 
 initialInvestment,
@@ -674,6 +679,8 @@ currentAge,
 targetAge,
 
 targetAmount:null,
+
+targetMonthlyIncome,
 
 years,
 

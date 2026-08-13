@@ -137,6 +137,8 @@ export interface ParsedQuery {
 
   targetAmount:number|null;
 
+  targetMonthlyIncome:number|null;
+
   assetClassKey:string;
 
 }
@@ -665,6 +667,86 @@ function detectTargetAmount(
 
 
 // ---------------------------------------------------------------------------
+// Retirement Monthly Income Detection
+// ---------------------------------------------------------------------------
+
+function detectTargetMonthlyIncome(
+  text:string
+):number|null {
+
+  const normalized =
+    normalizeText(text);
+
+  // Only activate this parser when the scenario
+  // clearly refers to retirement / financial independence.
+  const retirementContext =
+    normalized.includes("פרישה") ||
+    normalized.includes("לפרוש") ||
+    normalized.includes("פורש") ||
+    normalized.includes("חופש כלכלי") ||
+    normalized.includes("עצמאות כלכלית") ||
+    normalized.includes("retire") ||
+    normalized.includes("retirement");
+
+  if(!retirementContext){
+    return null;
+  }
+
+
+  // Examples:
+  // 15 אלף בחודש בפרישה
+  // 15000 בחודש בפרישה
+  // הכנסה של 12000 בפרישה
+  // רוצה 10K בחודש בפרישה
+  // 15,000 ₪ בחודש
+
+  const patterns = [
+
+    /(?:הכנסה|להכנסה|הכנסה חודשית|לקבל|לקבל\s+בחודש|רוצה)\s*(?:של\s*)?(\d+(?:\.\d+)?)\s*(אלף|k|מיליון|מליון)?\s*(?:₪|שקל)?\s*(?:בחודש|לחודש)/,
+
+    /(\d+(?:\.\d+)?)\s*(אלף|k|מיליון|מליון)\s*(?:₪|שקל)?\s*(?:בחודש|לחודש)/,
+
+    /(\d{4,})\s*(?:₪|שקל)?\s*(?:בחודש|לחודש)/,
+
+    /(?:בחודש|לחודש)\s*(?:של\s*)?(\d+(?:\.\d+)?)\s*(אלף|k|מיליון|מליון)?/
+  ];
+
+
+  for(const pattern of patterns){
+
+    const match =
+      normalized.match(pattern);
+
+    if(!match){
+      continue;
+    }
+
+    const value =
+      Number(match[1]);
+
+    if(!Number.isFinite(value) || value <= 0){
+      continue;
+    }
+
+    const unit =
+      match[2] ?? "";
+
+    return Math.round(
+      parseAmount(
+        value,
+        unit
+      )
+    );
+
+  }
+
+
+  return null;
+
+}
+
+
+// ---------------------------------------------------------------------------
 // Goal Detection
 // ---------------------------------------------------------------------------
 
@@ -895,6 +977,10 @@ export function analyzeFinancialScenario(
     detectTargetAmount(text);
 
 
+  const targetMonthlyIncome =
+    detectTargetMonthlyIncome(text);
+
+
 
   return {
 
@@ -912,6 +998,8 @@ export function analyzeFinancialScenario(
 
 
     targetAmount,
+
+    targetMonthlyIncome,
 
 
     years,
@@ -1175,7 +1263,12 @@ export function parseCalculatorQuery(
 
 
     assetClassKey:
-      scenario.assetClassKey
+      scenario.assetClassKey,
+
+
+
+    targetMonthlyIncome:
+      scenario.targetMonthlyIncome
 
 
   };

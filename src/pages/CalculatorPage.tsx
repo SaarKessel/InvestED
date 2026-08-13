@@ -7,7 +7,8 @@ import {
 } from "@/lib/calculatorEngine";
 
 import {
-  analyzeFinancialGoal
+  analyzeFinancialGoal,
+  buildRetirementPlan
 } from "@/lib/goalEngine";
 
 import type {
@@ -295,29 +296,86 @@ null;
 
 
 
-const goalPlan = scenario && projection
-  ?
-  scenario.targetAmount !== null
+const goalPlan =
+  scenario &&
+  projection
     ?
-    analyzeFinancialGoal(
-      scenario.initialInvestment,
-      scenario.targetAmount,
-      scenario.years,
-      scenario.annualReturnPct,
-      scenario.monthlyContribution
-    )
+    scenario.goal === "retirement" &&
+    scenario.targetMonthlyIncome !== null &&
+    scenario.currentAge !== null &&
+    scenario.targetAge !== null
+      ?
+      (() => {
+
+        const retirementPlan =
+          buildRetirementPlan({
+
+            currentAge:
+              scenario.currentAge,
+
+            expectedRetirementAge:
+              scenario.targetAge,
+
+            currentAssets:
+              scenario.initialInvestment,
+
+            monthlyInvestment:
+              scenario.monthlyContribution,
+
+            annualReturnPct:
+              scenario.annualReturnPct,
+
+            inflationPct:
+              2.5,
+
+            targetMonthlyIncome:
+              scenario.targetMonthlyIncome
+
+          });
+
+
+        return {
+
+          targetAmount:
+            Math.round(
+              retirementPlan.futureValue
+            ),
+
+          currentAmount:
+            scenario.initialInvestment,
+
+          years:
+            retirementPlan.yearsRemaining,
+
+          requiredMonthlyContribution:
+            retirementPlan.requiredMonthlyContribution,
+
+          expectedFinalValue:
+            retirementPlan.futureValue,
+
+          progressPercentage:
+            retirementPlan.probabilityOfSuccess,
+
+          achievable:
+            retirementPlan.probabilityOfSuccess >= 100
+
+        };
+
+      })()
+      :
+      scenario.targetAmount !== null
+        ?
+        analyzeFinancialGoal(
+          scenario.initialInvestment,
+          scenario.targetAmount,
+          scenario.years,
+          scenario.annualReturnPct,
+          scenario.monthlyContribution
+        )
+        :
+        null
     :
-    {
-      targetAmount: projection.finalBalance,
-      currentAmount: scenario.initialInvestment,
-      years: scenario.years,
-      requiredMonthlyContribution: scenario.monthlyContribution,
-      expectedFinalValue: projection.finalBalance,
-      progressPercentage: 100,
-      achievable: true
-    }
-  :
-  null;
+    null;
 return (
 
 <div

@@ -78,6 +78,8 @@ export interface FinancialScenario {
 
   targetAmount:number | null;
 
+  targetMonthlyIncome:number | null;
+
   years:number;
 
   assetClassKey:string;

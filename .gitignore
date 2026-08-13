@@ -18,3 +18,4 @@ npm-debug.log*
 *.tsbuildinfo
 vite.config.js
 vite.config.d.ts
+backups/
