@@ -334,7 +334,7 @@ export function calculateRequiredMonthlyContribution(
 
 export function calculateGoalProgress(
 
-  currentAmount:number,
+  projectedAmount:number,
 
   targetAmount:number
 
@@ -352,7 +352,7 @@ export function calculateGoalProgress(
   return Math.min(
 
     Math.round(
-      (currentAmount / targetAmount) * 100
+      (projectedAmount / targetAmount) * 100
     ),
 
     100
@@ -489,7 +489,7 @@ export function analyzeFinancialGoal(
 
       calculateGoalProgress(
 
-        currentAmount,
+        futureValue,
 
         targetAmount
 

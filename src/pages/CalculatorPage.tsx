@@ -6,6 +6,10 @@ import {
   ASSET_CLASSES
 } from "@/lib/calculatorEngine";
 
+import {
+  analyzeFinancialGoal
+} from "@/lib/goalEngine";
+
 import type {
   FinancialScenario,
   ProjectionResult
@@ -292,42 +296,28 @@ null;
 
 
 const goalPlan = scenario && projection
-?
-{
-  targetAmount:
-    scenario.targetAmount ?? projection.finalBalance,
-
-  currentAmount:
-    scenario.initialInvestment,
-
-  years:
-    scenario.years,
-
-  requiredMonthlyContribution:
-    scenario.monthlyContribution,
-
-  expectedFinalValue:
-    projection.finalBalance,
-
-  progressPercentage:
-    scenario.targetAmount
-      ?
-      (
-        projection.finalBalance /
-        scenario.targetAmount
-      ) * 100
-      :
-      100,
-
-  achievable:
-    scenario.targetAmount
-      ?
-      projection.finalBalance >= scenario.targetAmount
-      :
-      true
-}
-:
-null;
+  ?
+  scenario.targetAmount !== null
+    ?
+    analyzeFinancialGoal(
+      scenario.initialInvestment,
+      scenario.targetAmount,
+      scenario.years,
+      scenario.annualReturnPct,
+      scenario.monthlyContribution
+    )
+    :
+    {
+      targetAmount: projection.finalBalance,
+      currentAmount: scenario.initialInvestment,
+      years: scenario.years,
+      requiredMonthlyContribution: scenario.monthlyContribution,
+      expectedFinalValue: projection.finalBalance,
+      progressPercentage: 100,
+      achievable: true
+    }
+  :
+  null;
 return (
 
 <div
