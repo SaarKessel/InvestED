@@ -338,7 +338,7 @@ const goalPlan =
 
           targetAmount:
             Math.round(
-              retirementPlan.futureValue
+              retirementPlan.targetRetirementCapital
             ),
 
           currentAmount:

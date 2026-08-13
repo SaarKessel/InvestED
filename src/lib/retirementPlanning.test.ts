@@ -144,6 +144,52 @@ describe("Retirement Engine", () => {
     );
   });
 
+  it("exposes the inflation-adjusted retirement capital target", () => {
+    const result = buildRetirementPlan({
+      currentAge: 30,
+      expectedRetirementAge: 40,
+      currentAssets: 0,
+      monthlyInvestment: 0,
+      annualReturnPct: 7,
+      inflationPct: 2.5,
+      targetMonthlyIncome: 15000,
+    });
+
+    expect(result.futureMonthlyIncomeTarget).toBeGreaterThan(15000);
+
+    expect(
+      result.targetRetirementCapital
+    ).toBeGreaterThan(15000 * 12 / 0.04);
+  });
+
+  it("does not confuse future portfolio value with retirement target capital", () => {
+    const result = buildRetirementPlan({
+      currentAge: 30,
+      expectedRetirementAge: 40,
+      currentAssets: 15000,
+      monthlyInvestment: 5000,
+      annualReturnPct: 7,
+      inflationPct: 2.5,
+      targetMonthlyIncome: 15000,
+    });
+
+    expect(
+      result.targetRetirementCapital
+    ).toBeGreaterThan(
+      result.futureValue
+    );
+
+    expect(
+      result.probabilityOfSuccess
+    ).toBeLessThan(100);
+
+    expect(
+      result.requiredMonthlyContribution
+    ).toBeGreaterThan(
+      result.monthlyInvestment
+    );
+  });
+
   it("returns zero required contribution when target is already achieved", () => {
     const result = buildRetirementPlan({
       currentAge: 60,

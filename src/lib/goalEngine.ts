@@ -554,6 +554,10 @@ export interface RetirementPlan {
 
   futureValue:number;
 
+  futureMonthlyIncomeTarget:number;
+
+  targetRetirementCapital:number;
+
   requiredMonthlyContribution:number;
 
   monthlyIncomeDuringRetirement:number;
@@ -909,6 +913,10 @@ export function buildRetirementPlan(
     monthlyInvestment,
 
     futureValue,
+
+    futureMonthlyIncomeTarget,
+
+    targetRetirementCapital,
 
     requiredMonthlyContribution,
 
