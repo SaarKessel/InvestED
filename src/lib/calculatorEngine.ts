@@ -722,7 +722,9 @@ function detectTargetMonthlyIncome(
     }
 
     const value =
-      Number(match[1]);
+      Number(
+        match[1].replace(/,/g, "")
+      );
 
     if(!Number.isFinite(value) || value <= 0){
       continue;
