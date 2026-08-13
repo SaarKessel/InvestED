@@ -162,32 +162,58 @@ function normalizeText(text:string):string {
 // Asset Detection
 // ---------------------------------------------------------------------------
 
-function detectAssetClass(text:string):string {
+function detectAssetClass(
+  text:string
+):string {
 
-  const normalized =
-    normalizeText(text);
+  const normalized = normalizeText(text)
+    .toLowerCase();
 
-
-  for(const asset of ASSET_CLASSES){
-
-    if(
-      asset.keywords.some(
-        keyword =>
-          normalized.includes(
-            keyword.toLowerCase()
-          )
-      )
-    ){
-
-      return asset.key;
-
-    }
-
+  // S&P 500
+  if(
+    normalized.includes("s&p") ||
+    normalized.includes("sp500") ||
+    normalized.includes("s and p") ||
+    normalized.includes("אס אנד פי") ||
+    normalized.includes("אס אנד פי 500")
+  ){
+    return "sp500";
   }
 
+  // Nasdaq - require an explicit Nasdaq reference.
+  // Do NOT classify generic "technology" as Nasdaq.
+  if(
+    normalized.includes("nasdaq") ||
+    normalized.includes("נאסדק") ||
+    normalized.includes("נאסד״ק") ||
+    normalized.includes("נאסדק 100") ||
+    normalized.includes("נאסד״ק 100")
+  ){
+    return "nasdaq";
+  }
 
+  // Bonds
+  if(
+    normalized.includes("אגח") ||
+    normalized.includes("אג״ח") ||
+    normalized.includes("bonds") ||
+    normalized.includes("bond")
+  ){
+    return "bonds";
+  }
+
+  // World / global
+  if(
+    normalized.includes("world") ||
+    normalized.includes("msci world") ||
+    normalized.includes("עולמי") ||
+    normalized.includes("גלובלי")
+  ){
+    return "world";
+  }
+
+  // Balanced is the safe default.
   return "balanced";
-
 }
 
 
@@ -201,37 +227,27 @@ function parseAmount(
   unit:string
 ):number {
 
-
-  const normalized =
-    unit.toLowerCase();
-
-
+  const normalized = unit
+    .toLowerCase()
+    .trim();
 
   if(
-    normalized==="k" ||
-    normalized==="אלף"
+    normalized === "k" ||
+    normalized === "אלף"
   ){
-
     return value * 1000;
-
   }
-
-
 
   if(
-    normalized==="m" ||
-    normalized==="מיליון" ||
-    normalized==="מליון"
+    normalized === "m" ||
+    normalized === "million" ||
+    normalized === "מיליון" ||
+    normalized === "מליון"
   ){
-
     return value * 1000000;
-
   }
-
-
 
   return value;
-
 }
 
 
@@ -242,98 +258,72 @@ function parseAmount(
 
 function detectAmount(text:string):number {
 
+  const normalized = normalizeText(text)
+    .replace(/,/g, "");
 
-  const normalized =
-    normalizeText(text);
-
-
-
-  // Hebrew numbers
-
+  // Hebrew natural-language amounts
   if(
     normalized.includes("חצי מיליון") ||
     normalized.includes("חצי מליון")
   ){
-
     return 500000;
-
   }
-
 
   if(
     normalized.includes("מיליון וחצי") ||
     normalized.includes("מליון וחצי")
   ){
-
     return 1500000;
-
   }
-
 
   if(
     normalized.includes("שני מיליון") ||
     normalized.includes("שני מליון")
   ){
-
     return 2000000;
-
   }
-
 
   if(
-    normalized.includes("רבע מיליון")
+    normalized.includes("רבע מיליון") ||
+    normalized.includes("רבע מליון")
   ){
-
     return 250000;
-
   }
 
+  // English natural-language amounts
+  const englishMillion =
+    normalized.match(/(\d+(?:\.\d+)?)\s*million\b/i);
 
+  if(englishMillion){
+    return Math.round(Number(englishMillion[1]) * 1000000);
+  }
 
+  // Numeric amounts with units
   const patterns = [
-
-    /(\d+(?:\.\d+)?)\s*(מיליון|מליון)/i,
-
-    /(\d+(?:\.\d+)?)\s*(m)/i,
-
-    /(\d+(?:\.\d+)?)\s*(k)/i,
-
+    /(\d+(?:\.\d+)?)\s*(מיליון|מליון|million)/i,
+    /(\d+(?:\.\d+)?)\s*(m)\b/i,
+    /(\d+(?:\.\d+)?)\s*(k)\b/i,
     /(\d+(?:\.\d+)?)\s*(אלף)/i,
-
-    /(\d+(?:\.\d+)?)\s*(?:שקל)/i,
-
+    /(\d{1,3}(?:,\d{3})+)/,
     /(\d{5,})/
-
   ];
-
-
 
   for(const pattern of patterns){
 
-    const match =
-      normalized.match(pattern);
-
-
+    const match = normalized.match(pattern);
 
     if(match){
 
       return Math.round(
-
         parseAmount(
-          Number(match[1]),
+          Number(match[1].replace(/,/g, "")),
           match[2] ?? ""
         )
-
       );
-
     }
-
   }
 
-
-
   return 0;
-
 }
 
 
@@ -346,12 +336,9 @@ function detectInitialAmount(
   text:string
 ):number {
 
-  const normalized =
-    normalizeText(text);
-
+  const normalized = normalizeText(text);
 
   const hasInitialCapital =
-
     normalized.includes("יש לי") ||
     normalized.includes("יש ברשותי") ||
     normalized.includes("ברשותי") ||
@@ -360,9 +347,7 @@ function detectInitialAmount(
     normalized.includes("מחזיק") ||
     normalized.includes("קיים לי");
 
-
   const onlyMonthlyContext =
-
     normalized.includes("בחודש") ||
     normalized.includes("לחודש") ||
     normalized.includes("כל חודש") ||
@@ -370,19 +355,26 @@ function detectInitialAmount(
     normalized.includes("חוסך") ||
     normalized.includes("מפריש");
 
-
   if(
     onlyMonthlyContext &&
     !hasInitialCapital
   ){
-
     return 0;
-
   }
 
+  if(
+    hasInitialCapital ||
+    normalized.includes("חצי מיליון") ||
+    normalized.includes("חצי מליון") ||
+    normalized.includes("מיליון וחצי") ||
+    normalized.includes("מליון וחצי") ||
+    normalized.includes("רבע מיליון") ||
+    normalized.includes("רבע מליון")
+  ){
+    return detectAmount(text);
+  }
 
-  return detectAmount(text);
-
+  return 0;
 }
 // ---------------------------------------------------------------------------
 // Monthly Contribution Detection
@@ -392,48 +384,51 @@ function detectMonthlyContribution(
   text:string
 ):number {
 
-
   const normalized =
     normalizeText(text);
 
-
-
   const patterns = [
 
+    // Hebrew: 10,000 שקל בחודש / 10000 בחודש
+    /(\d[\d,]*(?:\.\d+)?)\s*(?:שקל|₪)?\s*(?:בחודש|לחודש|כל חודש)/i,
 
-    /(\d+(?:\.\d+)?)\s*(?:שקל)?\s*(?:בחודש|לחודש|כל חודש)/i,
+    // Hebrew with amount unit: 150K בחודש / 150 אלף בחודש
+    /(\d+(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)\s*(?:שקל|₪)?\s*(?:בחודש|לחודש|כל חודש)/i,
 
+    // English: 10k per month / 10,000 per month
+    /(\d[\d,]*(?:\.\d+)?)\s*(k|m)?\s*(?:per month|monthly|a month)/i,
 
-    /(?:מפקיד|מוסיף|מפריש|חוסך)\s*(\d+(?:\.\d+)?)/i
+    // English verb forms: invest 10000 monthly / contribute 10k per month
+    /(?:invest|contribute|deposit|save)\s+(\d[\d,]*(?:\.\d+)?)\s*(k|m)?\s*(?:per month|monthly|a month)?/i,
 
-
+    // Hebrew verbs: מפקיד 10,000 / חוסך 10k / מפריש 5 אלף
+    /(?:מפקיד|מוסיף|מפריש|חוסך)\s*(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?/i
   ];
 
-
-
   for(const pattern of patterns){
-
 
     const match =
       normalized.match(pattern);
 
-
-
     if(match){
 
-      return Number(match[1]);
+      const value =
+        Number(
+          String(match[1]).replace(/,/g, "")
+        );
+
+      const unit =
+        match[2] ?? "";
+
+      return Math.round(
+        parseAmount(value, unit)
+      );
 
     }
-
   }
 
-
-
   return 0;
-
 }
-
-
 
 // ---------------------------------------------------------------------------
 // Age Detection
@@ -518,76 +513,77 @@ function detectYears(
   targetAge:number|null
 ):number {
 
-
   const normalized =
     normalizeText(text);
 
-
-
+  // Hebrew future period
   const futureMatch =
     normalized.match(
       /בעוד\s*(\d+)\s*(?:שנה|שנים)/i
     );
 
-
-
   if(futureMatch){
-
     return Number(futureMatch[1]);
-
   }
 
-
-
+  // Hebrew explicit duration
   const explicitMatch =
     normalized.match(
       /(?:למשך|תקופה של|ל-?|ל)\s*(\d+)\s*(?:שנה|שנים)/i
     );
 
-
-
   if(explicitMatch){
-
     return Number(explicitMatch[1]);
-
   }
 
+  // English explicit duration:
+  // for 15 years
+  // over 15 years
+  // for a period of 15 years
+  // 15 years
+  const englishExplicitMatch =
+    normalized.match(
+      /(?:for|over|during|within|period of)\s*(?:a\s+)?(?:period\s+of\s*)?(\d+)\s*years?/i
+    );
 
+  if(englishExplicitMatch){
+    return Number(englishExplicitMatch[1]);
+  }
 
+  // Generic English year expression
+  const englishSimpleMatch =
+    normalized.match(
+      /(\d+)\s*years?/i
+    );
+
+  if(englishSimpleMatch){
+    return Number(englishSimpleMatch[1]);
+  }
+
+  // Generic Hebrew year expression
   const simpleMatch =
     normalized.match(
       /(\d+)\s*(?:שנה|שנים)/i
     );
 
-
-
   if(simpleMatch){
-
     return Number(simpleMatch[1]);
-
   }
 
-
-
+  // Calculate years from current age to target age
   if(
     age !== null &&
     targetAge !== null
   ){
-
     return Math.max(
       targetAge - age,
       1
     );
-
   }
 
-
-
+  // Default planning horizon
   return 10;
-
 }
-
-
 
 // ---------------------------------------------------------------------------
 // Target Amount Detection FIXED
@@ -597,52 +593,63 @@ function detectTargetAmount(
   text:string
 ):number|null {
 
+  const normalized = normalizeText(text)
+    .replace(/,/g, "");
 
-  const normalized =
-    normalizeText(text);
-
-
-
-  const hasGoalWords =
-
-    normalized.includes("להגיע") ||
-    normalized.includes("יעד") ||
-    normalized.includes("מטרה") ||
-    normalized.includes("לבנות הון") ||
-    normalized.includes("צריך להגיע");
-
-
-
-  if(!hasGoalWords){
-
-    return null;
-
+  // Natural-language Hebrew targets
+  if(
+    normalized.includes("להגיע לחצי מיליון") ||
+    normalized.includes("יעד של חצי מיליון") ||
+    normalized.includes("מטרה של חצי מיליון")
+  ){
+    return 500000;
   }
 
+  if(
+    normalized.includes("להגיע למיליון וחצי") ||
+    normalized.includes("להגיע למליון וחצי") ||
+    normalized.includes("יעד של מיליון וחצי") ||
+    normalized.includes("מטרה של מיליון וחצי")
+  ){
+    return 1500000;
+  }
 
+  // English target phrases
+  const englishMillion =
+    normalized.match(
+      /(?:retire|reach|goal|with)\s+(?:with\s+)?(\d+(?:\.\d+)?)\s*million\b/i
+    );
 
-  const targetPatterns=[
+  if(englishMillion){
+    return Math.round(
+      Number(englishMillion[1]) * 1000000
+    );
+  }
 
+  const englishNumeric =
+    normalized.match(
+      /(?:retire|reach|goal|with)\s+(?:with\s+)?(\d+(?:\.\d+)?)\s*(k|m)\b/i
+    );
+
+  if(englishNumeric){
+    return parseAmount(
+      Number(englishNumeric[1]),
+      englishNumeric[2]
+    );
+  }
+
+  const targetPatterns = [
 
     /להגיע\s*(?:ל)?\s*(\d+(?:\.\d+)?)\s*(מיליון|מליון|אלף|m|k)?/i,
 
-
     /יעד\s*(?:של)?\s*(\d+(?:\.\d+)?)\s*(מיליון|מליון|אלף|m|k)?/i,
 
-
     /מטרה\s*(?:של)?\s*(\d+(?:\.\d+)?)\s*(מיליון|מליון|אלף|m|k)?/i
-
   ];
-
-
 
   for(const pattern of targetPatterns){
 
-
-    const match =
-      normalized.match(pattern);
-
-
+    const match = normalized.match(pattern);
 
     if(match){
 
@@ -650,25 +657,10 @@ function detectTargetAmount(
         Number(match[1]),
         match[2] ?? ""
       );
-
     }
-
   }
-
-
-
-  if(
-    normalized.includes("חצי מיליון")
-  ){
-
-    return 500000;
-
-  }
-
-
 
   return null;
-
 }
 
 
@@ -680,57 +672,38 @@ function detectGoal(
   text:string
 ):string {
 
-
-  const normalized =
-    normalizeText(text);
-
-
+  const normalized = normalizeText(text);
 
   if(
-
     normalized.includes("פרישה") ||
     normalized.includes("לפרוש") ||
+    normalized.includes("פורש") ||
     normalized.includes("חופש כלכלי") ||
-    normalized.includes("עצמאות כלכלית")
-
+    normalized.includes("עצמאות כלכלית") ||
+    normalized.includes("retire") ||
+    normalized.includes("retirement") ||
+    normalized.includes("עד גיל")
   ){
-
     return "retirement";
-
   }
 
-
-
   if(
-
     normalized.includes("דירה") ||
     normalized.includes("בית") ||
     normalized.includes("הון עצמי")
-
   ){
-
     return "home";
-
   }
 
-
-
   if(
-
     normalized.includes("ילד") ||
     normalized.includes("ילדים") ||
     normalized.includes("לימודים")
-
   ){
-
     return "child";
-
   }
 
-
-
   return "growth";
-
 }
 
 
