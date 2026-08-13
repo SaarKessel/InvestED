@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Brain,
@@ -20,6 +20,11 @@ import {
   QUIZ_BANK,
   type QuizQuestion,
 } from "@/lib/quizBank";
+import {
+  getQuizProgress,
+  saveQuizProgress,
+  clearQuizProgress,
+} from "@/lib/quizProgressStorage";
 
 import { cn } from "@/lib/utils";
 
@@ -75,6 +80,8 @@ function pickRandomQuestions(
 export function QuizCard(){
 
 
+const savedProgress = getQuizProgress();
+
 const [questions,setQuestions] =
 useState<QuizQuestion[]>(
 ()=>pickRandomQuestions(5)
@@ -93,14 +100,31 @@ useState<number|null>(null);
 
 
 const [score,setScore] =
-useState(0);
+useState(savedProgress?.score ?? 0);
 
 
 
 const [finished,setFinished] =
-useState(false);
+useState(savedProgress?.completed ?? false);
 
 
+
+
+
+useEffect(() => {
+
+  if (!finished) {
+    return;
+  }
+
+  saveQuizProgress({
+    completed: true,
+    score,
+    total: questions.length,
+    finishedAt: new Date().toISOString(),
+  });
+
+}, [finished, score, questions.length]);
 
 
 
@@ -244,6 +268,8 @@ setScore(0);
 
 
 setFinished(false);
+
+clearQuizProgress();
 
 
 }

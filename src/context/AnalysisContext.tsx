@@ -1,12 +1,25 @@
 ﻿import React, {
   createContext,
   useContext,
-  useState
+  useState,
+  useEffect,
 } from "react";
 
 import type {
-  AnalysisResult
+  AnalysisResult,
 } from "@/types";
+
+import type {
+  AnalysisHistoryEntry,
+} from "@/lib/analysisHistoryStorage";
+
+import {
+  appendAnalysisHistory,
+  getAnalysisHistory,
+  getHistoryConsent,
+  setHistoryConsent as persistHistoryConsent,
+  clearAnalysisHistory as clearStoredHistory,
+} from "@/lib/analysisHistoryStorage";
 
 import {
   buildRuleBasedAnalysis,
@@ -31,6 +44,14 @@ export interface AnalysisContextValue {
   reset: () => void;
 
   isAnalyzing: boolean;
+
+  hasHistoryConsent: boolean;
+
+  setHistoryConsent: (enabled: boolean) => void;
+
+  analysisHistory: AnalysisHistoryEntry[];
+
+  clearAnalysisHistory: () => void;
 
 }
 
@@ -64,6 +85,25 @@ export function AnalysisProvider({
   const [isAnalyzing,setIsAnalyzing] =
     useState(false);
 
+  const [hasHistoryConsent,setHasHistoryConsent] =
+    useState<boolean>(() => getHistoryConsent());
+
+  const [analysisHistory,setAnalysisHistory] =
+    useState<AnalysisHistoryEntry[]>(() => getAnalysisHistory());
+
+
+
+
+  useEffect(() => {
+
+    if (!hasHistoryConsent || !result) {
+      return;
+    }
+
+    const nextHistory = appendAnalysisHistory(result);
+    setAnalysisHistory(nextHistory);
+
+  }, [hasHistoryConsent, result]);
 
 
 
@@ -169,6 +209,28 @@ export function AnalysisProvider({
 
 
 
+  const setHistoryConsent = (enabled:boolean) => {
+
+    setHasHistoryConsent(enabled);
+    persistHistoryConsent(enabled);
+
+    if (enabled && result) {
+
+      setAnalysisHistory(appendAnalysisHistory(result));
+
+    }
+
+  };
+
+
+
+  const clearAnalysisHistory = () => {
+
+    clearStoredHistory();
+    setAnalysisHistory([]);
+
+  };
+
 
 
   return (
@@ -188,6 +250,14 @@ export function AnalysisProvider({
         reset,
 
         isAnalyzing,
+
+        hasHistoryConsent,
+
+        setHistoryConsent,
+
+        analysisHistory,
+
+        clearAnalysisHistory,
 
       }}
 

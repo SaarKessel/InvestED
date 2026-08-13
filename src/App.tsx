@@ -1,6 +1,7 @@
 ﻿import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { AnalysisProvider } from "@/context/AnalysisContext";
+import { LanguageProvider } from "@/context/languageContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { LandingPage } from "@/pages/LandingPage";
 import { InputPage } from "@/pages/InputPage";
@@ -18,8 +19,9 @@ export default function App() {
     <ErrorBoundary>
       <ThemeProvider>
         <AnalysisProvider>
-          <BrowserRouter>
-            <Routes>
+          <LanguageProvider>
+            <BrowserRouter>
+              <Routes>
               <Route path="/" element={<LandingPage />} />
               <Route path="/start" element={<InputPage />} />
               <Route path="/dashboard" element={<DashboardPage />} />
@@ -31,7 +33,8 @@ export default function App() {
               <Route path="/contact" element={<ContactPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
-          </BrowserRouter>
+            </BrowserRouter>
+          </LanguageProvider>
         </AnalysisProvider>
       </ThemeProvider>
     </ErrorBoundary>

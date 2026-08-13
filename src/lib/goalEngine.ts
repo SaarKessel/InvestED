@@ -21,6 +21,58 @@ export interface GoalAnalysis {
 
 }
 
+export interface RetirementScenarioAlternative {
+
+  label:string;
+
+  annualReturnPct:number;
+
+  monthlyContribution:number;
+
+  futureValue:number;
+
+  probability:number;
+
+  summary:string;
+
+}
+
+export interface RetirementPlanResult extends GoalAnalysis {
+
+  yearsRemaining:number;
+
+  currentAssets:number;
+
+  monthlyInvestment:number;
+
+  annualReturnPct:number;
+
+  inflationPct:number;
+
+  targetMonthlyIncome:number;
+
+  futureValue:number;
+
+  monthlyIncomeDuringRetirement:number;
+
+  probabilityOfSuccess:number;
+
+  scenarioAlternatives:RetirementScenarioAlternative[];
+
+  timelineVisualization:{
+    year:number;
+    value:number;
+    contributed:number;
+  }[];
+
+  recommendations:string[];
+
+  educationalExplanations:string[];
+
+  stressTestSummary:string;
+
+}
+
 
 
 
@@ -272,6 +324,191 @@ Math.round(
 
 
 
+
+
+function calculateFutureValue(
+
+currentAmount:number,
+monthlyContribution:number,
+years:number,
+annualReturnPct:number,
+inflationPct:number = 3
+
+){
+
+const monthlyRate = annualReturnPct / 100 / 12;
+const months = Math.max(1, years * 12);
+
+let balance = currentAmount;
+
+for(let month = 1; month <= months; month++){
+
+balance = balance * (1 + monthlyRate) + monthlyContribution;
+
+}
+
+const realValue = balance / Math.pow(1 + inflationPct / 100, years);
+
+return {
+futureValue: Math.round(balance),
+realValue: Math.round(realValue)
+};
+
+}
+
+
+export function buildRetirementPlan(input:{
+
+currentAge:number;
+expectedRetirementAge:number;
+currentAssets:number;
+monthlyInvestment:number;
+annualReturnPct:number;
+inflationPct:number;
+targetMonthlyIncome:number;
+
+}):RetirementPlanResult{
+
+const yearsRemaining = Math.max(
+input.expectedRetirementAge - input.currentAge,
+1
+);
+
+const targetAmount = Math.round(
+input.targetMonthlyIncome * 12 / 0.04
+);
+
+const requiredMonthlyContribution = calculateRequiredMonthlyContribution(
+	targetAmount,
+	input.currentAssets,
+	yearsRemaining,
+	input.annualReturnPct
+);
+
+const baseProjection = calculateFutureValue(
+input.currentAssets,
+input.monthlyInvestment,
+yearsRemaining,
+input.annualReturnPct,
+input.inflationPct
+);
+
+const probabilityOfSuccess = Math.min(
+99,
+Math.max(
+45,
+Math.round(
+(baseProjection.futureValue >= targetAmount ? 78 : 55) +
+(input.monthlyInvestment >= requiredMonthlyContribution ? 10 : 0)
+)
+)
+);
+
+const scenarioAlternatives:RetirementScenarioAlternative[] = [
+
+{
+label:"מסלול בסיס",
+annualReturnPct:input.annualReturnPct,
+monthlyContribution:input.monthlyInvestment,
+futureValue:baseProjection.futureValue,
+probability:probabilityOfSuccess,
+summary:"המסלול הבסיסי משקף את ההנחה המרכזית של התוכנית."
+},
+
+{
+label:"מסלול שמרני",
+annualReturnPct:Math.max(4, input.annualReturnPct - 2),
+monthlyContribution:Math.max(0, input.monthlyInvestment - 1000),
+futureValue:calculateFutureValue(
+input.currentAssets,
+Math.max(0, input.monthlyInvestment - 1000),
+yearsRemaining,
+Math.max(4, input.annualReturnPct - 2),
+input.inflationPct
+).futureValue,
+probability:Math.max(40, probabilityOfSuccess - 12),
+summary:"תרחיש שמרני מדגים מה קורה כשמצב ההשקעה פחות אופטימי."
+},
+
+{
+label:"מסלול אגרסיבי",
+annualReturnPct:Math.min(12, input.annualReturnPct + 2),
+monthlyContribution:input.monthlyInvestment + 1000,
+futureValue:calculateFutureValue(
+input.currentAssets,
+input.monthlyInvestment + 1000,
+yearsRemaining,
+Math.min(12, input.annualReturnPct + 2),
+input.inflationPct
+).futureValue,
+probability:Math.min(95, probabilityOfSuccess + 10),
+summary:"תרחיש אגרסיבי מדגים כיצד הגדלת ההפקדה יכולה לשפר את הסיכוי."
+}
+
+];
+
+const timelineVisualization = Array.from({ length: yearsRemaining + 1 }, (_, index) => {
+
+const monthIndex = index * 12;
+const projected = calculateFutureValue(
+input.currentAssets,
+input.monthlyInvestment,
+index,
+input.annualReturnPct,
+input.inflationPct
+).futureValue;
+
+return {
+year:index,
+value:projected,
+contributed:Math.round(input.currentAssets + input.monthlyInvestment * monthIndex)
+};
+
+});
+
+const recommendations = [
+
+`${Math.max(0, requiredMonthlyContribution - input.monthlyInvestment)} שקל נוספים לחודש יכולים לשפר משמעותית את הסיכוי.`,
+
+"מומלץ לבדוק פיזור בין מניות, אג\"ח וקרנות ניהול סיכון במטרה להעלות יציבות לאורך זמן.",
+
+"בשלב הבא, כדאי לבחון תרחישים נוספים עם עלויות, אינפלציה ותמהיל נכסים."
+];
+
+const educationalExplanations = [
+
+"כללי ה-4% כאן משמשים רק כהנחה חינוכית לתכנון פרישה, ולא כייעוץ השקעה.",
+
+"ריבית דריבית היא הכוח המרכזי שמגביר את ערך ההשקעה לאורך זמן.",
+
+"שינוי קטן בהפקדה החודשית, בתשואה או בתקופת ההשקעה עשוי לשנות את תרחיש סוף הדרך משמעותית."
+];
+
+return {
+	targetAmount,
+	currentAmount:input.currentAssets,
+	years:yearsRemaining,
+	requiredMonthlyContribution,
+	expectedFinalValue:baseProjection.futureValue,
+	progressPercentage:calculateGoalProgress(input.currentAssets, targetAmount),
+	achievable:baseProjection.futureValue >= targetAmount,
+	yearsRemaining,
+	currentAssets:input.currentAssets,
+	monthlyInvestment:input.monthlyInvestment,
+	annualReturnPct:input.annualReturnPct,
+	inflationPct:input.inflationPct,
+	targetMonthlyIncome:input.targetMonthlyIncome,
+	futureValue:baseProjection.futureValue,
+	monthlyIncomeDuringRetirement:Math.round(baseProjection.futureValue * 0.04 / 12),
+	probabilityOfSuccess,
+	scenarioAlternatives,
+	timelineVisualization,
+	recommendations,
+	educationalExplanations,
+	stressTestSummary:`בתרחיש של תשואה נמוכה יותר, מומלץ לבחון מחדש את ההפקדה החודשית כדי לשמור על תוצר חינוכי עקבי.`
+};
+
+}
 
 
 export function analyzeFinancialGoal(

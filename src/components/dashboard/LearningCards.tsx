@@ -1,8 +1,13 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { BookOpen, AlertOctagon, Milestone, Info } from "lucide-react";
 
 import type { AnalysisResult } from "@/types";
+
+import {
+  getLearningProgress,
+  saveLearningProgress,
+} from "@/lib/learningProgressStorage";
 
 import {
   Card,
@@ -279,7 +284,11 @@ export function RoadmapCard(
 }
 ){
 
+const [completedStageIds] = useState<string[]>(() => getLearningProgress());
 
+useEffect(() => {
+  saveLearningProgress(completedStageIds);
+}, [completedStageIds]);
 
 const orderedStages =
 useMemo(()=>{

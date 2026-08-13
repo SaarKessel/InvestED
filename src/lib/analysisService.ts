@@ -30,6 +30,7 @@ import {
 import {
   detectTargetAmount,
   analyzeFinancialGoal,
+  buildRetirementPlan,
 } from "./goalEngine";
 
 
@@ -247,6 +248,27 @@ export function buildRuleBasedAnalysis(
 
     undefined;
 
+  const retirementPlan =
+
+    goalPlan &&
+    scenario.goal === "retirement"
+
+    ?
+
+    buildRetirementPlan({
+      currentAge: scenario.currentAge ?? 0,
+      expectedRetirementAge: scenario.targetAge ?? scenario.currentAge ?? 0,
+      currentAssets: scenario.initialInvestment,
+      monthlyInvestment: scenario.monthlyContribution,
+      annualReturnPct: scenario.annualReturnPct,
+      inflationPct: 3,
+      targetMonthlyIncome: Math.max(12000, Math.round(targetAmount / 12 / 0.04)),
+    })
+
+    :
+
+    undefined;
+
    return {
 
 
@@ -304,6 +326,8 @@ export function buildRuleBasedAnalysis(
 
 
     goalPlan,
+
+    retirementPlan,
 
 
 

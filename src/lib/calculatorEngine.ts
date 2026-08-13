@@ -66,8 +66,7 @@ annualReturnPct:12,
 keywords:[
 "nasdaq",
 "נאסדק",
-"טכנולוגיה",
-"הייטק"
+"נאסד״ק"
 ],
 blurb:"מדד מוטה חברות טכנולוגיה."
 },
@@ -141,6 +140,97 @@ return text
 .replace(/,/g,"")
 .replace(/\s+/g," ")
 .trim();
+
+}
+
+interface SpecialMoneyPhrase {
+
+words:string[];
+value:number;
+
+}
+
+const SPECIAL_MONEY_PHRASES:SpecialMoneyPhrase[] = [
+
+{
+words:["חצי מיליון","חצי מליון","half a million","half million"],
+value:500000
+},
+
+{
+words:["מיליון וחצי","מליון וחצי","one and a half million","1.5 million"],
+value:1500000
+},
+
+{
+words:["רבע מיליון","רבע מליון","quarter million","0.25 million"],
+value:250000
+},
+
+{
+words:["שני מיליון","שני מליון","two million"],
+value:2000000
+}
+
+];
+
+function findSpecialMoneyPhrase(text:string){
+
+const normalized = normalizeText(text);
+
+for(const item of SPECIAL_MONEY_PHRASES){
+
+if(
+item.words.some(
+word => normalized.includes(word)
+)
+){
+
+return item.value;
+
+}
+
+}
+
+return null;
+
+}
+
+function parseCurrencyValue(
+value:string,
+unit:string=""
+){
+
+const normalized = unit.toLowerCase();
+let amount = Number(value.replace(/,/g,""));
+
+if(!Number.isFinite(amount)){
+
+return 0;
+
+}
+
+if(
+normalized.includes("אלף") ||
+normalized.includes("k") ||
+normalized.includes("thousand")
+){
+
+amount *= 1000;
+
+}
+
+if(
+normalized.includes("מיליון") ||
+normalized.includes("m") ||
+normalized.includes("million")
+){
+
+amount *= 1000000;
+
+}
+
+return Math.round(amount);
 
 }
 
@@ -218,94 +308,29 @@ return [...new Set(interests)];
 // Amount Parsing
 // ---------------------------------------------------------------------------
 
-function convertAmount(
-value:number,
-unit:string
-){
-
-const normalized =
-unit.toLowerCase();
-
-
-if(
-normalized==="אלף" ||
-normalized==="k"
-){
-
-return value*1000;
-
-}
-
-
-if(
-normalized==="מיליון" ||
-normalized==="m"
-){
-
-return value*1000000;
-
-}
-
-
-return value;
-
-}
-
-
-
 function detectInitialInvestment(text:string){
 
 const normalized =
 normalizeText(text);
 
+const specialAmount =
+findSpecialMoneyPhrase(text);
 
+if(specialAmount){
 
-const specialCases=[
-
-{
-words:["חצי מיליון","חצי מליון"],
-value:500000
-},
-
-{
-words:["מיליון וחצי","מליון וחצי"],
-value:1500000
-},
-
-{
-words:["רבע מיליון","רבע מליון"],
-value:250000
-}
-
-];
-
-
-
-for(const item of specialCases){
-
-if(
-item.words.some(
-word=>normalized.includes(word)
-)
-){
-
-return item.value;
+return specialAmount;
 
 }
-
-}
-
-
 
 const patterns=[
 
-/(?:יש לי|חסכתי|השקעתי|השקעתי עד עכשיו|סכום של)\s*(\d+(?:\.\d+)?)\s*(אלף|מיליון|k|m)?/i,
+/(?:יש לי|חסכתי|השקעתי|השקעתי עד עכשיו|סכום של|i have|i saved|i invested)\s*(\d+(?:\.\d+)?)\s*(אלף|מיליון|k|m|thousand|million)?/i,
 
 
-/(\d+(?:\.\d+)?)\s*(אלף|מיליון|k|m)\s*(?:שקל|ש״ח|₪)?/i,
+/(\d+(?:\.\d+)?)\s*(אלף|מיליון|k|m|thousand|million)\s*(?:שקל|ש״ח|₪|usd|dollars)?/i,
 
 
-/(\d+)\s*(?:שקל|ש״ח|₪)\s*(?:להשקיע|שהשקעתי)/i
+/(\d+)\s*(?:שקל|ש״ח|₪|usd|dollars)\s*(?:להשקיע|שהשקעתי|i invest|i saved|that i invested)/i
 
 ];
 
@@ -319,11 +344,9 @@ normalized.match(pattern);
 
 if(match){
 
-return Math.round(
-convertAmount(
-Number(match[1]),
+return parseCurrencyValue(
+match[1],
 match[2] ?? ""
-)
 );
 
 }
@@ -346,16 +369,41 @@ const normalized =
 normalizeText(text);
 
 
+// ---------------------------------------------------------------------------
+// Special Hebrew amount phrases used in monthly contribution context
+// ---------------------------------------------------------------------------
+
+const special =
+findSpecialMoneyPhrase(normalized);
+
+if(
+special !== null &&
+/(?:בחודש|לחודש|כל חודש|monthly|per month)/i.test(normalized)
+){
+
+return special;
+
+}
+
+
+// ---------------------------------------------------------------------------
+// Standard monthly amount parser
+// ---------------------------------------------------------------------------
 
 const patterns=[
 
-/(?:מפקיד|הפקדה חודשית|חיסכון חודשי|מפריש)\s*(?:של)?\s*(\d+)/i,
+/(?:מפקיד|הפקדה חודשית|חיסכון חודשי|מפריש|monthly contribution|monthly deposit|investing|depositing|contributing|save)\s*(?:של)?\s*(\d+(?:\.\d+)?)\s*(אלף|מיליון|מליון|k|m|thousand|million)?/i,
 
 
-/(\d+)\s*(?:שקל|ש״ח|₪)?\s*(?:בחודש|לחודש|כל חודש)/i
+/(\d+(?:\.\d+)?)\s*(אלף|מיליון|מליון|k|m|thousand|million)?\s*(?:שקל|ש״ח|₪|usd|dollars)?\s*(?:בחודש|לחודש|כל חודש|per month|monthly)/i,
+
+
+/(?:monthly|per month)\s*(?:i invest|i save|i contribute|contribute|deposit)\s*(\d+(?:\.\d+)?)\s*(אלף|מיליון|מליון|k|m|thousand|million)?/i,
+
+
+/(?:invest|save|contribute|deposit)\s*(\d+(?:\.\d+)?)\s*(אלף|מיליון|מליון|k|m|thousand|million)?\s*(?:monthly|per month)/i
 
 ];
-
 
 
 for(const pattern of patterns){
@@ -366,7 +414,10 @@ normalized.match(pattern);
 
 if(match){
 
-return Number(match[1]);
+return parseCurrencyValue(
+match[1],
+match[2] ?? ""
+);
 
 }
 
@@ -384,19 +435,127 @@ return 0;
 
 function detectAge(text:string){
 
-const match =
-text.match(
-/(?:אני\s*)?(?:בן|בת)\s*(\d+)/i
-);
+const normalized = normalizeText(text);
 
+const patterns=[
 
-return match
-?
-Number(match[1])
-:
-null;
+/(?:אני\s*)?(?:בן|בת)\s*(\d+)/i,
+
+/(?:i am|i'm)\s*(\d+)/i,
+
+/(?:age)\s*(\d+)/i
+
+];
+
+for(const pattern of patterns){
+
+const match = normalized.match(pattern);
+
+if(match){
+
+return Number(match[1]);
 
 }
+
+}
+
+return null;
+
+}
+
+function detectTargetAmount(text:string){
+
+const normalized = normalizeText(text);
+
+if (normalized.includes("להגיע לחצי מיליון")) {
+  return 500000;
+}
+
+if (normalized.includes("להגיע לחצי מליון")) {
+  return 500000;
+}
+
+if (normalized.includes("להגיע למיליון וחצי")) {
+  return 1500000;
+}
+
+if (normalized.includes("להגיע למליון וחצי")) {
+  return 1500000;
+}
+
+
+// ---------------------------------------------------------------------------
+// Special Hebrew / English target amounts
+// ---------------------------------------------------------------------------
+
+const specialTargetPatterns:[RegExp,number][] = [
+
+[/\bלהגיע\s+ל?חצי\s+מיליון\b/i, 500000],
+[/\bלחסוך\s+חצי\s+מיליון\b/i, 500000],
+[/\bמטרה\s+של\s+חצי\s+מיליון\b/i, 500000],
+
+[/\bלהגיע\s+ל?מיליון\s+וחצי\b/i, 1500000],
+[/\bלחסוך\s+מיליון\s+וחצי\b/i, 1500000],
+[/\bמטרה\s+של\s+מיליון\s+וחצי\b/i, 1500000],
+
+[/\bלהגיע\s+ל?חצי\s+מליון\b/i, 500000],
+[/\bלהגיע\s+ל?רבע\s+מיליון\b/i, 250000],
+[/\bלהגיע\s+ל?רבע\s+מליון\b/i, 250000],
+[/\bלהגיע\s+ל?שני\s+מיליון\b/i, 2000000],
+
+[/\bto\s+reach\s+half\s+a\s+million\b/i, 500000],
+[/\bto\s+reach\s+half\s+million\b/i, 500000],
+[/\bto\s+reach\s+one\s+and\s+a\s+half\s+million\b/i, 1500000],
+[/\bto\s+reach\s+1\.5\s+million\b/i, 1500000],
+
+];
+
+for(const [pattern,value] of specialTargetPatterns){
+
+if(pattern.test(normalized)){
+
+return value;
+
+}
+
+}
+
+
+// ---------------------------------------------------------------------------
+// Standard numeric target amounts
+// ---------------------------------------------------------------------------
+
+const patterns=[
+
+/(?:want to retire with|retire with|to save|to reach|goal of|target of|חסוך|לחסוך|להגיע|לעבור|מטרה של)\s*ל?\s*(\d+(?:\.\d+)?)\s*(אלף|מיליון|מליון|k|m|thousand|million)?/i,
+
+/(\d+(?:\.\d+)?)\s*(אלף|מיליון|מליון|k|m|thousand|million)\s*(?:שקל|ש״ח|₪|usd|dollars)?\s*(?:לצורך|כדי|כדי לחסוך|כדי להגיע|goal|target)/i
+
+];
+
+
+for(const pattern of patterns){
+
+const match =
+normalized.match(pattern);
+
+
+if(match){
+
+return parseCurrencyValue(
+match[1],
+match[2] ?? ""
+);
+
+}
+
+}
+
+
+return null;
+
+}
+
 
 function detectTargetAge(text:string){
 
@@ -410,7 +569,9 @@ function detectTargetAge(text:string){
 
     /גיל\s*יעד\s*(\d+)/i,
 
-    /פורש\s*בגיל\s*(\d+)/i
+    /פורש\s*בגיל\s*(\d+)/i,
+
+    /retire at\s*(\d+)/i
 
   ];
 
@@ -449,7 +610,7 @@ normalizeText(text);
 
 
 const explicit = normalized.match(
-    /(?:ל-|למשך|תקופה של)\s*(\d+)\s*(?:שנה|שנים)/i
+    /(?:ל-|למשך|תקופה של|for|over)\s*(\d+)\s*(?:שנה|שנים|year|years)/i
 );
 
 
@@ -475,12 +636,9 @@ targetAge-age,
 }
 
 
-// תמיכה במשפט:
-// "לפרוש בעוד 15 שנה"
-
 const retirementMatch =
 normalized.match(
-/בעוד\s*(\d+)\s*(?:שנה|שנים)/
+/(?:בעוד|in)\s*(\d+)\s*(?:שנה|שנים|year|years)/i
 );
 
 
@@ -491,6 +649,17 @@ return Number(retirementMatch[1]);
 }
 
 
+const yearsAsFuture =
+normalized.match(
+/(?:\b|\s)(\d+)\s*(?:שנה|שנים|year|years)\s*(?:לעתיד|ahead)/i
+);
+
+if(yearsAsFuture){
+
+return Number(yearsAsFuture[1]);
+
+}
+
 
 return 10;
 
@@ -500,17 +669,35 @@ return 10;
 // Goal Detection
 // ---------------------------------------------------------------------------
 
-function detectGoal(text:string){
+function detectGoal(
+text:string,
+currentAge:number|null,
+targetAge:number|null
+){
 
 const lower =
 normalizeText(text);
 
+if(
+currentAge!==null &&
+targetAge!==null &&
+targetAge-currentAge >= 5
+){
+
+return "retirement";
+
+}
 
 if(
 lower.includes("פרישה") ||
 lower.includes("עצמאות כלכלית") ||
 lower.includes("להפסיק לעבוד") ||
-lower.includes("לפרוש")
+lower.includes("לפרוש") ||
+lower.includes("retire") ||
+lower.includes("retirement") ||
+lower.includes("financial independence") ||
+lower.includes("חסוך מיליון") ||
+lower.includes("לחסוך")
 ){
 
 return "retirement";
@@ -521,7 +708,9 @@ return "retirement";
 if(
 lower.includes("דירה") ||
 lower.includes("בית") ||
-lower.includes("הון עצמי")
+lower.includes("הון עצמי") ||
+lower.includes("house") ||
+lower.includes("home purchase")
 ){
 
 return "home";
@@ -531,7 +720,9 @@ return "home";
 
 if(
 lower.includes("ילד") ||
-lower.includes("לימודים")
+lower.includes("לימודים") ||
+lower.includes("child") ||
+lower.includes("education")
 ){
 
 return "child";
@@ -543,7 +734,8 @@ if(
 lower.includes("עושר") ||
 lower.includes("לבנות הון") ||
 lower.includes("בניית הון") ||
-lower.includes("הגדלת הון")
+lower.includes("הגדלת הון") ||
+lower.includes("wealth")
 ){
 
 return "wealth";
@@ -658,8 +850,17 @@ detectMonthlyContribution(text);
 
 
 
+const targetAmount =
+detectTargetAmount(text);
+
+
+
 const goal =
-detectGoal(text);
+detectGoal(
+text,
+currentAge,
+targetAge
+);
 
 
 
@@ -673,7 +874,7 @@ currentAge,
 
 targetAge,
 
-targetAmount:null,
+targetAmount,
 
 years,
 

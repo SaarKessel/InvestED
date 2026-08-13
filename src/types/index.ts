@@ -197,6 +197,10 @@ export interface AiNarration {
 
 }
 
+import type {
+  RetirementPlanResult,
+} from "@/lib/goalEngine";
+
 // =====================================================
 // Analysis Result
 // =====================================================
@@ -232,6 +236,8 @@ export interface AnalysisResult {
     progressPercentage:number;
     achievable:boolean;
   };
+
+  retirementPlan?: RetirementPlanResult;
 
   explainability:{
     summary?:string;

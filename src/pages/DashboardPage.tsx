@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 
@@ -31,6 +31,10 @@ import { QuizCard } from "@/components/dashboard/QuizCard";
 import { RotateCcw } from "lucide-react";
 
 import { GoalPlannerCard } from "@/components/GoalPlannerCard";
+import {
+  getDashboardOnboardingSeen,
+  setDashboardOnboardingSeen,
+} from "@/lib/dashboardOnboarding";
 
 
 
@@ -66,9 +70,17 @@ function horizonLabel(
 export function DashboardPage() {
 
 
-  const { result, reset } = useAnalysis();
+  const {
+    result,
+    reset,
+    hasHistoryConsent,
+    setHistoryConsent,
+    analysisHistory,
+    clearAnalysisHistory,
+  } = useAnalysis();
 
   const navigate = useNavigate();
+  const [isOnboardingVisible, setIsOnboardingVisible] = useState<boolean>(() => !getDashboardOnboardingSeen());
 
 
 
@@ -160,6 +172,145 @@ export function DashboardPage() {
         <DisclaimerBanner className="mb-8"/>
 
 
+
+        {isOnboardingVisible && (
+
+          <div className="mb-8 rounded-2xl border border-blue-200 bg-gradient-to-r from-blue-50 to-sky-50 p-5 shadow-sm">
+
+            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+
+              <div>
+
+                <h2 className="text-lg font-bold text-slate-900">👋 מדריך מהיר לדשבורד</h2>
+
+                <p className="mt-2 text-sm text-slate-700">
+
+                  כאן תוכלו לראות את פרופיל המשקיע, המלצות, תיק, מסלול למידה ורמת היעד הפיננסי — כל הכלים המרכזיים עובדים יחד במקום אחד.
+
+                </p>
+
+              </div>
+
+              <Button
+
+                variant="outline"
+
+                size="sm"
+
+                onClick={() => {
+                  setDashboardOnboardingSeen(true);
+                  setIsOnboardingVisible(false);
+                }}
+
+              >
+
+                סגור
+
+              </Button>
+
+            </div>
+
+          </div>
+
+        )}
+
+
+
+        <div className="mb-8 rounded-2xl border bg-white p-5 shadow-sm">
+
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+
+            <div>
+
+              <h2 className="text-lg font-bold text-slate-900">
+
+                📜 שמירת היסטוריית ניתוחים
+
+              </h2>
+
+              <p className="mt-1 text-sm text-muted-foreground">
+
+                אפשר לשמור את תוצאות הניתוח המקומית בדפדפן שלך, כדי לחזור אליהן מאוחר יותר.
+
+              </p>
+
+            </div>
+
+            <div className="flex items-center gap-3">
+
+              <Button
+
+                variant={hasHistoryConsent ? "default" : "outline"}
+
+                size="sm"
+
+                onClick={() => setHistoryConsent(!hasHistoryConsent)}
+
+              >
+
+                {hasHistoryConsent ? "שמירה פעילה" : "הפעל שמירה"}
+
+              </Button>
+
+              {analysisHistory.length > 0 && (
+
+                <Button
+
+                  variant="ghost"
+
+                  size="sm"
+
+                  onClick={clearAnalysisHistory}
+
+                >
+
+                  נקה היסטוריה
+
+                </Button>
+
+              )}
+
+            </div>
+
+          </div>
+
+          {hasHistoryConsent && analysisHistory.length > 0 && (
+
+            <div className="mt-4 grid gap-3 md:grid-cols-2">
+
+              {analysisHistory.slice(0, 4).map((entry) => (
+
+                <div
+
+                  key={entry.id}
+
+                  className="rounded-xl border border-slate-200 bg-slate-50 p-4"
+
+                >
+
+                  <p className="text-xs text-slate-500">
+
+                    {new Date(entry.savedAt).toLocaleString("he-IL")}
+
+                  </p>
+
+                  <p className="mt-2 text-sm font-semibold text-slate-900">
+
+                    {entry.profileText.slice(0, 120)}
+
+                    {entry.profileText.length > 120 ? "..." : ""}
+
+                  </p>
+
+                </div>
+
+              ))}
+
+            </div>
+
+          )}
+
+        </div>
 
 
 
@@ -383,6 +534,10 @@ export function DashboardPage() {
 
                   achievable={
                     result.goalPlan.achievable
+                  }
+
+                  retirementPlan={
+                    result.retirementPlan
                   }
 
 
