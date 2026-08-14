@@ -32,7 +32,6 @@ import {
 
 
 import {
-  detectTargetAmount,
   analyzeFinancialGoal,
 } from "./goalEngine";
 
@@ -544,9 +543,7 @@ export function buildRuleBasedAnalysis(
 
 
   const targetAmount =
-    detectTargetAmount(
-      profileText
-    );
+    scenario.targetAmount ?? 0;
 
 
 

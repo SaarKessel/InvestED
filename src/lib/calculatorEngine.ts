@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// InvestED — Smart Financial Scenario Engine v11
+// InvestED — Smart Financial Scenario Engine v12
 // Educational Financial Simulation Engine
 // ---------------------------------------------------------------------------
 
@@ -12,36 +12,10 @@ export type {
 } from "@/types";
 
 // ---------------------------------------------------------------------------
-// Retirement Planning Constants
+// Constants
 // ---------------------------------------------------------------------------
 
-/**
- * Educational retirement withdrawal-rate assumption.
- *
- * Example:
- * 10,000 ₪ monthly income
- * × 12 months
- * ÷ 4%
- * = 3,000,000 ₪ target capital
- *
- * The target is then inflation-adjusted to the retirement date.
- *
- * Example:
- * 3,000,000 ₪
- * × (1 + 2.5%) ^ 13
- * ≈ 4,135,533 ₪
- *
- * This is an educational simulation assumption, not financial advice.
- */
 export const DEFAULT_WITHDRAWAL_RATE_PCT = 4;
-
-/**
- * Educational inflation assumption used by InvestED.
- *
- * Option B:
- * Retirement income target is expressed in today's money,
- * then inflated to the future retirement date.
- */
 export const DEFAULT_INFLATION_PCT = 2.5;
 
 // ---------------------------------------------------------------------------
@@ -71,10 +45,8 @@ export const ASSET_CLASSES: AssetClassOption[] = [
       "סנופי",
       "אס אנד פי"
     ],
-    description:
-      "מדד רחב הכולל חברות גדולות בארה״ב."
+    description: "מדד רחב הכולל חברות גדולות בארה״ב."
   },
-
   {
     key: "world",
     label: "מדד עולמי",
@@ -86,10 +58,8 @@ export const ASSET_CLASSES: AssetClassOption[] = [
       "עולמי",
       "גלובלי"
     ],
-    description:
-      "פיזור בין שווקים בינלאומיים."
+    description: "פיזור בין שווקים בינלאומיים."
   },
-
   {
     key: "nasdaq",
     label: "Nasdaq",
@@ -102,10 +72,8 @@ export const ASSET_CLASSES: AssetClassOption[] = [
       "נאסדק 100",
       "נאסד״ק 100"
     ],
-    description:
-      "חשיפה גבוהה לחברות טכנולוגיה."
+    description: "חשיפה גבוהה לחברות טכנולוגיה."
   },
-
   {
     key: "bonds",
     label: "אג״ח",
@@ -120,10 +88,8 @@ export const ASSET_CLASSES: AssetClassOption[] = [
       "יציבות",
       "בטוח"
     ],
-    description:
-      "אפיק בעל תנודתיות נמוכה יחסית."
+    description: "אפיק בעל תנודתיות נמוכה יחסית."
   },
-
   {
     key: "balanced",
     label: "תיק מאוזן",
@@ -135,8 +101,7 @@ export const ASSET_CLASSES: AssetClassOption[] = [
       "תיק",
       "השקעה כללית"
     ],
-    description:
-      "שילוב בין מספר סוגי נכסים."
+    description: "שילוב בין מספר סוגי נכסים."
   }
 ];
 
@@ -182,6 +147,7 @@ function detectAssetClass(text: string): string {
   if (
     normalized.includes("s&p") ||
     normalized.includes("sp500") ||
+    normalized.includes("s&p500") ||
     normalized.includes("s and p") ||
     normalized.includes("אס אנד פי") ||
     normalized.includes("סנופי")
@@ -219,7 +185,7 @@ function detectAssetClass(text: string): string {
 }
 
 // ---------------------------------------------------------------------------
-// Amount Parser
+// Amount Parsing
 // ---------------------------------------------------------------------------
 
 function parseAmount(
@@ -232,7 +198,8 @@ function parseAmount(
 
   if (
     normalized === "k" ||
-    normalized === "אלף"
+    normalized === "אלף" ||
+    normalized === "thousand"
   ) {
     return value * 1_000;
   }
@@ -249,15 +216,10 @@ function parseAmount(
   return value;
 }
 
-// ---------------------------------------------------------------------------
-// Advanced Amount Detection
-// ---------------------------------------------------------------------------
-
 function detectAmount(text: string): number {
   const normalized = normalizeText(text)
     .replace(/,/g, "");
 
-  // Hebrew natural language
   if (
     normalized.includes("חצי מיליון") ||
     normalized.includes("חצי מליון")
@@ -286,7 +248,6 @@ function detectAmount(text: string): number {
     return 250_000;
   }
 
-  // English natural language
   const englishMillion = normalized.match(
     /(\d+(?:\.\d+)?)\s*million\b/i
   );
@@ -297,12 +258,12 @@ function detectAmount(text: string): number {
     );
   }
 
-  // Numeric amounts with units
   const patterns = [
     /(\d+(?:\.\d+)?)\s*(מיליון|מליון|million)/i,
     /(\d+(?:\.\d+)?)\s*(m)\b/i,
     /(\d+(?:\.\d+)?)\s*(k)\b/i,
     /(\d+(?:\.\d+)?)\s*(אלף)/i,
+    /(\d+(?:\.\d+)?)\s*(thousand)/i,
     /(\d{1,3}(?:,\d{3})+)/,
     /(\d{5,})/
   ];
@@ -327,22 +288,38 @@ function detectAmount(text: string): number {
 // Initial Investment Detection
 // ---------------------------------------------------------------------------
 
-function detectInitialAmount(
-  text: string
-): number {
+function detectInitialAmount(text: string): number {
   const normalized = normalizeText(text);
 
-  const hasInitialCapital =
-    normalized.includes("יש לי") ||
-    normalized.includes("יש ברשותי") ||
-    normalized.includes("ברשותי") ||
-    normalized.includes("הון") ||
-    normalized.includes("השקעתי") ||
-    normalized.includes("מחזיק") ||
-    normalized.includes("קיים לי") ||
-    normalized.includes("initial") ||
-    normalized.includes("starting capital") ||
-    normalized.includes("initial investment");
+  const initialPatterns = [
+    /(?:יש לי|יש ברשותי|ברשותי|קיים לי|מחזיק|השקעתי)\s*(?:היום|כיום|כרגע)?\s*(?:הון של|הון בסך|סכום של|סכום)?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון|thousand|million)?/i,
+
+    /(?:initial investment|starting capital|initial capital)\s*(?:of|is)?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?/i
+  ];
+
+  for (const pattern of initialPatterns) {
+    const match = normalized.match(pattern);
+
+    if (!match) {
+      continue;
+    }
+
+    const value = Number(
+      match[1].replace(/,/g, "")
+    );
+
+    if (
+      Number.isFinite(value) &&
+      value > 0
+    ) {
+      return Math.round(
+        parseAmount(
+          value,
+          match[2] ?? ""
+        )
+      );
+    }
+  }
 
   const onlyMonthlyContext =
     normalized.includes("בחודש") ||
@@ -354,15 +331,11 @@ function detectInitialAmount(
     normalized.includes("per month") ||
     normalized.includes("monthly");
 
-  if (
-    onlyMonthlyContext &&
-    !hasInitialCapital
-  ) {
+  if (onlyMonthlyContext) {
     return 0;
   }
 
   if (
-    hasInitialCapital ||
     normalized.includes("חצי מיליון") ||
     normalized.includes("חצי מליון") ||
     normalized.includes("מיליון וחצי") ||
@@ -377,67 +350,6 @@ function detectInitialAmount(
 }
 
 // ---------------------------------------------------------------------------
-// Target Monthly Income Detection
-// ---------------------------------------------------------------------------
-
-function detectTargetMonthlyIncome(
-  text: string
-): number | null {
-  const normalized = normalizeText(text);
-
-  const retirementContext =
-    normalized.includes("פרישה") ||
-    normalized.includes("לפרוש") ||
-    normalized.includes("פורש") ||
-    normalized.includes("חופש כלכלי") ||
-    normalized.includes("עצמאות כלכלית") ||
-    normalized.includes("retire") ||
-    normalized.includes("retirement");
-
-  if (!retirementContext) {
-    return null;
-  }
-
-  const patterns = [
-    /(?:הכנסה|הכנסה חודשית|להכנסה)\s*(?:של\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)/i,
-
-    /(?:רוצה|לקבל)\s*(?:לקבל\s*)?(?:הכנסה\s*)?(?:של\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)/i,
-
-    /(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)\s*(?:בפרישה|לאחר הפרישה)/i,
-
-    /(?:בפרישה|לאחר הפרישה)\s*(?:עם\s*)?(?:הכנסה\s*)?(?:של\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)/i
-  ];
-
-  for (const pattern of patterns) {
-    const match = normalized.match(pattern);
-
-    if (!match) {
-      continue;
-    }
-
-    const value = Number(
-      match[1].replace(/,/g, "")
-    );
-
-    if (
-      !Number.isFinite(value) ||
-      value <= 0
-    ) {
-      continue;
-    }
-
-    return Math.round(
-      parseAmount(
-        value,
-        match[2] ?? ""
-      )
-    );
-  }
-
-  return null;
-}
-
-// ---------------------------------------------------------------------------
 // Monthly Contribution Detection
 // ---------------------------------------------------------------------------
 
@@ -446,58 +358,15 @@ function detectMonthlyContribution(
 ): number {
   const normalized = normalizeText(text);
 
-  // Retirement income must never be interpreted
-  // as monthly investment contribution.
-  const retirementIncomePatterns = [
-    /(?:הכנסה|הכנסה חודשית|להכנסה)\s*(?:של\s*)?\d[\d,]*(?:\.\d+)?\s*(?:k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)/i,
-
-    /(?:רוצה|לקבל)\s*(?:לקבל\s*)?(?:הכנסה\s*)?(?:של\s*)?\d[\d,]*(?:\.\d+)?\s*(?:k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש)/i,
-
-    /\d[\d,]*(?:\.\d+)?\s*(?:k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)\s*(?:בפרישה|לאחר הפרישה)/i,
-
-    /(?:בפרישה|לאחר הפרישה)\s*(?:עם\s*)?(?:הכנסה\s*)?(?:של\s*)?\d[\d,]*(?:\.\d+)?\s*(?:k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)/i
-  ];
-
-  for (const pattern of retirementIncomePatterns) {
-    if (pattern.test(normalized)) {
-      // Do NOT return here if the query also contains
-      // an explicit contribution elsewhere.
-      //
-      // Instead, continue searching for a true contribution.
-      break;
-    }
-  }
-
-  const patterns = [
-    /(\d[\d,]*(?:\.\d+)?)\s*(?:שקל)?\s*(?:בחודש|לחודש|כל חודש)/i,
-
-    /(\d+(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)\s*(?:שקל)?\s*(?:בחודש|לחודש|כל חודש)/i,
-
-    /(\d[\d,]*(?:\.\d+)?)\s*(k|m)?\s*(?:per month|monthly|a month)/i,
-
-    /(?:invest|contribute|deposit|save)\s+(\d[\d,]*(?:\.\d+)?)\s*(k|m)?\s*(?:per month|monthly|a month)?/i,
-
-    /(?:מפקיד|מוסיף|מפריש|חוסך)\s*(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?/i
-  ];
-
-  /*
-   * Important:
-   * Search all matches and prefer explicit contribution verbs
-   * over generic "income ... per month" matches.
-   */
-
   const contributionVerbPattern =
-    /(?:מפקיד|מוסיף|מפריש|חוסך|invest|contribute|deposit|save)\s*(?:של\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?/i;
+    /(?:מפקיד|מוסיף|מפריש|חוסך|invest|contribute|deposit|save)\s*(?:של\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון|thousand|million)?/i;
 
   const contributionVerbMatch =
-    normalized.match(
-      contributionVerbPattern
-    );
+    normalized.match(contributionVerbPattern);
 
   if (contributionVerbMatch) {
     const value = Number(
-      contributionVerbMatch[1]
-        .replace(/,/g, "")
+      contributionVerbMatch[1].replace(/,/g, "")
     );
 
     if (
@@ -513,11 +382,14 @@ function detectMonthlyContribution(
     }
   }
 
-  /*
-   * Generic monthly amount.
-   *
-   * We explicitly avoid amounts that belong to retirement income.
-   */
+  const patterns = [
+    /(\d[\d,]*(?:\.\d+)?)\s*(?:שקל)?\s*(?:בחודש|לחודש|כל חודש)/i,
+
+    /(\d+(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)\s*(?:שקל)?\s*(?:בחודש|לחודש|כל חודש)/i,
+
+    /(\d[\d,]*(?:\.\d+)?)\s*(k|m)?\s*(?:per month|monthly|a month)/i
+  ];
+
   for (const pattern of patterns) {
     const match = normalized.match(pattern);
 
@@ -527,16 +399,16 @@ function detectMonthlyContribution(
 
     const matchedText = match[0];
 
-    const looksLikeRetirementIncome =
+    const retirementIncomeContext =
       /הכנסה|בפרישה|לאחר הפרישה|retirement|retire/i
         .test(matchedText);
 
-    if (looksLikeRetirementIncome) {
+    if (retirementIncomeContext) {
       continue;
     }
 
     const value = Number(
-      String(match[1]).replace(/,/g, "")
+      match[1].replace(/,/g, "")
     );
 
     if (
@@ -668,7 +540,68 @@ function detectYears(
 }
 
 // ---------------------------------------------------------------------------
-// Explicit Financial Target Detection
+// Target Monthly Income Detection
+// ---------------------------------------------------------------------------
+
+function detectTargetMonthlyIncome(
+  text: string
+): number | null {
+  const normalized = normalizeText(text);
+
+  const retirementContext =
+    normalized.includes("פרישה") ||
+    normalized.includes("לפרוש") ||
+    normalized.includes("פורש") ||
+    normalized.includes("חופש כלכלי") ||
+    normalized.includes("עצמאות כלכלית") ||
+    normalized.includes("retire") ||
+    normalized.includes("retirement");
+
+  if (!retirementContext) {
+    return null;
+  }
+
+  const patterns = [
+    /(?:הכנסה|הכנסה חודשית|להכנסה)\s*(?:של\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)/i,
+
+    /(?:רוצה|לקבל)\s*(?:לקבל\s*)?(?:הכנסה\s*)?(?:של\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)/i,
+
+    /(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)\s*(?:בפרישה|לאחר הפרישה)/i,
+
+    /(?:בפרישה|לאחר הפרישה)\s*(?:עם\s*)?(?:הכנסה\s*)?(?:של\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)/i
+  ];
+
+  for (const pattern of patterns) {
+    const match = normalized.match(pattern);
+
+    if (!match) {
+      continue;
+    }
+
+    const value = Number(
+      match[1].replace(/,/g, "")
+    );
+
+    if (
+      !Number.isFinite(value) ||
+      value <= 0
+    ) {
+      continue;
+    }
+
+    return Math.round(
+      parseAmount(
+        value,
+        match[2] ?? ""
+      )
+    );
+  }
+
+  return null;
+}
+
+// ---------------------------------------------------------------------------
+// Explicit Target Amount Detection
 // ---------------------------------------------------------------------------
 
 function detectExplicitTargetAmount(
@@ -716,18 +649,13 @@ function detectExplicitTargetAmount(
 }
 
 // ---------------------------------------------------------------------------
-// Retirement Target Capital
+// Retirement Target
 // ---------------------------------------------------------------------------
 
-/**
- * Calculates the retirement capital required in TODAY'S money.
- *
- * Example:
- * 10,000 ₪ × 12 ÷ 4% = 3,000,000 ₪
- */
 export function calculateBaseRetirementTargetAmount(
   targetMonthlyIncome: number,
-  withdrawalRatePct: number = DEFAULT_WITHDRAWAL_RATE_PCT
+  withdrawalRatePct: number =
+    DEFAULT_WITHDRAWAL_RATE_PCT
 ): number | null {
   if (
     !Number.isFinite(targetMonthlyIncome) ||
@@ -743,35 +671,20 @@ export function calculateBaseRetirementTargetAmount(
     return null;
   }
 
-  const annualIncome =
-    targetMonthlyIncome * 12;
-
-  const withdrawalRate =
-    withdrawalRatePct / 100;
-
   return Math.round(
-    annualIncome / withdrawalRate
+    targetMonthlyIncome *
+    12 /
+    (withdrawalRatePct / 100)
   );
 }
 
-/**
- * Calculates the inflation-adjusted retirement target.
- *
- * Option B:
- *
- * today's target capital
- * × (1 + inflation) ^ years
- *
- * Example:
- *
- * 3,000,000 × 1.025^13
- * = 4,135,533 ₪
- */
 export function calculateRetirementTargetAmount(
   targetMonthlyIncome: number,
   years: number,
-  withdrawalRatePct: number = DEFAULT_WITHDRAWAL_RATE_PCT,
-  inflationPct: number = DEFAULT_INFLATION_PCT
+  withdrawalRatePct: number =
+    DEFAULT_WITHDRAWAL_RATE_PCT,
+  inflationPct: number =
+    DEFAULT_INFLATION_PCT
 ): number | null {
   const baseTarget =
     calculateBaseRetirementTargetAmount(
@@ -807,7 +720,7 @@ export function calculateRetirementTargetAmount(
 }
 
 // ---------------------------------------------------------------------------
-// Final Target Amount Resolution
+// Target Resolution
 // ---------------------------------------------------------------------------
 
 function resolveTargetAmount(
@@ -818,11 +731,6 @@ function resolveTargetAmount(
   targetAmount: number | null;
   source: TargetAmountSource;
 } {
-  // Priority 1:
-  // Explicit financial target supplied by the user.
-  //
-  // Explicit targets are NOT inflation-adjusted because
-  // the user explicitly supplied the target amount.
   const explicitTarget =
     detectExplicitTargetAmount(text);
 
@@ -836,9 +744,6 @@ function resolveTargetAmount(
     };
   }
 
-  // Priority 2:
-  // Retirement income → base capital target →
-  // inflation-adjusted future retirement target.
   if (
     targetMonthlyIncome !== null &&
     targetMonthlyIncome > 0
@@ -926,18 +831,16 @@ function detectRiskProfile(
     assetClassKey === "nasdaq" ||
     assetClassKey === "world"
   ) {
-    if (years >= 15) {
-      return "high";
-    }
-
-    return "medium";
+    return years >= 15
+      ? "high"
+      : "medium";
   }
 
   return "medium";
 }
 
 // ---------------------------------------------------------------------------
-// Confidence Engine
+// Confidence
 // ---------------------------------------------------------------------------
 
 function calculateConfidence(
@@ -951,25 +854,11 @@ function calculateConfidence(
 ): number {
   let score = 0;
 
-  if (investment > 0) {
-    score += 20;
-  }
-
-  if (monthly > 0) {
-    score += 20;
-  }
-
-  if (age !== null) {
-    score += 15;
-  }
-
-  if (years > 0) {
-    score += 20;
-  }
-
-  if (asset) {
-    score += 15;
-  }
+  if (investment > 0) score += 20;
+  if (monthly > 0) score += 20;
+  if (age !== null) score += 15;
+  if (years > 0) score += 20;
+  if (asset) score += 15;
 
   if (
     targetAmount !== null ||
@@ -978,10 +867,7 @@ function calculateConfidence(
     score += 10;
   }
 
-  return Math.min(
-    score,
-    100
-  );
+  return Math.min(score, 100);
 }
 
 // ---------------------------------------------------------------------------
@@ -1012,12 +898,10 @@ export function analyzeFinancialScenario(
 
   const asset =
     ASSET_CLASSES.find(
-      item =>
-        item.key === assetKey
+      item => item.key === assetKey
     ) ??
     ASSET_CLASSES.find(
-      item =>
-        item.key === "balanced"
+      item => item.key === "balanced"
     )!;
 
   const initialInvestment =
@@ -1110,36 +994,20 @@ export interface ProjectionResult {
   series: ProjectionPoint[];
 }
 
-// ---------------------------------------------------------------------------
-// Compute Projection
-// ---------------------------------------------------------------------------
-
 export function computeProjection(
   principal: number,
   monthlyContribution: number,
   years: number,
   annualReturnPct: number,
-  inflationPct: number = DEFAULT_INFLATION_PCT
+  inflationPct: number =
+    DEFAULT_INFLATION_PCT
 ): ProjectionResult {
-  const monthlyRate =
-    annualReturnPct / 100 / 12;
-
-  const months =
+  const safePrincipal =
     Math.max(
       0,
-      Math.round(years * 12)
-    );
-
-  let balance =
-    Math.max(
-      0,
-      principal
-    );
-
-  let contributed =
-    Math.max(
-      0,
-      principal
+      Number.isFinite(principal)
+        ? principal
+        : 0
     );
 
   const safeMonthlyContribution =
@@ -1149,6 +1017,31 @@ export function computeProjection(
         ? monthlyContribution
         : 0
     );
+
+  const safeYears =
+    Math.max(
+      0,
+      Number.isFinite(years)
+        ? years
+        : 0
+    );
+
+  const safeAnnualReturn =
+    Number.isFinite(annualReturnPct)
+      ? annualReturnPct
+      : 0;
+
+  const monthlyRate =
+    safeAnnualReturn / 100 / 12;
+
+  const months =
+    Math.max(
+      0,
+      Math.round(safeYears * 12)
+    );
+
+  let balance = safePrincipal;
+  let contributed = safePrincipal;
 
   const series: ProjectionPoint[] = [
     {
@@ -1174,11 +1067,14 @@ export function computeProjection(
       safeMonthlyContribution;
 
     if (
-      month % 12 === 0
+      month % 12 === 0 ||
+      month === months
     ) {
       series.push({
         year:
-          month / 12,
+          Number(
+            (month / 12).toFixed(2)
+          ),
 
         contributed:
           Math.round(contributed),
@@ -1192,7 +1088,7 @@ export function computeProjection(
   const inflationFactor =
     Math.pow(
       1 + inflationPct / 100,
-      years
+      safeYears
     );
 
   return {
@@ -1215,6 +1111,276 @@ export function computeProjection(
       ),
 
     series
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Goal Planner
+// ---------------------------------------------------------------------------
+
+export interface GoalPlannerResult {
+  hasGoal: boolean;
+  targetAmount: number | null;
+  currentProjectedValue: number;
+  progressPct: number;
+  gap: number;
+  requiredMonthlyContribution: number;
+  targetAmountSource: TargetAmountSource;
+  withdrawalRatePct: number | null;
+}
+
+// ---------------------------------------------------------------------------
+// Required Monthly Contribution
+//
+// IMPORTANT:
+// This formula uses the SAME monthly compounding convention
+// as computeProjection().
+//
+// FV = P(1+r)^n + PMT[((1+r)^n - 1) / r]
+//
+// Therefore the monthly contribution calculated here can be
+// plugged directly into computeProjection() and should reach
+// approximately the requested target.
+// ---------------------------------------------------------------------------
+
+export function calculateRequiredMonthlyContribution(
+  targetAmount: number,
+  initialInvestment: number,
+  years: number,
+  annualReturnPct: number
+): number {
+  if (
+    !Number.isFinite(targetAmount) ||
+    targetAmount <= 0
+  ) {
+    return 0;
+  }
+
+  if (
+    !Number.isFinite(initialInvestment) ||
+    initialInvestment < 0
+  ) {
+    return 0;
+  }
+
+  if (
+    !Number.isFinite(years) ||
+    years <= 0
+  ) {
+    return 0;
+  }
+
+  if (
+    !Number.isFinite(annualReturnPct)
+  ) {
+    return 0;
+  }
+
+  const months =
+    Math.round(years * 12);
+
+  if (months <= 0) {
+    return 0;
+  }
+
+  const monthlyRate =
+    annualReturnPct / 100 / 12;
+
+  const futureInitial =
+    initialInvestment *
+    Math.pow(
+      1 + monthlyRate,
+      months
+    );
+
+  const remaining =
+    targetAmount -
+    futureInitial;
+
+  if (remaining <= 0) {
+    return 0;
+  }
+
+  if (monthlyRate === 0) {
+    return Math.round(
+      remaining / months
+    );
+  }
+
+  const annuityFactor =
+    (
+      Math.pow(
+        1 + monthlyRate,
+        months
+      ) - 1
+    ) / monthlyRate;
+
+  if (
+    !Number.isFinite(annuityFactor) ||
+    annuityFactor <= 0
+  ) {
+    return 0;
+  }
+
+  return Math.max(
+    0,
+    Math.round(
+      remaining / annuityFactor
+    )
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Goal Planner Analysis
+// ---------------------------------------------------------------------------
+
+export function calculateGoalPlanner(
+  scenario: FinancialScenario & {
+    targetAmountSource?: TargetAmountSource;
+    withdrawalRatePct?: number | null;
+  }
+): GoalPlannerResult {
+  const projection =
+    computeProjection(
+      scenario.initialInvestment,
+      scenario.monthlyContribution,
+      scenario.years,
+      scenario.annualReturnPct,
+      DEFAULT_INFLATION_PCT
+    );
+
+  const targetAmount =
+    scenario.targetAmount;
+
+  // ---------------------------------------------------------
+  // NO TARGET
+  //
+  // This is intentional.
+  // The UI should not display a Goal Planner when the user
+  // did not provide a financial target or retirement target.
+  // ---------------------------------------------------------
+
+  if (
+    targetAmount === null ||
+    targetAmount <= 0
+  ) {
+    return {
+      hasGoal: false,
+
+      targetAmount: null,
+
+      currentProjectedValue:
+        projection.finalBalance,
+
+      progressPct: 0,
+
+      gap: 0,
+
+      requiredMonthlyContribution: 0,
+
+      targetAmountSource:
+        scenario.targetAmountSource ?? "none",
+
+      withdrawalRatePct:
+        scenario.withdrawalRatePct ?? null
+    };
+  }
+
+  // ---------------------------------------------------------
+  // TARGET EXISTS
+  // ---------------------------------------------------------
+
+  const progressPct =
+    Math.min(
+      100,
+      Math.max(
+        0,
+        Math.round(
+          (
+            projection.finalBalance /
+            targetAmount
+          ) * 100
+        )
+      )
+    );
+
+  const gap =
+    Math.max(
+      0,
+      targetAmount -
+      projection.finalBalance
+    );
+
+  const requiredMonthlyContribution =
+    calculateRequiredMonthlyContribution(
+      targetAmount,
+      scenario.initialInvestment,
+      scenario.years,
+      scenario.annualReturnPct
+    );
+
+  return {
+    hasGoal: true,
+
+    targetAmount,
+
+    currentProjectedValue:
+      projection.finalBalance,
+
+    progressPct,
+
+    gap,
+
+    requiredMonthlyContribution,
+
+    targetAmountSource:
+      scenario.targetAmountSource ?? "none",
+
+    withdrawalRatePct:
+      scenario.withdrawalRatePct ?? null
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Unified Financial Analysis
+//
+// This is the recommended single entry point for CalculatorPage.
+// ---------------------------------------------------------------------------
+
+export interface UnifiedFinancialAnalysis {
+  scenario:
+    FinancialScenario & {
+      targetAmountSource: TargetAmountSource;
+      withdrawalRatePct: number | null;
+    };
+
+  projection: ProjectionResult;
+
+  goalPlanner: GoalPlannerResult;
+}
+
+export function analyzeFinancialScenarioWithProjection(
+  text: string
+): UnifiedFinancialAnalysis {
+  const scenario =
+    analyzeFinancialScenario(text);
+
+  const projection =
+    computeProjection(
+      scenario.initialInvestment,
+      scenario.monthlyContribution,
+      scenario.years,
+      scenario.annualReturnPct,
+      DEFAULT_INFLATION_PCT
+    );
+
+  const goalPlanner =
+    calculateGoalPlanner(scenario);
+
+  return {
+    scenario,
+    projection,
+    goalPlanner
   };
 }
 
@@ -1256,186 +1422,6 @@ export function parseCalculatorQuery(
 }
 
 // ---------------------------------------------------------------------------
-// Goal Planner Engine
-// ---------------------------------------------------------------------------
-
-export function calculateRequiredMonthlyContribution(
-  targetAmount: number,
-  initialInvestment: number,
-  years: number,
-  annualReturnPct: number
-): number {
-  if (
-    !Number.isFinite(targetAmount) ||
-    targetAmount <= 0
-  ) {
-    return 0;
-  }
-
-  if (
-    !Number.isFinite(initialInvestment) ||
-    initialInvestment < 0
-  ) {
-    return 0;
-  }
-
-  if (
-    !Number.isFinite(years) ||
-    years <= 0
-  ) {
-    return 0;
-  }
-
-  const monthlyRate =
-    annualReturnPct / 100 / 12;
-
-  const months =
-    Math.round(years * 12);
-
-  if (months <= 0) {
-    return 0;
-  }
-
-  const futureInitial =
-    initialInvestment *
-    Math.pow(
-      1 + monthlyRate,
-      months
-    );
-
-  const remaining =
-    targetAmount -
-    futureInitial;
-
-  if (remaining <= 0) {
-    return 0;
-  }
-
-  if (monthlyRate === 0) {
-    return Math.round(
-      remaining / months
-    );
-  }
-
-  const monthly =
-    remaining *
-    monthlyRate /
-    (
-      Math.pow(
-        1 + monthlyRate,
-        months
-      ) - 1
-    );
-
-  return Math.max(
-    0,
-    Math.round(monthly)
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Goal Planner Analysis
-// ---------------------------------------------------------------------------
-
-export interface GoalPlannerResult {
-  targetAmount: number | null;
-  currentProjectedValue: number;
-  progressPct: number;
-  gap: number;
-  requiredMonthlyContribution: number;
-  targetAmountSource: TargetAmountSource;
-  withdrawalRatePct: number | null;
-}
-
-export function calculateGoalPlanner(
-  scenario: FinancialScenario & {
-    targetAmountSource?: TargetAmountSource;
-    withdrawalRatePct?: number | null;
-  }
-): GoalPlannerResult {
-  const projection =
-    computeProjection(
-      scenario.initialInvestment,
-      scenario.monthlyContribution,
-      scenario.years,
-      scenario.annualReturnPct,
-      DEFAULT_INFLATION_PCT
-    );
-
-  const targetAmount =
-    scenario.targetAmount;
-
-  if (
-    targetAmount === null ||
-    targetAmount <= 0
-  ) {
-    return {
-      targetAmount: null,
-
-      currentProjectedValue:
-        projection.finalBalance,
-
-      progressPct: 0,
-
-      gap: 0,
-
-      requiredMonthlyContribution: 0,
-
-      targetAmountSource:
-        scenario.targetAmountSource ?? "none",
-
-      withdrawalRatePct:
-        scenario.withdrawalRatePct ?? null
-    };
-  }
-
-  const progressPct =
-    Math.min(
-      100,
-      Math.round(
-        (
-          projection.finalBalance /
-          targetAmount
-        ) * 100
-      )
-    );
-
-  const gap =
-    Math.max(
-      0,
-      targetAmount -
-      projection.finalBalance
-    );
-
-  const requiredMonthlyContribution =
-    calculateRequiredMonthlyContribution(
-      targetAmount,
-      scenario.initialInvestment,
-      scenario.years,
-      scenario.annualReturnPct
-    );
-
-  return {
-    targetAmount,
-
-    currentProjectedValue:
-      projection.finalBalance,
-
-    progressPct,
-
-    gap,
-
-    requiredMonthlyContribution,
-
-    targetAmountSource:
-      scenario.targetAmountSource ?? "none",
-
-    withdrawalRatePct:
-      scenario.withdrawalRatePct ?? null
-  };
-}
-
-// ---------------------------------------------------------------------------
 // Calculator Presets
 // ---------------------------------------------------------------------------
 
@@ -1462,27 +1448,13 @@ export const CALCULATOR_PRESETS = [
 export function debugScenario(
   text: string
 ) {
-  const scenario =
-    analyzeFinancialScenario(text);
-
-  const projection =
-    computeProjection(
-      scenario.initialInvestment,
-      scenario.monthlyContribution,
-      scenario.years,
-      scenario.annualReturnPct,
-      DEFAULT_INFLATION_PCT
-    );
-
-  const goalPlanner =
-    calculateGoalPlanner(
-      scenario
-    );
+  const analysis =
+    analyzeFinancialScenarioWithProjection(text);
 
   return {
-    input: text,
-    scenario,
-    projection,
-    goalPlanner
+    text,
+    scenario: analysis.scenario,
+    projection: analysis.projection,
+    goalPlanner: analysis.goalPlanner
   };
 }
