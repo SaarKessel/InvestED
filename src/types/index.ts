@@ -380,6 +380,14 @@ export interface AnalysisResult {
 
     achievable:boolean;
 
+    /**
+     * Remaining amount required to reach
+     * the financial goal under the current scenario.
+     *
+     * Calculated by goalEngine.
+     */
+    gap:number;
+
   };
 
 

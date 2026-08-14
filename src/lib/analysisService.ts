@@ -540,36 +540,31 @@ export function buildRuleBasedAnalysis(
   // =====================================================
   // Goal Planner
   // =====================================================
-
+  //
+  // goalEngine is the single source of truth for:
+  // - required monthly contribution
+  // - expected final value
+  // - progress
+  // - achievable status
+  // - gap to goal
+  //
+  // analysisService only connects the scenario
+  // to the goal calculation engine.
+  // =====================================================
 
   const targetAmount =
     scenario.targetAmount ?? 0;
 
-
-
   const goalPlan =
-
     targetAmount > 0
-
-    ?
-
-    analyzeFinancialGoal(
-
-      scenario.initialInvestment,
-
-      targetAmount,
-
-      scenario.years,
-
-      scenario.annualReturnPct,
-
-      scenario.monthlyContribution
-
-    )
-
-    :
-
-    undefined;
+      ? analyzeFinancialGoal(
+          scenario.initialInvestment,
+          targetAmount,
+          scenario.years,
+          scenario.annualReturnPct,
+          scenario.monthlyContribution
+        )
+      : undefined;
 
 
 

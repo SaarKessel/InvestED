@@ -11,6 +11,14 @@ export interface GoalAnalysis {
   expectedFinalValue: number;
   progressPercentage: number;
   achievable: boolean;
+
+  /**
+   * Remaining amount required to reach the target.
+   *
+   * This value is calculated by the goal engine
+   * and consumed directly by the UI.
+   */
+  gap: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -259,21 +267,46 @@ export function analyzeFinancialGoal(
       annualReturnPct
     );
 
+  const roundedFutureValue =
+    Math.round(futureValue);
+
+  /**
+   * The goal engine is the single source of truth
+   * for the remaining gap.
+   *
+   * Never calculate this value again inside the UI.
+   */
+  const gap =
+    Math.max(
+      targetAmount - roundedFutureValue,
+      0
+    );
+
   return {
     targetAmount,
-    currentAmount: safeCurrentAmount,
-    years: safeYears,
+
+    currentAmount:
+      safeCurrentAmount,
+
+    years:
+      safeYears,
+
     requiredMonthlyContribution:
       monthlyRequired,
+
     expectedFinalValue:
-      Math.round(futureValue),
+      roundedFutureValue,
+
     progressPercentage:
       calculateGoalProgress(
-        futureValue,
+        roundedFutureValue,
         targetAmount
       ),
+
     achievable:
-      futureValue >= targetAmount
+      roundedFutureValue >= targetAmount,
+
+    gap
   };
 }
 
