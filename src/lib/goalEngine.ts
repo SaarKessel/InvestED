@@ -1,633 +1,385 @@
 ﻿// ---------------------------------------------------------------------------
-// InvestED - Goal Planning Engine v2
-// Smart Financial Goal Detection
+// InvestED — Goal Planning Engine v3
+// Unified Goal & Retirement Planning
 // ---------------------------------------------------------------------------
-
 
 export interface GoalAnalysis {
-
-  targetAmount:number;
-
-  currentAmount:number;
-
-  years:number;
-
-  requiredMonthlyContribution:number;
-
-  expectedFinalValue:number;
-
-  progressPercentage:number;
-
-  achievable:boolean;
-
+  targetAmount: number;
+  currentAmount: number;
+  years: number;
+  requiredMonthlyContribution: number;
+  expectedFinalValue: number;
+  progressPercentage: number;
+  achievable: boolean;
 }
 
-
-
-
-
 // ---------------------------------------------------------------------------
-// Detect Target Amount
+// Target Amount Detection
 // ---------------------------------------------------------------------------
 
-
-export function detectTargetAmount(
-  text:string
-):number {
-
-
-  const normalized =
-    text
-      .toLowerCase()
-      .replace(/,/g,"")
-      .trim();
-
-
+export function detectTargetAmount(text: string): number {
+  const normalized = text
+    .toLowerCase()
+    .replace(/,/g, "")
+    .trim();
 
   let amount = 0;
 
+  const cleanedText = normalized.replace(
+    /(?:בן|בת)\s+\d+/g,
+    ""
+  );
 
-
-  // --------------------------------------------------
-  // Ignore age numbers
-  // --------------------------------------------------
-
-  const cleanedText =
-    normalized.replace(
-      /בן\s+\d+/g,
-      ""
-    );
-
-
-
-
-
-  // --------------------------------------------------
-  // Half million
-  // --------------------------------------------------
-
-  if(
-    cleanedText.includes("חצי מיליון")
-  ){
-
-    amount = Math.max(
-      amount,
-      500000
-    );
-
+  // Natural Hebrew amounts
+  if (
+    cleanedText.includes("חצי מיליון") ||
+    cleanedText.includes("חצי מליון")
+  ) {
+    amount = Math.max(amount, 500_000);
   }
 
-
-
-
-  // --------------------------------------------------
-  // Million and a half
-  // --------------------------------------------------
-
-  const millionHalfMatch =
-    cleanedText.match(
-      /מיליון\s+וחצי/
-    );
-
-
-  if(millionHalfMatch){
-
-    amount = Math.max(
-      amount,
-      1500000
-    );
-
+  if (
+    cleanedText.includes("מיליון וחצי") ||
+    cleanedText.includes("מליון וחצי")
+  ) {
+    amount = Math.max(amount, 1_500_000);
   }
 
+  if (
+    cleanedText.includes("רבע מיליון") ||
+    cleanedText.includes("רבע מליון")
+  ) {
+    amount = Math.max(amount, 250_000);
+  }
 
-
-
-
-
-
-  // --------------------------------------------------
   // X million
-  // Example:
-  // 2 מיליון
-  // 2.5 מיליון
-  // מיליון
-  // --------------------------------------------------
+  const millionMatch = cleanedText.match(
+    /(\d+(?:\.\d+)?)\s*(?:מיליון|מליון)/
+  );
 
-
-  const millionMatch =
-    cleanedText.match(
-      /(\d+(?:\.\d+)?)\s*מיליון/
+  if (millionMatch) {
+    amount = Math.max(
+      amount,
+      Number(millionMatch[1]) * 1_000_000
     );
-
-
-
-  if(millionMatch){
-
-    amount =
-      Math.max(
-        amount,
-        Number(millionMatch[1]) * 1000000
-      );
-
   }
 
-
-
-
-  if(
-    cleanedText.includes("מיליון")
-    &&
+  // "מיליון" without number
+  if (
+    /(?:מיליון|מליון)/.test(cleanedText) &&
     amount === 0
-  ){
-
-    amount =
-      Math.max(
-        amount,
-        1000000
-      );
-
+  ) {
+    amount = 1_000_000;
   }
 
+  // Thousands
+  const thousandMatch = cleanedText.match(
+    /(\d+(?:\.\d+)?)\s*(אלף|k)\b/i
+  );
 
-
-
-
-  // --------------------------------------------------
-  // Thousand
-  // Example:
-  // 500 אלף
-  // 150k
-  // --------------------------------------------------
-
-
-  const thousandMatch =
-    cleanedText.match(
-      /(\d+(?:\.\d+)?)\s*(אלף|k)/
+  if (thousandMatch) {
+    amount = Math.max(
+      amount,
+      Number(thousandMatch[1]) * 1_000
     );
-
-
-
-  if(thousandMatch){
-
-    amount =
-      Math.max(
-        amount,
-        Number(thousandMatch[1]) * 1000
-      );
-
   }
 
-
-
-
-
-  // --------------------------------------------------
   // Direct currency amounts
-  // Example:
-  // 1000000 שקל
-  // 500000 ₪
-  // --------------------------------------------------
+  const currencyMatch = cleanedText.match(
+    /(\d{5,})\s*(?:שקל|₪)?/
+  );
 
-
-  const currencyMatch =
-    cleanedText.match(
-      /(\d{5,})\s*(שקל|₪)?/
+  if (currencyMatch) {
+    amount = Math.max(
+      amount,
+      Number(currencyMatch[1])
     );
-
-
-
-  if(currencyMatch){
-
-    amount =
-      Math.max(
-        amount,
-        Number(currencyMatch[1])
-      );
-
   }
-
-
-
-
 
   return Math.round(amount);
-
 }
 
-
-
-
-
-
-
-
-
 // ---------------------------------------------------------------------------
-// Calculate Required Monthly Contribution
+// Required Monthly Contribution
 // ---------------------------------------------------------------------------
-
 
 export function calculateRequiredMonthlyContribution(
-
-  targetAmount:number,
-
-  currentAmount:number,
-
-  years:number,
-
-  annualReturnPct:number = 8
-
-):number {
-
-
-  if(years <= 0){
-
+  targetAmount: number,
+  currentAmount: number,
+  years: number,
+  annualReturnPct: number = 8
+): number {
+  if (
+    !Number.isFinite(targetAmount) ||
+    targetAmount <= 0 ||
+    !Number.isFinite(currentAmount) ||
+    currentAmount < 0 ||
+    !Number.isFinite(years) ||
+    years <= 0
+  ) {
     return 0;
-
   }
-
-
 
   const monthlyRate =
     annualReturnPct / 100 / 12;
 
+  const months = Math.round(years * 12);
 
-
-  const months =
-    years * 12;
-
-
-
-
+  if (months <= 0) {
+    return 0;
+  }
 
   const futureCurrentAmount =
-
     currentAmount *
-
     Math.pow(
       1 + monthlyRate,
       months
     );
 
-
-
-
-
   const remainingAmount =
-
     Math.max(
       targetAmount - futureCurrentAmount,
       0
     );
 
+  if (remainingAmount <= 0) {
+    return 0;
+  }
 
-
-
-
-  if(monthlyRate === 0){
-
+  if (monthlyRate === 0) {
     return Math.round(
       remainingAmount / months
     );
-
   }
 
-
-
-
-
   const contribution =
-
     remainingAmount *
-
     monthlyRate /
-
     (
       Math.pow(
         1 + monthlyRate,
         months
-      )
-      -
-      1
+      ) - 1
     );
 
-
-
-
-
-  return Math.round(contribution);
-
+  return Math.max(
+    0,
+    Math.round(contribution)
+  );
 }
-
-
-
-
-
-
-
-
 
 // ---------------------------------------------------------------------------
 // Goal Progress
 // ---------------------------------------------------------------------------
 
-
 export function calculateGoalProgress(
-
-  projectedAmount:number,
-
-  targetAmount:number
-
-):number {
-
-
-  if(targetAmount <= 0){
-
+  projectedAmount: number,
+  targetAmount: number
+): number {
+  if (
+    !Number.isFinite(projectedAmount) ||
+    !Number.isFinite(targetAmount) ||
+    targetAmount <= 0
+  ) {
     return 0;
-
   }
 
-
-
   return Math.min(
-
-    Math.round(
-      (projectedAmount / targetAmount) * 100
-    ),
-
-    100
-
+    100,
+    Math.max(
+      0,
+      Math.round(
+        projectedAmount /
+        targetAmount *
+        100
+      )
+    )
   );
-
 }
-
-
-
-
-
-
-
-
 
 // ---------------------------------------------------------------------------
 // Full Goal Analysis
 // ---------------------------------------------------------------------------
 
-
 export function analyzeFinancialGoal(
+  currentAmount: number,
+  targetAmount: number,
+  years: number,
+  annualReturnPct: number = 8,
+  monthlyContribution: number = 0
+): GoalAnalysis {
+  const safeCurrentAmount =
+    Math.max(0, currentAmount);
 
-  currentAmount:number,
+  const safeMonthlyContribution =
+    Math.max(0, monthlyContribution);
 
-  targetAmount:number,
-
-  years:number,
-
-  annualReturnPct:number = 8,
-
-  monthlyContribution:number = 0
-
-):GoalAnalysis {
-
-
-
-  const monthlyRequired =
-
-    calculateRequiredMonthlyContribution(
-
-      targetAmount,
-
-      currentAmount,
-
-      years,
-
-      annualReturnPct
-
-    );
-
-
-
-
-
-  const months =
-    years * 12;
-
-
+  const safeYears =
+    Math.max(0, years);
 
   const monthlyRate =
     annualReturnPct / 100 / 12;
 
+  const months =
+    Math.round(safeYears * 12);
 
+  let futureValue =
+    safeCurrentAmount;
 
-
-
-  const futureValue =
-
-    currentAmount *
-
-    Math.pow(
-      1 + monthlyRate,
-      months
-    )
-
-    +
-
-    (
-
-      monthlyRate === 0
-
-      ?
-
-      monthlyContribution * months
-
-      :
-
-      monthlyContribution *
-
-      (
-
+  if (months > 0) {
+    if (monthlyRate === 0) {
+      futureValue =
+        safeCurrentAmount +
+        safeMonthlyContribution * months;
+    } else {
+      futureValue =
+        safeCurrentAmount *
+        Math.pow(
+          1 + monthlyRate,
+          months
+        ) +
+        safeMonthlyContribution *
         (
-          Math.pow(
-            1 + monthlyRate,
-            months
-          )
-          -
-          1
-        )
+          (
+            Math.pow(
+              1 + monthlyRate,
+              months
+            ) - 1
+          ) /
+          monthlyRate
+        );
+    }
+  }
 
-        /
-
-        monthlyRate
-
-      )
-
+  const monthlyRequired =
+    calculateRequiredMonthlyContribution(
+      targetAmount,
+      safeCurrentAmount,
+      safeYears,
+      annualReturnPct
     );
 
-
-
-
-
-
-
   return {
-
     targetAmount,
-
-    currentAmount,
-
-    years,
-
-
+    currentAmount: safeCurrentAmount,
+    years: safeYears,
     requiredMonthlyContribution:
       monthlyRequired,
-
-
     expectedFinalValue:
       Math.round(futureValue),
-
-
     progressPercentage:
-
       calculateGoalProgress(
-
         futureValue,
-
         targetAmount
-
       ),
-
-
-
     achievable:
-
       futureValue >= targetAmount
-
-
   };
-
-
 }
 
-
 // ---------------------------------------------------------------------------
-// Retirement Planning Engine
+// Retirement Planning
 // ---------------------------------------------------------------------------
 
 export interface RetirementPlanInput {
-
-  currentAge:number;
-
-  expectedRetirementAge:number;
-
-  currentAssets:number;
-
-  monthlyInvestment:number;
-
-  annualReturnPct:number;
-
-  inflationPct:number;
-
-  targetMonthlyIncome:number;
-
+  currentAge: number;
+  expectedRetirementAge: number;
+  currentAssets: number;
+  monthlyInvestment: number;
+  annualReturnPct: number;
+  inflationPct: number;
+  targetMonthlyIncome: number;
 }
-
 
 export interface RetirementScenarioAlternative {
-
-  label:string;
-
-  annualReturnPct:number;
-
-  futureValue:number;
-
-  monthlyIncomeDuringRetirement:number;
-
+  label: string;
+  annualReturnPct: number;
+  futureValue: number;
+  monthlyIncomeDuringRetirement: number;
 }
-
 
 export interface RetirementPlan {
-
-  yearsRemaining:number;
-
-  currentAssets:number;
-
-  monthlyInvestment:number;
-
-  futureValue:number;
-
-  futureMonthlyIncomeTarget:number;
-
-  targetRetirementCapital:number;
-
-  requiredMonthlyContribution:number;
-
-  monthlyIncomeDuringRetirement:number;
-
-  probabilityOfSuccess:number;
-
-  scenarioAlternatives:RetirementScenarioAlternative[];
-
-  recommendations:string[];
-
+  yearsRemaining: number;
+  currentAssets: number;
+  monthlyInvestment: number;
+  futureValue: number;
+  futureMonthlyIncomeTarget: number;
+  targetRetirementCapital: number;
+  requiredMonthlyContribution: number;
+  monthlyIncomeDuringRetirement: number;
+  probabilityOfSuccess: number;
+  scenarioAlternatives: RetirementScenarioAlternative[];
+  recommendations: string[];
 }
 
+// ---------------------------------------------------------------------------
+// Retirement Plan Builder
+// ---------------------------------------------------------------------------
 
 export function buildRetirementPlan(
-  input:RetirementPlanInput
-):RetirementPlan {
-
+  input: RetirementPlanInput
+): RetirementPlan {
   const yearsRemaining = Math.max(
-    input.expectedRetirementAge - input.currentAge,
+    input.expectedRetirementAge -
+      input.currentAge,
     0
   );
 
-  const months = yearsRemaining * 12;
+  const months =
+    Math.round(yearsRemaining * 12);
 
-  const annualReturn = Math.max(
-    input.annualReturnPct,
-    0
-  ) / 100;
+  const annualReturn =
+    Math.max(
+      input.annualReturnPct,
+      0
+    ) / 100;
 
   const monthlyRate =
     annualReturn / 12;
 
-  const inflationRate = Math.max(
-    input.inflationPct,
-    0
-  ) / 100;
+  const inflationRate =
+    Math.max(
+      input.inflationPct,
+      0
+    ) / 100;
 
-  const monthlyInvestment = Math.max(
-    input.monthlyInvestment,
-    0
-  );
+  const currentAssets =
+    Math.max(
+      input.currentAssets,
+      0
+    );
 
-  const currentAssets = Math.max(
-    input.currentAssets,
-    0
-  );
+  const monthlyInvestment =
+    Math.max(
+      input.monthlyInvestment,
+      0
+    );
 
-  const targetMonthlyIncome = Math.max(
-    input.targetMonthlyIncome,
-    0
-  );
+  const targetMonthlyIncome =
+    Math.max(
+      input.targetMonthlyIncome,
+      0
+    );
 
+  // -------------------------------------------------------------------------
+  // Future value
+  // -------------------------------------------------------------------------
 
-  // --------------------------------------------------
-  // Future value of existing assets + contributions
-  // --------------------------------------------------
+  let futureValue =
+    currentAssets;
 
-  let futureValue = currentAssets;
-
-  if(months > 0){
-
-    if(monthlyRate > 0){
-
+  if (months > 0) {
+    if (monthlyRate === 0) {
+      futureValue =
+        currentAssets +
+        monthlyInvestment * months;
+    } else {
       futureValue =
         currentAssets *
         Math.pow(
           1 + monthlyRate,
           months
-        )
-        +
+        ) +
         monthlyInvestment *
         (
           (
@@ -635,45 +387,31 @@ export function buildRetirementPlan(
               1 + monthlyRate,
               months
             ) - 1
-          )
-          /
+          ) /
           monthlyRate
         );
-
-    } else {
-
-      futureValue =
-        currentAssets +
-        monthlyInvestment * months;
-
     }
-
   }
 
+  futureValue =
+    Math.round(futureValue);
 
-  futureValue = Math.round(
-    futureValue
-  );
-
-
-  // --------------------------------------------------
-  // Retirement income estimate
-  // --------------------------------------------------
+  // -------------------------------------------------------------------------
+  // Withdrawal assumption
+  // -------------------------------------------------------------------------
 
   const annualWithdrawalRate = 0.04;
 
   const monthlyIncomeDuringRetirement =
     Math.round(
-      (
-        futureValue *
-        annualWithdrawalRate
-      ) / 12
+      futureValue *
+      annualWithdrawalRate /
+      12
     );
 
-
-  // --------------------------------------------------
-  // Inflation-adjusted target
-  // --------------------------------------------------
+  // -------------------------------------------------------------------------
+  // Inflation-adjusted retirement target
+  // -------------------------------------------------------------------------
 
   const futureMonthlyIncomeTarget =
     targetMonthlyIncome *
@@ -682,107 +420,67 @@ export function buildRetirementPlan(
       yearsRemaining
     );
 
-
   const targetRetirementCapital =
     futureMonthlyIncomeTarget *
     12 /
     annualWithdrawalRate;
 
+  // -------------------------------------------------------------------------
+  // Required contribution
+  // -------------------------------------------------------------------------
 
-  // --------------------------------------------------
-  // Required monthly contribution
-  // --------------------------------------------------
+  const requiredMonthlyContribution =
+    calculateRequiredMonthlyContribution(
+      targetRetirementCapital,
+      currentAssets,
+      yearsRemaining,
+      input.annualReturnPct
+    );
 
-  let requiredMonthlyContribution = 0;
-
-  if(
-    targetRetirementCapital >
-    futureValue
-  ){
-
-    const remainingCapital =
-      targetRetirementCapital -
-      (
-        currentAssets *
-        Math.pow(
-          1 + monthlyRate,
-          months
-        )
-      );
-
-    if(months > 0){
-
-      if(monthlyRate > 0){
-
-        requiredMonthlyContribution =
-          remainingCapital *
-          monthlyRate /
-          (
-            Math.pow(
-              1 + monthlyRate,
-              months
-            ) - 1
-          );
-
-      } else {
-
-        requiredMonthlyContribution =
-          remainingCapital / months;
-
-      }
-
-    }
-
-  }
-
-  requiredMonthlyContribution = Math.max(
-    Math.round(requiredMonthlyContribution),
-    0
-  );
-
-
-  // --------------------------------------------------
+  // -------------------------------------------------------------------------
   // Scenario alternatives
-  // --------------------------------------------------
+  // -------------------------------------------------------------------------
 
   const scenarioReturns = [
     {
-      label:"שמרני",
-      annualReturnPct:5
+      label: "שמרני",
+      annualReturnPct: 5
     },
     {
-      label:"בסיס",
-      annualReturnPct:input.annualReturnPct
+      label: "בסיס",
+      annualReturnPct:
+        input.annualReturnPct
     },
     {
-      label:"צמיחה",
-      annualReturnPct:10
+      label: "צמיחה",
+      annualReturnPct: 10
     }
   ];
-
 
   const scenarioAlternatives =
     scenarioReturns.map(
       scenario => {
-
         const rate =
           scenario.annualReturnPct /
           100 /
           12;
 
-        let value = currentAssets;
+        let value =
+          currentAssets;
 
-        if(months > 0){
-
-          if(rate > 0){
-
+        if (months > 0) {
+          if (rate === 0) {
+            value =
+              currentAssets +
+              monthlyInvestment *
+              months;
+          } else {
             value =
               currentAssets *
               Math.pow(
                 1 + rate,
                 months
-              )
-              +
+              ) +
               monthlyInvestment *
               (
                 (
@@ -790,28 +488,22 @@ export function buildRetirementPlan(
                     1 + rate,
                     months
                   ) - 1
-                )
-                /
+                ) /
                 rate
               );
-
-          } else {
-
-            value =
-              currentAssets +
-              monthlyInvestment * months;
-
           }
-
         }
 
-        value = Math.round(value);
+        value =
+          Math.round(value);
 
         return {
-          label:scenario.label,
+          label:
+            scenario.label,
           annualReturnPct:
             scenario.annualReturnPct,
-          futureValue:value,
+          futureValue:
+            value,
           monthlyIncomeDuringRetirement:
             Math.round(
               value *
@@ -819,115 +511,73 @@ export function buildRetirementPlan(
               12
             )
         };
-
       }
     );
 
+  // -------------------------------------------------------------------------
+  // Educational progress indicator
+  // -------------------------------------------------------------------------
 
-  // --------------------------------------------------
-  // Success probability
-  // --------------------------------------------------
-
-  let probabilityOfSuccess = 0;
-
-  if(targetRetirementCapital > 0){
-
-    probabilityOfSuccess =
-      Math.round(
-        Math.min(
-          futureValue /
-          targetRetirementCapital *
-          100,
-          100
+  const probabilityOfSuccess =
+    targetRetirementCapital > 0
+      ? Math.round(
+          Math.min(
+            futureValue /
+              targetRetirementCapital *
+              100,
+            100
+          )
         )
-      );
+      : 100;
 
-  } else {
-
-    probabilityOfSuccess = 100;
-
-  }
-
-
-  // --------------------------------------------------
+  // -------------------------------------------------------------------------
   // Recommendations
-  // --------------------------------------------------
+  // -------------------------------------------------------------------------
 
-  const recommendations:string[] = [];
+  const recommendations: string[] = [];
 
-
-  if(
-    yearsRemaining >= 20
-  ){
-
+  if (yearsRemaining >= 20) {
     recommendations.push(
       "אופק השקעה ארוך מאפשר לריבית דריבית להיות מנוע מרכזי בבניית ההון."
     );
-
-  } else if(
-    yearsRemaining > 0
-  ){
-
+  } else if (yearsRemaining > 0) {
     recommendations.push(
       "אופק ההשקעה משמעותי, ולכן עקביות בהפקדות יכולה להשפיע מהותית על התוצאה."
     );
-
   } else {
-
     recommendations.push(
       "יש לבחון מחדש את יעד הפרישה ואת מקורות ההכנסה הצפויים."
     );
-
   }
 
-
-  if(
+  if (
     monthlyInvestment <
     requiredMonthlyContribution
-  ){
-
+  ) {
     recommendations.push(
       "הגדלת ההפקדה החודשית עשויה לשפר את הסיכוי להגיע ליעד."
     );
-
   } else {
-
     recommendations.push(
       "רמת ההפקדה הנוכחית תואמת או עולה על ההפקדה המחושבת לפי ההנחות."
     );
-
   }
-
 
   recommendations.push(
     "התרחיש הוא הדמיה חינוכית המבוססת על תשואה והנחות אינפלציה ואינו מהווה הבטחת תשואה."
   );
 
-
   return {
-
     yearsRemaining,
-
     currentAssets,
-
     monthlyInvestment,
-
     futureValue,
-
     futureMonthlyIncomeTarget,
-
     targetRetirementCapital,
-
     requiredMonthlyContribution,
-
     monthlyIncomeDuringRetirement,
-
     probabilityOfSuccess,
-
     scenarioAlternatives,
-
     recommendations
-
   };
-
 }

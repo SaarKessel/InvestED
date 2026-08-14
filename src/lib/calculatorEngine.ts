@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// InvestED — Smart Financial Scenario Engine v9
+// InvestED — Smart Financial Scenario Engine v11
 // Educational Financial Simulation Engine
 // ---------------------------------------------------------------------------
 
@@ -7,45 +7,67 @@ import type {
   FinancialScenario
 } from "@/types";
 
-
 export type {
   FinancialScenario
 } from "@/types";
 
+// ---------------------------------------------------------------------------
+// Retirement Planning Constants
+// ---------------------------------------------------------------------------
+
+/**
+ * Educational retirement withdrawal-rate assumption.
+ *
+ * Example:
+ * 10,000 ₪ monthly income
+ * × 12 months
+ * ÷ 4%
+ * = 3,000,000 ₪ target capital
+ *
+ * The target is then inflation-adjusted to the retirement date.
+ *
+ * Example:
+ * 3,000,000 ₪
+ * × (1 + 2.5%) ^ 13
+ * ≈ 4,135,533 ₪
+ *
+ * This is an educational simulation assumption, not financial advice.
+ */
+export const DEFAULT_WITHDRAWAL_RATE_PCT = 4;
+
+/**
+ * Educational inflation assumption used by InvestED.
+ *
+ * Option B:
+ * Retirement income target is expressed in today's money,
+ * then inflated to the future retirement date.
+ */
+export const DEFAULT_INFLATION_PCT = 2.5;
 
 // ---------------------------------------------------------------------------
 // Asset Classes
 // ---------------------------------------------------------------------------
 
 export interface AssetClassOption {
-
-  key:string;
-
-  label:string;
-
-  expectedReturnPct:number;
-
-  annualReturnPct:number;
-
-  keywords:string[];
-
-  description:string;
-
+  key: string;
+  label: string;
+  expectedReturnPct: number;
+  annualReturnPct: number;
+  keywords: string[];
+  description: string;
 }
 
-
-
-export const ASSET_CLASSES:AssetClassOption[] = [
-
+export const ASSET_CLASSES: AssetClassOption[] = [
   {
-    key:"sp500",
-    label:"מדד S&P 500",
-    expectedReturnPct:10,
-    annualReturnPct:10,
-    keywords:[
+    key: "sp500",
+    label: "מדד S&P 500",
+    expectedReturnPct: 10,
+    annualReturnPct: 10,
+    keywords: [
       "s&p",
       "sp500",
       "s&p500",
+      "s and p",
       "סנופי",
       "אס אנד פי"
     ],
@@ -53,13 +75,12 @@ export const ASSET_CLASSES:AssetClassOption[] = [
       "מדד רחב הכולל חברות גדולות בארה״ב."
   },
 
-
   {
-    key:"world",
-    label:"מדד עולמי",
-    expectedReturnPct:8,
-    annualReturnPct:8,
-    keywords:[
+    key: "world",
+    label: "מדד עולמי",
+    expectedReturnPct: 8,
+    annualReturnPct: 8,
+    keywords: [
       "world",
       "msci",
       "עולמי",
@@ -69,31 +90,32 @@ export const ASSET_CLASSES:AssetClassOption[] = [
       "פיזור בין שווקים בינלאומיים."
   },
 
-
   {
-    key:"nasdaq",
-    label:"Nasdaq",
-    expectedReturnPct:11,
-    annualReturnPct:11,
-    keywords:[
+    key: "nasdaq",
+    label: "Nasdaq",
+    expectedReturnPct: 11,
+    annualReturnPct: 11,
+    keywords: [
       "nasdaq",
       "נאסדק",
-      "טכנולוגיה",
-      "הייטק"
+      "נאסד״ק",
+      "נאסדק 100",
+      "נאסד״ק 100"
     ],
     description:
       "חשיפה גבוהה לחברות טכנולוגיה."
   },
 
-
   {
-    key:"bonds",
-    label:"אג״ח",
-    expectedReturnPct:3,
-    annualReturnPct:3,
-    keywords:[
+    key: "bonds",
+    label: "אג״ח",
+    expectedReturnPct: 3,
+    annualReturnPct: 3,
+    keywords: [
       "אגח",
       "אג״ח",
+      "bonds",
+      "bond",
       "סולידי",
       "יציבות",
       "בטוח"
@@ -102,13 +124,12 @@ export const ASSET_CLASSES:AssetClassOption[] = [
       "אפיק בעל תנודתיות נמוכה יחסית."
   },
 
-
   {
-    key:"balanced",
-    label:"תיק מאוזן",
-    expectedReturnPct:7,
-    annualReturnPct:7,
-    keywords:[
+    key: "balanced",
+    label: "תיק מאוזן",
+    expectedReturnPct: 7,
+    annualReturnPct: 7,
+    keywords: [
       "מאוזן",
       "פיזור",
       "תיק",
@@ -117,187 +138,163 @@ export const ASSET_CLASSES:AssetClassOption[] = [
     description:
       "שילוב בין מספר סוגי נכסים."
   }
-
 ];
-
 
 // ---------------------------------------------------------------------------
 // Parsed Query
 // ---------------------------------------------------------------------------
 
+export type TargetAmountSource =
+  | "explicit"
+  | "retirement_income"
+  | "none";
+
 export interface ParsedQuery {
-
-  age:number|null;
-
-  years:number;
-
-  monthlyContribution:number;
-
-  principal:number;
-
-  targetAmount:number|null;
-
-  targetMonthlyIncome:number|null;
-
-  assetClassKey:string;
-
+  age: number | null;
+  years: number;
+  monthlyContribution: number;
+  principal: number;
+  targetAmount: number | null;
+  targetMonthlyIncome: number | null;
+  assetClassKey: string;
+  targetAmountSource: TargetAmountSource;
 }
-
 
 // ---------------------------------------------------------------------------
 // Text Helpers
 // ---------------------------------------------------------------------------
 
-function normalizeText(text:string):string {
-
+function normalizeText(text: string): string {
   return text
     .toLowerCase()
-    .replace(/,/g,"")
-    .replace(/₪/g,"")
-    .replace(/\s+/g," ")
+    .replace(/₪/g, "")
+    .replace(/\s+/g, " ")
     .trim();
-
 }
-
 
 // ---------------------------------------------------------------------------
 // Asset Detection
 // ---------------------------------------------------------------------------
 
-function detectAssetClass(
-  text:string
-):string {
+function detectAssetClass(text: string): string {
+  const normalized = normalizeText(text);
 
-  const normalized = normalizeText(text)
-    .toLowerCase();
-
-  // S&P 500
-  if(
+  if (
     normalized.includes("s&p") ||
     normalized.includes("sp500") ||
     normalized.includes("s and p") ||
     normalized.includes("אס אנד פי") ||
-    normalized.includes("אס אנד פי 500")
-  ){
+    normalized.includes("סנופי")
+  ) {
     return "sp500";
   }
 
-  // Nasdaq - require an explicit Nasdaq reference.
-  // Do NOT classify generic "technology" as Nasdaq.
-  if(
+  if (
     normalized.includes("nasdaq") ||
     normalized.includes("נאסדק") ||
-    normalized.includes("נאסד״ק") ||
-    normalized.includes("נאסדק 100") ||
-    normalized.includes("נאסד״ק 100")
-  ){
+    normalized.includes("נאסד״ק")
+  ) {
     return "nasdaq";
   }
 
-  // Bonds
-  if(
+  if (
     normalized.includes("אגח") ||
     normalized.includes("אג״ח") ||
     normalized.includes("bonds") ||
     normalized.includes("bond")
-  ){
+  ) {
     return "bonds";
   }
 
-  // World / global
-  if(
+  if (
     normalized.includes("world") ||
     normalized.includes("msci world") ||
     normalized.includes("עולמי") ||
     normalized.includes("גלובלי")
-  ){
+  ) {
     return "world";
   }
 
-  // Balanced is the safe default.
   return "balanced";
 }
-
-
 
 // ---------------------------------------------------------------------------
 // Amount Parser
 // ---------------------------------------------------------------------------
 
 function parseAmount(
-  value:number,
-  unit:string
-):number {
-
+  value: number,
+  unit: string
+): number {
   const normalized = unit
     .toLowerCase()
     .trim();
 
-  if(
+  if (
     normalized === "k" ||
     normalized === "אלף"
-  ){
-    return value * 1000;
+  ) {
+    return value * 1_000;
   }
 
-  if(
+  if (
     normalized === "m" ||
     normalized === "million" ||
     normalized === "מיליון" ||
     normalized === "מליון"
-  ){
-    return value * 1000000;
+  ) {
+    return value * 1_000_000;
   }
 
   return value;
 }
 
-
-
 // ---------------------------------------------------------------------------
-// Advanced Amount Detection v9
+// Advanced Amount Detection
 // ---------------------------------------------------------------------------
 
-function detectAmount(text:string):number {
-
+function detectAmount(text: string): number {
   const normalized = normalizeText(text)
     .replace(/,/g, "");
 
-  // Hebrew natural-language amounts
-  if(
+  // Hebrew natural language
+  if (
     normalized.includes("חצי מיליון") ||
     normalized.includes("חצי מליון")
-  ){
-    return 500000;
+  ) {
+    return 500_000;
   }
 
-  if(
+  if (
     normalized.includes("מיליון וחצי") ||
     normalized.includes("מליון וחצי")
-  ){
-    return 1500000;
+  ) {
+    return 1_500_000;
   }
 
-  if(
+  if (
     normalized.includes("שני מיליון") ||
     normalized.includes("שני מליון")
-  ){
-    return 2000000;
+  ) {
+    return 2_000_000;
   }
 
-  if(
+  if (
     normalized.includes("רבע מיליון") ||
     normalized.includes("רבע מליון")
-  ){
-    return 250000;
+  ) {
+    return 250_000;
   }
 
-  // English natural-language amounts
-  const englishMillion =
-    normalized.match(/(\d+(?:\.\d+)?)\s*million\b/i);
+  // English natural language
+  const englishMillion = normalized.match(
+    /(\d+(?:\.\d+)?)\s*million\b/i
+  );
 
-  if(englishMillion){
-    return Math.round(Number(englishMillion[1]) * 1000000);
+  if (englishMillion) {
+    return Math.round(
+      Number(englishMillion[1]) * 1_000_000
+    );
   }
 
   // Numeric amounts with units
@@ -310,12 +307,10 @@ function detectAmount(text:string):number {
     /(\d{5,})/
   ];
 
-  for(const pattern of patterns){
-
+  for (const pattern of patterns) {
     const match = normalized.match(pattern);
 
-    if(match){
-
+    if (match) {
       return Math.round(
         parseAmount(
           Number(match[1].replace(/,/g, "")),
@@ -328,16 +323,13 @@ function detectAmount(text:string):number {
   return 0;
 }
 
-
-
 // ---------------------------------------------------------------------------
-// Initial Investment Detection FIXED
+// Initial Investment Detection
 // ---------------------------------------------------------------------------
 
 function detectInitialAmount(
-  text:string
-):number {
-
+  text: string
+): number {
   const normalized = normalizeText(text);
 
   const hasInitialCapital =
@@ -347,7 +339,10 @@ function detectInitialAmount(
     normalized.includes("הון") ||
     normalized.includes("השקעתי") ||
     normalized.includes("מחזיק") ||
-    normalized.includes("קיים לי");
+    normalized.includes("קיים לי") ||
+    normalized.includes("initial") ||
+    normalized.includes("starting capital") ||
+    normalized.includes("initial investment");
 
   const onlyMonthlyContext =
     normalized.includes("בחודש") ||
@@ -355,16 +350,18 @@ function detectInitialAmount(
     normalized.includes("כל חודש") ||
     normalized.includes("מפקיד") ||
     normalized.includes("חוסך") ||
-    normalized.includes("מפריש");
+    normalized.includes("מפריש") ||
+    normalized.includes("per month") ||
+    normalized.includes("monthly");
 
-  if(
+  if (
     onlyMonthlyContext &&
     !hasInitialCapital
-  ){
+  ) {
     return 0;
   }
 
-  if(
+  if (
     hasInitialCapital ||
     normalized.includes("חצי מיליון") ||
     normalized.includes("חצי מליון") ||
@@ -372,61 +369,189 @@ function detectInitialAmount(
     normalized.includes("מליון וחצי") ||
     normalized.includes("רבע מיליון") ||
     normalized.includes("רבע מליון")
-  ){
+  ) {
     return detectAmount(text);
   }
 
   return 0;
 }
+
+// ---------------------------------------------------------------------------
+// Target Monthly Income Detection
+// ---------------------------------------------------------------------------
+
+function detectTargetMonthlyIncome(
+  text: string
+): number | null {
+  const normalized = normalizeText(text);
+
+  const retirementContext =
+    normalized.includes("פרישה") ||
+    normalized.includes("לפרוש") ||
+    normalized.includes("פורש") ||
+    normalized.includes("חופש כלכלי") ||
+    normalized.includes("עצמאות כלכלית") ||
+    normalized.includes("retire") ||
+    normalized.includes("retirement");
+
+  if (!retirementContext) {
+    return null;
+  }
+
+  const patterns = [
+    /(?:הכנסה|הכנסה חודשית|להכנסה)\s*(?:של\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)/i,
+
+    /(?:רוצה|לקבל)\s*(?:לקבל\s*)?(?:הכנסה\s*)?(?:של\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)/i,
+
+    /(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)\s*(?:בפרישה|לאחר הפרישה)/i,
+
+    /(?:בפרישה|לאחר הפרישה)\s*(?:עם\s*)?(?:הכנסה\s*)?(?:של\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)/i
+  ];
+
+  for (const pattern of patterns) {
+    const match = normalized.match(pattern);
+
+    if (!match) {
+      continue;
+    }
+
+    const value = Number(
+      match[1].replace(/,/g, "")
+    );
+
+    if (
+      !Number.isFinite(value) ||
+      value <= 0
+    ) {
+      continue;
+    }
+
+    return Math.round(
+      parseAmount(
+        value,
+        match[2] ?? ""
+      )
+    );
+  }
+
+  return null;
+}
+
 // ---------------------------------------------------------------------------
 // Monthly Contribution Detection
 // ---------------------------------------------------------------------------
 
 function detectMonthlyContribution(
-  text:string
-):number {
+  text: string
+): number {
+  const normalized = normalizeText(text);
 
-  const normalized =
-    normalizeText(text);
+  // Retirement income must never be interpreted
+  // as monthly investment contribution.
+  const retirementIncomePatterns = [
+    /(?:הכנסה|הכנסה חודשית|להכנסה)\s*(?:של\s*)?\d[\d,]*(?:\.\d+)?\s*(?:k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)/i,
+
+    /(?:רוצה|לקבל)\s*(?:לקבל\s*)?(?:הכנסה\s*)?(?:של\s*)?\d[\d,]*(?:\.\d+)?\s*(?:k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש)/i,
+
+    /\d[\d,]*(?:\.\d+)?\s*(?:k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)\s*(?:בפרישה|לאחר הפרישה)/i,
+
+    /(?:בפרישה|לאחר הפרישה)\s*(?:עם\s*)?(?:הכנסה\s*)?(?:של\s*)?\d[\d,]*(?:\.\d+)?\s*(?:k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)/i
+  ];
+
+  for (const pattern of retirementIncomePatterns) {
+    if (pattern.test(normalized)) {
+      // Do NOT return here if the query also contains
+      // an explicit contribution elsewhere.
+      //
+      // Instead, continue searching for a true contribution.
+      break;
+    }
+  }
 
   const patterns = [
+    /(\d[\d,]*(?:\.\d+)?)\s*(?:שקל)?\s*(?:בחודש|לחודש|כל חודש)/i,
 
-    // Hebrew: 10,000 שקל בחודש / 10000 בחודש
-    /(\d[\d,]*(?:\.\d+)?)\s*(?:שקל|₪)?\s*(?:בחודש|לחודש|כל חודש)/i,
+    /(\d+(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)\s*(?:שקל)?\s*(?:בחודש|לחודש|כל חודש)/i,
 
-    // Hebrew with amount unit: 150K בחודש / 150 אלף בחודש
-    /(\d+(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)\s*(?:שקל|₪)?\s*(?:בחודש|לחודש|כל חודש)/i,
-
-    // English: 10k per month / 10,000 per month
     /(\d[\d,]*(?:\.\d+)?)\s*(k|m)?\s*(?:per month|monthly|a month)/i,
 
-    // English verb forms: invest 10000 monthly / contribute 10k per month
     /(?:invest|contribute|deposit|save)\s+(\d[\d,]*(?:\.\d+)?)\s*(k|m)?\s*(?:per month|monthly|a month)?/i,
 
-    // Hebrew verbs: מפקיד 10,000 / חוסך 10k / מפריש 5 אלף
     /(?:מפקיד|מוסיף|מפריש|חוסך)\s*(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?/i
   ];
 
-  for(const pattern of patterns){
+  /*
+   * Important:
+   * Search all matches and prefer explicit contribution verbs
+   * over generic "income ... per month" matches.
+   */
 
-    const match =
-      normalized.match(pattern);
+  const contributionVerbPattern =
+    /(?:מפקיד|מוסיף|מפריש|חוסך|invest|contribute|deposit|save)\s*(?:של\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?/i;
 
-    if(match){
+  const contributionVerbMatch =
+    normalized.match(
+      contributionVerbPattern
+    );
 
-      const value =
-        Number(
-          String(match[1]).replace(/,/g, "")
-        );
+  if (contributionVerbMatch) {
+    const value = Number(
+      contributionVerbMatch[1]
+        .replace(/,/g, "")
+    );
 
-      const unit =
-        match[2] ?? "";
-
+    if (
+      Number.isFinite(value) &&
+      value > 0
+    ) {
       return Math.round(
-        parseAmount(value, unit)
+        parseAmount(
+          value,
+          contributionVerbMatch[2] ?? ""
+        )
       );
-
     }
+  }
+
+  /*
+   * Generic monthly amount.
+   *
+   * We explicitly avoid amounts that belong to retirement income.
+   */
+  for (const pattern of patterns) {
+    const match = normalized.match(pattern);
+
+    if (!match) {
+      continue;
+    }
+
+    const matchedText = match[0];
+
+    const looksLikeRetirementIncome =
+      /הכנסה|בפרישה|לאחר הפרישה|retirement|retire/i
+        .test(matchedText);
+
+    if (looksLikeRetirementIncome) {
+      continue;
+    }
+
+    const value = Number(
+      String(match[1]).replace(/,/g, "")
+    );
+
+    if (
+      !Number.isFinite(value) ||
+      value <= 0
+    ) {
+      continue;
+    }
+
+    return Math.round(
+      parseAmount(
+        value,
+        match[2] ?? ""
+      )
+    );
   }
 
   return 0;
@@ -437,328 +562,313 @@ function detectMonthlyContribution(
 // ---------------------------------------------------------------------------
 
 function detectAge(
-  text:string
-):number|null {
-
-
-  const match =
-    text.match(
-      /(?:אני\s*)?(?:בן|בת)\s*(\d+)/i
-    );
-
+  text: string
+): number | null {
+  const match = text.match(
+    /(?:אני\s*)?(?:בן|בת)\s*(\d+)/i
+  );
 
   return match
     ? Number(match[1])
     : null;
-
 }
-
-
 
 // ---------------------------------------------------------------------------
 // Target Age Detection
 // ---------------------------------------------------------------------------
 
 function detectTargetAge(
-  text:string
-):number|null {
-
-
-  const normalized =
-    normalizeText(text);
-
-
+  text: string
+): number | null {
+  const normalized = normalizeText(text);
 
   const patterns = [
-
     /עד\s*גיל\s*(\d+)/i,
-
     /בגיל\s*(\d+)/i,
-
-    /פורש\s*בגיל\s*(\d+)/i
-
+    /פורש\s*בגיל\s*(\d+)/i,
+    /לפרוש\s*בגיל\s*(\d+)/i,
+    /פרישה\s*בגיל\s*(\d+)/i,
+    /retire\s*(?:at|by)\s*(\d+)/i,
+    /retirement\s*(?:at|by)\s*(\d+)/i
   ];
 
+  for (const pattern of patterns) {
+    const match = normalized.match(pattern);
 
-
-  for(const pattern of patterns){
-
-
-    const match =
-      normalized.match(pattern);
-
-
-
-    if(match){
-
+    if (match) {
       return Number(match[1]);
-
     }
-
   }
 
-
-
   return null;
-
 }
 
-
-
 // ---------------------------------------------------------------------------
-// Years Detection FIXED
+// Years Detection
 // ---------------------------------------------------------------------------
 
 function detectYears(
-  text:string,
-  age:number|null,
-  targetAge:number|null
-):number {
+  text: string,
+  age: number | null,
+  targetAge: number | null
+): number {
+  const normalized = normalizeText(text);
 
-  const normalized =
-    normalizeText(text);
+  const futureMatch = normalized.match(
+    /בעוד\s*(\d+)\s*(?:שנה|שנים)/i
+  );
 
-  // Hebrew future period
-  const futureMatch =
-    normalized.match(
-      /בעוד\s*(\d+)\s*(?:שנה|שנים)/i
-    );
-
-  if(futureMatch){
+  if (futureMatch) {
     return Number(futureMatch[1]);
   }
 
-  // Hebrew explicit duration
-  const explicitMatch =
-    normalized.match(
-      /(?:למשך|תקופה של|ל-?|ל)\s*(\d+)\s*(?:שנה|שנים)/i
-    );
+  const explicitMatch = normalized.match(
+    /(?:למשך|תקופה של|ל-?)\s*(\d+)\s*(?:שנה|שנים)/i
+  );
 
-  if(explicitMatch){
+  if (explicitMatch) {
     return Number(explicitMatch[1]);
   }
 
-  // English explicit duration:
-  // for 15 years
-  // over 15 years
-  // for a period of 15 years
-  // 15 years
-  const englishExplicitMatch =
-    normalized.match(
-      /(?:for|over|during|within|period of)\s*(?:a\s+)?(?:period\s+of\s*)?(\d+)\s*years?/i
-    );
+  const englishExplicitMatch = normalized.match(
+    /(?:for|over|during|within|period of)\s*(?:a\s+)?(?:period\s+of\s*)?(\d+)\s*years?/i
+  );
 
-  if(englishExplicitMatch){
+  if (englishExplicitMatch) {
     return Number(englishExplicitMatch[1]);
   }
 
-  // Generic English year expression
-  const englishSimpleMatch =
-    normalized.match(
-      /(\d+)\s*years?/i
-    );
+  const englishSimpleMatch = normalized.match(
+    /(\d+)\s*years?/i
+  );
 
-  if(englishSimpleMatch){
+  if (englishSimpleMatch) {
     return Number(englishSimpleMatch[1]);
   }
 
-  // Generic Hebrew year expression
-  const simpleMatch =
-    normalized.match(
-      /(\d+)\s*(?:שנה|שנים)/i
-    );
+  const simpleMatch = normalized.match(
+    /(\d+)\s*(?:שנה|שנים)/i
+  );
 
-  if(simpleMatch){
+  if (simpleMatch) {
     return Number(simpleMatch[1]);
   }
 
-  // Calculate years from current age to target age
-  if(
+  if (
     age !== null &&
     targetAge !== null
-  ){
+  ) {
     return Math.max(
       targetAge - age,
       1
     );
   }
 
-  // Default planning horizon
   return 10;
 }
 
 // ---------------------------------------------------------------------------
-// Target Amount Detection FIXED
+// Explicit Financial Target Detection
 // ---------------------------------------------------------------------------
 
-function detectTargetAmount(
-  text:string
-):number|null {
-
-  const normalized = normalizeText(text)
-    .replace(/,/g, "");
-
-  // Natural-language Hebrew targets
-  if(
-    normalized.includes("להגיע לחצי מיליון") ||
-    normalized.includes("יעד של חצי מיליון") ||
-    normalized.includes("מטרה של חצי מיליון")
-  ){
-    return 500000;
-  }
-
-  if(
-    normalized.includes("להגיע למיליון וחצי") ||
-    normalized.includes("להגיע למליון וחצי") ||
-    normalized.includes("יעד של מיליון וחצי") ||
-    normalized.includes("מטרה של מיליון וחצי")
-  ){
-    return 1500000;
-  }
-
-  // English target phrases
-  const englishMillion =
-    normalized.match(
-      /(?:retire|reach|goal|with)\s+(?:with\s+)?(\d+(?:\.\d+)?)\s*million\b/i
-    );
-
-  if(englishMillion){
-    return Math.round(
-      Number(englishMillion[1]) * 1000000
-    );
-  }
-
-  const englishNumeric =
-    normalized.match(
-      /(?:retire|reach|goal|with)\s+(?:with\s+)?(\d+(?:\.\d+)?)\s*(k|m)\b/i
-    );
-
-  if(englishNumeric){
-    return parseAmount(
-      Number(englishNumeric[1]),
-      englishNumeric[2]
-    );
-  }
-
-  const targetPatterns = [
-
-    /להגיע\s*(?:ל)?\s*(\d+(?:\.\d+)?)\s*(מיליון|מליון|אלף|m|k)?/i,
-
-    /יעד\s*(?:של)?\s*(\d+(?:\.\d+)?)\s*(מיליון|מליון|אלף|m|k)?/i,
-
-    /מטרה\s*(?:של)?\s*(\d+(?:\.\d+)?)\s*(מיליון|מליון|אלף|m|k)?/i
-  ];
-
-  for(const pattern of targetPatterns){
-
-    const match = normalized.match(pattern);
-
-    if(match){
-
-      return parseAmount(
-        Number(match[1]),
-        match[2] ?? ""
-      );
-    }
-  }
-
-  return null;
-}
-
-
-// ---------------------------------------------------------------------------
-// Retirement Monthly Income Detection
-// ---------------------------------------------------------------------------
-
-function detectTargetMonthlyIncome(
-  text:string
-):number|null {
-
-  const normalized =
-    normalizeText(text);
-
-  // Only activate this parser when the scenario
-  // clearly refers to retirement / financial independence.
-  const retirementContext =
-    normalized.includes("פרישה") ||
-    normalized.includes("לפרוש") ||
-    normalized.includes("פורש") ||
-    normalized.includes("חופש כלכלי") ||
-    normalized.includes("עצמאות כלכלית") ||
-    normalized.includes("retire") ||
-    normalized.includes("retirement");
-
-  if(!retirementContext){
-    return null;
-  }
-
-
-  // Examples:
-  // 15 אלף בחודש בפרישה
-  // 15000 בחודש בפרישה
-  // הכנסה של 12000 בפרישה
-  // רוצה 10K בחודש בפרישה
-  // 15,000 ₪ בחודש
+function detectExplicitTargetAmount(
+  text: string
+): number | null {
+  const normalized = normalizeText(text);
 
   const patterns = [
+    /(?:יעד|מטרה)\s*(?:של\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?/i,
 
-    /(?:הכנסה|להכנסה|הכנסה חודשית|לקבל|לקבל\s+בחודש|רוצה)\s*(?:של\s*)?(\d+(?:\.\d+)?)\s*(אלף|k|מיליון|מליון)?\s*(?:₪|שקל)?\s*(?:בחודש|לחודש)/,
+    /(?:להגיע|להגיע ל|להגיע ל־|להגיע ל-)\s*(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?/i,
 
-    /(\d+(?:\.\d+)?)\s*(אלף|k|מיליון|מליון)\s*(?:₪|שקל)?\s*(?:בחודש|לחודש)/,
+    /(?:רוצה|צריך)\s*(?:להגיע\s*)?(?:ל\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?/i,
 
-    /(\d{4,})\s*(?:₪|שקל)?\s*(?:בחודש|לחודש)/,
-
-    /(?:בחודש|לחודש)\s*(?:של\s*)?(\d+(?:\.\d+)?)\s*(אלף|k|מיליון|מליון)?/
+    /(?:target|goal)\s*(?:of\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|million)?/i
   ];
 
+  for (const pattern of patterns) {
+    const match = normalized.match(pattern);
 
-  for(const pattern of patterns){
-
-    const match =
-      normalized.match(pattern);
-
-    if(!match){
+    if (!match) {
       continue;
     }
 
-    const value =
-      Number(
-        match[1].replace(/,/g, "")
-      );
+    const value = Number(
+      match[1].replace(/,/g, "")
+    );
 
-    if(!Number.isFinite(value) || value <= 0){
+    if (
+      !Number.isFinite(value) ||
+      value <= 0
+    ) {
       continue;
     }
-
-    const unit =
-      match[2] ?? "";
 
     return Math.round(
       parseAmount(
         value,
-        unit
+        match[2] ?? ""
       )
     );
-
   }
 
-
   return null;
-
 }
 
+// ---------------------------------------------------------------------------
+// Retirement Target Capital
+// ---------------------------------------------------------------------------
+
+/**
+ * Calculates the retirement capital required in TODAY'S money.
+ *
+ * Example:
+ * 10,000 ₪ × 12 ÷ 4% = 3,000,000 ₪
+ */
+export function calculateBaseRetirementTargetAmount(
+  targetMonthlyIncome: number,
+  withdrawalRatePct: number = DEFAULT_WITHDRAWAL_RATE_PCT
+): number | null {
+  if (
+    !Number.isFinite(targetMonthlyIncome) ||
+    targetMonthlyIncome <= 0
+  ) {
+    return null;
+  }
+
+  if (
+    !Number.isFinite(withdrawalRatePct) ||
+    withdrawalRatePct <= 0
+  ) {
+    return null;
+  }
+
+  const annualIncome =
+    targetMonthlyIncome * 12;
+
+  const withdrawalRate =
+    withdrawalRatePct / 100;
+
+  return Math.round(
+    annualIncome / withdrawalRate
+  );
+}
+
+/**
+ * Calculates the inflation-adjusted retirement target.
+ *
+ * Option B:
+ *
+ * today's target capital
+ * × (1 + inflation) ^ years
+ *
+ * Example:
+ *
+ * 3,000,000 × 1.025^13
+ * = 4,135,533 ₪
+ */
+export function calculateRetirementTargetAmount(
+  targetMonthlyIncome: number,
+  years: number,
+  withdrawalRatePct: number = DEFAULT_WITHDRAWAL_RATE_PCT,
+  inflationPct: number = DEFAULT_INFLATION_PCT
+): number | null {
+  const baseTarget =
+    calculateBaseRetirementTargetAmount(
+      targetMonthlyIncome,
+      withdrawalRatePct
+    );
+
+  if (baseTarget === null) {
+    return null;
+  }
+
+  if (
+    !Number.isFinite(years) ||
+    years < 0
+  ) {
+    return baseTarget;
+  }
+
+  if (
+    !Number.isFinite(inflationPct) ||
+    inflationPct < 0
+  ) {
+    return baseTarget;
+  }
+
+  return Math.round(
+    baseTarget *
+    Math.pow(
+      1 + inflationPct / 100,
+      years
+    )
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Final Target Amount Resolution
+// ---------------------------------------------------------------------------
+
+function resolveTargetAmount(
+  text: string,
+  targetMonthlyIncome: number | null,
+  years: number
+): {
+  targetAmount: number | null;
+  source: TargetAmountSource;
+} {
+  // Priority 1:
+  // Explicit financial target supplied by the user.
+  //
+  // Explicit targets are NOT inflation-adjusted because
+  // the user explicitly supplied the target amount.
+  const explicitTarget =
+    detectExplicitTargetAmount(text);
+
+  if (
+    explicitTarget !== null &&
+    explicitTarget > 0
+  ) {
+    return {
+      targetAmount: explicitTarget,
+      source: "explicit"
+    };
+  }
+
+  // Priority 2:
+  // Retirement income → base capital target →
+  // inflation-adjusted future retirement target.
+  if (
+    targetMonthlyIncome !== null &&
+    targetMonthlyIncome > 0
+  ) {
+    return {
+      targetAmount:
+        calculateRetirementTargetAmount(
+          targetMonthlyIncome,
+          years
+        ),
+      source: "retirement_income"
+    };
+  }
+
+  return {
+    targetAmount: null,
+    source: "none"
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Goal Detection
 // ---------------------------------------------------------------------------
 
 function detectGoal(
-  text:string
-):string {
-
+  text: string
+): string {
   const normalized = normalizeText(text);
 
-  if(
+  if (
     normalized.includes("פרישה") ||
     normalized.includes("לפרוש") ||
     normalized.includes("פורש") ||
@@ -767,30 +877,28 @@ function detectGoal(
     normalized.includes("retire") ||
     normalized.includes("retirement") ||
     normalized.includes("עד גיל")
-  ){
+  ) {
     return "retirement";
   }
 
-  if(
+  if (
     normalized.includes("דירה") ||
     normalized.includes("בית") ||
     normalized.includes("הון עצמי")
-  ){
+  ) {
     return "home";
   }
 
-  if(
+  if (
     normalized.includes("ילד") ||
     normalized.includes("ילדים") ||
     normalized.includes("לימודים")
-  ){
+  ) {
     return "child";
   }
 
   return "growth";
 }
-
-
 
 // ---------------------------------------------------------------------------
 // Risk Profile
@@ -801,52 +909,31 @@ export type RiskProfile =
   | "medium"
   | "high";
 
-
-
-
 function detectRiskProfile(
-  assetClassKey:string,
-  years:number
-):RiskProfile {
-
-
-  if(assetClassKey==="bonds"){
-
+  assetClassKey: string,
+  years: number
+): RiskProfile {
+  if (assetClassKey === "bonds") {
     return "low";
-
   }
 
-
-
-  if(assetClassKey==="balanced"){
-
+  if (assetClassKey === "balanced") {
     return "medium";
-
   }
 
-
-
-  if(
-    assetClassKey==="sp500" ||
-    assetClassKey==="nasdaq" ||
-    assetClassKey==="world"
-  ){
-
-    if(years >= 15){
-
+  if (
+    assetClassKey === "sp500" ||
+    assetClassKey === "nasdaq" ||
+    assetClassKey === "world"
+  ) {
+    if (years >= 15) {
       return "high";
-
     }
 
-
     return "medium";
-
   }
 
-
-
   return "medium";
-
 }
 
 // ---------------------------------------------------------------------------
@@ -854,69 +941,47 @@ function detectRiskProfile(
 // ---------------------------------------------------------------------------
 
 function calculateConfidence(
-
-  investment:number,
-
-  monthly:number,
-
-  age:number|null,
-
-  years:number,
-
-  asset:string
-
-):number {
-
-
+  investment: number,
+  monthly: number,
+  age: number | null,
+  years: number,
+  asset: string,
+  targetAmount: number | null,
+  targetMonthlyIncome: number | null
+): number {
   let score = 0;
 
-
-
-  if(investment > 0){
-
-    score += 25;
-
-  }
-
-
-
-  if(monthly > 0){
-
+  if (investment > 0) {
     score += 20;
-
   }
 
+  if (monthly > 0) {
+    score += 20;
+  }
 
-
-  if(age !== null){
-
+  if (age !== null) {
     score += 15;
-
   }
 
-
-
-  if(years > 0){
-
-    score += 25;
-
+  if (years > 0) {
+    score += 20;
   }
 
-
-
-  if(asset){
-
+  if (asset) {
     score += 15;
-
   }
 
-
+  if (
+    targetAmount !== null ||
+    targetMonthlyIncome !== null
+  ) {
+    score += 10;
+  }
 
   return Math.min(
     score,
     100
   );
-
 }
 
 // ---------------------------------------------------------------------------
@@ -924,19 +989,16 @@ function calculateConfidence(
 // ---------------------------------------------------------------------------
 
 export function analyzeFinancialScenario(
-  text:string
-):FinancialScenario {
-
-
+  text: string
+): FinancialScenario & {
+  targetAmountSource: TargetAmountSource;
+  withdrawalRatePct: number | null;
+} {
   const currentAge =
     detectAge(text);
 
-
-
   const targetAge =
     detectTargetAge(text);
-
-
 
   const years =
     detectYears(
@@ -945,80 +1007,64 @@ export function analyzeFinancialScenario(
       targetAge
     );
 
-
-
   const assetKey =
     detectAssetClass(text);
-
-
 
   const asset =
     ASSET_CLASSES.find(
       item =>
         item.key === assetKey
-    )
-    ??
+    ) ??
     ASSET_CLASSES.find(
       item =>
         item.key === "balanced"
     )!;
 
-
-
   const initialInvestment =
     detectInitialAmount(text);
-
-
 
   const monthlyContribution =
     detectMonthlyContribution(text);
 
-
-
-  const targetAmount =
-    detectTargetAmount(text);
-
-
   const targetMonthlyIncome =
     detectTargetMonthlyIncome(text);
 
+  const resolvedTarget =
+    resolveTargetAmount(
+      text,
+      targetMonthlyIncome,
+      years
+    );
 
+  const withdrawalRatePct =
+    resolvedTarget.source === "retirement_income"
+      ? DEFAULT_WITHDRAWAL_RATE_PCT
+      : null;
 
   return {
-
-
     initialInvestment,
-
 
     monthlyContribution,
 
-
     currentAge,
-
 
     targetAge,
 
-
-    targetAmount,
+    targetAmount:
+      resolvedTarget.targetAmount,
 
     targetMonthlyIncome,
 
-
     years,
-
 
     assetClassKey:
       asset.key,
 
-
     annualReturnPct:
       asset.expectedReturnPct,
 
-
     goal:
       detectGoal(text),
-
-
 
     riskProfile:
       detectRiskProfile(
@@ -1026,409 +1072,417 @@ export function analyzeFinancialScenario(
         years
       ),
 
-
-
     confidence:
       calculateConfidence(
         initialInvestment,
         monthlyContribution,
         currentAge,
         years,
-        asset.key
+        asset.key,
+        resolvedTarget.targetAmount,
+        targetMonthlyIncome
       ),
 
+    detectedInterests: [],
 
+    targetAmountSource:
+      resolvedTarget.source,
 
-    detectedInterests:[]
-
+    withdrawalRatePct
   };
-
-
 }
-
-
 
 // ---------------------------------------------------------------------------
 // Projection Engine
 // ---------------------------------------------------------------------------
 
 export interface ProjectionPoint {
-
-  year:number;
-
-  contributed:number;
-
-  balance:number;
-
+  year: number;
+  contributed: number;
+  balance: number;
 }
-
-
 
 export interface ProjectionResult {
-
-  finalBalance:number;
-
-  totalContributed:number;
-
-  growth:number;
-
-  realValueAfterInflation:number;
-
-  series:ProjectionPoint[];
-
+  finalBalance: number;
+  totalContributed: number;
+  growth: number;
+  realValueAfterInflation: number;
+  series: ProjectionPoint[];
 }
-
-
 
 // ---------------------------------------------------------------------------
 // Compute Projection
 // ---------------------------------------------------------------------------
 
 export function computeProjection(
-
-  principal:number,
-
-  monthlyContribution:number,
-
-  years:number,
-
-  annualReturnPct:number,
-
-  inflationPct:number = 3
-
-):ProjectionResult {
-
-
-
+  principal: number,
+  monthlyContribution: number,
+  years: number,
+  annualReturnPct: number,
+  inflationPct: number = DEFAULT_INFLATION_PCT
+): ProjectionResult {
   const monthlyRate =
     annualReturnPct / 100 / 12;
 
-
-
   const months =
-    years * 12;
-
-
+    Math.max(
+      0,
+      Math.round(years * 12)
+    );
 
   let balance =
-    principal;
-
-
+    Math.max(
+      0,
+      principal
+    );
 
   let contributed =
-    principal;
+    Math.max(
+      0,
+      principal
+    );
 
+  const safeMonthlyContribution =
+    Math.max(
+      0,
+      Number.isFinite(monthlyContribution)
+        ? monthlyContribution
+        : 0
+    );
 
-
-  const series:ProjectionPoint[] = [
-
+  const series: ProjectionPoint[] = [
     {
-
-      year:0,
-
+      year: 0,
       contributed:
         Math.round(contributed),
-
       balance:
         Math.round(balance)
-
     }
-
   ];
 
-
-
-  for(
+  for (
     let month = 1;
     month <= months;
     month++
-  ){
-
-
+  ) {
     balance =
       balance *
-      (1 + monthlyRate)
-      +
-      monthlyContribution;
-
-
+      (1 + monthlyRate) +
+      safeMonthlyContribution;
 
     contributed +=
-      monthlyContribution;
+      safeMonthlyContribution;
 
-
-
-    if(
+    if (
       month % 12 === 0
-    ){
-
+    ) {
       series.push({
-
         year:
           month / 12,
-
 
         contributed:
           Math.round(contributed),
 
-
         balance:
           Math.round(balance)
-
       });
-
     }
-
   }
 
-
+  const inflationFactor =
+    Math.pow(
+      1 + inflationPct / 100,
+      years
+    );
 
   return {
-
-
     finalBalance:
       Math.round(balance),
 
-
-
     totalContributed:
       Math.round(contributed),
-
-
 
     growth:
       Math.round(
         balance - contributed
       ),
 
-
-
     realValueAfterInflation:
       Math.round(
-        balance /
-        Math.pow(
-          1 + inflationPct / 100,
-          years
-        )
+        inflationFactor > 0
+          ? balance / inflationFactor
+          : balance
       ),
 
-
-
     series
-
   };
-
 }
-
-
 
 // ---------------------------------------------------------------------------
 // Parser API
 // ---------------------------------------------------------------------------
 
 export function parseCalculatorQuery(
-  rawText:string
-):ParsedQuery {
-
-
+  rawText: string
+): ParsedQuery {
   const scenario =
     analyzeFinancialScenario(rawText);
 
-
-
   return {
-
-
     age:
       scenario.currentAge,
-
-
 
     years:
       scenario.years,
 
-
-
     monthlyContribution:
       scenario.monthlyContribution,
-
-
 
     principal:
       scenario.initialInvestment,
 
-
-
     targetAmount:
       scenario.targetAmount,
-
-
 
     assetClassKey:
       scenario.assetClassKey,
 
-
-
     targetMonthlyIncome:
-      scenario.targetMonthlyIncome
+      scenario.targetMonthlyIncome,
 
-
+    targetAmountSource:
+      scenario.targetAmountSource
   };
-
 }
-
-
-
-// ---------------------------------------------------------------------------
-// Debug Helper
-// ---------------------------------------------------------------------------
-
-export function debugScenario(
-  text:string
-){
-
-
-  const scenario =
-    analyzeFinancialScenario(text);
-
-
-
-  const projection =
-    computeProjection(
-
-      scenario.initialInvestment,
-
-      scenario.monthlyContribution,
-
-      scenario.years,
-
-      scenario.annualReturnPct
-
-    );
-
-
-
-  return {
-
-    input:text,
-
-    scenario,
-
-    projection
-
-  };
-
-}
-
-
 
 // ---------------------------------------------------------------------------
 // Goal Planner Engine
 // ---------------------------------------------------------------------------
 
 export function calculateRequiredMonthlyContribution(
+  targetAmount: number,
+  initialInvestment: number,
+  years: number,
+  annualReturnPct: number
+): number {
+  if (
+    !Number.isFinite(targetAmount) ||
+    targetAmount <= 0
+  ) {
+    return 0;
+  }
 
-  targetAmount:number,
+  if (
+    !Number.isFinite(initialInvestment) ||
+    initialInvestment < 0
+  ) {
+    return 0;
+  }
 
-  initialInvestment:number,
-
-  years:number,
-
-  annualReturnPct:number
-
-):number {
-
-
+  if (
+    !Number.isFinite(years) ||
+    years <= 0
+  ) {
+    return 0;
+  }
 
   const monthlyRate =
     annualReturnPct / 100 / 12;
 
-
-
   const months =
-    years * 12;
+    Math.round(years * 12);
 
-
-
-  if(months <= 0){
-
+  if (months <= 0) {
     return 0;
-
   }
 
-
-
   const futureInitial =
-
     initialInvestment *
-
     Math.pow(
       1 + monthlyRate,
       months
     );
 
-
-
   const remaining =
-
     targetAmount -
     futureInitial;
 
-
-
-  if(remaining <= 0){
-
+  if (remaining <= 0) {
     return 0;
-
   }
 
-
+  if (monthlyRate === 0) {
+    return Math.round(
+      remaining / months
+    );
+  }
 
   const monthly =
-
     remaining *
-
     monthlyRate /
-
     (
       Math.pow(
         1 + monthlyRate,
         months
-      )
-      -
-      1
+      ) - 1
     );
 
-
-
-  return Math.round(monthly);
-
+  return Math.max(
+    0,
+    Math.round(monthly)
+  );
 }
 
+// ---------------------------------------------------------------------------
+// Goal Planner Analysis
+// ---------------------------------------------------------------------------
 
+export interface GoalPlannerResult {
+  targetAmount: number | null;
+  currentProjectedValue: number;
+  progressPct: number;
+  gap: number;
+  requiredMonthlyContribution: number;
+  targetAmountSource: TargetAmountSource;
+  withdrawalRatePct: number | null;
+}
+
+export function calculateGoalPlanner(
+  scenario: FinancialScenario & {
+    targetAmountSource?: TargetAmountSource;
+    withdrawalRatePct?: number | null;
+  }
+): GoalPlannerResult {
+  const projection =
+    computeProjection(
+      scenario.initialInvestment,
+      scenario.monthlyContribution,
+      scenario.years,
+      scenario.annualReturnPct,
+      DEFAULT_INFLATION_PCT
+    );
+
+  const targetAmount =
+    scenario.targetAmount;
+
+  if (
+    targetAmount === null ||
+    targetAmount <= 0
+  ) {
+    return {
+      targetAmount: null,
+
+      currentProjectedValue:
+        projection.finalBalance,
+
+      progressPct: 0,
+
+      gap: 0,
+
+      requiredMonthlyContribution: 0,
+
+      targetAmountSource:
+        scenario.targetAmountSource ?? "none",
+
+      withdrawalRatePct:
+        scenario.withdrawalRatePct ?? null
+    };
+  }
+
+  const progressPct =
+    Math.min(
+      100,
+      Math.round(
+        (
+          projection.finalBalance /
+          targetAmount
+        ) * 100
+      )
+    );
+
+  const gap =
+    Math.max(
+      0,
+      targetAmount -
+      projection.finalBalance
+    );
+
+  const requiredMonthlyContribution =
+    calculateRequiredMonthlyContribution(
+      targetAmount,
+      scenario.initialInvestment,
+      scenario.years,
+      scenario.annualReturnPct
+    );
+
+  return {
+    targetAmount,
+
+    currentProjectedValue:
+      projection.finalBalance,
+
+    progressPct,
+
+    gap,
+
+    requiredMonthlyContribution,
+
+    targetAmountSource:
+      scenario.targetAmountSource ?? "none",
+
+    withdrawalRatePct:
+      scenario.withdrawalRatePct ?? null
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Calculator Presets
 // ---------------------------------------------------------------------------
 
 export const CALCULATOR_PRESETS = [
-
-
   "אני בן 27, יש לי 100 אלף שקל להשקיע ל-10 שנים במדד S&P 500",
-
 
   "אני בן 30, מפקיד 2000 שקל בחודש במדד עולמי עד גיל 60",
 
-
   "יש לי חצי מיליון ואני רוצה לפרוש בעוד 20 שנה",
-
 
   "אני בן 35 ורוצה לבנות הון לטווח ארוך",
 
-
   "אני חוסך לילד 1000 שקל בחודש עד גיל 18",
 
+  "יש לי 300 אלף להשקיע ל-15 שנה ואני מוסיף 2000 שקל בחודש במדד S&P 500",
 
-  "יש לי 300 אלף להשקיע ל-15 שנה ואני מוסיף 2000 שקל בחודש במדד S&P 500"
-
+  "אני בן 27, יש לי 15 אלף שקל, אני מפקיד 10 אלף שקל בחודש, רוצה לפרוש בגיל 40 עם הכנסה של 10 אלף שקל בחודש, ומשקיע במדד S&P 500"
 ];
+
+// ---------------------------------------------------------------------------
+// Debug Helper
+// ---------------------------------------------------------------------------
+
+export function debugScenario(
+  text: string
+) {
+  const scenario =
+    analyzeFinancialScenario(text);
+
+  const projection =
+    computeProjection(
+      scenario.initialInvestment,
+      scenario.monthlyContribution,
+      scenario.years,
+      scenario.annualReturnPct,
+      DEFAULT_INFLATION_PCT
+    );
+
+  const goalPlanner =
+    calculateGoalPlanner(
+      scenario
+    );
+
+  return {
+    input: text,
+    scenario,
+    projection,
+    goalPlanner
+  };
+}
