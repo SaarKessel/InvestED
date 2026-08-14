@@ -1,4 +1,4 @@
-﻿import type {
+import type {
   AnalysisResult,
   AnalysisSignal,
   AiNarration,
@@ -23,6 +23,10 @@ import {
   buildAllocation,
   portfolioNarrative,
 } from "./portfolioEngine";
+
+import {
+  calculatePortfolioMetrics,
+} from "./portfolioIntelligence";
 
 
 import {
@@ -440,6 +444,15 @@ export function buildRuleBasedAnalysis(
       flags
     );
 
+  // =====================================================
+  // Portfolio Intelligence
+  // =====================================================
+
+  const portfolioMetrics =
+    calculatePortfolioMetrics(
+      allocation
+    );
+
 
 
 
@@ -641,6 +654,8 @@ export function buildRuleBasedAnalysis(
     allocation,
 
 
+
+    portfolioMetrics,
 
     projection,
 
