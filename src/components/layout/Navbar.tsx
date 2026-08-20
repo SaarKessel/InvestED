@@ -1,5 +1,5 @@
 import { Link, NavLink } from "react-router-dom";
-import { Moon, Sun, Menu, X } from "lucide-react";
+import { Moon, Sun, Menu, X, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { Logo } from "./Logo";
 import { Button } from "@/components/ui/primitives";
@@ -19,13 +19,23 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-lg">
-      <div className="container flex h-16 items-center justify-between">
-        <Link to="/" className="shrink-0">
+    <header className="sticky top-0 z-50 border-b border-border/50 bg-background/75 backdrop-blur-xl supports-[backdrop-filter]:bg-background/65">
+      <div className="container flex h-[4.5rem] items-center justify-between">
+        
+        {/* Logo */}
+        <Link
+          to="/"
+          className="shrink-0 transition-transform duration-200 hover:scale-[1.02]"
+          aria-label="InvestED - דף הבית"
+        >
           <Logo />
         </Link>
 
-        <nav className="hidden items-center gap-1 md:flex">
+        {/* Desktop Navigation */}
+        <nav
+          className="hidden items-center gap-1 rounded-2xl border border-border/50 bg-card/50 p-1 md:flex"
+          aria-label="ניווט ראשי"
+        >
           {NAV_LINKS.map((link) => (
             <NavLink
               key={link.to}
@@ -33,8 +43,15 @@ export function Navbar() {
               end={link.to === "/"}
               className={({ isActive }) =>
                 cn(
-                  "rounded-lg px-3.5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground",
-                  isActive && "bg-accent text-foreground"
+                  "relative rounded-xl px-4 py-2.5 text-sm font-medium",
+                  "transition-all duration-200",
+                  "text-muted-foreground",
+                  "hover:bg-accent/70 hover:text-foreground",
+                  isActive && [
+                    "bg-accent text-foreground",
+                    "font-semibold",
+                    "shadow-sm",
+                  ]
                 )
               }
             >
@@ -43,49 +60,93 @@ export function Navbar() {
           ))}
         </nav>
 
+        {/* Actions */}
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" onClick={toggleTheme} aria-label="החלף מצב תצוגה">
-            {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </Button>
-          <Link to="/start" className="hidden sm:block">
-            <Button size="sm">התחל ללמוד</Button>
-          </Link>
+          
+          {/* Theme Toggle */}
           <Button
             variant="ghost"
             size="icon"
-            className="md:hidden"
-            onClick={() => setMobileOpen((o) => !o)}
-            aria-label="תפריט"
+            onClick={toggleTheme}
+            aria-label="החלף מצב תצוגה"
+            className="rounded-xl text-muted-foreground hover:text-foreground"
           >
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            {theme === "dark" ? (
+              <Sun className="h-[1.15rem] w-[1.15rem]" />
+            ) : (
+              <Moon className="h-[1.15rem] w-[1.15rem]" />
+            )}
+          </Button>
+
+          {/* CTA */}
+          <Link to="/start" className="hidden sm:block">
+            <Button
+              size="sm"
+              className="group rounded-xl px-5 shadow-md"
+            >
+              <Sparkles className="h-4 w-4 transition-transform duration-200 group-hover:rotate-12" />
+              התחל ללמוד
+            </Button>
+          </Link>
+
+          {/* Mobile Menu */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-xl md:hidden"
+            onClick={() => setMobileOpen((open) => !open)}
+            aria-label={mobileOpen ? "סגור תפריט" : "פתח תפריט"}
+            aria-expanded={mobileOpen}
+          >
+            {mobileOpen ? (
+              <X className="h-5 w-5" />
+            ) : (
+              <Menu className="h-5 w-5" />
+            )}
           </Button>
         </div>
       </div>
 
+      {/* Mobile Navigation */}
       {mobileOpen && (
-        <nav className="container flex flex-col gap-1 border-t border-border/60 py-3 md:hidden animate-fade-in">
-          {NAV_LINKS.map((link) => (
-            <NavLink
-              key={link.to}
-              to={link.to}
-              end={link.to === "/"}
+        <div className="border-t border-border/50 bg-background/95 backdrop-blur-xl md:hidden">
+          <nav
+            className="container flex flex-col gap-1 py-4"
+            aria-label="ניווט נייד"
+          >
+            {NAV_LINKS.map((link) => (
+              <NavLink
+                key={link.to}
+                to={link.to}
+                end={link.to === "/"}
+                onClick={() => setMobileOpen(false)}
+                className={({ isActive }) =>
+                  cn(
+                    "rounded-xl px-4 py-3 text-sm font-medium",
+                    "transition-colors duration-200",
+                    "text-muted-foreground",
+                    "hover:bg-accent hover:text-foreground",
+                    isActive &&
+                      "bg-accent text-foreground font-semibold"
+                  )
+                }
+              >
+                {link.label}
+              </NavLink>
+            ))}
+
+            <Link
+              to="/start"
               onClick={() => setMobileOpen(false)}
-              className={({ isActive }) =>
-                cn(
-                  "rounded-lg px-3.5 py-2.5 text-sm font-medium text-muted-foreground",
-                  isActive && "bg-accent text-foreground"
-                )
-              }
+              className="mt-2"
             >
-              {link.label}
-            </NavLink>
-          ))}
-          <Link to="/start" onClick={() => setMobileOpen(false)}>
-            <Button size="sm" className="mt-2 w-full">
-              התחל ללמוד
-            </Button>
-          </Link>
-        </nav>
+              <Button className="w-full rounded-xl">
+                <Sparkles className="h-4 w-4" />
+                התחל ללמוד
+              </Button>
+            </Link>
+          </nav>
+        </div>
       )}
     </header>
   );

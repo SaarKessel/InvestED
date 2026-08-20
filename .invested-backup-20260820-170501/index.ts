@@ -294,25 +294,6 @@ export interface Projection {
 
   finalBalance:number;
 
-  /**
-   * Inflation-adjusted educational projection.
-   */
-  realValueAfterInflation:number;
-
-  /**
-   * Year-by-year projection series used by
-   * the Projection Chart UI.
-   */
-  series: {
-
-    year:number;
-
-    contributed:number;
-
-    balance:number;
-
-  }[];
-
 }
 
 

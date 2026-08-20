@@ -24,6 +24,7 @@ import {
   portfolioNarrative,
 } from "./portfolioEngine";
 
+
 import {
   calculatePortfolioMetrics,
 } from "./portfolioIntelligence";
@@ -41,12 +42,15 @@ import {
 
 
 import {
+  generateAIInsight,
+} from "./aiExplanationEngine";
+
+
+import {
   isOllamaAvailable,
   explainInvestorProfile,
   explainPortfolio,
 } from "./ollamaClient";
-
-
 
 
 // =====================================================
@@ -61,7 +65,7 @@ function normalizeHorizon(
     | null
 ) {
 
-  switch(horizon){
+  switch (horizon) {
 
     case "קצר":
       return "short";
@@ -78,329 +82,335 @@ function normalizeHorizon(
 }
 
 
-
-
-
 // =====================================================
-// AI Insight Engine v3
+// AI Insight Signal Types
 // =====================================================
-
 
 type InsightType =
   | "risk"
   | "horizon"
   | "portfolio"
-  | "goal";
+  | "goal"
+  | "growth"
+  | "confidence";
 
 
+// =====================================================
+// Signal Factory
+// =====================================================
 
 function createSignal(
-  title:string,
-  description:string,
-  type:InsightType
-):AnalysisSignal {
+  title: string,
+  description: string,
+  type: InsightType
+): AnalysisSignal {
 
   return {
-
     title,
-
     description,
-
-    type
-
+    type,
   };
 
 }
 
 
-
-
+// =====================================================
+// Rule-Based Explainability Signals
+// =====================================================
 
 function generateAIInsights(
 
-  flags:ProfileFlags,
+  flags: ProfileFlags,
 
-  investor:InvestorClassification,
+  investor: InvestorClassification,
 
-  riskScore:number,
+  riskScore: number,
 
-  allocation:AllocationItem[]
+  allocation: AllocationItem[]
 
-):AnalysisSignal[] {
+): AnalysisSignal[] {
 
-
-  const insights:AnalysisSignal[] = [];
-
+  const insights: AnalysisSignal[] = [];
 
 
+  // -----------------------------------------------------
   // Risk Insight
+  // -----------------------------------------------------
 
-  if(riskScore >= 7){
+  if (riskScore >= 7) {
 
     insights.push(
-
       createSignal(
-
         "Risk Insight",
-
         "המערכת זיהתה פרופיל עם יכולת להתמודד עם תנודתיות גבוהה והתמקדות בצמיחה ארוכת טווח.",
-
         "risk"
-
       )
-
     );
 
   }
 
-
-  else if(riskScore <=3){
+  else if (riskScore <= 3) {
 
     insights.push(
-
       createSignal(
-
         "Risk Insight",
-
-        "המערכת זיהתה העדפה ליציבות ושמירה על הון עם רמת סיכון נמוכה.",
-
+        "המערכת זיהתה העדפה ליציבות ושמירה על הון עם רמת סיכון נמוכה יותר.",
         "risk"
-
       )
-
     );
 
   }
-
 
   else {
 
-
     insights.push(
-
       createSignal(
-
         "Risk Insight",
-
         "המערכת זיהתה איזון בין רצון לצמיחה לבין ניהול סיכונים.",
-
         "risk"
-
       )
-
     );
 
   }
 
 
-
-
+  // -----------------------------------------------------
   // Horizon Insight
+  // -----------------------------------------------------
 
-  if(flags.horizon === "long"){
+  if (flags.horizon === "long") {
 
     insights.push(
-
       createSignal(
-
         "Horizon Insight",
-
-        "אופק השקעה ארוך מאפשר להתמקד בתהליך השקעה הדרגתי ולהתמודד טוב יותר עם תנודתיות.",
-
+        "אופק השקעה ארוך מאפשר להתמקד בתהליך השקעה הדרגתי ולהתמודד טוב יותר עם תנודתיות לאורך זמן.",
         "horizon"
-
       )
+    );
 
+  }
+
+  else if (flags.horizon === "short") {
+
+    insights.push(
+      createSignal(
+        "Horizon Insight",
+        "אופק השקעה קצר דורש דגש גבוה יותר על נזילות, תנודתיות והתאמה למועד שבו הכסף צפוי להידרש.",
+        "horizon"
+      )
+    );
+
+  }
+
+  else {
+
+    insights.push(
+      createSignal(
+        "Horizon Insight",
+        "אופק השקעה בינוני מאפשר לשלב בין פוטנציאל צמיחה לבין בחינה של רמת הסיכון והיעד הפיננסי.",
+        "horizon"
+      )
     );
 
   }
 
 
-
-  if(flags.horizon === "short"){
-
-    insights.push(
-
-      createSignal(
-
-        "Horizon Insight",
-
-        "אופק השקעה קצר דורש דגש גבוה יותר על נזילות וניהול תנודתיות.",
-
-        "horizon"
-
-      )
-
-    );
-
-  }
-
-
-
-
-
+  // -----------------------------------------------------
   // Portfolio Insight
+  // -----------------------------------------------------
 
   const allocationText =
-
     allocation
-
       .map(
         item =>
           `${item.name} ${item.value}%`
       )
-
       .join(", ");
 
 
-
   insights.push(
-
     createSignal(
-
       "Portfolio Insight",
-
-      `מבנה התיק הותאם לסגנון ${investor.type}. הקצאת הנכסים הנוכחית: ${allocationText}.`,
-
+      `מבנה התיק החינוכי הותאם לסגנון ${investor.type}. הקצאת הנכסים הנוכחית: ${allocationText}.`,
       "portfolio"
-
     )
-
   );
 
 
-
-
+  // -----------------------------------------------------
   // Goal Insight
+  // -----------------------------------------------------
 
-  if(flags.goal){
+  if (flags.goal) {
 
     insights.push(
-
       createSignal(
-
         "Goal Insight",
-
-        "המערכת שילבה את מטרת המשתמש כחלק מתהליך בניית התמונה הפיננסית.",
-
+        "המטרה הפיננסית שזוהתה שולבה כחלק מתהליך הניתוח והתכנון.",
         "goal"
-
       )
-
     );
 
   }
 
 
-
   return insights;
-
 
 }
 
 
-
-
-
-
 // =====================================================
-// AI Narration Engine v3
+// AI Narration Engine
 // =====================================================
-
 
 function generateAiNarration(
 
-  flags:ProfileFlags,
+  flags: ProfileFlags,
 
-  investor:InvestorClassification,
+  investor: InvestorClassification,
 
-  riskScore:number,
+  riskScore: number,
 
-  allocation:AllocationItem[]
+  allocation: AllocationItem[]
 
-):AiNarration {
-
-
+): AiNarration {
 
   const ageText =
-
     flags.age
-
       ? `גיל המשתמש ${flags.age}`
-
-      :
-
-      "גיל המשתמש לא הוזן";
-
-
-
+      : "גיל המשתמש לא הוזן";
 
 
   const allocationText =
-
     allocation
-
       .map(
         item =>
-        `${item.name} (${item.value}%)`
+          `${item.name} (${item.value}%)`
       )
-
       .join(", ");
-
-
-
 
 
   return {
 
-
     source:
-      "InvestED Explainable AI Engine v3",
-
-
+      "InvestED Explainable AI Engine v4",
 
     profileSummary:
-
       `${ageText}.
       סגנון השקעה שזוהה: ${investor.type}.
       ציון סיכון: ${riskScore}/10.
-      המערכת התאימה את הניתוח לפי אופק ההשקעה והעדפות המשתמש.`,
-
-
-
+      המערכת התאימה את הניתוח לפי אופק ההשקעה, פרופיל הסיכון והעדפות המשתמש.`,
 
     portfolioSummary:
-
       `התיק החינוכי נבנה לפי עקרונות של פיזור,
       התאמת רמת סיכון ואופק השקעה.
       הקצאת הנכסים:
       ${allocationText}.
       המערכת מיועדת ללמידה פיננסית בלבד ואינה מהווה ייעוץ השקעות.`
 
-
   };
 
+}
+
+
+// =====================================================
+// Convert AI Insight to Analysis Signal
+// =====================================================
+
+function buildEngineSignals(
+
+  insight: ReturnType<typeof generateAIInsight>
+
+): AnalysisSignal[] {
+
+  const signals: AnalysisSignal[] = [];
+
+
+  signals.push(
+    createSignal(
+      "AI Risk Analysis",
+      `${insight.riskEmoji} רמת הסיכון החינוכית של התרחיש: ${insight.riskLevel}.`,
+      "risk"
+    )
+  );
+
+
+  signals.push(
+    createSignal(
+      "AI Horizon Analysis",
+      insight.horizonInsight,
+      "horizon"
+    )
+  );
+
+
+  signals.push(
+    createSignal(
+      "AI Growth Analysis",
+      insight.growthInsight,
+      "growth"
+    )
+  );
+
+
+  signals.push(
+    createSignal(
+      "AI Diversification Analysis",
+      insight.diversificationInsight,
+      "portfolio"
+    )
+  );
+
+
+  signals.push(
+    createSignal(
+      "AI Educational Guidance",
+      insight.recommendation,
+      "goal"
+    )
+  );
+
+
+  signals.push(
+    createSignal(
+      "AI Confidence",
+      `רמת הביטחון של מנוע הניתוח בתרחיש: ${insight.confidence}%.`,
+      "confidence"
+    )
+  );
+
+
+  return signals;
 
 }
+
 
 // =====================================================
 // Rule Based Analysis
 // =====================================================
 
-
 export function buildRuleBasedAnalysis(
-  profileText:string
-):AnalysisResult {
+  profileText: string
+): AnalysisResult {
 
+  // =====================================================
+  // Profile Extraction
+  // =====================================================
 
   const flags =
-    extractProfileFlags(profileText);
+    extractProfileFlags(
+      profileText
+    );
 
 
+  // =====================================================
+  // Risk
+  // =====================================================
 
   const riskScore =
-    computeRiskScore(flags);
-
+    computeRiskScore(
+      flags
+    );
 
 
   const riskDescription =
@@ -409,12 +419,14 @@ export function buildRuleBasedAnalysis(
     );
 
 
+  // =====================================================
+  // Horizon
+  // =====================================================
 
   const bucket =
     horizonBucket(
       flags.horizon ?? "medium"
     );
-
 
 
   const horizon =
@@ -423,13 +435,15 @@ export function buildRuleBasedAnalysis(
     );
 
 
-
   const hExplanation =
     horizonExplanation(
       flags.horizon ?? "medium"
     );
 
 
+  // =====================================================
+  // Investor Classification
+  // =====================================================
 
   const investor =
     classifyInvestor(
@@ -437,12 +451,16 @@ export function buildRuleBasedAnalysis(
     );
 
 
+  // =====================================================
+  // Portfolio Allocation
+  // =====================================================
 
   const allocation =
     buildAllocation(
       investor.type,
       flags
     );
+
 
   // =====================================================
   // Portfolio Intelligence
@@ -454,76 +472,9 @@ export function buildRuleBasedAnalysis(
     );
 
 
-
-
-
-  // =====================================================
-  // Explainable AI Signals
-  // =====================================================
-
-
-  const legacySignals =
-    buildExplainability(
-      flags,
-      investor,
-      riskScore
-    );
-
-
-
-  const enhancedSignals =
-    generateAIInsights(
-      flags,
-      investor,
-      riskScore,
-      allocation
-    );
-
-
-
-  const explainabilitySignals:AnalysisSignal[] = [
-
-    ...enhancedSignals,
-
-    ...legacySignals.map(
-      (signal:string)=>(
-
-        {
-
-          title:
-            signal.includes(":")
-              ? signal.split(":")[0].trim()
-              :
-              "AI Signal",
-
-
-          description:
-            signal.includes(":")
-              ?
-              signal.split(":").slice(1).join(":").trim()
-              :
-              signal,
-
-
-          type:"rule"
-
-        }
-
-      )
-    )
-
-  ];
-
-
-
-
-
-
-
   // =====================================================
   // Financial Scenario
   // =====================================================
-
 
   const scenario =
     analyzeFinancialScenario(
@@ -531,6 +482,9 @@ export function buildRuleBasedAnalysis(
     );
 
 
+  // =====================================================
+  // Projection
+  // =====================================================
 
   const projection =
     computeProjection(
@@ -546,15 +500,98 @@ export function buildRuleBasedAnalysis(
     );
 
 
+  // =====================================================
+  // Explainable AI Engine v4
+  // =====================================================
+
+  const aiInsight =
+    generateAIInsight(
+      scenario,
+      projection
+    );
 
 
+  // =====================================================
+  // Legacy Explainability
+  // =====================================================
+
+  const legacySignals =
+    buildExplainability(
+      flags,
+      investor,
+      riskScore
+    );
+
+
+  // =====================================================
+  // Rule-Based Explainability
+  // =====================================================
+
+  const enhancedSignals =
+    generateAIInsights(
+      flags,
+      investor,
+      riskScore,
+      allocation
+    );
+
+
+  // =====================================================
+  // AI Engine Signals
+  // =====================================================
+
+  const engineSignals =
+    buildEngineSignals(
+      aiInsight
+    );
+
+
+  // =====================================================
+  // Combined Explainability Layer
+  // =====================================================
+
+  const explainabilitySignals:
+    AnalysisSignal[] = [
+
+      ...engineSignals,
+
+      ...enhancedSignals,
+
+      ...legacySignals.map(
+        (
+          signal: string
+        ) => ({
+
+          title:
+            signal.includes(":")
+              ? signal
+                  .split(":")[0]
+                  .trim()
+              : "AI Signal",
+
+          description:
+            signal.includes(":")
+              ? signal
+                  .split(":")
+                  .slice(1)
+                  .join(":")
+                  .trim()
+              : signal,
+
+          type: "rule"
+
+        })
+      )
+
+    ];
 
 
   // =====================================================
   // Goal Planner
   // =====================================================
   //
-  // goalEngine is the single source of truth for:
+  // goalEngine remains the single source of truth for:
+  //
   // - required monthly contribution
   // - expected final value
   // - progress
@@ -568,30 +605,30 @@ export function buildRuleBasedAnalysis(
   const targetAmount =
     scenario.targetAmount ?? 0;
 
+
   const goalPlan =
     targetAmount > 0
       ? analyzeFinancialGoal(
+
           scenario.initialInvestment,
+
           targetAmount,
+
           scenario.years,
+
           scenario.annualReturnPct,
+
           scenario.monthlyContribution
+
         )
       : undefined;
-
-
-
-
-
 
 
   // =====================================================
   // Narration
   // =====================================================
 
-
-  const aiNarration =
-
+  const baseAiNarration =
     generateAiNarration(
 
       flags,
@@ -605,10 +642,7 @@ export function buildRuleBasedAnalysis(
     );
 
 
-
-
   const fallbackPortfolioText =
-
     portfolioNarrative(
 
       investor.type,
@@ -618,149 +652,155 @@ export function buildRuleBasedAnalysis(
     );
 
 
+  // =====================================================
+  // AI Engine Portfolio Explanation
+  // =====================================================
+
+  const enhancedPortfolioSummary =
+    aiInsight.diversificationInsight;
 
 
+  const combinedPortfolioSummary =
+    [
+      baseAiNarration.portfolioSummary,
+      enhancedPortfolioSummary,
+    ]
+      .filter(Boolean)
+      .join("\n\n");
 
 
+  // =====================================================
+  // Explainability Summary
+  // =====================================================
+
+  const explainabilitySummary =
+    explainabilitySignals
+      .map(
+        signal =>
+          `${signal.title}: ${signal.description}`
+      )
+      .join(" ");
+
+
+  // =====================================================
+  // Final Analysis Result
+  // =====================================================
 
   return {
 
-
     profileText,
-
 
     flags,
 
-
     scenario,
 
-
     horizon,
-
 
     horizonExplanation:
       hExplanation,
 
-
     investor,
-
 
     riskScore,
 
-
     riskDescription,
 
-
     allocation,
-
-
 
     portfolioMetrics,
 
     projection,
 
-
-
     goalPlan,
 
-
-
-    explainability:{
-
+    explainability: {
 
       signals:
         explainabilitySignals,
 
-
       summary:
-
-        explainabilitySignals
-
-          .map(
-            signal =>
-              `${signal.title}: ${signal.description}`
-          )
-
-          .join(" ")
+        explainabilitySummary
 
     },
 
+    aiNarration: {
 
+      ...baseAiNarration,
 
-
-    aiNarration:{
-
-
-      ...aiNarration,
-
+      profileSummary:
+        baseAiNarration.profileSummary,
 
       portfolioSummary:
-
-        aiNarration.portfolioSummary ||
-
+        combinedPortfolioSummary ||
         fallbackPortfolioText
-
 
     }
 
-
   };
 
-
 }
-
-
-
-
-
 
 
 // =====================================================
 // Ollama Enhancement
 // =====================================================
 
-
 export async function tryEnhanceWithOllama(
 
-  result:AnalysisResult
+  result: AnalysisResult
 
-):Promise<AnalysisResult["aiNarration"] | null>{
-
-
+): Promise<
+  AnalysisResult["aiNarration"] | null
+> {
 
   const ollamaUp =
-
     await isOllamaAvailable();
 
 
-
-
-  if(!ollamaUp){
+  if (!ollamaUp) {
 
     return null;
 
   }
 
 
-
-
+  // =====================================================
+  // Allocation Context
+  // =====================================================
 
   const allocationSummary =
-
     result.allocation
-
       .map(
         item =>
           `${item.name}: ${item.value}%`
       )
-
       .join(", ");
 
 
+  // =====================================================
+  // Portfolio Intelligence Context
+  // =====================================================
+
+  const portfolioMetrics =
+    result.portfolioMetrics;
 
 
+  const portfolioContext =
+    portfolioMetrics
+
+      ? `Expected return: ${portfolioMetrics.expectedReturn}%.
+Risk: ${portfolioMetrics.riskLevel}.
+Volatility: ${portfolioMetrics.volatilityEstimate}.
+Diversification: ${portfolioMetrics.diversification}.
+Equity exposure: ${portfolioMetrics.equityExposure}%.
+Largest position: ${portfolioMetrics.largestPosition} (${portfolioMetrics.largestPositionWeight}%).`
+
+      : result.aiNarration.portfolioSummary;
 
 
+  // =====================================================
+  // Parallel AI Requests
+  // =====================================================
 
   const [
 
@@ -768,10 +808,7 @@ export async function tryEnhanceWithOllama(
 
     portfolioSummary
 
-
   ] = await Promise.all([
-
-
 
     explainInvestorProfile(
 
@@ -785,43 +822,32 @@ export async function tryEnhanceWithOllama(
 
     ),
 
-
-
-
     explainPortfolio(
 
       result.investor.type,
 
       allocationSummary,
 
-      result.aiNarration.portfolioSummary
+      portfolioContext
 
     )
-
 
   ]);
 
 
-
-
-
-
+  // =====================================================
+  // Result
+  // =====================================================
 
   return {
 
-
     profileSummary,
-
 
     portfolioSummary,
 
-
     source:
-
       "ollama"
 
-
   };
-
 
 }

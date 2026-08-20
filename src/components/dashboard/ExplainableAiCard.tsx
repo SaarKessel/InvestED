@@ -6,13 +6,15 @@ import {
   TrendingUp,
   Sparkles,
   Target,
+  PieChart,
+  Clock3,
+  CircleHelp,
 } from "lucide-react";
-
 
 import type {
   AnalysisResult,
+  AnalysisSignal,
 } from "@/types";
-
 
 import {
   Card,
@@ -22,12 +24,75 @@ import {
   Badge,
 } from "@/components/ui/primitives";
 
-
 import { InfoBadge } from "@/components/ui/InfoBadge";
 
 
+// =====================================================
+// Helpers
+// =====================================================
+
+function formatMoney(
+  value:number
+){
+
+  return new Intl.NumberFormat(
+    "he-IL",
+    {
+      style:"currency",
+      currency:"ILS",
+      maximumFractionDigits:0,
+    }
+  ).format(value);
+
+}
 
 
+function clamp(
+  value:number,
+  min:number,
+  max:number
+){
+
+  return Math.min(
+    Math.max(value,min),
+    max
+  );
+
+}
+
+
+function signalLabel(
+  signal:AnalysisSignal
+){
+
+  switch(signal.type){
+
+    case "risk":
+      return "סיכון";
+
+    case "horizon":
+      return "אופק השקעה";
+
+    case "portfolio":
+      return "תיק השקעות";
+
+    case "goal":
+      return "מטרה";
+
+    case "rule":
+      return "ניתוח";
+
+    default:
+      return signal.title;
+
+  }
+
+}
+
+
+// =====================================================
+// Explainable AI Card
+// =====================================================
 
 export function ExplainableAiCard({
 
@@ -37,668 +102,1057 @@ export function ExplainableAiCard({
 
   result:AnalysisResult;
 
-}) {
-
-
+}){
 
   const signals =
     result.explainability?.signals ?? [];
 
 
+  const scenario =
+    result.scenario;
 
-  const confidenceScore =
 
-    Math.min(
+  const metrics =
+    result.portfolioMetrics;
 
-      95,
 
-      60 +
+  const goal =
+    result.goalPlan;
 
-      signals.length * 8
 
+  /*
+   * Confidence is now derived primarily from the
+   * scenario engine instead of artificially counting
+   * explanation signals.
+   */
+  const confidence =
+    clamp(
+      Number(
+        scenario?.confidence ?? 0
+      ),
+      0,
+      100
     );
 
 
+  const riskScore =
+    clamp(
+      Number(
+        result.riskScore ?? 0
+      ),
+      0,
+      10
+    );
 
 
+  const progress =
+    goal
+      ? clamp(
+          Number(
+            goal.progressPercentage ?? 0
+          ),
+          0,
+          100
+        )
+      : 0;
 
 
   return (
 
-
     <motion.div
-
 
       initial={{
         opacity:0,
         y:16,
       }}
 
-
       animate={{
         opacity:1,
         y:0,
       }}
 
-
       transition={{
         duration:0.4,
       }}
 
-
     >
-
-
 
       <Card
         className="
-        border-primary/20
-        bg-gradient-to-br
-        from-primary/5
-        to-transparent
+          overflow-hidden
+          border-primary/20
+          bg-gradient-to-br
+          from-primary/5
+          via-card
+          to-transparent
         "
       >
 
-
-
+        {/* =====================================================
+            Header
+        ===================================================== */}
 
         <CardHeader>
 
-
-
           <div
             className="
-            flex
-            items-center
-            gap-2
-            text-primary
+              flex
+              items-center
+              gap-2
+              text-primary
             "
           >
 
-
             <BrainCircuit
-              className="h-5 w-5"
+              className="
+                h-5
+                w-5
+              "
             />
-
 
             <span
               className="
-              text-xs
-              font-bold
-              uppercase
-              tracking-wide
+                text-xs
+                font-bold
+                uppercase
+                tracking-wide
               "
             >
-
               Explainable AI Engine
-
             </span>
 
-
           </div>
-
-
-
 
 
           <div
             className="
-            flex
-            items-center
-            gap-2
+              mt-2
+              flex
+              items-center
+              gap-2
             "
           >
 
-
             <CardTitle
-              className="text-xl"
+              className="
+                text-xl
+              "
             >
-
-              למה AI הגיע למסקנה הזאת?
-
+              למה המערכת הגיעה למסקנה הזאת?
             </CardTitle>
 
-
-
-
             <InfoBadge
-
               description="
-              המערכת מציגה את הגורמים שהשפיעו
-              על ניתוח פרופיל המשקיע.
+                שכבת Explainable AI מציגה את הגורמים
+                המרכזיים שהשפיעו על ניתוח המשקיע,
+                הקצאת התיק והתכנון הפיננסי.
               "
-
             />
-
 
           </div>
 
+
+          <p
+            className="
+              mt-2
+              max-w-2xl
+              text-sm
+              leading-relaxed
+              text-muted-foreground
+            "
+          >
+            המערכת מפרקת את תהליך הניתוח לגורמים
+            שניתן להבין ולבחון במקום להציג רק תוצאה סופית.
+          </p>
 
         </CardHeader>
 
 
-
-
-
-
-
         <CardContent
-          className="space-y-5"
+          className="
+            space-y-5
+          "
         >
 
-
-
-
-
+          {/* =====================================================
+              AI Summary
+          ===================================================== */}
 
           <div
             className="
-            rounded-xl
-            border
-            bg-card
-            p-5
+              rounded-2xl
+              border
+              border-primary/20
+              bg-primary/[0.04]
+              p-5
             "
           >
 
-
             <div
               className="
-              mb-3
-              flex
-              items-center
-              gap-2
+                mb-3
+                flex
+                items-center
+                gap-2
               "
             >
 
-
               <Sparkles
                 className="
-                h-4
-                w-4
-                text-primary
+                  h-4
+                  w-4
+                  text-primary
                 "
               />
 
-
               <p
-                className="font-semibold"
+                className="
+                  font-semibold
+                "
               >
-
                 סיכום AI
-
               </p>
 
-
             </div>
-
-
 
 
             <p
               className="
-              text-sm
-              leading-relaxed
-              text-muted-foreground
+                text-sm
+                leading-relaxed
+                text-muted-foreground
               "
             >
-
-              {result.aiNarration.profileSummary}
-
+              {
+                result.aiNarration.profileSummary ??
+                result.explainability.summary ??
+                "המערכת השלימה ניתוח של פרופיל המשקיע."
+              }
             </p>
-
 
           </div>
 
 
-
-
-
-
-
-
-
+          {/* =====================================================
+              Core Explainability Metrics
+          ===================================================== */}
 
           <div
             className="
-            grid
-            grid-cols-1
-            gap-4
-            md:grid-cols-2
+              grid
+              grid-cols-1
+              gap-4
+              md:grid-cols-2
+              lg:grid-cols-4
             "
           >
 
-
+            {/* Risk */}
 
             <div
               className="
-              rounded-xl
-              border
-              bg-card
-              p-4
+                rounded-2xl
+                border
+                bg-background
+                p-4
               "
             >
 
-
               <div
                 className="
-                flex
-                items-center
-                gap-2
-                mb-2
+                  flex
+                  items-center
+                  gap-2
+                  text-muted-foreground
                 "
               >
 
-
                 <ShieldCheck
                   className="
-                  h-4
-                  w-4
-                  text-primary
+                    h-4
+                    w-4
                   "
                 />
 
-
-                <p
-                  className="font-semibold"
+                <span
+                  className="
+                    text-xs
+                  "
                 >
-
-                  סוג משקיע
-
-                </p>
-
+                  ציון סיכון
+                </span>
 
               </div>
-
-
-
-
-              <Badge
-                variant="outline"
-              >
-
-                {result.investor.type}
-
-              </Badge>
-
-
 
 
               <p
                 className="
-                mt-3
-                text-sm
-                text-muted-foreground
+                  mt-3
+                  text-2xl
+                  font-black
                 "
               >
-
-                {result.investor.reason}
-
+                {riskScore}/10
               </p>
 
 
+              <p
+                className="
+                  mt-1
+                  text-xs
+                  text-muted-foreground
+                "
+              >
+                {
+                  result.riskDescription?.band ??
+                  "רמת סיכון חינוכית"
+                }
+              </p>
 
             </div>
 
 
-
-
-
-
-
-
+            {/* Confidence */}
 
             <div
               className="
-              rounded-xl
-              border
-              bg-card
-              p-4
+                rounded-2xl
+                border
+                bg-background
+                p-4
               "
             >
 
-
               <div
                 className="
-                flex
-                items-center
-                gap-2
-                mb-3
+                  flex
+                  items-center
+                  gap-2
+                  text-muted-foreground
                 "
               >
 
-
-                <TrendingUp
+                <CircleHelp
                   className="
-                  h-4
-                  w-4
-                  text-primary
+                    h-4
+                    w-4
                   "
                 />
 
-
-                <p
-                  className="font-semibold"
+                <span
+                  className="
+                    text-xs
+                  "
                 >
-
-                  ניתוח סיכון
-
-                </p>
-
+                  Confidence
+                </span>
 
               </div>
 
 
-
+              <p
+                className="
+                  mt-3
+                  text-2xl
+                  font-black
+                "
+              >
+                {confidence}%
+              </p>
 
 
               <div
                 className="
-                flex
-                items-center
-                justify-between
+                  mt-2
+                  h-2
+                  overflow-hidden
+                  rounded-full
+                  bg-muted
                 "
               >
 
+                <motion.div
+                  initial={{
+                    width:0,
+                  }}
+                  animate={{
+                    width:`${confidence}%`,
+                  }}
+                  transition={{
+                    duration:0.8,
+                  }}
+                  className="
+                    h-full
+                    rounded-full
+                    bg-primary
+                  "
+                />
+
+              </div>
+
+            </div>
+
+
+            {/* Portfolio */}
+
+            <div
+              className="
+                rounded-2xl
+                border
+                bg-background
+                p-4
+              "
+            >
+
+              <div
+                className="
+                  flex
+                  items-center
+                  gap-2
+                  text-muted-foreground
+                "
+              >
+
+                <PieChart
+                  className="
+                    h-4
+                    w-4
+                  "
+                />
+
+                <span
+                  className="
+                    text-xs
+                  "
+                >
+                  חשיפה מנייתית
+                </span>
+
+              </div>
+
+
+              <p
+                className="
+                  mt-3
+                  text-2xl
+                  font-black
+                "
+              >
+                {
+                  metrics
+                    ? `${Math.round(metrics.equityExposure)}%`
+                    : "-"
+                }
+              </p>
+
+
+              <p
+                className="
+                  mt-1
+                  text-xs
+                  text-muted-foreground
+                "
+              >
+                לפי הקצאת הנכסים
+              </p>
+
+            </div>
+
+
+            {/* Goal */}
+
+            <div
+              className="
+                rounded-2xl
+                border
+                bg-background
+                p-4
+              "
+            >
+
+              <div
+                className="
+                  flex
+                  items-center
+                  gap-2
+                  text-muted-foreground
+                "
+              >
+
+                <Target
+                  className="
+                    h-4
+                    w-4
+                  "
+                />
+
+                <span
+                  className="
+                    text-xs
+                  "
+                >
+                  התקדמות ליעד
+                </span>
+
+              </div>
+
+
+              <p
+                className="
+                  mt-3
+                  text-2xl
+                  font-black
+                "
+              >
+                {
+                  goal
+                    ? `${Math.round(progress)}%`
+                    : "-"
+                }
+              </p>
+
+
+              <p
+                className="
+                  mt-1
+                  text-xs
+                  text-muted-foreground
+                "
+              >
+                {
+                  goal
+                    ? formatMoney(
+                        goal.expectedFinalValue
+                      )
+                    : "לא הוגדר יעד"
+                }
+              </p>
+
+            </div>
+
+          </div>
+
+
+          {/* =====================================================
+              Investor Classification
+          ===================================================== */}
+
+          <div
+            className="
+              grid
+              grid-cols-1
+              gap-4
+              md:grid-cols-2
+            "
+          >
+
+            <div
+              className="
+                rounded-2xl
+                border
+                bg-background
+                p-5
+              "
+            >
+
+              <div
+                className="
+                  flex
+                  items-center
+                  gap-2
+                "
+              >
+
+                <TrendingUp
+                  className="
+                    h-4
+                    w-4
+                    text-primary
+                  "
+                />
+
+                <p
+                  className="
+                    font-semibold
+                  "
+                >
+                  סוג משקיע
+                </p>
+
+              </div>
+
+
+              <div
+                className="
+                  mt-3
+                "
+              >
 
                 <Badge
                   variant="outline"
                 >
-
-                  {result.riskScore}/10
-
+                  {result.investor.type}
                 </Badge>
-
-
-
-                <span
-                  className="
-                  text-sm
-                  text-muted-foreground
-                  "
-                >
-
-                  Confidence {confidenceScore}%
-
-                </span>
-
 
               </div>
 
 
+              <p
+                className="
+                  mt-3
+                  text-sm
+                  leading-relaxed
+                  text-muted-foreground
+                "
+              >
+                {result.investor.reason}
+              </p>
+
             </div>
-
-
-
-          </div>
-
-
-
-
-
-
-
-
-
-          <div>
 
 
             <div
               className="
-              mb-3
-              flex
-              items-center
-              gap-2
+                rounded-2xl
+                border
+                bg-background
+                p-5
               "
             >
 
-
-              <Target
+              <div
                 className="
-                h-4
-                w-4
-                text-primary
+                  flex
+                  items-center
+                  gap-2
                 "
-              />
+              >
+
+                <Clock3
+                  className="
+                    h-4
+                    w-4
+                    text-primary
+                  "
+                />
+
+                <p
+                  className="
+                    font-semibold
+                  "
+                >
+                  אופק השקעה
+                </p>
+
+              </div>
 
 
               <p
                 className="
-                text-xs
-                font-bold
-                text-muted-foreground
+                  mt-3
+                  text-lg
+                  font-bold
                 "
               >
-
-                גורמים שהשפיעו על ההחלטה
-
+                {
+                  scenario?.years
+                    ? `${scenario.years} שנים`
+                    : "לא הוגדר"
+                }
               </p>
 
 
+              <p
+                className="
+                  mt-2
+                  text-sm
+                  leading-relaxed
+                  text-muted-foreground
+                "
+              >
+                {
+                  result.horizonExplanation ??
+                  "האופק משפיע על האופן שבו המערכת מפרשת תנודתיות וזמן."
+                }
+              </p>
+
             </div>
 
+          </div>
 
 
+          {/* =====================================================
+              Decision Signals
+          ===================================================== */}
+
+          <div>
+
+            <div
+              className="
+                mb-3
+                flex
+                items-center
+                gap-2
+              "
+            >
+
+              <Target
+                className="
+                  h-4
+                  w-4
+                  text-primary
+                "
+              />
+
+              <p
+                className="
+                  text-xs
+                  font-bold
+                  text-muted-foreground
+                "
+              >
+                גורמים שהשפיעו על הניתוח
+              </p>
+
+            </div>
 
 
             {
               signals.length === 0
 
-              ?
+                ?
 
-              (
-
-              <div
-                className="
-                rounded-xl
-                border
-                p-4
-                text-sm
-                text-muted-foreground
-                "
-              >
-
-                לא נמצאו גורמים להצגה.
-
-              </div>
-
-              )
-
-
-              :
-
-              (
-
-              <div
-                className="
-                flex
-                flex-col
-                gap-3
-                "
-              >
-
-
-                {
-                  signals.map(
-
-                    (signal,index)=>(
-
-
-                    <div
-
-                      key={
-                        `${signal.title}-${index}`
-                      }
-
-                      className="
+                (
+                  <div
+                    className="
                       rounded-xl
                       border
-                      bg-background
                       p-4
-                      "
+                      text-sm
+                      text-muted-foreground
+                    "
+                  >
+                    לא נמצאו גורמים להצגה.
+                  </div>
+                )
 
-                    >
+                :
+
+                (
+                  <div
+                    className="
+                      grid
+                      grid-cols-1
+                      gap-3
+                      md:grid-cols-2
+                    "
+                  >
+
+                    {
+                      signals.map(
+                        (
+                          signal,
+                          index
+                        ) => (
+
+                          <motion.div
+                            key={
+                              `${signal.title}-${index}`
+                            }
+
+                            initial={{
+                              opacity:0,
+                              y:8,
+                            }}
+
+                            animate={{
+                              opacity:1,
+                              y:0,
+                            }}
+
+                            transition={{
+                              duration:0.25,
+                              delay:index * 0.04,
+                            }}
+
+                            className="
+                              rounded-xl
+                              border
+                              bg-background
+                              p-4
+                            "
+                          >
+
+                            <div
+                              className="
+                                flex
+                                items-center
+                                justify-between
+                                gap-2
+                              "
+                            >
+
+                              <Badge
+                                variant="outline"
+                              >
+                                {
+                                  signalLabel(
+                                    signal
+                                  )
+                                }
+                              </Badge>
+
+                              <span
+                                className="
+                                  text-[10px]
+                                  text-muted-foreground
+                                "
+                              >
+                                {signal.type ?? "analysis"}
+                              </span>
+
+                            </div>
 
 
+                            <p
+                              className="
+                                mt-3
+                                text-sm
+                                leading-relaxed
+                                text-muted-foreground
+                              "
+                            >
+                              {signal.description}
+                            </p>
 
-                      <Badge
-                        variant="outline"
-                      >
+                          </motion.div>
 
-                        {signal.title}
+                        )
+                      )
+                    }
 
-                      </Badge>
-
-
-
-
-
-                      <p
-                        className="
-                        mt-2
-                        text-sm
-                        text-muted-foreground
-                        "
-                      >
-
-                        {signal.description}
-
-                      </p>
-
-
-                    </div>
-
-
-                    )
-
-                  )
-                }
-
-
-              </div>
-
-              )
+                  </div>
+                )
 
             }
-
 
           </div>
 
 
-
-
-
-
+          {/* =====================================================
+              Portfolio Explanation
+          ===================================================== */}
 
           <div
             className="
-            border-t
-            pt-5
+              rounded-2xl
+              border
+              bg-card
+              p-5
             "
           >
 
-
-            <p
-              className="
-              mb-3
-              text-xs
-              font-bold
-              text-muted-foreground
-              "
-            >
-
-              מבנה תיק שנוצר ללמידה
-
-            </p>
-
-
-
-
             <div
               className="
-              flex
-              flex-wrap
-              gap-2
+                mb-3
+                flex
+                items-center
+                gap-2
               "
             >
 
+              <PieChart
+                className="
+                  h-4
+                  w-4
+                  text-primary
+                "
+              />
 
-              {
-                result.allocation.map(
-
-                  item=>(
-
-                    <Badge
-
-                      key={item.name}
-
-                      variant="outline"
-
-                    >
-
-                      {item.name}
-
-                    </Badge>
-
-                  )
-
-                )
-              }
-
+              <p
+                className="
+                  font-semibold
+                "
+              >
+                למה מבנה התיק נראה כך?
+              </p>
 
             </div>
 
 
+            <p
+              className="
+                text-sm
+                leading-relaxed
+                text-muted-foreground
+              "
+            >
+              {
+                result.aiNarration.portfolioSummary
+              }
+            </p>
+
+
+            {
+              metrics &&
+
+              (
+                <div
+                  className="
+                    mt-4
+                    grid
+                    grid-cols-1
+                    gap-3
+                    sm:grid-cols-3
+                  "
+                >
+
+                  <div
+                    className="
+                      rounded-xl
+                      border
+                      bg-background
+                      p-3
+                    "
+                  >
+
+                    <p
+                      className="
+                        text-xs
+                        text-muted-foreground
+                      "
+                    >
+                      פיזור
+                    </p>
+
+                    <p
+                      className="
+                        mt-1
+                        font-bold
+                      "
+                    >
+                      {metrics.diversification}
+                    </p>
+
+                  </div>
+
+
+                  <div
+                    className="
+                      rounded-xl
+                      border
+                      bg-background
+                      p-3
+                    "
+                  >
+
+                    <p
+                      className="
+                        text-xs
+                        text-muted-foreground
+                      "
+                    >
+                      תשואה משוערת
+                    </p>
+
+                    <p
+                      className="
+                        mt-1
+                        font-bold
+                      "
+                    >
+                      {metrics.expectedReturn}%
+                    </p>
+
+                  </div>
+
+
+                  <div
+                    className="
+                      rounded-xl
+                      border
+                      bg-background
+                      p-3
+                    "
+                  >
+
+                    <p
+                      className="
+                        text-xs
+                        text-muted-foreground
+                      "
+                    >
+                      פוזיציה מרכזית
+                    </p>
+
+                    <p
+                      className="
+                        mt-1
+                        font-bold
+                      "
+                    >
+                      {metrics.largestPosition}
+                    </p>
+
+                  </div>
+
+                </div>
+              )
+            }
+
           </div>
 
 
+          {/* =====================================================
+              Educational Disclaimer
+          ===================================================== */}
 
-
+          <div
+            className="
+              border-t
+              pt-5
+              text-xs
+              leading-relaxed
+              text-muted-foreground
+            "
+          >
+            ⚠️ שכבת Explainable AI מיועדת להסבר חינוכי
+            של תהליך הניתוח בלבד. היא אינה מהווה המלצת השקעה,
+            תחזית מובטחת או ייעוץ פיננסי.
+          </div>
 
 
           <div
             className="
-            flex
-            items-center
-            gap-2
-            text-xs
-            text-muted-foreground
+              flex
+              items-center
+              gap-2
+              text-xs
+              text-muted-foreground
             "
           >
 
-
             <span
               className="
-              h-1.5
-              w-1.5
-              rounded-full
-              bg-primary
+                h-1.5
+                w-1.5
+                rounded-full
+                bg-primary
               "
             />
 
-
             מקור:
-
             {" "}
-
             InvestED Explainable AI Educational Engine
-
 
           </div>
 
-
-
-
         </CardContent>
-
 
       </Card>
 
-
-
     </motion.div>
 
-
   );
-
 
 }
