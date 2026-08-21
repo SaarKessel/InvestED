@@ -814,10 +814,59 @@ export type RiskProfile =
   | "medium"
   | "high";
 
+// ---------------------------------------------------------------------------
+// Centralized Horizon Analysis
+// ---------------------------------------------------------------------------
+
+export type HorizonProfile =
+  | "short"
+  | "medium"
+  | "long";
+
+export interface HorizonAnalysis {
+  years: number;
+  profile: HorizonProfile;
+  label: string;
+}
+
+export function calculateHorizonAnalysis(
+  years: number
+): HorizonAnalysis {
+
+  const safeYears =
+    Number.isFinite(years)
+      ? Math.max(0, years)
+      : 0;
+
+  if (safeYears < 5) {
+    return {
+      years: safeYears,
+      profile: "short",
+      label: "קצר טווח"
+    };
+  }
+
+  if (safeYears < 15) {
+    return {
+      years: safeYears,
+      profile: "medium",
+      label: "טווח בינוני"
+    };
+  }
+
+  return {
+    years: safeYears,
+    profile: "long",
+    label: "טווח ארוך"
+  };
+}
+
+
 function detectRiskProfile(
   assetClassKey: string,
   years: number
 ): RiskProfile {
+
   if (assetClassKey === "bonds") {
     return "low";
   }
@@ -837,6 +886,25 @@ function detectRiskProfile(
   }
 
   return "medium";
+}
+
+function getRiskLabel(
+  riskProfile: RiskProfile
+): string {
+
+  switch (riskProfile) {
+    case "low":
+      return "נמוכה";
+
+    case "medium":
+      return "בינונית";
+
+    case "high":
+      return "גבוהה";
+
+    default:
+      return "בינונית";
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -1127,6 +1195,11 @@ export interface GoalPlannerResult {
   requiredMonthlyContribution: number;
   targetAmountSource: TargetAmountSource;
   withdrawalRatePct: number | null;
+
+  // Beta 2.0 — Goal Planner financial breakdown
+  initialCapital: number;
+  futureContributions: number;
+  estimatedGrowth: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -1265,6 +1338,27 @@ export function calculateGoalPlanner(
     targetAmount <= 0
   ) {
     return {
+
+      initialCapital:
+        scenario.initialInvestment,
+
+      futureContributions:
+        scenario.monthlyContribution *
+        12 *
+        scenario.years,
+
+      estimatedGrowth:
+        Math.max(
+          projection.finalBalance -
+          scenario.initialInvestment -
+          (
+            scenario.monthlyContribution *
+            12 *
+            scenario.years
+          ),
+          0
+        ),
+
       hasGoal: false,
 
       targetAmount: null,
@@ -1320,6 +1414,27 @@ export function calculateGoalPlanner(
     );
 
   return {
+
+      initialCapital:
+        scenario.initialInvestment,
+
+      futureContributions:
+        scenario.monthlyContribution *
+        12 *
+        scenario.years,
+
+      estimatedGrowth:
+        Math.max(
+          projection.finalBalance -
+          scenario.initialInvestment -
+          (
+            scenario.monthlyContribution *
+            12 *
+            scenario.years
+          ),
+          0
+        ),
+
     hasGoal: true,
 
     targetAmount,
@@ -1347,6 +1462,94 @@ export function calculateGoalPlanner(
 // This is the recommended single entry point for CalculatorPage.
 // ---------------------------------------------------------------------------
 
+// ---------------------------------------------------------------------------
+// Explainable AI Result
+//
+// IMPORTANT:
+// This object is derived from the financial analysis.
+// UI components must display this result rather than
+// recalculating risk, horizon or confidence themselves.
+// ---------------------------------------------------------------------------
+
+export interface AIExplanationResult {
+
+  assetClassKey: string;
+
+  assetLabel: string;
+
+  annualReturnPct: number;
+
+  horizon: HorizonAnalysis;
+
+  riskProfile: RiskProfile;
+
+  riskLabel: string;
+
+  confidence: number;
+
+  goal: string;
+
+  explanation: string;
+}
+
+export function buildAIExplanationResult(
+  scenario: FinancialScenario & {
+    targetAmountSource: TargetAmountSource;
+    withdrawalRatePct: number | null;
+  }
+): AIExplanationResult {
+
+  const asset =
+    ASSET_CLASSES.find(
+      item => item.key === scenario.assetClassKey
+    ) ??
+    ASSET_CLASSES.find(
+      item => item.key === "balanced"
+    )!;
+
+  const horizon =
+    calculateHorizonAnalysis(
+      scenario.years
+    );
+
+  const normalizedRiskProfile: RiskProfile =
+    scenario.riskProfile === "low" ||
+    scenario.riskProfile === "medium" ||
+    scenario.riskProfile === "high"
+      ? scenario.riskProfile
+      : "medium";
+
+  const explanation =
+    `המערכת ניתחה את התרחיש לפי אופק השקעה של ` +
+    `${scenario.years} שנים, חשיפה ל-${asset.label} ` +
+    `ומטרת ${scenario.goal}.`;
+
+  return {
+    assetClassKey:
+      scenario.assetClassKey,
+
+    assetLabel:
+      asset.label,
+
+    annualReturnPct:
+      scenario.annualReturnPct,
+
+    horizon,
+
+    riskProfile: normalizedRiskProfile,
+riskLabel:
+      getRiskLabel(normalizedRiskProfile),
+
+    confidence:
+      scenario.confidence,
+
+    goal:
+      scenario.goal,
+
+    explanation
+  };
+}
+
 export interface UnifiedFinancialAnalysis {
   scenario:
     FinancialScenario & {
@@ -1357,6 +1560,7 @@ export interface UnifiedFinancialAnalysis {
   projection: ProjectionResult;
 
   goalPlanner: GoalPlannerResult;
+  aiExplanation: AIExplanationResult;
 }
 
 export function analyzeFinancialScenarioWithProjection(
@@ -1377,10 +1581,16 @@ export function analyzeFinancialScenarioWithProjection(
   const goalPlanner =
     calculateGoalPlanner(scenario);
 
+  const aiExplanation =
+    buildAIExplanationResult(
+      scenario
+    );
+
   return {
     scenario,
     projection,
-    goalPlanner
+    goalPlanner,
+    aiExplanation
   };
 }
 
