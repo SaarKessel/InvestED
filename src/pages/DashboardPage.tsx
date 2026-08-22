@@ -377,9 +377,13 @@ export function DashboardPage() {
                   requiredMonthlyContribution={
                     result.goalPlan.requiredMonthlyContribution
                   }
+                  monthlyContribution={
+                    result.goalPlan.monthlyContribution
+                  }
                   expectedFinalValue={result.goalPlan.expectedFinalValue}
                   progressPercentage={result.goalPlan.progressPercentage}
                   achievable={result.goalPlan.achievable}
+                  gap={result.goalPlan.gap}
                 />
               </div>
             )}

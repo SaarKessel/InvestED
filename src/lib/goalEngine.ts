@@ -8,6 +8,7 @@ export interface GoalAnalysis {
   currentAmount: number;
   years: number;
   requiredMonthlyContribution: number;
+  monthlyContribution: number;
   expectedFinalValue: number;
   progressPercentage: number;
   achievable: boolean;
@@ -293,6 +294,9 @@ export function analyzeFinancialGoal(
 
     requiredMonthlyContribution:
       monthlyRequired,
+
+    monthlyContribution:
+      safeMonthlyContribution,
 
     expectedFinalValue:
       roundedFutureValue,

@@ -29,6 +29,8 @@ interface Props {
 
   requiredMonthlyContribution: number;
 
+  monthlyContribution: number;
+
   expectedFinalValue: number;
 
   progressPercentage: number;
@@ -115,6 +117,8 @@ export function GoalPlannerCard({
 
   requiredMonthlyContribution,
 
+  monthlyContribution,
+
   expectedFinalValue,
 
   progressPercentage,
@@ -160,10 +164,43 @@ export function GoalPlannerCard({
   const safeMonthlyContribution =
     Math.max(
       safeNumber(
+        monthlyContribution
+      ),
+      0
+    );
+
+  const safeRequiredMonthlyContribution =
+    Math.max(
+      safeNumber(
         requiredMonthlyContribution
       ),
       0
     );
+
+  // ---------------------------------------------------
+  // Projection Composition
+  //
+  // Educational decomposition:
+  // current capital + future contributions + estimated
+  // investment growth.
+  // ---------------------------------------------------
+
+  const estimatedFutureContributions =
+    safeMonthlyContribution *
+    12 *
+    safeYears;
+
+  const estimatedCapitalBase =
+    safeCurrentAmount +
+    estimatedFutureContributions;
+
+  const estimatedGrowth =
+    Math.max(
+      safeExpectedFinalValue -
+        estimatedCapitalBase,
+      0
+    );
+
 
 
   // ---------------------------------------------------
@@ -197,49 +234,9 @@ export function GoalPlannerCard({
   // Gap
   // ---------------------------------------------------
 
-  const calculatedGap =
-    safeTargetAmount !== null
-      ? Math.max(
-          safeTargetAmount -
-            safeExpectedFinalValue,
-          0
-        )
-      : 0;
-
-
   const gapToGoal =
-    gap !== undefined
-      ? Math.max(
-          safeNumber(gap),
-          0
-        )
-      : calculatedGap;
-
-
-  // ---------------------------------------------------
-  // Estimated Contributions
-  //
-  // Educational approximation:
-  // current capital + future monthly deposits.
-  // It intentionally does NOT represent investment
-  // return attribution.
-  // ---------------------------------------------------
-
-  const estimatedFutureContributions =
-    safeMonthlyContribution *
-    12 *
-    safeYears;
-
-
-  const estimatedCapitalBase =
-    safeCurrentAmount +
-    estimatedFutureContributions;
-
-
-  const estimatedGrowth =
     Math.max(
-      safeExpectedFinalValue -
-        estimatedCapitalBase,
+      safeNumber(gap ?? 0),
       0
     );
 
@@ -845,7 +842,7 @@ export function GoalPlannerCard({
               "
             >
               {formatMoney(
-                safeMonthlyContribution
+                safeRequiredMonthlyContribution
               )}
             </p>
 

@@ -7,6 +7,8 @@ import type {
   FinancialScenario
 } from "@/types";
 
+import { analyzeFinancialGoal } from "./goalEngine";
+
 export type {
   FinancialScenario
 } from "@/types";
@@ -939,6 +941,58 @@ function calculateConfidence(
 }
 
 // ---------------------------------------------------------------------------
+// Explicit Return Rate Detection
+// ---------------------------------------------------------------------------
+//
+// If the user explicitly provides an annual return assumption,
+// that value takes precedence over the asset-class default.
+//
+// Examples:
+//   "בתשואה של 7%"        -> 7
+//   "תשואה של 7%"         -> 7
+//   "with 7% return"      -> 7
+//   "at 7% annual return" -> 7
+//
+// If no explicit return is provided, return null so the caller
+// can safely fall back to the selected asset's default.
+// ---------------------------------------------------------------------------
+
+function detectExplicitAnnualReturnPct(
+  text: string
+): number | null {
+  const normalized = text
+    .replace(/,/g, ".")
+    .trim();
+
+  const patterns = [
+    /(?:תשואה|תשואה שנתית)\s*(?:של|שנתית של)?\s*(\d+(?:\.\d+)?)\s*%/i,
+    /(?:ב|עם|לפי|על)\s*(?:תשואה|תשואה שנתית)\s*(?:של)?\s*(\d+(?:\.\d+)?)\s*%/i,
+    /(?:annual\s+return|expected\s+return|return)\s*(?:of|at|is)?\s*(\d+(?:\.\d+)?)\s*%/i,
+    /(\d+(?:\.\d+)?)\s*%\s*(?:תשואה|תשואה שנתית|return|annual return)/i
+  ];
+
+  for (const pattern of patterns) {
+    const match = normalized.match(pattern);
+
+    if (!match) {
+      continue;
+    }
+
+    const value = Number(match[1]);
+
+    if (
+      Number.isFinite(value) &&
+      value >= -100 &&
+      value <= 100
+    ) {
+      return value;
+    }
+  }
+
+  return null;
+}
+
+// ---------------------------------------------------------------------------
 // Scenario Builder
 // ---------------------------------------------------------------------------
 
@@ -981,6 +1035,9 @@ export function analyzeFinancialScenario(
   const targetMonthlyIncome =
     detectTargetMonthlyIncome(text);
 
+  const explicitAnnualReturnPct =
+    detectExplicitAnnualReturnPct(text);
+
   const resolvedTarget =
     resolveTargetAmount(
       text,
@@ -1013,6 +1070,7 @@ export function analyzeFinancialScenario(
       asset.key,
 
     annualReturnPct:
+      explicitAnnualReturnPct ??
       asset.expectedReturnPct,
 
     goal:
@@ -1186,21 +1244,6 @@ export function computeProjection(
 // Goal Planner
 // ---------------------------------------------------------------------------
 
-export interface GoalPlannerResult {
-  hasGoal: boolean;
-  targetAmount: number | null;
-  currentProjectedValue: number;
-  progressPct: number;
-  gap: number;
-  requiredMonthlyContribution: number;
-  targetAmountSource: TargetAmountSource;
-  withdrawalRatePct: number | null;
-
-  // Beta 2.0 — Goal Planner financial breakdown
-  initialCapital: number;
-  futureContributions: number;
-  estimatedGrowth: number;
-}
 
 // ---------------------------------------------------------------------------
 // Required Monthly Contribution
@@ -1307,154 +1350,6 @@ export function calculateRequiredMonthlyContribution(
 // Goal Planner Analysis
 // ---------------------------------------------------------------------------
 
-export function calculateGoalPlanner(
-  scenario: FinancialScenario & {
-    targetAmountSource?: TargetAmountSource;
-    withdrawalRatePct?: number | null;
-  }
-): GoalPlannerResult {
-  const projection =
-    computeProjection(
-      scenario.initialInvestment,
-      scenario.monthlyContribution,
-      scenario.years,
-      scenario.annualReturnPct,
-      DEFAULT_INFLATION_PCT
-    );
-
-  const targetAmount =
-    scenario.targetAmount;
-
-  // ---------------------------------------------------------
-  // NO TARGET
-  //
-  // This is intentional.
-  // The UI should not display a Goal Planner when the user
-  // did not provide a financial target or retirement target.
-  // ---------------------------------------------------------
-
-  if (
-    targetAmount === null ||
-    targetAmount <= 0
-  ) {
-    return {
-
-      initialCapital:
-        scenario.initialInvestment,
-
-      futureContributions:
-        scenario.monthlyContribution *
-        12 *
-        scenario.years,
-
-      estimatedGrowth:
-        Math.max(
-          projection.finalBalance -
-          scenario.initialInvestment -
-          (
-            scenario.monthlyContribution *
-            12 *
-            scenario.years
-          ),
-          0
-        ),
-
-      hasGoal: false,
-
-      targetAmount: null,
-
-      currentProjectedValue:
-        projection.finalBalance,
-
-      progressPct: 0,
-
-      gap: 0,
-
-      requiredMonthlyContribution: 0,
-
-      targetAmountSource:
-        scenario.targetAmountSource ?? "none",
-
-      withdrawalRatePct:
-        scenario.withdrawalRatePct ?? null
-    };
-  }
-
-  // ---------------------------------------------------------
-  // TARGET EXISTS
-  // ---------------------------------------------------------
-
-  const progressPct =
-    Math.min(
-      100,
-      Math.max(
-        0,
-        Math.round(
-          (
-            projection.finalBalance /
-            targetAmount
-          ) * 100
-        )
-      )
-    );
-
-  const gap =
-    Math.max(
-      0,
-      targetAmount -
-      projection.finalBalance
-    );
-
-  const requiredMonthlyContribution =
-    calculateRequiredMonthlyContribution(
-      targetAmount,
-      scenario.initialInvestment,
-      scenario.years,
-      scenario.annualReturnPct
-    );
-
-  return {
-
-      initialCapital:
-        scenario.initialInvestment,
-
-      futureContributions:
-        scenario.monthlyContribution *
-        12 *
-        scenario.years,
-
-      estimatedGrowth:
-        Math.max(
-          projection.finalBalance -
-          scenario.initialInvestment -
-          (
-            scenario.monthlyContribution *
-            12 *
-            scenario.years
-          ),
-          0
-        ),
-
-    hasGoal: true,
-
-    targetAmount,
-
-    currentProjectedValue:
-      projection.finalBalance,
-
-    progressPct,
-
-    gap,
-
-    requiredMonthlyContribution,
-
-    targetAmountSource:
-      scenario.targetAmountSource ?? "none",
-
-    withdrawalRatePct:
-      scenario.withdrawalRatePct ?? null
-  };
-}
 
 // ---------------------------------------------------------------------------
 // Unified Financial Analysis
@@ -1559,8 +1454,9 @@ export interface UnifiedFinancialAnalysis {
 
   projection: ProjectionResult;
 
-  goalPlanner: GoalPlannerResult;
   aiExplanation: AIExplanationResult;
+
+  goalPlan?: ReturnType<typeof analyzeFinancialGoal>;
 }
 
 export function analyzeFinancialScenarioWithProjection(
@@ -1577,20 +1473,30 @@ export function analyzeFinancialScenarioWithProjection(
       scenario.annualReturnPct,
       DEFAULT_INFLATION_PCT
     );
-
-  const goalPlanner =
-    calculateGoalPlanner(scenario);
-
-  const aiExplanation =
+const aiExplanation =
     buildAIExplanationResult(
       scenario
     );
 
+  const targetAmount =
+    scenario.targetAmount ?? 0;
+
+  const goalPlan =
+    targetAmount > 0
+      ? analyzeFinancialGoal(
+          scenario.initialInvestment,
+          targetAmount,
+          scenario.years,
+          scenario.annualReturnPct,
+          scenario.monthlyContribution
+        )
+      : undefined;
+
   return {
     scenario,
     projection,
-    goalPlanner,
-    aiExplanation
+    aiExplanation,
+    goalPlan
   };
 }
 
@@ -1664,7 +1570,5 @@ export function debugScenario(
   return {
     text,
     scenario: analysis.scenario,
-    projection: analysis.projection,
-    goalPlanner: analysis.goalPlanner
-  };
+    projection: analysis.projection,};
 }

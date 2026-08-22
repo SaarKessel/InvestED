@@ -1,15 +1,13 @@
 import { useState } from "react";
 
 import {
-  analyzeFinancialScenario,
+  analyzeFinancialScenarioWithProjection,
   computeProjection,
-  calculateGoalPlanner,
   ASSET_CLASSES
 } from "@/lib/calculatorEngine";
 
 import type {
-  FinancialScenario,
-  ProjectionResult
+  UnifiedFinancialAnalysis
 } from "@/lib/calculatorEngine";
 
 import {
@@ -98,11 +96,8 @@ export default function CalculatorPage() {
   const [input, setInput] =
     useState("");
 
-  const [scenario, setScenario] =
-    useState<FinancialScenario | null>(null);
-
-  const [projection, setProjection] =
-    useState<ProjectionResult | null>(null);
+  const [analysis, setAnalysis] =
+    useState<UnifiedFinancialAnalysis | null>(null);
 
 
   // -------------------------------------------------------------------------
@@ -115,34 +110,47 @@ export default function CalculatorPage() {
       return;
     }
 
-
-    const parsed =
-      analyzeFinancialScenario(input);
-
+    const result =
+      analyzeFinancialScenarioWithProjection(
+        input
+      );
 
     if (
-      !Number.isFinite(parsed.initialInvestment) ||
-      !Number.isFinite(parsed.monthlyContribution) ||
-      !Number.isFinite(parsed.years) ||
-      !Number.isFinite(parsed.annualReturnPct)
+      !Number.isFinite(
+        result.scenario.initialInvestment
+      ) ||
+      !Number.isFinite(
+        result.scenario.monthlyContribution
+      ) ||
+      !Number.isFinite(
+        result.scenario.years
+      ) ||
+      !Number.isFinite(
+        result.scenario.annualReturnPct
+      )
     ) {
       return;
     }
 
-
-    const result =
-      computeProjection(
-        parsed.initialInvestment,
-        parsed.monthlyContribution,
-        parsed.years,
-        parsed.annualReturnPct
-      );
-
-
-    setScenario(parsed);
-    setProjection(result);
+    setAnalysis(result);
 
   }
+
+
+  // -------------------------------------------------------------------------
+  // Unified Financial Analysis
+  //
+  // All primary calculator outputs now come from one analysis object.
+  // -------------------------------------------------------------------------
+
+  const scenario =
+    analysis?.scenario ?? null;
+
+  const projection =
+    analysis?.projection ?? null;
+
+  const goalPlan =
+    analysis?.goalPlan ?? null;
 
 
   // -------------------------------------------------------------------------
@@ -215,45 +223,7 @@ export default function CalculatorPage() {
       null;
 
 
-  // -------------------------------------------------------------------------
-  // Goal Planner
-  //
-  // IMPORTANT:
-  //
-  // There is now ONE Goal Planning calculation path.
-  //
-  // calculatorEngine.ts
-  //        ↓
-  // calculateGoalPlanner()
-  //        ↓
-  // GoalPlannerCard
-  //
-  // Retirement goals and explicit financial targets
-  // therefore use the same projection methodology.
-  // -------------------------------------------------------------------------
 
-  const goalPlan =
-
-    scenario && projection
-
-      ?
-
-      scenario.targetAmount !== null &&
-      scenario.targetAmount > 0
-
-        ?
-
-        calculateGoalPlanner(
-          scenario
-        )
-
-        :
-
-        null
-
-      :
-
-      null;
 
 
   return (
@@ -463,16 +433,24 @@ export default function CalculatorPage() {
                     goalPlan.requiredMonthlyContribution
                   }
 
+                  monthlyContribution={
+                    goalPlan.monthlyContribution
+                  }
+
                   expectedFinalValue={
-                    goalPlan.currentProjectedValue
+                    goalPlan.expectedFinalValue
                   }
 
                   progressPercentage={
-                    goalPlan.progressPct
+                    goalPlan.progressPercentage
                   }
 
                   achievable={
-                    goalPlan.progressPct >= 100
+                    goalPlan.progressPercentage >= 100
+                  }
+
+                  gap={
+                    goalPlan.gap
                   }
 
                 />
