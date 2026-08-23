@@ -240,93 +240,352 @@ export default function CalculatorPage() {
       >
 
         {/* -----------------------------------------------------------------
-            Header
-        ------------------------------------------------------------------ */}
+    Hero
+------------------------------------------------------------------ */}
 
-        <h1
-          className="
-            text-4xl
-            font-bold
-            mb-3
-          "
-        >
-          🧮 מחשבון ההשקעות החכם של InvestED
-        </h1>
+<div
+  className="
+    mb-10
+    text-center
+  "
+>
+  <div
+    className="
+      inline-flex
+      items-center
+      gap-2
+      rounded-full
+      border
+      border-emerald-400/20
+      bg-emerald-400/10
+      px-4
+      py-2
+      text-sm
+      font-medium
+      text-emerald-300
+      mb-5
+    "
+  >
+    <span>✨</span>
+    Smart Financial Scenario Engine
+  </div>
 
+  <h1
+    className="
+      text-4xl
+      md:text-5xl
+      font-bold
+      tracking-tight
+      mb-4
+    "
+  >
+    מחשבון ההשקעות החכם של InvestED
+  </h1>
 
-        <p
-          className="
-            text-slate-300
-            mb-8
-          "
-        >
-          תאר תרחיש השקעה בשפה טבעית וקבל הדמיה,
-          השוואת מסלולים ותובנות מבוססות AI.
-        </p>
-
-
-        {/* -----------------------------------------------------------------
-            Input
-        ------------------------------------------------------------------ */}
-
-        <div
-          className="
-            bg-card
-            border
-            border-border
-            rounded-3xl
-            p-6
-            shadow-soft
-            mb-8
-          "
-        >
-
-          <textarea
-
-            value={input}
-
-            onChange={
-              e => setInput(e.target.value)
-            }
-
-            placeholder='לדוגמה: "יש לי 300 אלף להשקיע ל-15 שנה במדד S&P 500"'
-
-            className="
-              w-full
-              h-32
-              bg-[#050B16]
-              border
-              border-[#1E3A5F]
-              rounded-xl
-              p-4
-              text-white
-              outline-none
-              resize-none
-            "
-
-          />
+  <p
+    className="
+      max-w-2xl
+      mx-auto
+      text-base
+      md:text-lg
+      leading-8
+      text-slate-300
+    "
+  >
+    תאר תרחיש השקעה בשפה טבעית וקבל סימולציה,
+    ניתוח של צמיחת ההון ותובנות מבוססות AI.
+  </p>
+</div>
 
 
-          <button
+{/* -----------------------------------------------------------------
+    Scenario Input
+------------------------------------------------------------------ */}
 
-            onClick={calculate}
+<div
+  className="
+    bg-card
+    border
+    border-border
+    rounded-3xl
+    p-5
+    md:p-7
+    shadow-soft
+    mb-8
+  "
+>
+  <div
+    className="
+      flex
+      items-center
+      justify-between
+      gap-4
+      mb-4
+    "
+  >
+    <div>
+      <h2
+        className="
+          text-xl
+          font-bold
+          text-white
+        "
+      >
+        מה תרצה לבדוק?
+      </h2>
 
-            className="
-              mt-5
-              bg-emerald-400
-              hover:bg-emerald-500
-              text-black
-              font-bold
-              px-8
-              py-3
-              rounded-xl
-            "
+      <p
+        className="
+          mt-1
+          text-sm
+          text-slate-400
+        "
+      >
+        כתוב את תרחיש ההשקעה שלך בשפה חופשית.
+      </p>
+    </div>
 
-          >
-            חשב תרחיש 🚀
-          </button>
+    <span
+      className="
+        hidden
+        md:inline-flex
+        items-center
+        rounded-full
+        border
+        border-[#1E3A5F]
+        bg-[#050B16]
+        px-3
+        py-1
+        text-xs
+        text-slate-400
+      "
+    >
+      Natural Language
+    </span>
+  </div>
 
-        </div>
+
+  <textarea
+    value={input}
+    onChange={
+      e => setInput(e.target.value)
+    }
+    placeholder='לדוגמה: "יש לי 300 אלף להשקיע ל-15 שנה במדד S&P 500"'
+    className="
+      w-full
+      min-h-36
+      bg-[#050B16]
+      border
+      border-[#1E3A5F]
+      rounded-2xl
+      p-5
+      text-white
+      placeholder:text-slate-500
+      outline-none
+      resize-none
+      transition
+      focus:border-emerald-400
+      focus:ring-2
+      focus:ring-emerald-400/10
+    "
+  />
+
+
+  {/* Example scenarios */}
+
+  <div className="mt-5">
+
+    <p
+      className="
+        text-xs
+        font-medium
+        text-slate-500
+        mb-3
+      "
+    >
+      נסה תרחיש לדוגמה
+    </p>
+
+    <div
+      className="
+        flex
+        flex-wrap
+        gap-2
+      "
+    >
+
+      <button
+        type="button"
+        onClick={() =>
+          setInput(
+            "יש לי 300 אלף שקל להשקיע ל-15 שנה במדד S&P 500"
+          )
+        }
+        className="
+          rounded-full
+          border
+          border-[#1E3A5F]
+          bg-[#050B16]
+          px-4
+          py-2
+          text-sm
+          text-slate-300
+          transition
+          hover:border-emerald-400/50
+          hover:text-emerald-300
+        "
+      >
+        📈 בניית הון
+      </button>
+
+
+      <button
+        type="button"
+        onClick={() =>
+          setInput(
+            "אני רוצה להגיע ל-2 מיליון שקל בעוד 15 שנה"
+          )
+        }
+        className="
+          rounded-full
+          border
+          border-[#1E3A5F]
+          bg-[#050B16]
+          px-4
+          py-2
+          text-sm
+          text-slate-300
+          transition
+          hover:border-emerald-400/50
+          hover:text-emerald-300
+        "
+      >
+        🎯 יעד פיננסי
+      </button>
+
+
+      <button
+        type="button"
+        onClick={() =>
+          setInput(
+            "אני רוצה להשקיע 5000 שקל בחודש במשך 20 שנה"
+          )
+        }
+        className="
+          rounded-full
+          border
+          border-[#1E3A5F]
+          bg-[#050B16]
+          px-4
+          py-2
+          text-sm
+          text-slate-300
+          transition
+          hover:border-emerald-400/50
+          hover:text-emerald-300
+        "
+      >
+        💰 הפקדה חודשית
+      </button>
+
+    </div>
+
+  </div>
+
+
+  <div
+    className="
+      mt-6
+      flex
+      flex-col
+      md:flex-row
+      md:items-center
+      md:justify-between
+      gap-4
+    "
+  >
+
+    <p
+      className="
+        text-xs
+        leading-5
+        text-slate-500
+        max-w-xl
+      "
+    >
+      💡 הסימולציה מיועדת למטרות לימוד והמחשה בלבד
+      ואינה מהווה ייעוץ השקעות או הבטחת תשואה.
+    </p>
+
+
+    <button
+      type="button"
+      onClick={calculate}
+      disabled={!input.trim()}
+      className="
+        w-full
+        md:w-auto
+        bg-emerald-400
+        hover:bg-emerald-500
+        disabled:opacity-40
+        disabled:cursor-not-allowed
+        text-black
+        font-bold
+        px-8
+        py-3
+        rounded-xl
+        transition
+        shadow-lg
+        shadow-emerald-400/10
+      "
+    >
+      נתח תרחיש 🚀
+    </button>
+
+  </div>
+
+</div>
+
+
+{/* -----------------------------------------------------------------
+    Empty State
+------------------------------------------------------------------ */}
+
+{
+  !scenario &&
+
+  <div
+    className="
+      grid
+      md:grid-cols-4
+      gap-4
+      mb-8
+    "
+  >
+
+    <MiniCard
+      label="📊 סימולציה"
+      value="שווי עתידי של ההשקעה"
+    />
+
+    <MiniCard
+      label="📈 צמיחה"
+      value="השפעת הריבית דריבית"
+    />
+
+    <MiniCard
+      label="🎯 יעדים"
+      value="בדיקת התקדמות ליעד"
+    />
+
+    <MiniCard
+      label="🤖 Explainable AI"
+      value="הסבר ברור לתרחיש"
+    />
+
+  </div>
+}
+
 
 
         {/* -----------------------------------------------------------------
