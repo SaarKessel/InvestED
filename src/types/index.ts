@@ -15,8 +15,6 @@ export type InterestArea =
   | "נדל\"ן";
 
 
-
-
 // =====================================================
 // Risk / Horizon
 // =====================================================
@@ -60,43 +58,47 @@ export type FinancialGoal =
   | null;
 
 
-
-
 // =====================================================
 // Financial Scenario
 // =====================================================
 
 export interface FinancialScenario {
 
-  initialInvestment:number;
+  initialInvestment: number;
 
-  monthlyContribution:number;
+  /**
+   * Indicates whether the user explicitly provided
+   * an initial investment amount.
+   *
+   * Optional for backwards compatibility with
+   * legacy / backup analysis flows.
+   */
+  initialInvestmentSpecified?: boolean;
 
-  currentAge:number | null;
+  monthlyContribution: number;
 
-  targetAge:number | null;
+  currentAge: number | null;
 
-  targetAmount:number | null;
+  targetAge: number | null;
 
-  targetMonthlyIncome:number | null;
+  targetAmount: number | null;
 
-  years:number;
+  targetMonthlyIncome: number | null;
 
-  assetClassKey:string;
+  years: number;
 
-  annualReturnPct:number;
+  assetClassKey: string;
 
-  goal:string;
+  annualReturnPct: number;
 
-  confidence:number;
+  goal: string;
 
-  detectedInterests:string[];
+  confidence: number;
 
-  riskProfile?:RiskLevel | string;
+  detectedInterests: string[];
 
+  riskProfile?: RiskLevel | string;
 }
-
-
 
 
 // =====================================================
@@ -112,17 +114,13 @@ export type InvestorType =
   | "משקיע מאוזן";
 
 
-
 export interface InvestorClassification {
 
-  type:InvestorType;
+  type: InvestorType;
 
-  reason:string;
+  reason: string;
 
 }
-
-
-
 
 
 // =====================================================
@@ -131,26 +129,23 @@ export interface InvestorClassification {
 
 export interface ProfileFlags {
 
-  age:number | null;
+  age: number | null;
 
-  interests:InterestArea[];
+  interests: InterestArea[];
 
-  preferences:string[];
+  preferences: string[];
 
-  knowledgeLevel:KnowledgeLevel;
+  knowledgeLevel: KnowledgeLevel;
 
-  riskLevel:RiskLevel;
+  riskLevel: RiskLevel;
 
-  horizon:InvestmentHorizon;
+  horizon: InvestmentHorizon;
 
-  goal:FinancialGoal;
+  goal: FinancialGoal;
 
-  rawText?:string;
+  rawText?: string;
 
 }
-
-
-
 
 
 // =====================================================
@@ -159,18 +154,15 @@ export interface ProfileFlags {
 
 export interface RiskDescription {
 
-  band:string;
+  band: string;
 
-  volatility:string;
+  volatility: string;
 
-  psychology?:string;
+  psychology?: string;
 
-  explanation?:string;
+  explanation?: string;
 
 }
-
-
-
 
 
 // =====================================================
@@ -179,16 +171,13 @@ export interface RiskDescription {
 
 export interface AnalysisSignal {
 
-  title:string;
+  title: string;
 
-  description:string;
+  description: string;
 
-  type?:string;
+  type?: string;
 
 }
-
-
-
 
 
 // =====================================================
@@ -197,20 +186,17 @@ export interface AnalysisSignal {
 
 export interface AllocationItem {
 
-  name:string;
+  name: string;
 
-  value:number;
+  value: number;
 
-  label?:string;
+  label?: string;
 
-  percentage?:number;
+  percentage?: number;
 
-  color?:string;
+  color?: string;
 
 }
-
-
-
 
 
 // =====================================================
@@ -222,7 +208,7 @@ export interface PortfolioMetrics {
   /**
    * Expected annual return estimate
    */
-  expectedReturn:number;
+  expectedReturn: number;
 
 
   /**
@@ -237,49 +223,45 @@ export interface PortfolioMetrics {
   /**
    * Estimated volatility description
    */
-  volatilityEstimate:string;
+  volatilityEstimate: string;
 
 
   /**
    * Portfolio diversification quality
    */
-  diversification:string;
+  diversification: string;
 
 
   /**
    * Equity allocation percentage
    */
-  equityExposure:number;
+  equityExposure: number;
 
 
   /**
    * Fixed income + cash percentage
    */
-  fixedIncomeExposure:number;
+  fixedIncomeExposure: number;
 
 
   /**
    * Largest portfolio position
    */
-  largestPosition:string;
+  largestPosition: string;
 
 
   /**
    * Largest position percentage
    */
-  largestPositionWeight:number;
+  largestPositionWeight: number;
 
 
   /**
    * Human readable explanation
    */
-  explanation:string;
+  explanation: string;
 
 }
-
-
-
-
 
 
 // =====================================================
@@ -288,16 +270,16 @@ export interface PortfolioMetrics {
 
 export interface Projection {
 
-  totalContributed:number;
+  totalContributed: number;
 
-  growth:number;
+  growth: number;
 
-  finalBalance:number;
+  finalBalance: number;
 
   /**
    * Inflation-adjusted educational projection.
    */
-  realValueAfterInflation:number;
+  realValueAfterInflation: number;
 
   /**
    * Year-by-year projection series used by
@@ -305,18 +287,15 @@ export interface Projection {
    */
   series: {
 
-    year:number;
+    year: number;
 
-    contributed:number;
+    contributed: number;
 
-    balance:number;
+    balance: number;
 
   }[];
 
 }
-
-
-
 
 
 // =====================================================
@@ -325,16 +304,13 @@ export interface Projection {
 
 export interface AiNarration {
 
-  source:string;
+  source: string;
 
-  profileSummary?:string;
+  profileSummary?: string;
 
-  portfolioSummary:string;
+  portfolioSummary: string;
 
 }
-
-
-
 
 
 // =====================================================
@@ -343,63 +319,50 @@ export interface AiNarration {
 
 export interface AnalysisResult {
 
+  profileText: string;
 
-  profileText:string;
+  flags: ProfileFlags;
 
+  scenario: FinancialScenario | null;
 
-  flags:ProfileFlags;
+  horizon: InvestmentHorizon;
 
+  horizonExplanation?: string;
 
-  scenario:FinancialScenario | null;
+  investor: InvestorClassification;
 
+  riskScore: number;
 
-  horizon:InvestmentHorizon;
+  riskDescription?: RiskDescription;
 
-
-  horizonExplanation?:string;
-
-
-  investor:InvestorClassification;
-
-
-  riskScore:number;
-
-
-  riskDescription?:RiskDescription;
-
-
-  allocation:AllocationItem[];
-
+  allocation: AllocationItem[];
 
   /**
    * Portfolio Intelligence Layer
    * Optional because older analysis flows
    * may not calculate metrics yet.
    */
-  portfolioMetrics?:PortfolioMetrics;
+  portfolioMetrics?: PortfolioMetrics;
 
-
-  projection:Projection;
-
-
+  projection: Projection;
 
   goalPlan?: {
 
-    targetAmount:number;
+    targetAmount: number;
 
-    currentAmount:number;
+    currentAmount: number;
 
-    years:number;
+    years: number;
 
-    requiredMonthlyContribution:number;
+    requiredMonthlyContribution: number;
 
-    monthlyContribution:number;
+    monthlyContribution: number;
 
-    expectedFinalValue:number;
+    expectedFinalValue: number;
 
-    progressPercentage:number;
+    progressPercentage: number;
 
-    achievable:boolean;
+    achievable: boolean;
 
     /**
      * Remaining amount required to reach
@@ -407,32 +370,23 @@ export interface AnalysisResult {
      *
      * Calculated by goalEngine.
      */
-    gap:number;
+    gap: number;
 
   };
 
 
+  explainability: {
 
+    summary?: string;
 
-  explainability:{
-
-    summary?:string;
-
-    signals:AnalysisSignal[];
+    signals: AnalysisSignal[];
 
   };
 
 
-
-
-  aiNarration:AiNarration;
-
+  aiNarration: AiNarration;
 
 }
-
-
-
-
 
 
 // =====================================================
@@ -441,38 +395,34 @@ export interface AnalysisResult {
 
 export interface CandleDatum {
 
-  date:string;
+  date: string;
 
-  open:number;
+  open: number;
 
-  high:number;
+  high: number;
 
-  low:number;
+  low: number;
 
-  close:number;
+  close: number;
 
-  price:number;
+  price: number;
 
 }
-
 
 
 export interface MarketAsset {
 
-  symbol:string;
+  symbol: string;
 
-  name:string;
+  name: string;
 
-  price:number;
+  price: number;
 
-  changePercent:number;
+  changePercent: number;
 
-  history:CandleDatum[];
+  history: CandleDatum[];
 
 }
-
-
-
 
 
 // =====================================================
@@ -487,32 +437,21 @@ export interface Strategy {
     | "growth"
     | "value";
 
+  name: string;
 
-  name:string;
+  riskLevel: number;
 
+  whatItIs: string;
 
-  riskLevel:number;
+  suitableFor: string;
 
+  pros: string[];
 
-  whatItIs:string;
+  cons: string[];
 
-
-  suitableFor:string;
-
-
-  pros:string[];
-
-
-  cons:string[];
-
-
-  stocks:string[];
+  stocks: string[];
 
 }
-
-
-
-
 
 
 // =====================================================
@@ -521,32 +460,30 @@ export interface Strategy {
 
 export interface FinanceConcept {
 
-  term:string;
+  term: string;
 
-  definition:string;
+  definition: string;
 
 }
-
 
 
 export interface Mistake {
 
-  title:string;
+  title: string;
 
-  detail:string;
+  detail: string;
 
 }
 
 
-
 export interface RoadmapStage {
 
-  stage:string;
+  stage: string;
 
-  title:string;
+  title: string;
 
-  description?:string;
+  description?: string;
 
-  topics:string[];
+  topics: string[];
 
 }

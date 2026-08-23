@@ -352,6 +352,51 @@ function detectInitialAmount(text: string): number {
 
   return 0;
 }
+ function detectInitialAmountSpecified(
+  text: string
+): boolean {
+  const normalized = normalizeText(text);
+
+  const initialPatterns = [
+    /(?:יש לי|יש ברשותי|ברשותי|קיים לי|מחזיק|השקעתי)\s*(?:היום|כיום|כרגע)?\s*(?:הון של|הון בסך|סכום של|סכום)?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון|thousand|million)?/i,
+
+    /(?:initial investment|starting capital|initial capital)\s*(?:of|is)?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?/i
+  ];
+
+  for (const pattern of initialPatterns) {
+    const match = normalized.match(pattern);
+
+    if (!match) {
+      continue;
+    }
+
+    const value = Number(
+      match[1].replace(/,/g, "")
+    );
+
+    if (
+      Number.isFinite(value) &&
+      value > 0
+    ) {
+      return true;
+    }
+  }
+
+  if (
+    normalized.includes("חצי מיליון") ||
+    normalized.includes("חצי מליון") ||
+    normalized.includes("מיליון וחצי") ||
+    normalized.includes("מליון וחצי") ||
+    normalized.includes("שני מיליון") ||
+    normalized.includes("שני מליון") ||
+    normalized.includes("רבע מיליון") ||
+    normalized.includes("רבע מליון")
+  ) {
+    return true;
+  }
+
+  return false;
+}
 
 // ---------------------------------------------------------------------------
 // Monthly Contribution Detection
@@ -576,7 +621,7 @@ function detectTargetMonthlyIncome(
 
     /(?:חופש כלכלי|עצמאות כלכלית)\s+(?:עם\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)/i
   ];
-  
+
 
   for (const pattern of patterns) {
     const match = normalized.match(pattern);
@@ -1088,6 +1133,9 @@ export function analyzeFinancialScenario(
   const initialInvestment =
     detectInitialAmount(text);
 
+const initialInvestmentSpecified =
+  detectInitialAmountSpecified(text);
+
   const monthlyContribution =
     detectMonthlyContribution(text);
 
@@ -1111,6 +1159,8 @@ export function analyzeFinancialScenario(
 
   return {
     initialInvestment,
+
+  initialInvestmentSpecified,
 
     monthlyContribution,
 
