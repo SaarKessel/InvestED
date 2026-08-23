@@ -37,8 +37,8 @@ export const ASSET_CLASSES: AssetClassOption[] = [
   {
     key: "sp500",
     label: "מדד S&P 500",
-    expectedReturnPct: 10,
-    annualReturnPct: 10,
+    expectedReturnPct: 7,
+    annualReturnPct: 7,
     keywords: [
       "s&p",
       "sp500",
@@ -659,7 +659,9 @@ function detectTargetMonthlyIncome(
 function detectExplicitTargetAmount(
   text: string
 ): number | null {
+
   const normalized = normalizeText(text);
+
   const phraseTargets: Array<{
     phrase: string;
     amount: number;
@@ -705,36 +707,53 @@ function detectExplicitTargetAmount(
     normalized.includes("רוצה") ||
     normalized.includes("צריך") ||
     normalized.includes("target") ||
-    normalized.includes("goal");
+    normalized.includes("goal") ||
+    normalized.includes("retire") ||
+    normalized.includes("retirement");
 
   if (hasTargetContext) {
+
     for (const target of phraseTargets) {
-      if (normalized.includes(target.phrase)) {
+
+      if (
+        normalized.includes(target.phrase)
+      ) {
         return target.amount;
       }
     }
   }
+
   const patterns = [
+
+    // Hebrew explicit target
     /(?:יעד|מטרה)\s*(?:של\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?/i,
 
+    // Hebrew "להגיע ל..."
     /(?:להגיע|להגיע ל|להגיע ל־|להגיע ל-)\s*(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?/i,
 
+    // Hebrew "רוצה / צריך..."
     /(?:רוצה|צריך)\s*(?:להגיע\s*)?(?:ל\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?/i,
-    /(?:retire|retirement)\s+(?:with|with\s+a\s+target\s+of)?\s*(\d[\d,]*(?:\.\d+)?)\s*(k|m|million|thousand)?/i,
 
-    /(?:target|goal)\s*(?:of\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|million)?/i
+    // English retirement target
+    /(?:retire|retirement)\s+(?:with|with\s+a\s+target\s+of)\s+(\d[\d,]*(?:\.\d+)?)\s*(k|m|million|thousand)?/i,
+
+    // English target / goal
+    /(?:target|goal)\s*(?:of\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|million|thousand)?/i
   ];
 
   for (const pattern of patterns) {
-    const match = normalized.match(pattern);
+
+    const match =
+      normalized.match(pattern);
 
     if (!match) {
       continue;
     }
 
-    const value = Number(
-      match[1].replace(/,/g, "")
-    );
+    const value =
+      Number(
+        match[1].replace(/,/g, "")
+      );
 
     if (
       !Number.isFinite(value) ||
@@ -743,12 +762,31 @@ function detectExplicitTargetAmount(
       continue;
     }
 
-    return Math.round(
-      parseAmount(
-        value,
-        match[2] ?? ""
-      )
-    );
+    const unit =
+      (match[2] ?? "").toLowerCase();
+
+    let amount = value;
+
+    if (
+      unit === "k" ||
+      unit === "thousand" ||
+      unit === "אלף"
+    ) {
+
+      amount *= 1_000;
+
+    } else if (
+      unit === "m" ||
+      unit === "million" ||
+      unit === "מיליון" ||
+      unit === "מליון"
+    ) {
+
+      amount *= 1_000_000;
+
+    }
+
+    return Math.round(amount);
   }
 
   return null;

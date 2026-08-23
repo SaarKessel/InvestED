@@ -32,6 +32,8 @@ interface Props {
 
   riskProfile?: string | null;
 
+  riskLevel?: string | null;
+
   goal?:string;
 
   confidence?:number;
@@ -77,17 +79,27 @@ const safeRiskProfile =
 // ---------------------------------------------------------------------------
 
 
-function riskLabel(){
+function riskLabel(): string {
 
-  switch(safeRiskProfile){
+  if (
+    safeRiskProfile === "נמוכה" ||
+    safeRiskProfile === "בינונית" ||
+    safeRiskProfile === "בינונית-גבוהה" ||
+    safeRiskProfile === "גבוהה"
+  ) {
+    return safeRiskProfile;
+  }
+
+  switch (safeRiskProfile) {
 
     case "low":
       return "נמוכה";
 
+    case "medium":
+      return "בינונית";
 
     case "high":
       return "גבוהה";
-
 
     default:
       return "בינונית";
@@ -95,8 +107,6 @@ function riskLabel(){
   }
 
 }
-
-
 
 
 function goalLabel(){

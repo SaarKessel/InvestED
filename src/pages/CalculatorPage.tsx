@@ -743,14 +743,18 @@ export default function CalculatorPage() {
                   scenario.assetClassKey
 
                 }
+riskProfile={
+  aiInsight?.riskLevel
+}
 
-                riskProfile={
-                  scenario.riskProfile
-                }
 
-                goal={
-                  scenario.goal
-                }
+riskLevel={
+  aiInsight?.riskLevel
+}
+
+goal={
+  scenario.goal
+}
 
                 confidence={
                   scenario.confidence
