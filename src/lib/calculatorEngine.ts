@@ -337,16 +337,18 @@ function detectInitialAmount(text: string): number {
     return 0;
   }
 
-  if (
-    normalized.includes("חצי מיליון") ||
-    normalized.includes("חצי מליון") ||
-    normalized.includes("מיליון וחצי") ||
-    normalized.includes("מליון וחצי") ||
-    normalized.includes("רבע מיליון") ||
-    normalized.includes("רבע מליון")
-  ) {
-    return detectAmount(text);
-  }
+ if (
+  normalized.includes("חצי מיליון") ||
+  normalized.includes("חצי מליון") ||
+  normalized.includes("מיליון וחצי") ||
+  normalized.includes("מליון וחצי") ||
+  normalized.includes("שני מיליון") ||
+  normalized.includes("שני מליון") ||
+  normalized.includes("רבע מיליון") ||
+  normalized.includes("רבע מליון")
+) {
+  return detectAmount(text);
+}
 
   return 0;
 }
@@ -563,15 +565,18 @@ function detectTargetMonthlyIncome(
     return null;
   }
 
-  const patterns = [
+   const patterns = [
     /(?:הכנסה|הכנסה חודשית|להכנסה)\s*(?:של\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)/i,
 
     /(?:רוצה|לקבל)\s*(?:לקבל\s*)?(?:הכנסה\s*)?(?:של\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)/i,
 
     /(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)\s*(?:בפרישה|לאחר הפרישה)/i,
 
-    /(?:בפרישה|לאחר הפרישה)\s*(?:עם\s*)?(?:הכנסה\s*)?(?:של\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)/i
+    /(?:בפרישה|לאחר הפרישה)\s*(?:עם\s*)?(?:הכנסה\s*)?(?:של\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)/i,
+
+    /(?:חופש כלכלי|עצמאות כלכלית)\s+(?:עם\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)/i
   ];
+  
 
   for (const pattern of patterns) {
     const match = normalized.match(pattern);
@@ -610,13 +615,67 @@ function detectExplicitTargetAmount(
   text: string
 ): number | null {
   const normalized = normalizeText(text);
+  const phraseTargets: Array<{
+    phrase: string;
+    amount: number;
+  }> = [
+    {
+      phrase: "חצי מיליון",
+      amount: 500_000
+    },
+    {
+      phrase: "חצי מליון",
+      amount: 500_000
+    },
+    {
+      phrase: "מיליון וחצי",
+      amount: 1_500_000
+    },
+    {
+      phrase: "מליון וחצי",
+      amount: 1_500_000
+    },
+    {
+      phrase: "שני מיליון",
+      amount: 2_000_000
+    },
+    {
+      phrase: "שני מליון",
+      amount: 2_000_000
+    },
+    {
+      phrase: "רבע מיליון",
+      amount: 250_000
+    },
+    {
+      phrase: "רבע מליון",
+      amount: 250_000
+    }
+  ];
 
+  const hasTargetContext =
+    normalized.includes("יעד") ||
+    normalized.includes("מטרה") ||
+    normalized.includes("להגיע") ||
+    normalized.includes("רוצה") ||
+    normalized.includes("צריך") ||
+    normalized.includes("target") ||
+    normalized.includes("goal");
+
+  if (hasTargetContext) {
+    for (const target of phraseTargets) {
+      if (normalized.includes(target.phrase)) {
+        return target.amount;
+      }
+    }
+  }
   const patterns = [
     /(?:יעד|מטרה)\s*(?:של\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?/i,
 
     /(?:להגיע|להגיע ל|להגיע ל־|להגיע ל-)\s*(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?/i,
 
     /(?:רוצה|צריך)\s*(?:להגיע\s*)?(?:ל\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?/i,
+    /(?:retire|retirement)\s+(?:with|with\s+a\s+target\s+of)?\s*(\d[\d,]*(?:\.\d+)?)\s*(k|m|million|thousand)?/i,
 
     /(?:target|goal)\s*(?:of\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|million)?/i
   ];
