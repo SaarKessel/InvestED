@@ -109,31 +109,25 @@ function riskLabel(): string {
 }
 
 
-function goalLabel(){
-
-  switch(goal){
-
+function goalLabel() {
+  switch (goal) {
     case "retirement":
       return "פרישה מוקדמת";
-
 
     case "home":
       return "רכישת דירה";
 
-
     case "child":
       return "חיסכון לילדים";
 
-
     case "wealth":
+    case "financial_independence":
       return "עצמאות כלכלית";
 
-
+    case "growth":
     default:
       return "בניית הון";
-
   }
-
 }
 
 
@@ -144,6 +138,19 @@ years >= 10;
 
 
 
+
+const initialInvestmentText =
+  initialInvestment > 0
+    ? `זוהה סכום התחלתי של ${Math.max(0, initialInvestment ?? 0).toLocaleString("he-IL")} ₪`
+    : "לא זוהה הון התחלתי";
+
+const monthlyContributionText =
+  monthlyContribution > 0
+    ? `הפקדה חודשית של ${Math.max(0, monthlyContribution ?? 0).toLocaleString("he-IL")} ₪`
+    : "ללא הפקדה חודשית";
+
+const baseDataExplanation =
+  `${initialInvestmentText} ו-${monthlyContributionText}.`;
 
 return (
 
@@ -243,8 +250,7 @@ title="נתוני בסיס"
 
 text={
 
-`זוהה סכום התחלתי של ${initialInvestment.toLocaleString("he-IL")} ₪
-והפקדה חודשית של ${monthlyContribution.toLocaleString("he-IL")} ₪.`
+baseDataExplanation
 
 }
 

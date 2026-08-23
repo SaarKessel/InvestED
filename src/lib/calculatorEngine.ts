@@ -1169,13 +1169,13 @@ export function analyzeFinancialScenario(
     )!;
 
   const initialInvestment =
-    detectInitialAmount(text);
+    Math.max(0, detectInitialAmount(text));
 
-const initialInvestmentSpecified =
-  detectInitialAmountSpecified(text);
+  const initialInvestmentSpecified =
+    detectInitialAmountSpecified(text);
 
   const monthlyContribution =
-    detectMonthlyContribution(text);
+    Math.max(0, detectMonthlyContribution(text));
 
   const targetMonthlyIncome =
     detectTargetMonthlyIncome(text);
