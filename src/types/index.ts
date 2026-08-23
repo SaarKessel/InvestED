@@ -393,6 +393,8 @@ export interface AnalysisResult {
 
     requiredMonthlyContribution:number;
 
+    monthlyContribution:number;
+
     expectedFinalValue:number;
 
     progressPercentage:number;
