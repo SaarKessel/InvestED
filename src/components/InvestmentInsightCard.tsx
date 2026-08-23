@@ -39,38 +39,19 @@ export function InvestmentInsightCard({
 }: InvestmentInsightCardProps) {
 
 
-  const growthPercentage =
-
-    finalBalance > 0
-
-      ?
-
-      Math.round(
-        growth /
-        finalBalance *
-        100
+  const growthShare =
+  finalBalance > 0
+    ? Math.round(
+        (growth / finalBalance) * 100
       )
+    : 0;
 
-      :
-
-      0;
-
-
-  const contributionPercentage =
-
-    finalBalance > 0
-
-      ?
-
-      Math.round(
-        totalContributed /
-        finalBalance *
-        100
+const contributionShare =
+  finalBalance > 0
+    ? Math.round(
+        (totalContributed / finalBalance) * 100
       )
-
-      :
-
-      0;
+    : 0;
 
 
   // -------------------------------------------------------------------------
@@ -418,15 +399,15 @@ export function InvestmentInsightCard({
         "
       >
 
-        <h3
-          className="
-            text-lg
-            font-bold
-            mb-4
-          "
-        >
-          💰 מתוך השווי הסופי:
-        </h3>
+       <h3
+  className="
+    text-lg
+    font-bold
+    mb-4
+  "
+>
+  💰 מאיפה הגיע השווי הסופי?
+</h3>
 
 
         <div
@@ -464,7 +445,7 @@ export function InvestmentInsightCard({
                 text-emerald-400
               "
             >
-              {growthPercentage}%
+              {growthShare}%
             </p>
 
           </div>
@@ -497,7 +478,7 @@ export function InvestmentInsightCard({
                 text-white
               "
             >
-              {contributionPercentage}%
+              {contributionShare}%
             </p>
 
           </div>
@@ -512,8 +493,8 @@ export function InvestmentInsightCard({
             leading-7
           "
         >
-          כ־{growthPercentage}% מהשווי הסופי נוצר מצמיחת ההשקעה,
-          וכ־{contributionPercentage}% הגיעו מהכסף שהופקד.
+          כ־{growthShare}% מהשווי הסופי נוצר מצמיחת ההשקעה,
+          וכ־{contributionShare}% הגיעו מהכסף שהופקד.
         </p>
 
       </div>

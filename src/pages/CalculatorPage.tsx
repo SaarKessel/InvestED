@@ -53,12 +53,6 @@ function formatMoney(value: number) {
 }
 
 
-function percent(value: number) {
-
-  return `${Math.round(value || 0)}%`;
-
-}
-
 
 function goalLabel(goal?: string) {
 
@@ -720,49 +714,6 @@ export default function CalculatorPage() {
                       )
                     }
                   </span>
-
-                </p>
-
-
-                <p
-                  className="
-                    mt-4
-                    text-slate-300
-                  "
-                >
-
-                  💰 מתוך השווי הסופי:
-
-                  <span
-                    className="
-                      text-emerald-400
-                      font-bold
-                    "
-                  >
-
-                    {" "}
-
-                    {
-                      percent(
-
-                        projection.finalBalance > 0
-
-                          ?
-
-                          projection.growth /
-                          projection.finalBalance *
-                          100
-
-                          :
-
-                          0
-
-                      )
-                    }
-
-                  </span>
-
-                  נוצר מצמיחת ההשקעה.
 
                 </p>
 
