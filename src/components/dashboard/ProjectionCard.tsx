@@ -49,6 +49,20 @@ function formatCurrency(
 // Projection Card
 // =====================================================
 
+interface ScenarioProjection {
+  growth?: number;
+  finalBalance?: number;
+  realValueAfterInflation?: number;
+}
+
+interface FinancialScenarioWithProjection {
+  initialInvestment?: number;
+  monthlyContribution?: number;
+  years?: number;
+  annualReturnPct?: number;
+  projection?: ScenarioProjection;
+}
+
 
 export function ProjectionCard({
   result
@@ -58,7 +72,7 @@ export function ProjectionCard({
 
 
 const scenario =
-  result.scenario;
+  result.scenario as FinancialScenarioWithProjection;
 
 
 
@@ -104,13 +118,13 @@ const totalContributed =
 const estimatedGrowth =
   Math.max(
     0,
-    (scenario as any).projection?.growth ?? 0
+    result.projection?.growth ?? 0
   );
 
 
 
 const finalValue =
-  (scenario as any).projection?.finalBalance
+  result.projection?.finalBalance
   ??
   (
     totalContributed +
@@ -120,7 +134,7 @@ const finalValue =
 
 
 const realValue =
-  (scenario as any).projection?.realValueAfterInflation
+  result.projection?.realValueAfterInflation
   ??
   finalValue;
 

@@ -133,17 +133,13 @@ Number(value)/1000
 
 <Tooltip
 
-formatter={(value:any, name:any)=>
+formatter={(value, name) => [
 
-[
+  `₪${Number(value).toLocaleString("he-IL")}`,
 
-`₪${Number(value).toLocaleString("he-IL")}`,
+  name
 
-name
-
-]
-
-}
+]}
 
 />
 

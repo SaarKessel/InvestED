@@ -22,7 +22,10 @@ import {
 
 import type { ReactNode } from "react";
 
-import type { AnalysisResult } from "@/types";
+import type {
+  AnalysisResult,
+  AllocationItem,
+} from "@/types";
 
 import {
   Card,
@@ -49,7 +52,7 @@ function formatMoney(value: number) {
 // Internal Portfolio Metrics
 // =====================================================
 
-function calculateLocalMetrics(allocation: any[]) {
+function calculateLocalMetrics(allocation: AllocationItem[]) {
   const largest = [...allocation].sort(
     (a, b) => b.value - a.value
   )[0];

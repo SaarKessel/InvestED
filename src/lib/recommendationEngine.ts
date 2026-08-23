@@ -25,17 +25,6 @@ export function generateRecommendations(
   }
 
 
-  if (
-    false
-  ) {
-
-    recommendations.push(
-      "���� ����� ����� ������ ������ ����������."
-    );
-
-  }
-
-
   recommendations.push(
     "����� ������ ����� �� ���� ����� ������ ���."
   );
