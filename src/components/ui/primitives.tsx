@@ -1,4 +1,8 @@
-﻿import { type ButtonHTMLAttributes, type HTMLAttributes, forwardRef } from "react";
+﻿import {
+  type ButtonHTMLAttributes,
+  type HTMLAttributes,
+  forwardRef,
+} from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
@@ -11,20 +15,21 @@ const buttonVariants = cva(
     "inline-flex items-center justify-center gap-2",
     "whitespace-nowrap rounded-xl",
     "text-sm font-semibold",
-    "transition-colors duration-200",
+    "transition-all duration-200",
     "disabled:pointer-events-none disabled:opacity-50",
     "focus-visible:outline-none",
-    "focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+    "focus-visible:ring-2 focus-visible:ring-ring",
+    "focus-visible:ring-offset-2",
     "active:scale-[0.98]",
   ],
   {
     variants: {
       variant: {
         default:
-          "gradient-brand text-white shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200",
+          "gradient-brand text-white shadow-md hover:shadow-lg hover:-translate-y-0.5",
 
         outline:
-          "border border-border bg-transparent text-foreground hover:bg-accent hover:border-primary/40",
+          "border border-border bg-card text-foreground hover:bg-accent hover:border-primary/40",
 
         ghost:
           "text-foreground hover:bg-accent hover:text-foreground",
@@ -84,7 +89,8 @@ export const Card = forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-3xl border border-border card-premium text-card-foreground",
+      "rounded-3xl border border-border",
+      "bg-card text-card-foreground",
       "transition-shadow duration-200",
       "hover:shadow-lg",
       className
@@ -126,7 +132,7 @@ export const CardTitle = forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "font-display text-xl font-bold leading-snug tracking-tight",
+      "font-display text-xl font-bold leading-snug tracking-tight text-foreground",
       className
     )}
     {...props}
@@ -193,16 +199,16 @@ const badgeVariants = cva(
           "border border-primary/20 bg-primary/10 text-primary",
 
         outline:
-          "border border-border text-muted-foreground",
+          "border border-border text-foreground",
 
         success:
           "border border-primary/20 bg-primary/10 text-primary",
 
         warning:
-          "border border-yellow-500/20 bg-yellow-500/10 text-yellow-600",
+          "border border-yellow-500/20 bg-yellow-500/10 text-yellow-700",
 
         danger:
-          "border border-red-500/20 bg-red-500/10 text-red-600",
+          "border border-red-500/20 bg-red-500/10 text-red-700",
       },
     },
 

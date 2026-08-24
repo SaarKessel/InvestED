@@ -10,188 +10,205 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  ResponsiveContainer
+  ResponsiveContainer,
+  Legend,
 } from "recharts";
 
-
-
 interface ProjectionPoint {
-
-  year:number;
-
-  balance:number;
-
-  contributed:number;
-
+  year: number;
+  balance: number;
+  contributed: number;
 }
-
-
 
 interface Props {
-
-  data:ProjectionPoint[];
-
+  data: ProjectionPoint[];
 }
 
+const currencyFormatter = new Intl.NumberFormat("he-IL", {
+  style: "currency",
+  currency: "ILS",
+  maximumFractionDigits: 0,
+});
 
-
-export function InvestmentGrowthChart({
-
-  data
-
-}:Props){
-
-
-return (
-
-<div
-className="
-mt-8
-rounded-3xl
-border
-border-border
-bg-card
-p-6
-shadow-soft
-"
->
-
-
-<h2
-className="
-text-2xl
-font-bold
-mb-2
-"
->
-
-📈 צמיחת ההשקעה לאורך זמן
-
-</h2>
-
-
-
-<p
-className="
-text-sm
-text-slate-400
-mb-6
-"
->
-
-השוואה בין הכסף שהופקד לבין הצמיחה שנוצרה מהשקעה לאורך השנים.
-
-</p>
-
-
-
-<div
-className="
-h-[350px]
-"
->
-
-
-<ResponsiveContainer
-width="100%"
-height="100%"
->
-
-
-<LineChart
-data={data}
->
-
-
-<CartesianGrid
-strokeDasharray="3 3"
-/>
-
-
-
-<XAxis
-
-dataKey="year"
-
-/>
-
-
-
-<YAxis
-
-tickFormatter={(value)=>
-
-`₪${Math.round(
-Number(value)/1000
-)}K`
-
+function formatCurrency(value: number): string {
+  return currencyFormatter.format(value);
 }
 
-/>
+function formatAxisValue(value: number): string {
+  const numericValue = Number(value);
 
+  if (numericValue >= 1_000_000) {
+    return `₪${(numericValue / 1_000_000).toFixed(1)}M`;
+  }
 
+  if (numericValue >= 1_000) {
+    return `₪${Math.round(numericValue / 1_000)}K`;
+  }
 
-<Tooltip
+  return `₪${Math.round(numericValue)}`;
+}
 
-formatter={(value, name) => [
+export function InvestmentGrowthChart({ data }: Props) {
+  if (!data || data.length === 0) {
+    return (
+      <section
+        dir="rtl"
+        className="
+          mt-8
+          rounded-3xl
+          border
+          border-border
+          bg-card
+          p-6
+          shadow-soft
+        "
+      >
+        <h2 className="text-2xl font-bold">
+          📈 צמיחת ההשקעה לאורך זמן
+        </h2>
 
-  `₪${Number(value).toLocaleString("he-IL")}`,
+        <p className="mt-2 text-sm text-muted-foreground">
+          אין מספיק נתונים להצגת גרף הצמיחה.
+        </p>
+      </section>
+    );
+  }
 
-  name
+  return (
+    <section
+      dir="rtl"
+      aria-label="גרף צמיחת ההשקעה"
+      className="
+        mt-8
+        rounded-3xl
+        border
+        border-border
+        bg-card
+        p-6
+        shadow-soft
+      "
+    >
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold">
+          📈 צמיחת ההשקעה לאורך זמן
+        </h2>
 
-]}
+        <p className="mt-2 text-sm text-muted-foreground">
+          השוואה בין הכסף שהופקד לבין השווי שנצבר מההשקעה לאורך השנים.
+        </p>
+      </div>
 
-/>
+      <div className="h-[350px] w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart
+            data={data}
+            margin={{
+              top: 10,
+              right: 10,
+              left: 10,
+              bottom: 10,
+            }}
+          >
+            <CartesianGrid
+              strokeDasharray="3 3"
+              className="stroke-border"
+            />
 
+            <XAxis
+              dataKey="year"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={10}
+              tickFormatter={(value) => `${value}`}
+              label={{
+                value: "שנים",
+                position: "insideBottom",
+                offset: -5,
+              }}
+            />
 
+            <YAxis
+              tickLine={false}
+              axisLine={false}
+              tickMargin={8}
+              tickFormatter={formatAxisValue}
+              width={70}
+            />
 
+            <Tooltip
+              formatter={(value, name) => [
+                formatCurrency(Number(value)),
+                name === "balance"
+                  ? "שווי תיק"
+                  : "סה״כ הפקדות",
+              ]}
+              labelFormatter={(label) => `שנה ${label}`}
+              contentStyle={{
+                borderRadius: "12px",
+                border: "1px solid hsl(var(--border))",
+                backgroundColor: "hsl(var(--card))",
+              }}
+              labelStyle={{
+                fontWeight: 600,
+              }}
+            />
 
-<Line
+            <Legend
+              verticalAlign="top"
+              align="right"
+              height={36}
+              formatter={(value) =>
+                value === "balance"
+                  ? "שווי תיק"
+                  : "סה״כ הפקדות"
+              }
+            />
 
-type="monotone"
+            <Line
+              type="monotone"
+              dataKey="balance"
+              name="balance"
+              stroke="hsl(var(--primary))"
+              strokeWidth={3}
+              dot={false}
+              activeDot={{ r: 5 }}
+            />
 
-dataKey="balance"
+            <Line
+              type="monotone"
+              dataKey="contributed"
+              name="contributed"
+              stroke="hsl(var(--secondary))"
+              strokeWidth={2}
+              strokeDasharray="6 4"
+              dot={false}
+              activeDot={{ r: 4 }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
 
-name="שווי תיק"
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <div className="rounded-2xl border border-border bg-muted/30 p-4">
+          <p className="text-sm text-muted-foreground">
+            שווי תיק
+          </p>
 
-strokeWidth={3}
+          <p className="mt-1 font-semibold">
+            הכסף שהצטבר כולל צמיחת ההשקעה.
+          </p>
+        </div>
 
-dot={false}
+        <div className="rounded-2xl border border-border bg-muted/30 p-4">
+          <p className="text-sm text-muted-foreground">
+            סה״כ הפקדות
+          </p>
 
-/>
-
-
-
-
-<Line
-
-type="monotone"
-
-dataKey="contributed"
-
-name="סה״כ הפקדות"
-
-strokeWidth={2}
-
-dot={false}
-
-/>
-
-
-
-</LineChart>
-
-
-</ResponsiveContainer>
-
-
-</div>
-
-
-</div>
-
-
-);
-
-
+          <p className="mt-1 font-semibold">
+            הכסף שהושקע בפועל לאורך התקופה.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
 }

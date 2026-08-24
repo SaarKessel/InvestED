@@ -4,11 +4,14 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================================
+   INVESTED — ACCESSIBLE FINTECH DESIGN SYSTEM
+   ============================================================ */
+
 @layer base {
-
   :root {
-
-    --background: 220 25% 98%;
+    /* Light theme */
+    --background: 210 40% 98%;
     --foreground: 222 47% 11%;
 
     --card: 0 0% 100%;
@@ -17,165 +20,296 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222 47% 11%;
 
-    --primary: 158 64% 40%;
+    --primary: 158 72% 32%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 199 89% 48%;
+    --secondary: 199 75% 32%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 210 40% 94%;
+    --muted-foreground: 215 25% 27%;
 
-    --accent: 199 89% 96%;
+    --accent: 158 60% 92%;
     --accent-foreground: 222 47% 11%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 158 64% 40%;
+    --border: 214 25% 82%;
+    --input: 214 25% 82%;
+
+    --ring: 158 72% 32%;
 
     --radius: 1rem;
   }
 
-
   .dark {
+    /* Dark theme */
+    --background: 222 55% 5%;
+    --foreground: 210 40% 98%;
 
-    --background: 222 47% 6%;
-    --foreground: 210 40% 96%;
+    --card: 222 47% 9%;
+    --card-foreground: 210 40% 98%;
 
-    --card: 222 40% 10%;
-    --card-foreground: 210 40% 96%;
+    --popover: 222 47% 9%;
+    --popover-foreground: 210 40% 98%;
 
-    --popover: 222 40% 10%;
-    --popover-foreground: 210 40% 96%;
+    --primary: 158 76% 45%;
+    --primary-foreground: 222 55% 5%;
 
-    --primary: 158 64% 45%;
-    --primary-foreground: 222 47% 8%;
+    --secondary: 199 89% 48%;
+    --secondary-foreground: 222 55% 5%;
 
-    --secondary: 199 89% 55%;
-    --secondary-foreground: 222 47% 8%;
+    --muted: 222 42% 14%;
+    --muted-foreground: 210 30% 88%;
 
-    --muted: 217 33% 14%;
-    --muted-foreground: 215 20% 65%;
+    --accent: 191 91% 48%;
+    --accent-foreground: 222 55% 5%;
 
-    --accent: 217 33% 16%;
-    --accent-foreground: 210 40% 96%;
+    --border: 217 35% 30%;
+    --input: 217 35% 25%;
 
-    --border: 217 33% 20%;
-    --input: 217 33% 20%;
-
-    --ring: 158 64% 45%;
+    --ring: 158 76% 45%;
   }
-
 
   * {
     @apply border-border;
   }
 
-
   html {
     scroll-behavior: smooth;
   }
 
-
   body {
-
     @apply bg-background text-foreground antialiased;
 
-    font-family:
-      "Heebo",
-      sans-serif;
-  }
+    margin: 0;
+    font-family: "Heebo", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.6;
 
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
 
   h1,
   h2,
   h3,
-  h4 {
-
-    font-family:
-      "Heebo",
-      sans-serif;
-
-    letter-spacing:
-      -0.03em;
+  h4,
+  h5,
+  h6 {
+    font-family: "Heebo", Arial, sans-serif;
+    color: hsl(var(--foreground));
+    letter-spacing: -0.02em;
   }
 
+  h1,
+  h2 {
+    font-weight: 800;
+  }
+
+  h3,
+  h4 {
+    font-weight: 700;
+  }
+
+  p {
+    color: hsl(var(--foreground));
+  }
+
+  input,
+  textarea,
+  select {
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--background));
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: hsl(215 15% 45%);
+    opacity: 1;
+  }
+
+  a {
+    color: hsl(var(--primary));
+  }
+
+  a:hover {
+    color: hsl(158 72% 25%);
+  }
 
   ::selection {
-
-    background:
-      hsl(var(--primary));
-
-    color:white;
+    background: hsl(var(--primary));
+    color: #ffffff;
   }
-
 }
 
+/* ============================================================
+   COMPONENTS
+   ============================================================ */
 
-@layer utilities {
-
-
-  .gradient-brand {
-
-    background:
-    linear-gradient(
-      135deg,
-      hsl(var(--primary)),
-      hsl(var(--secondary))
-    );
-
-  }
-
-
-  .gradient-text {
-
-    background:
-    linear-gradient(
-      135deg,
-      hsl(var(--primary)),
-      hsl(var(--secondary))
-    );
-
-    -webkit-background-clip:text;
-    background-clip:text;
-
-    color:transparent;
-
-  }
-
+@layer components {
+  /*
+    Important:
+    Cards use normal theme colors by default.
+    Dark premium cards must be explicitly requested.
+  */
 
   .card-premium {
+    background: hsl(var(--card));
+    color: hsl(var(--card-foreground));
 
-    background:
-    linear-gradient(
-      145deg,
-      hsl(var(--card)),
-      hsl(var(--muted))
-    );
-
-
-    border:
-    1px solid hsl(var(--border));
-
+    border: 1px solid hsl(var(--border));
 
     box-shadow:
-    0 20px 40px rgba(0,0,0,.08);
+      0 10px 30px rgba(15, 23, 42, 0.08);
 
+    transition:
+      border-color 180ms ease,
+      box-shadow 180ms ease,
+      transform 180ms ease;
   }
 
+  .card-premium:hover {
+    border-color: hsl(var(--primary) / 0.35);
+
+    box-shadow:
+      0 16px 40px rgba(15, 23, 42, 0.12);
+  }
+
+  .surface-fintech {
+    background: #0B1628;
+    color: #F8FAFC;
+    border: 1px solid #2A4668;
+  }
+
+  .surface-fintech-dark {
+    background: #050B16;
+    color: #F8FAFC;
+    border: 1px solid #2A4668;
+  }
+}
+
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+
+@layer utilities {
+  .gradient-brand {
+    background:
+      linear-gradient(
+        135deg,
+        hsl(var(--primary)),
+        hsl(var(--secondary))
+      );
+  }
+
+  /*
+    Decorative heading only.
+    Do not use this for financial data or body text.
+  */
+  .gradient-text {
+    background:
+      linear-gradient(
+        135deg,
+        hsl(158 72% 30%),
+        hsl(199 75% 32%)
+      );
+
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .text-readable {
+    color: hsl(var(--foreground)) !important;
+  }
+
+  .text-readable-secondary {
+    color: hsl(var(--muted-foreground)) !important;
+  }
+
+  .text-readable-muted {
+    color: hsl(215 20% 35%) !important;
+  }
+
+  .financial-number {
+    color: hsl(var(--foreground));
+
+    font-weight: 800;
+
+    font-variant-numeric: tabular-nums;
+
+    letter-spacing: -0.02em;
+  }
+
+  .financial-number-positive {
+    color: hsl(158 72% 27%);
+
+    font-weight: 800;
+
+    font-variant-numeric: tabular-nums;
+  }
+
+  .financial-number-secondary {
+    color: hsl(199 75% 28%);
+
+    font-weight: 700;
+
+    font-variant-numeric: tabular-nums;
+  }
+
+  .label-readable {
+    color: hsl(var(--foreground));
+    font-weight: 600;
+  }
+
+  .description-readable {
+    color: hsl(var(--muted-foreground));
+    line-height: 1.7;
+  }
+
+  .divider-readable {
+    border-color: hsl(var(--border));
+  }
 
   .bg-grid {
-
     background-image:
-    radial-gradient(
-      hsl(var(--border)) 1px,
-      transparent 1px
-    );
+      radial-gradient(
+        hsl(var(--border) / 0.8) 1px,
+        transparent 1px
+      );
 
-
-    background-size:
-    24px 24px;
-
+    background-size: 24px 24px;
   }
 
+  .focus-readable:focus-visible {
+    outline:
+      3px solid
+      hsl(var(--ring));
+
+    outline-offset: 3px;
+  }
+}
+
+/* ============================================================
+   ACCESSIBILITY
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+
+    transition-duration: 0.01ms !important;
+
+    animation-duration: 0.01ms !important;
+
+    animation-iteration-count: 1 !important;
+  }
+}
+
+@media (max-width: 640px) {
+  body {
+    font-size: 16px;
+    line-height: 1.65;
+  }
 }

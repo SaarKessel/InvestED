@@ -43,7 +43,7 @@ export function InvestmentComparison({
       </h3>
 
       <p className="mt-2 text-sm text-muted-foreground">
-        אותה השקעה, מסלולים שונים — לראות כיצד התשואה משפיעה לאורך זמן.
+        אותה השקעה, מסלולים שונים — המחשה של השפעת הנחת התשואה על השווי העתידי.
       </p>
 
       <div className="mt-5 space-y-3">
@@ -72,7 +72,7 @@ export function InvestmentComparison({
 
                 {isBest && (
                   <span className="rounded-full bg-primary px-3 py-1 text-xs text-primary-foreground">
-                    הגבוה ביותר
+                    שווי עתידי גבוה יותר
                   </span>
                 )}
               </div>

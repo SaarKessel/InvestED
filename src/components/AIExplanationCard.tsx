@@ -32,8 +32,6 @@ interface Props {
 
   riskProfile?: string | null;
 
-  riskLevel?: string | null;
-
   goal?:string;
 
   confidence?:number;
@@ -47,32 +45,19 @@ interface Props {
 // ---------------------------------------------------------------------------
 
 export function AIExplanationCard({
-
   initialInvestment,
-
   monthlyContribution,
-
   years,
-
   annualReturnPct,
-
   assetLabel,
-
   riskProfile,
-
-  goal="growth",
-
-  confidence=0
-
-}:Props){
-
+  goal = "growth",
+  confidence = 0
+}: Props) {
 
 
 const safeRiskProfile =
   riskProfile ?? "medium";
-
-
-
 
 // ---------------------------------------------------------------------------
 // Labels
