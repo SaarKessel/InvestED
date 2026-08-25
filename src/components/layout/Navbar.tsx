@@ -1,22 +1,24 @@
 import { Link, NavLink } from "react-router-dom";
-import { Moon, Sun, Menu, X, Sparkles } from "lucide-react";
+import { Moon, Sun, Menu, X, Sparkles, Globe } from "lucide-react";
 import { useState } from "react";
 import { Logo } from "./Logo";
 import { Button } from "@/components/ui/primitives";
 import { useTheme } from "@/hooks/useTheme";
+import { useLanguage } from "@/context/languageContext";
 import { cn } from "@/lib/utils";
-
-const NAV_LINKS = [
-  { to: "/", label: "בית" },
-  { to: "/calculator", label: "מחשבון חכם" },
-  { to: "/about", label: "אודות" },
-  { to: "/faq", label: "שאלות נפוצות" },
-  { to: "/contact", label: "צור קשר" },
-];
 
 export function Navbar() {
   const { theme, toggleTheme } = useTheme();
+  const { language, toggleLanguage, t } = useLanguage();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const navLinks = [
+    { to: "/", label: t("nav_home", "בית") },
+    { to: "/calculator", label: t("nav_calculator", "מחשבון חכם") },
+    { to: "/about", label: t("nav_about", "אודות") },
+    { to: "/faq", label: t("nav_faq", "שאלות נפוצות") },
+    { to: "/contact", label: t("nav_contact", "צור קשר") },
+  ];
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/50 bg-background/75 backdrop-blur-xl supports-[backdrop-filter]:bg-background/65">
@@ -26,7 +28,7 @@ export function Navbar() {
         <Link
           to="/"
           className="shrink-0 transition-transform duration-200 hover:scale-[1.02]"
-          aria-label="InvestED - דף הבית"
+          aria-label="InvestED"
         >
           <Logo />
         </Link>
@@ -34,9 +36,9 @@ export function Navbar() {
         {/* Desktop Navigation */}
         <nav
           className="hidden items-center gap-1 rounded-2xl border border-border/50 bg-card/50 p-1 md:flex"
-          aria-label="ניווט ראשי"
+          aria-label={language === "he" ? "ניווט ראשי" : "Main Navigation"}
         >
-          {NAV_LINKS.map((link) => (
+          {navLinks.map((link) => (
             <NavLink
               key={link.to}
               to={link.to}
@@ -63,12 +65,24 @@ export function Navbar() {
         {/* Actions */}
         <div className="flex items-center gap-2">
           
+          {/* Language Switcher */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={toggleLanguage}
+            aria-label={t("nav_switch_lang", language === "he" ? "Switch to English" : "החלף לעברית")}
+            className="h-10 gap-1.5 rounded-xl px-3 text-xs font-semibold text-muted-foreground hover:bg-accent hover:text-foreground"
+          >
+            <Globe className="h-4 w-4 text-primary" />
+            <span>{language === "he" ? "EN" : "עב"}</span>
+          </Button>
+
           {/* Theme Toggle */}
           <Button
             variant="ghost"
             size="icon"
             onClick={toggleTheme}
-            aria-label="החלף מצב תצוגה"
+            aria-label={t("nav_switch_theme", "החלף מצב תצוגה")}
             className="rounded-xl text-muted-foreground hover:text-foreground"
           >
             {theme === "dark" ? (
@@ -85,7 +99,7 @@ export function Navbar() {
               className="group rounded-xl px-5 shadow-md"
             >
               <Sparkles className="h-4 w-4 transition-transform duration-200 group-hover:rotate-12" />
-              התחל ללמוד
+              {t("nav_start", "התחל ללמוד")}
             </Button>
           </Link>
 
@@ -95,7 +109,7 @@ export function Navbar() {
             size="icon"
             className="rounded-xl md:hidden"
             onClick={() => setMobileOpen((open) => !open)}
-            aria-label={mobileOpen ? "סגור תפריט" : "פתח תפריט"}
+            aria-label={mobileOpen ? t("nav_mobile_close", "סגור תפריט") : t("nav_mobile_open", "פתח תפריט")}
             aria-expanded={mobileOpen}
           >
             {mobileOpen ? (
@@ -112,9 +126,9 @@ export function Navbar() {
         <div className="border-t border-border/50 bg-background/95 backdrop-blur-xl md:hidden">
           <nav
             className="container flex flex-col gap-1 py-4"
-            aria-label="ניווט נייד"
+            aria-label={language === "he" ? "ניווט נייד" : "Mobile Navigation"}
           >
-            {NAV_LINKS.map((link) => (
+            {navLinks.map((link) => (
               <NavLink
                 key={link.to}
                 to={link.to}
@@ -142,7 +156,7 @@ export function Navbar() {
             >
               <Button className="w-full rounded-xl">
                 <Sparkles className="h-4 w-4" />
-                התחל ללמוד
+                {t("nav_start", "התחל ללמוד")}
               </Button>
             </Link>
           </nav>

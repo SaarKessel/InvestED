@@ -297,30 +297,19 @@ LEARNING_ROADMAP ?? [];
 
 
 
-if(
-knowledge === "experienced"
-){
-
-return [
-
-...base.slice(2).reverse(),
-
-{
-...base[0],
-title:
-`${base[0]?.title ?? "בסיס"} (רענון אופציונלי)`
-},
-
-{
-...base[1],
-title:
-`${base[1]?.title ?? "בסיס"} (רענון אופציונלי)`
-},
-
-];
-
-
-}
+    if (knowledge === "experienced") {
+      return [
+        ...base.slice(2),
+        {
+          ...base[0],
+          title: `${base[0]?.title ?? "בסיס"} (רענון אופציונלי)`,
+        },
+        {
+          ...base[1],
+          title: `${base[1]?.title ?? "בסיס"} (רענון אופציונלי)`,
+        },
+      ];
+    }
 
 
 

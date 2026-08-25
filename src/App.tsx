@@ -1,5 +1,6 @@
-﻿import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/hooks/useTheme";
+import { LanguageProvider } from "@/context/languageContext";
 import { AnalysisProvider } from "@/context/AnalysisContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { LandingPage } from "@/pages/LandingPage";
@@ -16,8 +17,9 @@ import { NotFoundPage } from "@/pages/NotFoundPage";
 export default function App() {
   return (
     <ErrorBoundary>
-      <ThemeProvider>
-        <AnalysisProvider>
+      <LanguageProvider>
+        <ThemeProvider>
+          <AnalysisProvider>
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<LandingPage />} />
@@ -34,6 +36,7 @@ export default function App() {
           </BrowserRouter>
         </AnalysisProvider>
       </ThemeProvider>
-    </ErrorBoundary>
-  );
+    </LanguageProvider>
+  </ErrorBoundary>
+);
 }

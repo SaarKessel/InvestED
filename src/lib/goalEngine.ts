@@ -1,4 +1,4 @@
-﻿// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------
 // InvestED — Goal Planning Engine v3
 // Unified Goal & Retirement Planning
 // ---------------------------------------------------------------------------
@@ -108,9 +108,7 @@ export function detectTargetAmount(text: string): number {
   return Math.round(amount);
 }
 
-// ---------------------------------------------------------------------------
-// Required Monthly Contribution
-// ---------------------------------------------------------------------------
+import { calculateRequiredMonthlyContribution as calcRequiredMonthlyContribution } from "./calculatorEngine";
 
 export function calculateRequiredMonthlyContribution(
   targetAmount: number,
@@ -118,62 +116,11 @@ export function calculateRequiredMonthlyContribution(
   years: number,
   annualReturnPct: number = 8
 ): number {
-  if (
-    !Number.isFinite(targetAmount) ||
-    targetAmount <= 0 ||
-    !Number.isFinite(currentAmount) ||
-    currentAmount < 0 ||
-    !Number.isFinite(years) ||
-    years <= 0
-  ) {
-    return 0;
-  }
-
-  const monthlyRate =
-    annualReturnPct / 100 / 12;
-
-  const months = Math.round(years * 12);
-
-  if (months <= 0) {
-    return 0;
-  }
-
-  const futureCurrentAmount =
-    currentAmount *
-    Math.pow(
-      1 + monthlyRate,
-      months
-    );
-
-  const remainingAmount =
-    Math.max(
-      targetAmount - futureCurrentAmount,
-      0
-    );
-
-  if (remainingAmount <= 0) {
-    return 0;
-  }
-
-  if (monthlyRate === 0) {
-    return Math.round(
-      remainingAmount / months
-    );
-  }
-
-  const contribution =
-    remainingAmount *
-    monthlyRate /
-    (
-      Math.pow(
-        1 + monthlyRate,
-        months
-      ) - 1
-    );
-
-  return Math.max(
-    0,
-    Math.round(contribution)
+  return calcRequiredMonthlyContribution(
+    targetAmount,
+    currentAmount,
+    years,
+    annualReturnPct
   );
 }
 

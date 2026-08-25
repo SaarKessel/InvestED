@@ -5,62 +5,80 @@ import { Sparkles, Loader2 } from "lucide-react";
 import { Layout, DisclaimerBanner } from "@/components/layout/Layout";
 import { Button, Card, CardContent } from "@/components/ui/primitives";
 import { useAnalysis } from "@/context/useAnalysis";
-
-const EXAMPLE =
-  `אני בן 27.\nאני רוצה להשקיע לטווח ארוך.\nאין לי הרבה ידע בהשקעות.\nאני מוכן לקחת סיכון בינוני.\nאני מתעניין בטכנולוגיה ובריאות.\nאני רוצה להבין איך לבנות תיק השקעות.`;
-
-const CHIP_GROUPS: { label: string; chips: string[] }[] = [
-  {
-    label: "רמת סיכון",
-    chips: ["אני שמרן ומעדיף סיכון נמוך", "אני מוכן לקחת סיכון בינוני", "אני מוכן לקחת סיכון גבוה"],
-  },
-  {
-    label: "אופק השקעה",
-    chips: ["האופק שלי קצר, עד 3 שנים", "האופק שלי הוא כ-5 שנים", "האופק שלי הוא 20 שנה ומעלה"],
-  },
-  {
-    label: "ידע פיננסי",
-    chips: ["אין לי ידע פיננסי בכלל", "יש לי קצת ידע בסיסי", "אני משקיע עם ניסיון"],
-  },
-  {
-    label: "תחומי עניין",
-    chips: ["מתעניין בטכנולוגיה", "מתעניין בבריאות", "מתעניין בנדל\"ן ואנרגיה", "מתעניין בפיננסים ובנקאות"],
-  },
-  {
-    label: "העדפות השקעה",
-    chips: [
-      "אני רוצה הכנסה פסיבית מדיבידנדים",
-      "אני מעדיף קרנות סל על פני מניות בודדות",
-      "אני רוצה דמי ניהול נמוכים",
-      "לא מעוניין בקריפטו",
-    ],
-  },
-];
+import { useLanguage } from "@/context/languageContext";
 
 export function InputPage() {
   const [text, setText] = useState("");
   const { analyze, isAnalyzing } = useAnalysis();
+  const { language, t } = useLanguage();
   const navigate = useNavigate();
 
-const handleSubmit = async () => {
-  if (!text.trim()) return;
+  const chipGroups = language === "en" ? [
+    {
+      label: "Risk Level",
+      chips: ["I am conservative and prefer low risk", "I am willing to take moderate risk", "I want high growth and accept high risk"],
+    },
+    {
+      label: "Time Horizon",
+      chips: ["My horizon is short, up to 3 years", "My horizon is around 5 to 10 years", "My horizon is long term (20+ years)"],
+    },
+    {
+      label: "Financial Knowledge",
+      chips: ["I am a complete beginner", "I have basic financial knowledge", "I am an experienced investor"],
+    },
+    {
+      label: "Interests",
+      chips: ["Interested in Technology & AI", "Interested in Healthcare", "Interested in Real Estate & Energy", "Interested in Global S&P 500 Index"],
+    },
+    {
+      label: "Preferences",
+      chips: [
+        "I want passive income from dividends",
+        "I prefer index ETFs over individual stocks",
+        "I want low management fees",
+        "Not interested in crypto",
+      ],
+    },
+  ] : [
+    {
+      label: "רמת סיכון",
+      chips: ["אני שמרן ומעדיף סיכון נמוך", "אני מוכן לקחת סיכון בינוני", "אני מוכן לקחת סיכון גבוה"],
+    },
+    {
+      label: "אופק השקעה",
+      chips: ["האופק שלי קצר, עד 3 שנים", "האופק שלי הוא כ-5 שנים", "האופק שלי הוא 20 שנה ומעלה"],
+    },
+    {
+      label: "ידע פיננסי",
+      chips: ["אין לי ידע פיננסי בכלל", "יש לי קצת ידע בסיסי", "אני משקיע עם ניסיון"],
+    },
+    {
+      label: "תחומי עניין",
+      chips: ["מתעניין בטכנולוגיה", "מתעניין בבריאות", "מתעניין בנדל\"ן ואנרגיה", "מתעניין בפיננסים ובנקאות"],
+    },
+    {
+      label: "העדפות השקעה",
+      chips: [
+        "אני רוצה הכנסה פסיבית מדיבידנדים",
+        "אני מעדיף קרנות סל על פני מניות בודדות",
+        "אני רוצה דמי ניהול נמוכים",
+        "לא מעוניין בקריפטו",
+      ],
+    },
+  ];
 
-  console.log("1 - button clicked");
+  const handleSubmit = async () => {
+    if (!text.trim() || isAnalyzing) return;
 
-  try {
-    await analyze(text.trim());
+    try {
+      await analyze(text.trim());
+      navigate("/dashboard");
+    } catch (error) {
+      console.error("Analysis error:", error);
+    }
+  };
 
-    console.log("2 - analyze finished");
-
-    navigate("/dashboard");
-
-    console.log("3 - navigation called");
-  } catch (error) {
-    console.error("ANALYZE ERROR:", error);
-  }
-};
-
-  const addChip = (chip: string) => setText((t) => (t ? `${t}\n${chip}.` : `${chip}.`));
+  const addChip = (chip: string) => setText((currentText) => (currentText ? `${currentText}\n${chip}.` : `${chip}.`));
 
   return (
     <Layout>
@@ -73,12 +91,16 @@ const handleSubmit = async () => {
         >
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-xs font-semibold text-muted-foreground">
             <Sparkles className="h-3.5 w-3.5 text-primary" />
-            שלב 1 מתוך 2
+            {t("input_step_badge", "שלב 1 מתוך 2")}
           </span>
-          <h1 className="mt-5 font-display text-3xl font-extrabold md:text-4xl">ספרו לנו קצת על עצמכם</h1>
+          <h1 className="mt-5 font-display text-3xl font-extrabold md:text-4xl">
+            {t("input_title", "ספרו לנו קצת על עצמכם")}
+          </h1>
           <p className="mx-auto mt-3 max-w-lg text-muted-foreground">
-            כתבו בשפה חופשית — גיל, מטרות, ידע פיננסי, רמת סיכון, תחומי עניין. ככל שתפרטו
-            יותר, הניתוח יהיה מדויק יותר. אפשר גם פשוט ללחוץ על הכפתורים למטה.
+            {t(
+              "input_subtitle",
+              "כתבו בשפה חופשית — גיל, מטרות, ידע פיננסי, רמת סיכון, תחומי עניין. ככל שתפרטו יותר, הניתוח יהיה מדויק יותר."
+            )}
           </p>
         </motion.div>
 
@@ -92,13 +114,16 @@ const handleSubmit = async () => {
               <textarea
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                placeholder={EXAMPLE}
+                placeholder={t(
+                  "input_placeholder",
+                  "אני בן 27.\nאני רוצה להשקיע לטווח ארוך.\nאין לי הרבה ידע בהשקעות.\nאני מוכן לקחת סיכון בינוני.\nאני מתעניין בטכנולוגיה ובריאות.\nאני רוצה להבין איך לבנות תיק השקעות."
+                )}
                 rows={8}
-                className="w-full resize-none rounded-xl border border-border bg-background p-4 text-sm leading-relaxed outline-none transition-shadow focus:ring-2 focus:ring-ring"
+                className="w-full resize-none rounded-xl border border-border bg-background p-4 text-sm leading-relaxed outline-none transition-shadow focus:ring-2 focus:ring-ring text-foreground placeholder:text-muted-foreground/60"
               />
 
               <div className="mt-5 space-y-3.5">
-                {CHIP_GROUPS.map((group) => (
+                {chipGroups.map((group) => (
                   <div key={group.label}>
                     <p className="mb-1.5 text-[11px] font-bold text-muted-foreground">{group.label}</p>
                     <div className="flex flex-wrap gap-2">
@@ -119,16 +144,18 @@ const handleSubmit = async () => {
 
               <div className="mt-6 flex flex-col items-stretch gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
                 <span className="text-xs text-muted-foreground">
-                  {text.trim().length === 0 ? "נסו את הכפתורים למעלה כדי להתחיל מהר" : `${text.trim().length} תווים`}
+                  {text.trim().length === 0
+                    ? t("input_chips_hint", "נסו את הכפתורים למעלה כדי להתחיל מהר")
+                    : `${text.trim().length} ${t("input_chars", "תווים")}`}
                 </span>
                 <Button size="lg" disabled={!text.trim() || isAnalyzing} onClick={handleSubmit} className="gap-2">
                   {isAnalyzing ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      מנתח את הפרופיל שלך...
+                      {t("input_button_analyzing", "מנתח את הפרופיל שלך...")}
                     </>
                   ) : (
-                    "נתח את הפרופיל שלי"
+                    t("input_button_submit", "נתח את הפרופיל שלי")
                   )}
                 </Button>
               </div>
