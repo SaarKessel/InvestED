@@ -26,87 +26,66 @@ export function LandingPage() {
   const features = [
     {
       icon: Brain,
-      title: t("feature_ai_title", "ניתוח מבוסס AI"),
-      desc: t(
-        "feature_ai_desc",
-        "תאר את עצמך בשפה חופשית, והמערכת תזהה מטרות, רמת סיכון ואופק השקעה."
-      ),
+      title: t("feature_ai_title"),
+      desc: t("feature_ai_desc"),
     },
     {
       icon: ShieldCheck,
-      title: t("feature_xai_title", "Explainable AI"),
-      desc: t(
-        "feature_xai_desc",
-        "כל מסקנה מגיעה עם הסבר שקוף: אילו נתונים הובילו לתוצאה ולמה."
-      ),
+      title: t("feature_xai_title"),
+      desc: t("feature_xai_desc"),
     },
     {
       icon: LineChart,
-      title: t("feature_portfolio_title", "ניתוח תיק לימודי"),
-      desc: t(
-        "feature_portfolio_desc",
-        "קבל הדמיית הקצאת נכסים, אסטרטגיות ומושגים פיננסיים בצורה פשוטה."
-      ),
+      title: t("feature_portfolio_title"),
+      desc: t("feature_portfolio_desc"),
     },
     {
       icon: GraduationCap,
-      title: t("feature_roadmap_title", "מסלול למידה אישי"),
-      desc: t(
-        "feature_roadmap_desc",
-        "Roadmap מותאם אישית מהבסיס ועד הבנה מתקדמת של עולם ההשקעות."
-      ),
+      title: t("feature_roadmap_title"),
+      desc: t("feature_roadmap_desc"),
     },
   ];
 
   const audience = [
-    t("audience_item_1", "מתחילים לגמרי בעולם ההשקעות"),
-    t("audience_item_2", "אנשים שרוצים להבין לפני קבלת החלטות פיננסיות"),
-    t("audience_item_3", "סטודנטים לכלכלה, מנהל עסקים ופיננסים"),
-    t("audience_item_4", "כל מי שרוצה ללמוד השקעות בצורה ברורה ופשוטה"),
+    t("audience_item_1"),
+    t("audience_item_2"),
+    t("audience_item_3"),
+    t("audience_item_4"),
   ];
 
   const steps = [
     {
       icon: PenLine,
-      title: t("step_1_title", "מתארים את עצמכם"),
-      desc: t(
-        "step_1_desc",
-        "כותבים בשפה חופשית גיל, מטרות, ניסיון, סכום השקעה ורמת סיכון."
-      ),
+      title: t("step_1_title"),
+      desc: t("step_1_desc"),
     },
     {
       icon: Brain,
-      title: t("step_2_title", "ה־AI מנתח"),
-      desc: t(
-        "step_2_desc",
-        "מנוע ניתוח מזהה פרופיל משקיע, אופק השקעה והעדפות."
-      ),
+      title: t("step_2_title"),
+      desc: t("step_2_desc"),
     },
     {
       icon: Sparkles,
-      title: t("step_3_title", "מקבלים Dashboard אישי"),
-      desc: t(
-        "step_3_desc",
-        "פרופיל משקיע, Explainable AI, אסטרטגיות ותוכן לימודי."
-      ),
+      title: t("step_3_title"),
+      desc: t("step_3_desc"),
     },
   ];
 
   const techStack = [
     {
       icon: Bot,
-      title: t("tech_ai_title", "AI Engine"),
-      desc: t("tech_ai_desc", "Rule Based Analysis + Ollama Local AI"),
+      title: t("tech_ai_title"),
+      desc: t("tech_ai_desc"),
     },
     {
       icon: Code2,
-      title: t("tech_stack_title", "Modern Stack"),
-      desc: t("tech_stack_desc", "React + TypeScript + Vite"),
+      title: t("tech_stack_title"),
+      desc: t("tech_stack_desc"),
     },
     {
       icon: Rocket,
-      title: t("tech_fintech_title", "FinTech Project"),
-      desc: t("tech_fintech_desc", "Educational investment intelligence platform"),
+      title: t("tech_fintech_title"),
+      desc: t("tech_fintech_desc"),
     },
   ];
 
@@ -141,7 +120,7 @@ export function LandingPage() {
             </span>
 
             <Sparkles className="h-3.5 w-3.5 text-primary" />
-            {t("hero_badge", "פלטפורמת FinTech חינוכית מבוססת AI")}
+            {t("hero_badge")}
           </motion.div>
 
           {/* Main Heading */}

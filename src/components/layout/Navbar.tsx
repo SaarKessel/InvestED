@@ -13,22 +13,22 @@ export function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const navLinks = [
-    { to: "/", label: t("nav_home", "בית") },
-    { to: "/calculator", label: t("nav_calculator", "מחשבון חכם") },
-    { to: "/about", label: t("nav_about", "אודות") },
-    { to: "/faq", label: t("nav_faq", "שאלות נפוצות") },
-    { to: "/contact", label: t("nav_contact", "צור קשר") },
+    { to: "/", label: t("nav_home") },
+    { to: "/calculator", label: t("nav_calculator") },
+    { to: "/about", label: t("nav_about") },
+    { to: "/faq", label: t("nav_faq") },
+    { to: "/contact", label: t("nav_contact") },
   ];
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/50 bg-background/75 backdrop-blur-xl supports-[backdrop-filter]:bg-background/65">
       <div className="container flex h-[4.5rem] items-center justify-between">
-        
+
         {/* Logo */}
         <Link
           to="/"
           className="shrink-0 transition-transform duration-200 hover:scale-[1.02]"
-          aria-label="InvestED"
+          aria-label={t("nav_aria_brand")}
         >
           <Logo />
         </Link>
@@ -36,7 +36,7 @@ export function Navbar() {
         {/* Desktop Navigation */}
         <nav
           className="hidden items-center gap-1 rounded-2xl border border-border/50 bg-card/50 p-1 md:flex"
-          aria-label={language === "he" ? "ניווט ראשי" : "Main Navigation"}
+          aria-label={t("nav_main")}
         >
           {navLinks.map((link) => (
             <NavLink
@@ -64,13 +64,13 @@ export function Navbar() {
 
         {/* Actions */}
         <div className="flex items-center gap-2">
-          
+
           {/* Language Switcher */}
           <Button
             variant="ghost"
             size="sm"
             onClick={toggleLanguage}
-            aria-label={t("nav_switch_lang", language === "he" ? "Switch to English" : "החלף לעברית")}
+            aria-label={language === "he" ? t("nav_lang_en_label") : t("nav_lang_he_label")}
             className="h-10 gap-1.5 rounded-xl px-3 text-xs font-semibold text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             <Globe className="h-4 w-4 text-primary" />
@@ -82,7 +82,7 @@ export function Navbar() {
             variant="ghost"
             size="icon"
             onClick={toggleTheme}
-            aria-label={t("nav_switch_theme", "החלף מצב תצוגה")}
+            aria-label={t("nav_switch_theme")}
             className="rounded-xl text-muted-foreground hover:text-foreground"
           >
             {theme === "dark" ? (
@@ -99,7 +99,7 @@ export function Navbar() {
               className="group rounded-xl px-5 shadow-md"
             >
               <Sparkles className="h-4 w-4 transition-transform duration-200 group-hover:rotate-12" />
-              {t("nav_start", "התחל ללמוד")}
+              {t("nav_start")}
             </Button>
           </Link>
 
@@ -109,7 +109,7 @@ export function Navbar() {
             size="icon"
             className="rounded-xl md:hidden"
             onClick={() => setMobileOpen((open) => !open)}
-            aria-label={mobileOpen ? t("nav_mobile_close", "סגור תפריט") : t("nav_mobile_open", "פתח תפריט")}
+            aria-label={mobileOpen ? t("nav_mobile_close") : t("nav_mobile_open")}
             aria-expanded={mobileOpen}
           >
             {mobileOpen ? (
@@ -126,7 +126,7 @@ export function Navbar() {
         <div className="border-t border-border/50 bg-background/95 backdrop-blur-xl md:hidden">
           <nav
             className="container flex flex-col gap-1 py-4"
-            aria-label={language === "he" ? "ניווט נייד" : "Mobile Navigation"}
+            aria-label={t("nav_mobile")}
           >
             {navLinks.map((link) => (
               <NavLink
@@ -156,7 +156,7 @@ export function Navbar() {
             >
               <Button className="w-full rounded-xl">
                 <Sparkles className="h-4 w-4" />
-                {t("nav_start", "התחל ללמוד")}
+                {t("nav_start")}
               </Button>
             </Link>
           </nav>
