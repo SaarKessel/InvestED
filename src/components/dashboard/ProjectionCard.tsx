@@ -20,6 +20,8 @@ import type {
   AnalysisResult
 } from "@/types";
 
+import { useLanguage } from "@/context/languageContext";
+
 
 
 
@@ -70,446 +72,443 @@ export function ProjectionCard({
   result:AnalysisResult
 }){
 
+  const { t } = useLanguage();
 
-const scenario =
-  result.scenario as FinancialScenarioWithProjection;
 
+  const scenario =
+    result.scenario as FinancialScenarioWithProjection;
 
 
-if(!scenario){
 
-  return null;
+  if(!scenario){
 
-}
+    return null;
 
+  }
 
 
-const initialInvestment =
-  scenario.initialInvestment ?? 0;
 
+  const initialInvestment =
+    scenario.initialInvestment ?? 0;
 
 
-const monthlyContribution =
-  scenario.monthlyContribution ?? 0;
 
+  const monthlyContribution =
+    scenario.monthlyContribution ?? 0;
 
 
-const years =
-  scenario.years ?? 0;
 
+  const years =
+    scenario.years ?? 0;
 
 
-const annualReturn =
-  scenario.annualReturnPct ?? 0;
 
+  const annualReturn =
+    scenario.annualReturnPct ?? 0;
 
 
-// fallback calculation
-const totalContributed =
-  initialInvestment +
-  (
-    monthlyContribution *
-    years *
-    12
-  );
 
+  // fallback calculation
+  const totalContributed =
+    initialInvestment +
+    (
+      monthlyContribution *
+      years *
+      12
+    );
 
 
-const estimatedGrowth =
-  Math.max(
-    0,
-    result.projection?.growth ?? 0
-  );
 
+  const estimatedGrowth =
+    Math.max(
+      0,
+      result.projection?.growth ?? 0
+    );
 
 
-const finalValue =
-  result.projection?.finalBalance
-  ??
-  (
-    totalContributed +
-    estimatedGrowth
-  );
 
+  const finalValue =
+    result.projection?.finalBalance
+    ??
+    (
+      totalContributed +
+      estimatedGrowth
+    );
 
 
-const realValue =
-  result.projection?.realValueAfterInflation
-  ??
-  finalValue;
 
+  const realValue =
+    result.projection?.realValueAfterInflation
+    ??
+    finalValue;
 
 
-return (
 
+  return (
 
-<motion.div
 
+    <motion.div
 
-initial={{
-  opacity:0,
-  y:15
-}}
 
+    initial={{
+      opacity:0,
+      y:15
+    }}
 
-animate={{
-  opacity:1,
-  y:0
-}}
 
+    animate={{
+      opacity:1,
+      y:0
+    }}
 
-transition={{
-  duration:0.35
-}}
 
+    transition={{
+      duration:0.35
+    }}
 
->
 
+    >
 
-<Card
-className="
-border-primary/20
-bg-gradient-to-br
-from-primary/5
-to-transparent
-"
->
 
+    <Card
+    className="
+    border-primary/20
+    bg-gradient-to-br
+    from-primary/5
+    to-transparent
+    "
+    >
 
 
-<CardHeader>
 
+    <CardHeader>
 
-<div className="
-flex
-items-center
-gap-2
-text-primary
-">
 
+    <div className="
+    flex
+    items-center
+    gap-2
+    text-primary
+    ">
 
-<TrendingUp
-className="
-h-5
-w-5
-"
-/>
 
+    <TrendingUp
+    className="
+    h-5
+    w-5
+    "
+    />
 
-<CardTitle>
 
-תחזית פיננסית חכמה
+    <CardTitle>
 
-</CardTitle>
+      {t("projection_title", "תחזית פיננסית חכמה")}
 
+    </CardTitle>
 
-</div>
 
+    </div>
 
 
-<p className="
-text-sm
-text-muted-foreground
-"
->
+    <p className="
+    text-sm
+    text-muted-foreground
+    "
+    >
 
-סימולציה חינוכית לפי הנתונים שהוזנו
+      {t("projection_subtitle", "סימולציה חינוכית לפי הנתונים שהוזנו")}
 
-</p>
+    </p>
 
 
-</CardHeader>
+    </CardHeader>
 
 
 
 
 
-<CardContent>
 
+    <CardContent>
 
-<div className="
-grid
-grid-cols-1
-gap-4
-md:grid-cols-2
-"
->
 
+    <div className="
+    grid
+    grid-cols-1
+    gap-4
+    md:grid-cols-2
+    "
+    >
 
 
 
 
-<div
-className="
-rounded-xl
-border
-bg-background
-p-4
-"
->
+    <div
+    className="
+    rounded-xl
+    border
+    bg-background
+    p-4
+    "
+    >
 
 
-<Wallet
-className="
-mb-2
-h-5
-w-5
-text-primary
-"
-/>
+    <Wallet
+    className="
+    mb-2
+    h-5
+    w-5
+    text-primary
+    "
+    />
 
 
-<p className="
-text-xs
-text-muted-foreground
-">
+    <p className="
+    text-xs
+    text-muted-foreground
+    ">
 
-השקעה התחלתית
+      {t("projection_initial", "השקעה התחלתית")}
 
-</p>
+    </p>
 
 
-<p className="
-text-lg
-font-bold
-">
+    <p className="
+    text-lg
+    font-bold
+    ">
 
-{
-formatCurrency(
-initialInvestment
-)
-}
+    {
+    formatCurrency(
+    initialInvestment
+    )
+    }
 
-</p>
+    </p>
 
 
-</div>
+    </div>
 
 
 
 
 
 
+    <div
+    className="
+    rounded-xl
+    border
+    bg-background
+    p-4
+    "
+    >
 
-<div
-className="
-rounded-xl
-border
-bg-background
-p-4
-"
->
 
+    <PiggyBank
+    className="
+    mb-2
+    h-5
+    w-5
+    text-primary
+    "
+    />
 
-<PiggyBank
-className="
-mb-2
-h-5
-w-5
-text-primary
-"
-/>
 
+    <p className="
+    text-xs
+    text-muted-foreground
+    ">
 
-<p className="
-text-xs
-text-muted-foreground
-">
+      {t("projection_total", "סך הפקדות")}
 
-סך הפקדות
+    </p>
 
-</p>
 
+    <p className="
+    text-lg
+    font-bold
+    ">
 
-<p className="
-text-lg
-font-bold
-">
+    {
+    formatCurrency(
+    totalContributed
+    )
+    }
 
-{
-formatCurrency(
-totalContributed
-)
-}
+    </p>
 
-</p>
 
+    </div>
 
-</div>
 
 
 
 
 
+    <div
+    className="
+    rounded-xl
+    border
+    bg-background
+    p-4
+    "
+    >
 
 
-<div
-className="
-rounded-xl
-border
-bg-background
-p-4
-"
->
+    <LineChart
+    className="
+    mb-2
+    h-5
+    w-5
+    text-primary
+    "
+    />
 
 
-<LineChart
-className="
-mb-2
-h-5
-w-5
-text-primary
-"
-/>
+    <p className="
+    text-xs
+    text-muted-foreground
+    ">
 
+      {t("projection_final", "שווי עתידי צפוי")}
 
-<p className="
-text-xs
-text-muted-foreground
-">
+    </p>
 
-שווי עתידי צפוי
 
-</p>
+    <p className="
+    text-lg
+    font-bold
+    ">
 
+    {
+    formatCurrency(
+    finalValue
+    )
+    }
 
-<p className="
-text-lg
-font-bold
-">
+    </p>
 
-{
-formatCurrency(
-finalValue
-)
-}
 
-</p>
+    </div>
 
 
-</div>
 
 
 
 
+    <div
+    className="
+    rounded-xl
+    border
+    bg-background
+    p-4
+    "
+    >
 
 
+    <ShieldCheck
+    className="
+    mb-2
+    h-5
+    w-5
+    text-primary
+    "
+    />
 
-<div
-className="
-rounded-xl
-border
-bg-background
-p-4
-"
->
 
+    <p className="
+    text-xs
+    text-muted-foreground
+    ">
 
-<ShieldCheck
-className="
-mb-2
-h-5
-w-5
-text-primary
-"
-/>
+      {t("projection_inflation", "ערך לאחר אינפלציה")}
 
+    </p>
 
-<p className="
-text-xs
-text-muted-foreground
-">
 
-ערך לאחר אינפלציה
+    <p className="
+    text-lg
+    font-bold
+    ">
 
-</p>
+    {
+    formatCurrency(
+    realValue
+    )
+    }
 
+    </p>
 
-<p className="
-text-lg
-font-bold
-">
 
-{
-formatCurrency(
-realValue
-)
-}
+    </div>
 
-</p>
 
 
-</div>
+    </div>
 
 
 
 
-</div>
+    <div className="
+    mt-5
+    rounded-xl
+    border
+    bg-background
+    p-4
+    "
+    >
 
 
+    <p className="
+    text-sm
+    text-muted-foreground
+    "
+    >
 
+      {t("projection_assumption", "הסימולציה מבוססת על תשואה שנתית משוערת של")}
 
+    <span className="
+    font-bold
+    text-foreground
+    "
+    >
 
-<div className="
-mt-5
-rounded-xl
-border
-bg-background
-p-4
-"
->
+    {" "}
+    {annualReturn}%
 
+    </span>
 
-<p className="
-text-sm
-text-muted-foreground
-"
->
+      {t("projection_range", "לטווח של")}
 
-הסימולציה מבוססת על תשואה שנתית משוערת של
+    <span className="
+    font-bold
+    text-foreground
+    "
+    >
 
-<span className="
-font-bold
-text-foreground
-"
->
+    {" "}
+    {years} {t("projection_years", "שנים")}
 
-{" "}
-{annualReturn}%
+    </span>
 
-</span>
+    .
 
-לטווח של
+    </p>
 
-<span className="
-font-bold
-text-foreground
-"
->
 
-{" "}
-{years} שנים
+    </div>
 
-</span>
 
-.
 
-</p>
+    </CardContent>
 
 
-</div>
 
 
+    </Card>
 
-</CardContent>
 
 
-
-</Card>
-
-
-
-</motion.div>
+    </motion.div>
 
 
 );

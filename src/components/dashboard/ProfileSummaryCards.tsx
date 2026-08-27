@@ -21,6 +21,8 @@ import {
   CardTitle,
 } from "@/components/ui/primitives";
 
+import { useLanguage } from "@/context/languageContext";
+
 // =====================================================
 // Animation
 // =====================================================
@@ -65,20 +67,21 @@ const INTEREST_ICONS: Record<InterestArea, string> = {
 // =====================================================
 
 function getHorizonLabel(
-  horizon: AnalysisResult["horizon"]
+  horizon: AnalysisResult["horizon"],
+  t: (key: string, fallback?: string) => string
 ) {
   switch (horizon) {
     case "short":
-      return "קצר";
+      return t("profile_short", "קצר");
 
     case "medium":
-      return "בינוני";
+      return t("profile_medium", "בינוני");
 
     case "long":
-      return "ארוך";
+      return t("profile_long", "ארוך");
 
     default:
-      return "לא הוגדר";
+      return t("profile_unset", "לא הוגדר");
   }
 }
 
@@ -91,6 +94,8 @@ export function WelcomeCard({
 }: {
   result: AnalysisResult;
 }) {
+  const { t } = useLanguage();
+
   return (
     <motion.div
       variants={fadeUp}
@@ -140,7 +145,7 @@ export function WelcomeCard({
             </div>
 
             <span className="text-sm font-bold">
-              AI Investor Profile
+              {t("welcome_card_ai_profile", "AI Investor Profile")}
             </span>
           </div>
 
@@ -152,7 +157,7 @@ export function WelcomeCard({
             tracking-tight
             md:text-3xl
           ">
-            הפרופיל הפיננסי שלך מוכן 🚀
+            {t("profile_summary_title", "הפרופיל הפיננסי שלך מוכן 🚀")}
           </h2>
 
           <p className="
@@ -163,9 +168,7 @@ export function WelcomeCard({
             leading-7
             text-muted-foreground
           ">
-            InvestED ניתח את הנתונים שלך ויצר תמונת מצב
-            פיננסית אישית המבוססת על המטרות, הסיכון
-            והעדפות ההשקעה שלך.
+            {t("welcome_card_subtitle", "InvestED ניתח את הנתונים שלך ויצר תמונת מצב פיננסית אישית המבוססת על המטרות, הסיכון וההעדפות ההשקעה שלך.")}
           </p>
         </div>
 
@@ -202,7 +205,7 @@ export function WelcomeCard({
                 text-primary
               ">
                 <Sparkles className="h-4 w-4" />
-                AI Insight
+                {t("welcome_card_ai_insight", "AI Insight")}
               </div>
 
               <p>
@@ -225,6 +228,8 @@ export function InvestorTypeCard({
 }: {
   result: AnalysisResult;
 }) {
+  const { t } = useLanguage();
+
   return (
     <Card className={cardStyle}>
       <CardHeader>
@@ -252,14 +257,14 @@ export function InvestorTypeCard({
               font-semibold
               text-muted-foreground
             ">
-              פרופיל
+              {t("investor_type_card_profile_label", "פרופיל")}
             </p>
 
             <p className="
               text-sm
               font-semibold
             ">
-              סוג משקיע
+              {t("xai_investor_type", "סוג משקיע")}
             </p>
           </div>
         </div>
@@ -303,6 +308,8 @@ export function RiskScoreCard({
 }: {
   result: AnalysisResult;
 }) {
+  const { t } = useLanguage();
+
   const score = result.riskScore ?? 0;
   const percentage = Math.min(
     100,
@@ -336,14 +343,14 @@ export function RiskScoreCard({
               font-semibold
               text-muted-foreground
             ">
-              פרופיל
+              {t("risk_card_profile_label", "פרופיל")}
             </p>
 
             <p className="
               text-sm
               font-semibold
             ">
-              רמת סיכון
+              {t("risk_card_risk_level", "רמת סיכון")}
             </p>
           </div>
         </div>
@@ -414,7 +421,7 @@ export function RiskScoreCard({
             text-muted-foreground
           ">
             {result.riskDescription?.volatility ??
-              "ניתוח סיכון זמין"}
+              t("profile_risk_na", "ניתוח סיכון זמין")}
           </p>
         </div>
       </CardContent>
@@ -431,6 +438,8 @@ export function HorizonCard({
 }: {
   result: AnalysisResult;
 }) {
+  const { t } = useLanguage();
+
   return (
     <Card className={cardStyle}>
       <CardHeader>
@@ -458,14 +467,14 @@ export function HorizonCard({
               font-semibold
               text-muted-foreground
             ">
-              זמן
+              {t("horizon_card_time_label", "זמן")}
             </p>
 
             <p className="
               text-sm
               font-semibold
             ">
-              אופק השקעה
+              {t("xai_horizon", "אופק השקעה")}
             </p>
           </div>
         </div>
@@ -474,7 +483,7 @@ export function HorizonCard({
           mt-4
           text-2xl
         ">
-          {getHorizonLabel(result.horizon)}
+          {getHorizonLabel(result.horizon, t)}
         </CardTitle>
       </CardHeader>
 
@@ -492,7 +501,7 @@ export function HorizonCard({
             text-muted-foreground
           ">
             {result.horizonExplanation ??
-              "לא נמצא מידע"}
+              t("horizon_card_no_info", "לא נמצא מידע")}
           </p>
         </div>
       </CardContent>
@@ -509,6 +518,8 @@ export function InterestsCard({
 }: {
   result: AnalysisResult;
 }) {
+  const { t } = useLanguage();
+
   const areas =
     result.flags.interests ?? [];
 
@@ -539,11 +550,11 @@ export function InterestsCard({
               font-semibold
               text-muted-foreground
             ">
-              העדפות
+              {t("interests_card_preferences_label", "העדפות")}
             </p>
 
             <CardTitle className="text-xl">
-              תחומי עניין
+              {t("interests_card_title", "תחומי עניין")}
             </CardTitle>
           </div>
         </div>
@@ -600,7 +611,7 @@ export function InterestsCard({
               text-sm
               text-muted-foreground
             ">
-              לא זוהו תחומי עניין
+              {t("interests_card_no_interests", "לא זוהו תחומי עניין")}
             </p>
           </div>
         )}
@@ -618,6 +629,8 @@ export function ConfidenceCard({
 }: {
   result: AnalysisResult;
 }) {
+  const { t } = useLanguage();
+
   const confidence =
     result.scenario?.confidence ?? 0;
 
@@ -643,7 +656,7 @@ export function ConfidenceCard({
           </div>
 
           <CardTitle>
-            Confidence AI
+            {t("confidence_card_title", "Confidence AI")}
           </CardTitle>
         </div>
       </CardHeader>

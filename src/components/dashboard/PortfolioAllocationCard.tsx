@@ -1,5 +1,6 @@
 ﻿import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from "recharts";
 import type { AllocationItem } from "../../types";
+import { useLanguage } from "@/context/languageContext";
 
 
 interface Props {
@@ -11,13 +12,15 @@ export function PortfolioAllocationCard({
   allocation,
 }: Props) {
 
+  const { t } = useLanguage();
+
 
   return (
 
     <div className="rounded-2xl bg-white p-6 shadow">
 
       <h2 className="mb-5 text-xl font-bold">
-        הקצאת תיק מומלצת 📊
+        {t("portfolio_allocation_title_short", "הקצאת תיק מומלצת 📊")}
       </h2>
 
 
@@ -73,10 +76,7 @@ export function PortfolioAllocationCard({
 
 
 
-      <div className="mt-5 space-y-3">
-
-
-        {allocation.map((item) => (
+      <div className="mt-5 space-y-3">{allocation.map((item) => (
 
           <div
 
@@ -87,12 +87,16 @@ export function PortfolioAllocationCard({
           >
 
             <span>
+
               {item.name}
+
             </span>
 
 
             <span className="font-bold">
+
               {item.value}%
+
             </span>
 
 

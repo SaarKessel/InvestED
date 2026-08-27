@@ -1,4 +1,5 @@
 ﻿import { useNavigate } from "react-router-dom";
+import { useLanguage } from "@/context/languageContext";
 
 interface ScenarioData {
   scenario?: {
@@ -23,18 +24,19 @@ export function ScenarioHistoryCard({
   onDelete,
 }: Props) {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   return (
     <div className="rounded-2xl bg-white p-6 shadow">
 
       <h2 className="mb-5 text-xl font-bold">
-        📂 Investment History
+        📂 {t("scenario_history_header", "Investment History")}
       </h2>
 
       {scenarios.length === 0 ? (
 
         <p className="text-gray-500">
-          אין עדיין תרחישים שמורים
+          {t("scenario_history_empty", "אין עדיין תרחישים שמורים")}
         </p>
 
       ) : (
@@ -49,12 +51,12 @@ export function ScenarioHistoryCard({
             >
 
               <p className="font-bold">
-                תרחיש השקעה
+                {t("scenario_history_title", "תרחיש השקעה")}
               </p>
 
 
               <p>
-                השקעה:
+                {t("scenario_history_investment", "השקעה:")}
                 ₪
                 {(
                   scenario.data?.scenario?.initialInvestment ??
@@ -65,7 +67,7 @@ export function ScenarioHistoryCard({
 
 
               <p>
-                נוצר:
+                {t("scenario_history_created", "נוצר:")}
                 {new Date(
                   scenario.createdAt
                 ).toLocaleDateString()}
@@ -80,7 +82,7 @@ export function ScenarioHistoryCard({
                   }
                   className="rounded-lg bg-blue-600 px-4 py-2 text-white"
                 >
-                  פתיחה
+                  {t("scenario_history_open", "פתיחה")}
                 </button>
 
 
@@ -92,7 +94,7 @@ export function ScenarioHistoryCard({
                     }
                     className="rounded-lg border px-4 py-2 text-red-600"
                   >
-                    מחיקה
+                    {t("scenario_history_delete", "מחיקה")}
                   </button>
 
                 )}

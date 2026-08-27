@@ -1,10 +1,12 @@
 import { useState } from "react";
+import { useLanguage } from "@/context/languageContext";
 
 interface Props {
   result: Record<string, unknown>;
 }
 
 export function AIChatCard({ result }: Props) {
+  const { t } = useLanguage();
 
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
@@ -20,26 +22,27 @@ export function AIChatCard({ result }: Props) {
     if (q.includes("סיכון") || q.includes("risk")) {
 
       setAnswer(
-        `לפי הפרופיל שלך רמת הסיכון היא ${result.riskDescription}. 
-        ההמלצה מבוססת על אופק ההשקעה והיכולת שלך להתמודד עם תנודתיות.`
+        t("ai_chat_risk_a", "לפי הפרופיל שלך רמת הסיכון היא {risk}. ההמלצה מבוססת על אופק ההשקעה והיכולת שלך להתמודד עם תנודתיות.").replace("{risk}", String(result.riskDescription))
       );
 
       return;
+
     }
 
 
     if (q.includes("למה") || q.includes("why")) {
 
       setAnswer(
-        "ההמלצה מבוססת על שילוב בין גיל, אופק השקעה, סיבולת סיכון ותחומי עניין."
+        t("ai_chat_why_a", "ההמלצה מבוססת על שילוב בין גיל, אופק השקעה, סיבולת סיכון ותחומי עניין.")
       );
 
       return;
+
     }
 
 
     setAnswer(
-      "בהתבסס על הנתונים שלך, המפתח המרכזי הוא התמדה, פיזור השקעות וניצול זמן."
+      t("ai_chat_default_a", "בהתבסס על הנתונים שלך, המפתח המרכזי הוא התמדה, פיזור השקעות וניצול זמן.")
     );
 
   }
@@ -50,14 +53,14 @@ export function AIChatCard({ result }: Props) {
     <div className="rounded-2xl bg-white p-6 shadow">
 
       <h2 className="mb-4 text-xl font-bold">
-        🤖 AI Financial Coach
+        🤖 {t("ai_chat_header", "AI Financial Coach")}
       </h2>
 
 
       <input
         value={question}
         onChange={(e)=>setQuestion(e.target.value)}
-        placeholder="שאל אותי על תוכנית ההשקעה שלך..."
+        placeholder={t("ai_chat_input_placeholder", "שאל אותי על תוכנית ההשקעה שלך...")}
         className="w-full rounded-xl border p-3"
       />
 
@@ -70,7 +73,7 @@ export function AIChatCard({ result }: Props) {
 
       >
 
-        שאל AI
+        {t("ai_chat_button", "שאל AI")}
 
       </button>
 

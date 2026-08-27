@@ -26,68 +26,7 @@ import {
 
 import { InfoBadge } from "@/components/ui/InfoBadge";
 
-
-// =====================================================
-// Helpers
-// =====================================================
-
-function formatMoney(
-  value:number
-){
-
-  return new Intl.NumberFormat(
-    "he-IL",
-    {
-      style:"currency",
-      currency:"ILS",
-      maximumFractionDigits:0,
-    }
-  ).format(value);
-
-}
-
-
-function clamp(
-  value:number,
-  min:number,
-  max:number
-){
-
-  return Math.min(
-    Math.max(value,min),
-    max
-  );
-
-}
-
-
-function signalLabel(
-  signal:AnalysisSignal
-){
-
-  switch(signal.type){
-
-    case "risk":
-      return "סיכון";
-
-    case "horizon":
-      return "אופק השקעה";
-
-    case "portfolio":
-      return "תיק השקעות";
-
-    case "goal":
-      return "מטרה";
-
-    case "rule":
-      return "ניתוח";
-
-    default:
-      return signal.title;
-
-  }
-
-}
+import { useLanguage } from "@/context/languageContext";
 
 
 // =====================================================
@@ -103,6 +42,8 @@ export function ExplainableAiCard({
   result:AnalysisResult;
 
 }){
+
+  const { t } = useLanguage();
 
   const signals =
     result.explainability?.signals ?? [];
@@ -155,6 +96,35 @@ export function ExplainableAiCard({
           100
         )
       : 0;
+
+
+  function signalLabel(
+    signal:AnalysisSignal
+  ){
+
+    switch(signal.type){
+
+      case "risk":
+        return t("xai_signal_type_risk", "סיכון");
+
+      case "horizon":
+        return t("xai_signal_type_horizon", "אופק השקעה");
+
+      case "portfolio":
+        return t("xai_signal_type_portfolio", "תיק השקעות");
+
+      case "goal":
+        return t("xai_signal_type_goal", "מטרה");
+
+      case "rule":
+        return t("xai_signal_type_rule", "ניתוח");
+
+      default:
+        return signal.title;
+
+    }
+
+  }
 
 
   return (
@@ -218,7 +188,7 @@ export function ExplainableAiCard({
                 tracking-wide
               "
             >
-              Explainable AI Engine
+              {t("xai_title", "Explainable AI Engine")}
             </span>
 
           </div>
@@ -238,15 +208,11 @@ export function ExplainableAiCard({
                 text-xl
               "
             >
-              למה המערכת הגיעה למסקנה הזאת?
+              {t("xai_subtitle", "למה המערכת הגיעה למסקנה הזאת?")}
             </CardTitle>
 
             <InfoBadge
-              description="
-                שכבת Explainable AI מציגה את הגורמים
-                המרכזיים שהשפיעו על ניתוח המשקיע,
-                הקצאת התיק והתכנון הפיננסי.
-              "
+              description={t("xai_info", "שכבת Explainable AI מציגה את הגורמים המרכזיים שהשפיעו על ניתוח המשקיע, הקצאת התיק והתכנון הפיננסי.")}
             />
 
           </div>
@@ -261,8 +227,7 @@ export function ExplainableAiCard({
               text-muted-foreground
             "
           >
-            המערכת מפרקת את תהליך הניתוח לגורמים
-            שניתן להבין ולבחון במקום להציג רק תוצאה סופית.
+            {t("xai_desc", "המערכת מפרקת את תהליך הניתוח לגורמים שניתן להבין ולבחון במקום להציג רק תוצאה סופית.")}
           </p>
 
         </CardHeader>
@@ -310,7 +275,7 @@ export function ExplainableAiCard({
                   font-semibold
                 "
               >
-                סיכום AI
+                {t("xai_summary", "סיכום AI")}
               </p>
 
             </div>
@@ -326,7 +291,7 @@ export function ExplainableAiCard({
               {
                 result.aiNarration.profileSummary ??
                 result.explainability.summary ??
-                "המערכת השלימה ניתוח של פרופיל המשקיע."
+                t("xai_summary_default", "המערכת השלימה ניתוח של פרופיל המשקיע.")
               }
             </p>
 
@@ -379,7 +344,7 @@ export function ExplainableAiCard({
                     text-xs
                   "
                 >
-                  ציון סיכון
+                  {t("xai_risk_label", "ציון סיכון")}
                 </span>
 
               </div>
@@ -405,7 +370,7 @@ export function ExplainableAiCard({
               >
                 {
                   result.riskDescription?.band ??
-                  "רמת סיכון חינוכית"
+                  t("xai_risk_default", "רמת סיכון חינוכית")
                 }
               </p>
 
@@ -444,7 +409,7 @@ export function ExplainableAiCard({
                     text-xs
                   "
                 >
-                  Confidence
+                  {t("xai_confidence_label", "Confidence")}
                 </span>
 
               </div>
@@ -525,7 +490,7 @@ export function ExplainableAiCard({
                     text-xs
                   "
                 >
-                  חשיפה מנייתית
+                  {t("xai_equity_label", "חשיפה מנייתית")}
                 </span>
 
               </div>
@@ -553,7 +518,7 @@ export function ExplainableAiCard({
                   text-muted-foreground
                 "
               >
-                לפי הקצאת הנכסים
+                {t("xai_equity_sub", "לפי הקצאת הנכסים")}
               </p>
 
             </div>
@@ -591,7 +556,7 @@ export function ExplainableAiCard({
                     text-xs
                   "
                 >
-                  התקדמות ליעד
+                  {t("xai_progress_label", "התקדמות ליעד")}
                 </span>
 
               </div>
@@ -624,7 +589,7 @@ export function ExplainableAiCard({
                     ? formatMoney(
                         goal.expectedFinalValue
                       )
-                    : "לא הוגדר יעד"
+                    : t("xai_progress_sub_no_goal", "לא הוגדר יעד")
                 }
               </p>
 
@@ -676,7 +641,7 @@ export function ExplainableAiCard({
                     font-semibold
                   "
                 >
-                  סוג משקיע
+                  {t("xai_investor_type", "סוג משקיע")}
                 </p>
 
               </div>
@@ -741,7 +706,7 @@ export function ExplainableAiCard({
                     font-semibold
                   "
                 >
-                  אופק השקעה
+                  {t("xai_horizon", "אופק השקעה")}
                 </p>
 
               </div>
@@ -756,8 +721,8 @@ export function ExplainableAiCard({
               >
                 {
                   scenario?.years
-                    ? `${scenario.years} שנים`
-                    : "לא הוגדר"
+                    ? `${scenario.years} ${t("xai_horizon_years", "שנים")}`
+                    : t("xai_horizon_unset", "לא הוגדר")
                 }
               </p>
 
@@ -772,7 +737,7 @@ export function ExplainableAiCard({
               >
                 {
                   result.horizonExplanation ??
-                  "האופק משפיע על האופן שבו המערכת מפרשת תנודתיות וזמן."
+                  t("xai_horizon_default", "האופק משפיע על האופן שבו המערכת מפרשת תנודתיות וזמן.")
                 }
               </p>
 
@@ -811,7 +776,7 @@ export function ExplainableAiCard({
                   text-muted-foreground
                 "
               >
-                גורמים שהשפיעו על הניתוח
+                {t("xai_signals_title", "גורמים שהשפיעו על הניתוח")}
               </p>
 
             </div>
@@ -832,7 +797,7 @@ export function ExplainableAiCard({
                       text-muted-foreground
                     "
                   >
-                    לא נמצאו גורמים להצגה.
+                    {t("xai_signals_empty", "לא נמצאו גורמים להצגה.")}
                   </div>
                 )
 
@@ -974,7 +939,7 @@ export function ExplainableAiCard({
                   font-semibold
                 "
               >
-                למה מבנה התיק נראה כך?
+                {t("xai_portfolio_title", "למה מבנה התיק נראה כך?")}
               </p>
 
             </div>
@@ -1022,7 +987,7 @@ export function ExplainableAiCard({
                         text-muted-foreground
                       "
                     >
-                      פיזור
+                      {t("xai_metric_diversification", "פיזור")}
                     </p>
 
                     <p
@@ -1052,7 +1017,7 @@ export function ExplainableAiCard({
                         text-muted-foreground
                       "
                     >
-                      תשואה משוערת
+                      {t("xai_metric_expected_return", "תשואה משוערת")}
                     </p>
 
                     <p
@@ -1082,7 +1047,7 @@ export function ExplainableAiCard({
                         text-muted-foreground
                       "
                     >
-                      פוזיציה מרכזית
+                      {t("xai_metric_largest_position", "פוזיציה מרכזית")}
                     </p>
 
                     <p
@@ -1116,9 +1081,7 @@ export function ExplainableAiCard({
               text-muted-foreground
             "
           >
-            ⚠️ שכבת Explainable AI מיועדת להסבר חינוכי
-            של תהליך הניתוח בלבד. היא אינה מהווה המלצת השקעה,
-            תחזית מובטחת או ייעוץ פיננסי.
+            {t("xai_disclaimer", "⚠️ שכבת Explainable AI מיועדת להסבר חינוכי של תהליך הניתוח בלבד. היא אינה מהווה המלצת השקעה, תחזית מובטחת או ייעוץ פיננסי.")}
           </div>
 
 
@@ -1141,9 +1104,9 @@ export function ExplainableAiCard({
               "
             />
 
-            מקור:
+            {t("xai_source_label", "מקור:")}
             {" "}
-            InvestED Explainable AI Educational Engine
+            {t("xai_source", "InvestED Explainable AI Educational Engine")}
 
           </div>
 
@@ -1153,6 +1116,40 @@ export function ExplainableAiCard({
 
     </motion.div>
 
+  );
+
+}
+
+
+// =====================================================
+// Helpers
+// =====================================================
+
+function formatMoney(
+  value:number
+){
+
+  return new Intl.NumberFormat(
+    "he-IL",
+    {
+      style:"currency",
+      currency:"ILS",
+      maximumFractionDigits:0,
+    }
+  ).format(value);
+
+}
+
+
+function clamp(
+  value:number,
+  min:number,
+  max:number
+){
+
+  return Math.min(
+    Math.max(value,min),
+    max
   );
 
 }

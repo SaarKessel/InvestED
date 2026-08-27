@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/primitives";
 
 import { STRATEGIES } from "@/lib/strategies";
+import { useLanguage } from "@/context/languageContext";
 
 function getRiskStyle(level: number) {
   if (level <= 3) {
@@ -23,6 +24,8 @@ function getRiskStyle(level: number) {
 }
 
 export function StrategiesCard() {
+  const { t } = useLanguage();
+
   return (
     <motion.div
       initial={{
@@ -42,12 +45,12 @@ export function StrategiesCard() {
           <div className="flex items-center gap-2 text-primary">
             <Layers className="h-4 w-4" />
             <span className="text-xs font-bold uppercase tracking-wide">
-              אסטרטגיות השקעה
+              {t("strategies_title", "אסטרטגיות השקעה")}
             </span>
           </div>
 
           <CardTitle className="text-xl">
-            היכרות עם סגנונות השקעה מרכזיים
+            {t("strategies_subtitle", "היכרות עם סגנונות השקעה מרכזיים")}
           </CardTitle>
         </CardHeader>
 
@@ -66,7 +69,7 @@ export function StrategiesCard() {
                   <span
                     className={`rounded-full border px-3 py-1 text-xs font-bold ${getRiskStyle(strategy.riskLevel)}`}
                   >
-                    סיכון {strategy.riskLevel}/10
+                    {t("strategies_risk_label", "סיכון {level}/10").replace("{level}", String(strategy.riskLevel))}
                   </span>
                 </div>
 
@@ -78,7 +81,7 @@ export function StrategiesCard() {
                   <div>
                     <p className="mb-2 flex items-center gap-1 text-sm font-bold text-success">
                       <Check className="h-4 w-4" />
-                      יתרונות
+                      {t("strategies_pros", "יתרונות")}
                     </p>
 
                     <ul className="space-y-2">
@@ -97,7 +100,7 @@ export function StrategiesCard() {
                   <div>
                     <p className="mb-2 flex items-center gap-1 text-sm font-bold text-danger">
                       <X className="h-4 w-4" />
-                      חסרונות
+                      {t("strategies_cons", "חסרונות")}
                     </p>
 
                     <ul className="space-y-2">
@@ -117,7 +120,7 @@ export function StrategiesCard() {
                 <div className="mt-5 border-t border-border pt-4">
                   <p className="text-sm leading-relaxed text-muted-foreground">
                     <span className="font-bold text-foreground">
-                      למי זה מתאים:
+                      {t("strategies_suitable", "למי זה מתאים:")}
                     </span>{" "}
                     {strategy.suitableFor}
                   </p>
@@ -125,8 +128,8 @@ export function StrategiesCard() {
 
                 <div className="mt-4 border-t border-border pt-4">
                   <p className="mb-2 text-xs font-bold text-muted-foreground">
-                    דוגמאות מוכרות לנכסים בסגנון הזה{" "}
-                    <span className="text-primary">*לימוד בלבד*</span>
+                    {t("strategies_stocks_label", "דוגמאות מוכרות לנכסים בסגנון הזה ")}{" "}
+                    <span className="text-primary">{t("strategies_learning_only", "*לימוד בלבד*")}</span>
                   </p>
 
                   <div className="flex flex-wrap gap-2">

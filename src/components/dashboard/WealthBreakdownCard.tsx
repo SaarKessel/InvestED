@@ -1,11 +1,13 @@
 import { motion } from "framer-motion";
 import { AnalysisResult } from "../../types";
+import { useLanguage } from "@/context/languageContext";
 
 interface Props {
   result: AnalysisResult;
 }
 
 export function WealthBreakdownCard({ result }: Props) {
+  const { t } = useLanguage();
 
   const invested =
     result.projection.totalContributed;
@@ -37,7 +39,7 @@ export function WealthBreakdownCard({ result }: Props) {
     >
 
       <h2 className="mb-5 text-xl font-bold">
-        💰 איך נבנה ההון שלך?
+        {t("wealth_breakdown_title", "💰 איך נבנה ההון שלך?")}
       </h2>
 
 
@@ -47,7 +49,7 @@ export function WealthBreakdownCard({ result }: Props) {
         <div>
           <div className="flex justify-between">
             <span>
-              כסף שהפקדת
+              {t("wealth_breakdown_deposits", "כסף שהפקדת")}
             </span>
 
             <strong>
@@ -72,7 +74,7 @@ export function WealthBreakdownCard({ result }: Props) {
         <div>
           <div className="flex justify-between">
             <span>
-              צמיחת השקעה
+              {t("wealth_breakdown_growth", "צמיחת השקעה")}
             </span>
 
             <strong>
@@ -99,8 +101,7 @@ export function WealthBreakdownCard({ result }: Props) {
 
 
       <p className="mt-5 text-gray-600">
-        🚀 כ־{growthPercent}% מההון העתידי שלך נוצר
-        בזכות צמיחת ההשקעה לאורך זמן.
+        {t("wealth_breakdown_summary", "🚀 כ־{pct}% מההון העתידי שלך נוצר בזכות צמיחת ההשקעה לאורך זמן.").replace("{pct}", String(growthPercent))}
       </p>
 
 

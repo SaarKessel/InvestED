@@ -22,11 +22,14 @@ import {
   LEARNING_ROADMAP,
 } from "@/lib/educationContent";
 
-
+import { useLanguage } from "@/context/languageContext";
 
 
 
 export function ConceptsCard(){
+
+
+  const { t } = useLanguage();
 
 
   return (
@@ -61,7 +64,7 @@ export function ConceptsCard(){
 
             <span className="text-xs font-bold uppercase tracking-wide">
 
-              מושגים שכדאי ללמוד
+              {t("learning_title", "מושגים שכדאי ללמוד")}
 
             </span>
 
@@ -71,7 +74,7 @@ export function ConceptsCard(){
 
           <CardTitle className="text-xl">
 
-            מילון מונחים מהיר
+            {t("learning_terms_label", "מילון מונחים מהיר")}
 
           </CardTitle>
 
@@ -84,46 +87,44 @@ export function ConceptsCard(){
         <CardContent>
 
 
-          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{
 
 
-            {
-              FINANCE_CONCEPTS.map(concept=>(
+            FINANCE_CONCEPTS.map(concept=>(
 
 
-                <Tooltip
+              <Tooltip
 
-                  key={concept.term}
+                key={concept.term}
 
-                  label={concept.definition}
+                label={concept.definition}
+
+              >
+
+                <span
+
+                  className="
+                  w-full cursor-help rounded-lg border
+                  border-border bg-muted/30 px-3 py-2
+                  text-xs font-semibold transition-colors
+                  hover:bg-accent
+                  "
 
                 >
 
-                  <span
-
-                    className="
-                    w-full cursor-help rounded-lg border
-                    border-border bg-muted/30 px-3 py-2
-                    text-xs font-semibold transition-colors
-                    hover:bg-accent
-                    "
-
-                  >
-
-                    {concept.term}
+                  {concept.term}
 
 
-                  </span>
+                </span>
 
 
-                </Tooltip>
+              </Tooltip>
 
 
-              ))
-            }
+            ))
 
 
-          </div>
+          }</div>
 
 
         </CardContent>
@@ -138,17 +139,16 @@ export function ConceptsCard(){
   );
 
 
+
 }
 
 
 
 
-
-
-
-
-
 export function MistakesCard(){
+
+
+  const { t } = useLanguage();
 
 
   return (
@@ -183,7 +183,7 @@ export function MistakesCard(){
 
             <span className="text-xs font-bold uppercase tracking-wide">
 
-              טעויות נפוצות
+              {t("learning_mistakes_title", "טעויות נפוצות")}
 
             </span>
 
@@ -194,7 +194,7 @@ export function MistakesCard(){
 
           <CardTitle className="text-xl">
 
-            מה כדאי להימנע ממנו
+            {t("learning_mistakes_subtitle", "מה כדאי להימנע ממנו")}
 
           </CardTitle>
 
@@ -207,46 +207,44 @@ export function MistakesCard(){
         <CardContent>
 
 
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid gap-3 sm:grid-cols-2">{
 
 
-            {
-              COMMON_MISTAKES.map(mistake=>(
+            COMMON_MISTAKES.map(mistake=>(
 
 
-                <div
+              <div
 
-                  key={mistake.title}
+                key={mistake.title}
 
-                  className="
-                  rounded-xl border border-danger/25
-                  bg-danger/5 p-4
-                  "
+                className="
+                rounded-xl border border-danger/25
+                bg-danger/5 p-4
+                "
 
-                >
+              >
 
-                  <p className="mb-1 text-sm font-bold text-danger">
+                <p className="mb-1 text-sm font-bold text-danger">
 
-                    {mistake.title}
+                  {mistake.title}
 
-                  </p>
-
-
-                  <p className="text-xs leading-relaxed text-muted-foreground">
-
-                    {mistake.detail}
-
-                  </p>
+                </p>
 
 
-                </div>
+                <p className="text-xs leading-relaxed text-muted-foreground">
+
+                  {mistake.detail}
+
+                </p>
 
 
-              ))
-            }
+              </div>
 
 
-          </div>
+            ))
+
+
+          }</div>
 
 
         </CardContent>
@@ -261,12 +259,8 @@ export function MistakesCard(){
   );
 
 
+
 }
-
-
-
-
-
 
 
 
@@ -278,6 +272,9 @@ export function RoadmapCard(
  result:AnalysisResult
 }
 ){
+
+
+  const { t } = useLanguage();
 
 
 
@@ -297,20 +294,19 @@ LEARNING_ROADMAP ?? [];
 
 
 
-    if (knowledge === "experienced") {
-      return [
-        ...base.slice(2),
-        {
-          ...base[0],
-          title: `${base[0]?.title ?? "בסיס"} (רענון אופציונלי)`,
-        },
-        {
-          ...base[1],
-          title: `${base[1]?.title ?? "בסיס"} (רענון אופציונלי)`,
-        },
-      ];
-    }
-
+  if (knowledge === "experienced") {
+    return [
+      ...base.slice(2),
+      {
+        ...base[0],
+        title: `${base[0]?.title ?? t("learning_default_title", "בסיס")} (${t("learning_optional_refresh", "רענון אופציונלי")})`,
+      },
+      {
+        ...base[1],
+        title: `${base[1]?.title ?? t("learning_default_title", "בסיס")} (${t("learning_optional_refresh", "רענון אופציונלי")})`,
+      },
+    ];
+  }
 
 
 
@@ -325,43 +321,47 @@ return base.slice(1);
 
 
 
-
 return base;
 
 
-
 },[
-result.flags.knowledgeLevel
+result.flags.knowledgeLevel,
+
+t
+
 ]);
-
-
-
 
 
 
 
 const explanation =
 
+
 result.flags.knowledgeLevel === "experienced"
+
 
 ?
 
-"זיהינו שכבר יש לך ידע פיננסי — לכן המסלול מתחיל ישר מהשלבים המתקדמים, ושלבי הבסיס מופיעים בסוף כרענון אופציונלי בלבד."
+
+t("learning_note_experienced", "זיהינו שכבר יש לך ידע פיננסי — לכן המסלול מתחיל ישר מהשלבים המתקדמים, ושלבי הבסיס מופיעים בסוף כרענון אופציונלי בלבד.")
+
 
 :
+
 
 result.flags.knowledgeLevel === "some"
 
+
 ?
 
-"מכיוון שציינת שיש לך כבר בסיס ידע, דילגנו על שלב המבוא והתחלנו משלב ההיכרות עם שוק ההון."
+
+t("learning_note_some", "מכיוון שציינת שיש לך כבר בסיס ידע, דילגנו על שלב המבוא והתחלנו משלב ההיכרות עם שוק ההון.")
+
 
 :
 
-"מכיוון שלא ציינת רמת ידע פיננסית קודמת, בנינו לך מסלול מלא שמתחיל מהבסיס.";
 
-
-
+t("learning_note_unknown", "מכיוון שלא ציינת רמת ידע פיננסית קודמת, בנינו לך מסלול מלא שמתחיל מהבסיס.");
 
 
 
@@ -396,12 +396,15 @@ delay:0.45
 <div className="flex items-center gap-2 text-primary">
 
 
+
+
 <Milestone className="h-4 w-4"/>
+
 
 
 <span className="text-xs font-bold uppercase tracking-wide">
 
-מסלול למידה אישי
+  {t("learning_roadmap_title", "מסלול למידה אישי")}
 
 </span>
 
@@ -412,12 +415,13 @@ delay:0.45
 
 <CardTitle className="text-xl">
 
-מאיפה להתחיל?
+  {t("learning_where_to_start", "מאיפה להתחיל?")}
 
 </CardTitle>
 
 
 </CardHeader>
+
 
 
 
@@ -431,7 +435,8 @@ delay:0.45
 mb-4 flex items-start gap-2 rounded-lg
 bg-primary/5 p-3 text-xs leading-relaxed
 text-muted-foreground
-">
+"
+>
 
 
 <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-primary"/>
@@ -445,23 +450,20 @@ text-muted-foreground
 
 
 
-
-
 <Accordion
 
 items={orderedStages.map(stage=>(
-
-
 {
 
 id:
 `${stage.stage}-${stage.title}`,
 
 
-
 title:(
 
 <span className="flex items-center gap-2">
+
+
 
 
 <span className="
@@ -476,6 +478,7 @@ font-bold text-primary
 </span>
 
 
+
 {stage.title}
 
 
@@ -484,12 +487,10 @@ font-bold text-primary
 ),
 
 
-
 content:(
 
-<ul className="space-y-1.5">
+<ul className="space-y-1.5">{
 
-{
 
 stage.topics.map(topic=>(
 
@@ -498,7 +499,6 @@ stage.topics.map(topic=>(
 key={topic}
 
 className="flex items-start gap-2"
-
 >
 
 <span className="
@@ -512,9 +512,8 @@ rounded-full bg-primary
 
 ))
 
-}
 
-</ul>
+}</ul>
 
 )
 
@@ -522,6 +521,7 @@ rounded-full bg-primary
 }
 
 ))}
+
 
 />
 

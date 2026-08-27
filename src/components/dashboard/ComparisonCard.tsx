@@ -12,53 +12,51 @@ import {
 import { STRATEGIES } from "@/lib/strategies";
 import { cn } from "@/lib/utils";
 
+import { useLanguage } from "@/context/languageContext";
 
 
-const ROWS: {
-  label: string;
-  render: (strategy: typeof STRATEGIES[number]) => string;
-}[] = [
 
+const ROWS = (t: (key: string, fallback?: string) => string) => [
   {
-    label: "רמת סיכון",
-    render: (strategy) =>
+    label: t("comparison_risk_label", "רמת סיכון"),
+    render: (strategy: typeof STRATEGIES[number]) =>
       `${strategy.riskLevel}/10`,
   },
 
 
   {
-    label: "פיזור",
-    render: (strategy) => {
+    label: t("comparison_diversification_label", "פיזור"),
+    render: (strategy: typeof STRATEGIES[number]) => {
 
       if(strategy.id === "passive")
-        return "רחב מאוד";
+        return t("comparison_diversification_very_high", "רחב מאוד");
 
       if(strategy.id === "growth")
-        return "בינוני-נמוך";
+        return t("comparison_diversification_medium_low", "בינוני-נמוך");
 
-      return "בינוני";
+      return t("comparison_diversification_medium", "בינוני");
 
     },
   },
 
 
   {
-    label: "מאפיין מרכזי",
-    render: (strategy) => {
+    label: t("comparison_feature_label", "מאפיין מרכזי"),
+    render: (strategy: typeof STRATEGIES[number]) => {
 
       switch(strategy.id){
 
         case "passive":
-          return "עלות נמוכה ופשטות";
+          return t("comparison_feature_low_cost", "עלות נמוכה ופשטות");
 
         case "dividend":
-          return "הכנסה שוטפת";
+          return t("comparison_feature_income", "הכנסה שוטפת");
 
         case "growth":
-          return "פוטנציאל תשואה גבוה";
+          return t("comparison_feature_growth", "פוטנציאל תשואה גבוה");
 
         default:
-          return 'חיפוש "מציאות" בשוק';
+          return t("comparison_feature_value", "חיפוש \"מציאות\" בשוק");
 
       }
 
@@ -67,15 +65,15 @@ const ROWS: {
 
 
   {
-    label: "יתרון עיקרי",
-    render: (strategy) =>
+    label: t("comparison_main_advantage_label", "יתרון עיקרי"),
+    render: (strategy: typeof STRATEGIES[number]) =>
       strategy.pros[0] ?? "",
   },
 
 
   {
-    label: "חיסרון עיקרי",
-    render: (strategy) =>
+    label: t("comparison_main_disadvantage_label", "חיסרון עיקרי"),
+    render: (strategy: typeof STRATEGIES[number]) =>
       strategy.cons[0] ?? "",
   },
 
@@ -98,6 +96,8 @@ export function ComparisonCard(){
     "growth",
   ]);
 
+  const { t } = useLanguage();
+  const rows = ROWS(t);
 
 
 
@@ -153,9 +153,8 @@ export function ComparisonCard(){
     });
 
 
+
   }
-
-
 
 
 
@@ -191,7 +190,7 @@ export function ComparisonCard(){
 
             <span className="text-xs font-bold uppercase tracking-wide">
 
-              השוואת אסטרטגיות
+              {t("comparison_strategies_tag", "השוואת אסטרטגיות")}
 
             </span>
 
@@ -201,12 +200,14 @@ export function ComparisonCard(){
 
           <CardTitle className="text-xl">
 
-            איזו גישה מתאימה לי יותר?
+            {t("comparison_which_approach_title", "איזו גישה מתאימה לי יותר?")}
 
           </CardTitle>
 
 
         </CardHeader>
+
+
 
 
 
@@ -265,8 +266,8 @@ export function ComparisonCard(){
 
 
 
-
           <div className="overflow-x-auto">
+
 
 
             <table className="w-full min-w-[500px] border-collapse text-sm">
@@ -280,7 +281,7 @@ export function ComparisonCard(){
 
                   <th className="w-32 border-b border-border py-2 text-right text-xs font-semibold text-muted-foreground">
 
-                    מאפיין
+                    {t("comparison_feature_column", "מאפיין")}
 
                   </th>
 
@@ -299,6 +300,7 @@ export function ComparisonCard(){
 
                         {strategy.name}
 
+
                       </th>
 
 
@@ -315,11 +317,12 @@ export function ComparisonCard(){
 
 
 
+
               <tbody>
 
 
                 {
-                  ROWS.map(row=>(
+                  rows.map(row=>(
 
 
                     <tr
@@ -369,6 +372,7 @@ export function ComparisonCard(){
 
 
               </tbody>
+
 
 
             </table>

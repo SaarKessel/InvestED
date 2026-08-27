@@ -35,6 +35,8 @@ import { cn } from "@/lib/utils";
 
 import { CandlestickChart } from "./CandlestickChart";
 
+import { useLanguage } from "@/context/languageContext";
+
 
 
 export function MarketDataCard({
@@ -42,6 +44,8 @@ export function MarketDataCard({
 }: {
   interests: InterestArea[];
 }) {
+
+  const { t } = useLanguage();
 
 
   const [
@@ -132,7 +136,9 @@ export function MarketDataCard({
 
         }
 
+
       }
+
 
 
     }
@@ -163,7 +169,6 @@ export function MarketDataCard({
     )
     ??
     null;
-
 
 
 
@@ -208,7 +213,7 @@ export function MarketDataCard({
 
                 <span className="text-xs font-bold uppercase tracking-wide">
 
-                  גרפים ונתוני שוק
+                  {t("market_data_title", "גרפים ונתוני שוק")}
 
                 </span>
 
@@ -218,7 +223,7 @@ export function MarketDataCard({
 
               <CardTitle className="mt-1 text-xl">
 
-                נכסים לפי תחומי העניין שלך
+                {t("market_data_subtitle", "נכסים לפי תחומי העניין שלך")}
 
               </CardTitle>
 
@@ -256,15 +261,16 @@ export function MarketDataCard({
 
 
                 {
+
                   isLive
 
                   ?
 
-                  "נתונים חיים"
+                  t("market_data_live", "נתונים חיים")
 
                   :
 
-                  "נתונים מדומים"
+                  t("market_data_mock", "נתונים מדומים")
 
                 }
 
@@ -284,7 +290,9 @@ export function MarketDataCard({
 
 
 
+
         <CardContent>
+
 
 
 
@@ -323,7 +331,7 @@ export function MarketDataCard({
 
             <div className="rounded-xl border border-border p-5 text-center text-sm text-muted-foreground">
 
-              לא נמצאו נתוני שוק להצגה כרגע.
+              {t("market_data_empty", "לא נמצאו נתוני שוק להצגה כרגע.")}
 
             </div>
 
@@ -334,6 +342,7 @@ export function MarketDataCard({
 
 
             <>
+
 
 
               <div className="flex flex-wrap gap-2">
@@ -369,7 +378,6 @@ export function MarketDataCard({
                         "border-border text-muted-foreground hover:bg-accent"
 
                       )}
-
 
                     >
 
@@ -413,7 +421,6 @@ export function MarketDataCard({
                           :
 
                           <TrendingDown className="h-3 w-3"/>
-
                         }
 
 
@@ -436,14 +443,15 @@ export function MarketDataCard({
 
 
 
-
               {active && (
 
 
                 <div className="mt-5">
 
 
+
                   <div className="mb-3 flex items-baseline justify-between">
+
 
 
                     <div>
@@ -467,6 +475,7 @@ export function MarketDataCard({
 
 
                     <div className="flex items-center gap-3">
+
 
 
                       <span
@@ -503,6 +512,7 @@ export function MarketDataCard({
 
 
                       <div className="flex overflow-hidden rounded-lg border border-border">
+
 
 
                         <button
@@ -595,7 +605,6 @@ export function MarketDataCard({
                         }
                       />
 
-
                       :
 
 
@@ -609,10 +618,13 @@ export function MarketDataCard({
 
                           <XAxis dataKey="date" hide/>
 
+
                           <YAxis hide/>
 
 
+
                           <RTooltip/>
+
 
 
                           <Line
@@ -646,7 +658,7 @@ export function MarketDataCard({
 
                   <p className="mt-2 text-[11px] text-muted-foreground">
 
-                    לצורכי לימוד בלבד — לא המלצה לקנות או למכור נכס.
+                    {t("market_data_disclaimer", "לצורכי לימוד בלבד — לא המלצה לקנות או למכור נכס.")}
 
                   </p>
 

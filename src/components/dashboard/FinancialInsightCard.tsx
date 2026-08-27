@@ -5,7 +5,6 @@ import type {
   FinancialInsightResult
 } from "@/lib/financialInsightEngine";
 
-
 import {
   Card,
   CardContent,
@@ -13,6 +12,8 @@ import {
   CardTitle,
   Badge
 } from "@/components/ui/primitives";
+
+import { useLanguage } from "@/context/languageContext";
 
 
 
@@ -25,6 +26,8 @@ export function FinancialInsightCard({
   result:FinancialInsightResult
 
 }) {
+
+  const { t } = useLanguage();
 
 
 
@@ -61,7 +64,7 @@ transition={{
 
 <span className="text-xs font-bold uppercase tracking-wide">
 
-Financial Insights
+  {t("financial_insights_tag", "Financial Insights")}
 
 </span>
 
@@ -71,13 +74,15 @@ Financial Insights
 
 <CardTitle className="text-xl">
 
-התובנות המרכזיות שלך
+  {t("financial_insight_title", "התובנות המרכזיות שלך")}
 
 </CardTitle>
 
 
 
+
 </CardHeader>
+
 
 
 
@@ -95,11 +100,8 @@ Financial Insights
 
 
 
-<div className="space-y-3">
 
-
-{
-result.insights.map(
+<div className="space-y-3">{result.insights.map(
 
 (insight,index)=>(
 
@@ -144,15 +146,12 @@ variant="outline"
 </div>
 
 
-)
-
-)
-
-}
+))
 
 
 
-</div>
+}</div>
+
 
 
 </CardContent>

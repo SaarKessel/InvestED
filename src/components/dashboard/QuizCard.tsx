@@ -23,7 +23,7 @@ import {
 
 import { cn } from "@/lib/utils";
 
-
+import { useLanguage } from "@/context/languageContext";
 
 
 
@@ -47,8 +47,6 @@ function shuffleQuestions(
 
 
 
-
-
 function pickRandomQuestions(
   count:number
 ){
@@ -67,632 +65,490 @@ function pickRandomQuestions(
 
 
 
-
-
-
-
-
 export function QuizCard(){
 
+  const { t } = useLanguage();
 
-const [questions,setQuestions] =
-useState<QuizQuestion[]>(
-()=>pickRandomQuestions(5)
-);
+  const [questions,setQuestions] =
+  useState<QuizQuestion[]>(
+  ()=>pickRandomQuestions(5)
+  );
 
+  const [step,setStep] =
+  useState(0);
 
+  const [selected,setSelected] =
+  useState<number|null>(null);
 
-const [step,setStep] =
-useState(0);
+  const [score,setScore] =
+  useState(0);
 
+  const [finished,setFinished] =
+  useState(false);
 
 
-const [selected,setSelected] =
-useState<number|null>(null);
+  const current =
+  questions[step];
 
 
+  const progressPct =
+  useMemo(()=>{
 
-const [score,setScore] =
-useState(0);
+    if(
+    questions.length===0
+    ){
 
+    return 0;
 
+    }
 
-const [finished,setFinished] =
-useState(false);
+    return (
+    (step / questions.length) * 100);
 
+  },[
+  step,
+  questions.length
+  ]);
 
 
 
+  if(!current){
 
-const current =
-questions[step];
+  return null;
 
+  }
 
 
 
+  function handleAnswer(
+  idx:number
+  ){
 
-const progressPct =
-useMemo(()=>{
+    if(selected!==null){
 
+    return;
 
-if(
-questions.length===0
-){
+    }
 
-return 0;
+    setSelected(idx);
 
-}
+    if(
+    idx === current.correctIndex
+    ){
 
+    setScore(
+    s=>s+1
+    );
 
-return (
-(step / questions.length) * 100
-);
+    }
 
+  }
 
-},[
-step,
-questions.length
-]);
 
 
+  function handleNext(){
 
+    if(
+    step + 1 >= questions.length
+    ){
 
+    setFinished(true);
 
+    return;
 
+    }
 
+    setStep(
+    s=>s+1
+    );
 
-if(!current){
+    setSelected(null);
 
-return null;
+  }
 
-}
 
 
+  function handleRestart(){
 
+    setQuestions(
+    pickRandomQuestions(5)
+    );
 
+    setStep(0);
 
+    setSelected(null);
 
+    setScore(0);
 
+    setFinished(false);
 
+  }
 
-function handleAnswer(
-idx:number
-){
 
 
-if(selected!==null){
+  return (
 
-return;
+    <motion.div
 
-}
+    initial={{
+    opacity:0,
+    y:16
+    }}
 
+    animate={{
+    opacity:1,
+    y:0
+    }}
 
+    transition={{
+    delay:0.5
+    }}
 
-setSelected(idx);
+    >
 
 
+    <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
 
-if(
-idx === current.correctIndex
-){
+    <CardHeader>
 
-setScore(
-s=>s+1
-);
+    <div className="flex items-center gap-2 text-primary">
 
-}
+    <Brain className="h-4 w-4"/>
 
+    <span className="text-xs font-bold uppercase tracking-wide">
 
-}
+      {t("quiz_title", "בוחן ידע מהיר")}
 
+    </span>
 
+    </div>
 
 
+    <CardTitle className="text-xl">
 
+      {t("quiz_subtitle", "בדקו את עצמכם — 5 שאלות, 2 דקות")}
 
+    </CardTitle>
 
 
+    </CardHeader>
 
-function handleNext(){
 
 
-if(
-step + 1 >= questions.length
-){
 
-setFinished(true);
+    <CardContent>
 
-return;
 
-}
+    {
+    finished ? (
 
 
+    <div className="flex flex-col items-center py-8 text-center">
 
-setStep(
-s=>s+1
-);
+    <div className="
+    mb-3 flex h-16 w-16 items-center
+    justify-center rounded-2xl bg-primary/10 text-primary
+    ">
 
+    <Trophy className="h-7 w-7"/>
 
-setSelected(null);
+    </div>
 
 
-}
+    <p className="font-display text-2xl font-extrabold">
 
+    {score} / {questions.length}
 
+    </p>
 
 
+    <p className="mt-1 text-sm text-muted-foreground">
 
+    {
 
+    score === questions.length
 
+    ?
 
+    t("quiz_perfect", "ציון מושלם! נראה שהמושגים האלה כבר ברורים לך.")
 
-function handleRestart(){
+    :
 
+    score >= questions.length / 2
 
-setQuestions(
-pickRandomQuestions(5)
-);
+    ?
 
+    t("quiz_good", "לא רע בכלל! כדאי לחזור על המושגים שהחמצת.")
 
-setStep(0);
+    :
 
+    t("quiz_okay", "התחלה טובה — כדאי לעבור שוב על החומר ולנסות שוב.")
 
-setSelected(null);
+    }
 
+    </p>
 
-setScore(0);
+    <Button
 
+    className="mt-6 gap-2"
 
-setFinished(false);
+    onClick={handleRestart}
 
+    >
 
-}
+    <RotateCcw className="h-4 w-4"/>
 
+    {t("quiz_restart", "בוחן חדש")}
 
+    </Button>
 
+    </div>
 
+    )
 
+    :
 
+    (
 
+    <div>
 
+    <div className="mb-5 flex items-center gap-3">
 
-return (
+    <div className="
+    h-1.5 flex-1 overflow-hidden
+    rounded-full bg-muted
+    ">
 
-<motion.div
+    <motion.div
 
-initial={{
-opacity:0,
-y:16
-}}
+    className="
+    h-full rounded-full gradient-brand
+    "
 
-animate={{
-opacity:1,
-y:0
-}}
+    animate={{
+    width:`${progressPct}%`
+    }}
 
-transition={{
-delay:0.5
-}}
+    transition={{
+    duration:0.4
+    }}
 
->
+    />
 
+    </div>
 
-<Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
 
+    <span className="
+    whitespace-nowrap text-xs
+    font-semibold text-muted-foreground
+    ">
 
-<CardHeader>
+    {step+1} / {questions.length}
 
+    </span>
 
-<div className="flex items-center gap-2 text-primary">
+    </div>
 
-<Brain className="h-4 w-4"/>
 
-<span className="text-xs font-bold uppercase tracking-wide">
+    <AnimatePresence mode="wait">
 
-בוחן ידע מהיר
+    <motion.div
 
-</span>
+    key={current.id}
 
-</div>
+    initial={{
+    opacity:0,
+    x:12
+    }}
 
+    animate={{
+    opacity:1,
+    x:0
+    }}
 
+    exit={{
+    opacity:0,
+    x:-12
+    }}
 
-<CardTitle className="text-xl">
+    transition={{
+    duration:0.25
+    }}
 
-בדקו את עצמכם — 5 שאלות, 2 דקות
+    >
 
-</CardTitle>
+    <h4 className="
+    mb-4 font-display text-base
+    font-bold leading-relaxed
+    ">
 
+    {current.question}
 
-</CardHeader>
+    </h4>
 
 
+    <div className="space-y-2">
 
+    {
 
+    current.options.map(
+    (option,idx)=>{
 
-<CardContent>
+    const correct =
+    idx === current.correctIndex;
 
+    const chosen =
+    idx === selected;
 
-{
-finished ? (
+    const show =
+    selected !== null;
 
 
-<div className="flex flex-col items-center py-8 text-center">
+    return (
 
+    <button
 
-<div className="
-mb-3 flex h-16 w-16 items-center
-justify-center rounded-2xl bg-primary/10 text-primary
-">
+    key={option}
 
+    disabled={show}
 
-<Trophy className="h-7 w-7"/>
+    onClick={()=>
+    handleAnswer(idx)
+    }
 
+    className={cn(
 
-</div>
+    "flex w-full items-center justify-between gap-3 rounded-xl border px-4 py-3 text-right text-sm font-medium transition-colors",
 
+    !show &&
+    "border-border hover:bg-accent",
 
+    show &&
+    correct &&
+    "border-success bg-success/10 text-success",
 
-<p className="font-display text-2xl font-extrabold">
+    show &&
+    chosen &&
+    !correct &&
+    "border-danger bg-danger/10 text-danger",
 
-{score} / {questions.length}
+    show &&
+    !chosen &&
+    !correct &&
+    "border-border opacity-50"
 
-</p>
+    )}
 
+    >
 
+    {option}
 
 
-<p className="mt-1 text-sm text-muted-foreground">
+    {
+    show &&
+    correct &&
+    <Check className="h-4 w-4 shrink-0"/>
+    }
 
 
-{
-score === questions.length
+    {
+    show &&
+    chosen &&
+    !correct &&
+    <X className="h-4 w-4 shrink-0"/>
+    }
 
-?
+    </button>
 
-"ציון מושלם! נראה שהמושגים האלה כבר ברורים לך."
+    )
 
-:
+    }
 
-score >= questions.length / 2
+    )
 
-?
+    }
 
-"לא רע בכלל! כדאי לחזור על המושגים שהחמצת."
+    </div>
 
-:
 
-"התחלה טובה — כדאי לעבור שוב על החומר ולנסות שוב."
+    {
+    selected!==null &&
 
-}
+    <motion.div
 
+    initial={{
+    opacity:0,
+    height:0
+    }}
 
-</p>
+    animate={{
+    opacity:1,
+    height:"auto"
+    }}
 
+    className="
+    mt-4 overflow-hidden rounded-xl
+    bg-muted/50 p-4 text-xs
+    leading-relaxed text-muted-foreground
+    "
 
+    >
 
+    {current.explanation}
 
-<Button
+    </motion.div>
 
-className="mt-6 gap-2"
+    }
 
-onClick={handleRestart}
 
->
+    {
+    selected!==null &&
 
 
-<RotateCcw className="h-4 w-4"/>
+    <Button
 
-בוחן חדש
+    className="mt-4 w-full"
 
+    onClick={handleNext}
 
-</Button>
+    >
 
+    {
+    step+1 >= questions.length
 
-</div>
+    ?
 
+    t("quiz_finish", "סיום הבוחן")
 
-)
+    :
 
-:
+    t("quiz_next", "לשאלה הבאה")
 
-(
+    }
 
+    </Button>
 
-<div>
+    }
 
+    </motion.div>
 
-<div className="mb-5 flex items-center gap-3">
+    </AnimatePresence>
 
+    </div>
 
-<div className="
-h-1.5 flex-1 overflow-hidden
-rounded-full bg-muted
-">
+    )
 
+    }
 
-<motion.div
+    </CardContent>
 
-className="
-h-full rounded-full gradient-brand
-"
 
-animate={{
-width:`${progressPct}%`
-}}
+    </Card>
 
-transition={{
-duration:0.4
-}}
 
+    </motion.div>
 
-/>
 
-
-</div>
-
-
-
-
-<span className="
-whitespace-nowrap text-xs
-font-semibold text-muted-foreground
-">
-
-
-{step+1} / {questions.length}
-
-
-</span>
-
-
-</div>
-
-
-
-
-
-
-
-<AnimatePresence mode="wait">
-
-
-<motion.div
-
-key={current.id}
-
-initial={{
-opacity:0,
-x:12
-}}
-
-animate={{
-opacity:1,
-x:0
-}}
-
-exit={{
-opacity:0,
-x:-12
-}}
-
-transition={{
-duration:0.25
-}}
-
-
->
-
-
-<h4 className="
-mb-4 font-display text-base
-font-bold leading-relaxed
-">
-
-
-{current.question}
-
-
-</h4>
-
-
-
-
-
-<div className="space-y-2">
-
-
-{
-
-current.options.map(
-(option,idx)=>{
-
-
-const correct =
-idx === current.correctIndex;
-
-
-const chosen =
-idx === selected;
-
-
-const show =
-selected !== null;
-
-
-
-return (
-
-<button
-
-key={option}
-
-disabled={show}
-
-onClick={()=>
-handleAnswer(idx)
-}
-
-
-className={cn(
-
-"flex w-full items-center justify-between gap-3 rounded-xl border px-4 py-3 text-right text-sm font-medium transition-colors",
-
-!show &&
-"border-border hover:bg-accent",
-
-show &&
-correct &&
-"border-success bg-success/10 text-success",
-
-show &&
-chosen &&
-!correct &&
-"border-danger bg-danger/10 text-danger",
-
-show &&
-!chosen &&
-!correct &&
-"border-border opacity-50"
-
-)}
-
->
-
-
-{option}
-
-
-
-{
-show &&
-correct &&
-<Check className="h-4 w-4 shrink-0"/>
-}
-
-
-
-{
-show &&
-chosen &&
-!correct &&
-<X className="h-4 w-4 shrink-0"/>
-}
-
-
-
-</button>
-
-
-);
-
-
-}
-
-)
-
-}
-
-
-</div>
-
-
-
-
-
-
-
-{
-selected!==null &&
-
-<motion.div
-
-initial={{
-opacity:0,
-height:0
-}}
-
-animate={{
-opacity:1,
-height:"auto"
-}}
-
-className="
-mt-4 overflow-hidden rounded-xl
-bg-muted/50 p-4 text-xs
-leading-relaxed text-muted-foreground
-"
-
->
-
-{current.explanation}
-
-</motion.div>
-
-}
-
-
-
-
-
-
-{
-selected!==null &&
-
-
-<Button
-
-className="mt-4 w-full"
-
-onClick={handleNext}
-
->
-
-{
-step+1 >= questions.length
-
-?
-
-"סיום הבוחן"
-
-:
-
-"לשאלה הבאה"
-
-}
-
-
-</Button>
-
-}
-
-
-
-</motion.div>
-
-
-</AnimatePresence>
-
-
-
-</div>
-
-
-)
-
-}
-
-
-</CardContent>
-
-
-</Card>
-
-
-</motion.div>
-
-
-);
-
+  );
 
 }

@@ -1,4 +1,5 @@
-﻿
+﻿import { useLanguage } from "@/context/languageContext";
+
 export interface RoadmapStage {
   year: string;
   title: string;
@@ -10,12 +11,13 @@ interface Props {
 }
 
 export function FinancialRoadmapCard({ stages }: Props) {
+  const { t } = useLanguage();
 
   return (
     <div className="rounded-2xl bg-white p-6 shadow">
 
       <h2 className="mb-6 text-xl font-bold">
-        🛣️ המסלול שלך לעצמאות כלכלית
+        {t("roadmap_title", "🛣️ המסלול שלך לעצמאות כלכלית")}
       </h2>
 
 
@@ -24,7 +26,7 @@ export function FinancialRoadmapCard({ stages }: Props) {
         {stages.length === 0 ? (
 
           <div className="text-gray-500">
-            המסלול הפיננסי שלך ייבנה לאחר ניתוח הנתונים.
+            {t("roadmap_empty", "המסלול הפיננסי שלך ייבנה לאחר ניתוח הנתונים.")}
           </div>
 
         ) : (

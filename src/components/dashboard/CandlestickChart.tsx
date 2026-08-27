@@ -8,7 +8,7 @@ import {
   Tooltip as RTooltip,
 } from "recharts";
 
-
+import { useLanguage } from "@/context/languageContext";
 
 
 
@@ -31,7 +31,6 @@ interface CandleDatum {
 
 
 
-
 interface CandleShapeProps {
 
   x?:number;
@@ -42,10 +41,9 @@ interface CandleShapeProps {
 
   height?:number;
 
-  payload?:CandleDatum;
+  payload?: CandleDatum;
 
 }
-
 
 
 
@@ -56,8 +54,6 @@ const UP_COLOR =
 
 const DOWN_COLOR =
 "#ef4444";
-
-
 
 
 
@@ -88,6 +84,7 @@ payload
 
 
 
+
 if(
 !payload ||
 payload.open == null ||
@@ -103,8 +100,6 @@ return null;
 
 
 
-
-
 const {
 
 open,
@@ -116,6 +111,8 @@ high,
 low
 
 }=payload;
+
+
 
 
 
@@ -160,8 +157,6 @@ x + width / 2;
 
 
 
-
-
 const priceRange =
 Math.abs(
 close - open
@@ -175,8 +170,6 @@ priceRange > 0
 bodyHeight / priceRange
 :
 0;
-
-
 
 
 
@@ -199,7 +192,6 @@ bodyTop - 5;
 
 
 
-
 const wickBottom =
 
 pixelsPerUnit > 0
@@ -217,9 +209,6 @@ pixelsPerUnit
 bodyTop +
 bodyHeight +
 5;
-
-
-
 
 
 
@@ -270,8 +259,9 @@ rx={1}
 );
 
 
-}
 
+
+}
 
 
 
@@ -288,6 +278,7 @@ data:CandleDatum[]
 }
 ){
 
+  const { t } = useLanguage();
 
 
 
@@ -299,8 +290,6 @@ if(
 return null;
 
 }
-
-
 
 
 
@@ -343,12 +332,9 @@ item.close
 }
 
 
+
+
 ));
-
-
-
-
-
 
 
 
@@ -404,9 +390,6 @@ domain={[
 
 
 
-{/* שימוש בסדרות שקופות כדי לכלול את טווח ה-high וה-low */}
-
-
 <Line
 
 dataKey="high"
@@ -423,6 +406,7 @@ isAnimationActive={false}
 
 
 
+
 <Line
 
 dataKey="low"
@@ -436,8 +420,6 @@ activeDot={false}
 isAnimationActive={false}
 
 />
-
-
 
 
 
@@ -466,7 +448,6 @@ payload[0].payload as CandleDatum;
 
 
 
-
 return (
 
 <div className="
@@ -474,7 +455,6 @@ rounded-xl border border-border
 bg-card px-3 py-2 text-[11px]
 shadow-lg
 ">
-
 
 <p className="mb-1 font-bold">
 
@@ -484,25 +464,25 @@ shadow-lg
 
 
 <p>
-פתיחה:
+{t("candle_open", "פתיחה:")}
 ${candle.open?.toFixed(2)}
 </p>
 
 
 <p>
-סגירה:
+{t("candle_close", "סגירה:")}
 ${candle.close?.toFixed(2)}
 </p>
 
 
 <p>
-גבוה:
+{t("candle_high", "גבוה:")}
 ${candle.high?.toFixed(2)}
 </p>
 
 
 <p>
-נמוך:
+{t("candle_low", "נמוך:")}
 ${candle.low?.toFixed(2)}
 </p>
 
@@ -510,15 +490,14 @@ ${candle.low?.toFixed(2)}
 
 </div>
 
-);
 
+);
 
 }}
 
 
+
 />
-
-
 
 
 
@@ -542,6 +521,7 @@ isAnimationActive={false}
 
 
 </ResponsiveContainer>
+
 
 
 );
