@@ -259,16 +259,16 @@ export function calculatePortfolioMetrics(
   // ----------------------------------------------------------
 
   let riskLevel:
-    | "נמוך"
-    | "בינוני"
-    | "גבוה" =
-      "בינוני";
+    | "low"
+    | "medium"
+    | "high" =
+      "medium";
 
   if (
     equityExposure >= 75
   ) {
 
-    riskLevel = "גבוה";
+    riskLevel = "high";
 
   }
 
@@ -276,7 +276,7 @@ export function calculatePortfolioMetrics(
     equityExposure <= 35
   ) {
 
-    riskLevel = "נמוך";
+    riskLevel = "low";
 
   }
 
@@ -290,13 +290,13 @@ export function calculatePortfolioMetrics(
     );
 
   let diversification =
-    "נמוך";
+    "low";
 
   if (
     diversificationScore >= 70
   ) {
 
-    diversification = "גבוה";
+    diversification = "high";
 
   }
 
@@ -304,7 +304,7 @@ export function calculatePortfolioMetrics(
     diversificationScore >= 45
   ) {
 
-    diversification = "בינוני";
+    diversification = "medium";
 
   }
 
@@ -313,23 +313,23 @@ export function calculatePortfolioMetrics(
   // ----------------------------------------------------------
 
   let volatilityEstimate =
-    "תנודתיות צפויה בינונית";
+    "Expected moderate volatility.";
 
   if (
-    riskLevel === "גבוה"
+    riskLevel === "high"
   ) {
 
     volatilityEstimate =
-      "תנודתיות צפויה גבוהה";
+      "Expected high volatility.";
 
   }
 
   else if (
-    riskLevel === "נמוך"
+    riskLevel === "low"
   ) {
 
     volatilityEstimate =
-      "תנודתיות צפויה נמוכה";
+      "Expected low volatility.";
 
   }
 
@@ -356,19 +356,19 @@ export function calculatePortfolioMetrics(
   // ----------------------------------------------------------
 
   let explanation =
-    "לא נמצאה הקצאת נכסים מספקת לניתוח.";
+    "Insufficient asset allocation for analysis.";
 
   if (
     normalized.length > 0
   ) {
 
     explanation =
-      `התיק כולל כ-${Math.round(
+      `The portfolio has approximately ${Math.round(
         equityExposure
-      )}% חשיפה מנייתית ו-${Math.round(
+      )}% equity exposure and ${Math.round(
         fixedIncomeExposure
-      )}% בנכסים שאינם מנייתיים. ` +
-      `רמת הפיזור החינוכית מסווגת כ-${diversification}.`;
+      )}% non-equity assets. ` +
+      `The educational diversification score is ${diversification}.`;
 
     if (
       largest &&
@@ -376,8 +376,8 @@ export function calculatePortfolioMetrics(
     ) {
 
       explanation +=
-        ` קיימת גם ריכוזיות יחסית גבוהה בנכס המרכזי (${largest.name}), ` +
-        `המהווה כ-${largestPositionWeight}% מהתיק.`;
+        ` There is also relatively high concentration in the main position (${largest.name}), ` +
+        `accounting for approximately ${largestPositionWeight}% of the portfolio.`;
 
     }
 
@@ -430,7 +430,7 @@ export function portfolioHealthLabel(
     metrics.largestPositionWeight >= 70
   ) {
 
-    return "ריכוזיות גבוהה";
+    return "High concentration";
 
   }
 
@@ -438,27 +438,27 @@ export function portfolioHealthLabel(
     metrics.equityExposure >= 80
   ) {
 
-    return "חשיפה מנייתית גבוהה";
+    return "High equity exposure";
 
   }
 
   if (
-    metrics.diversification === "גבוה" &&
-    metrics.riskLevel !== "גבוה"
+    metrics.diversification === "high" &&
+    metrics.riskLevel !== "high"
   ) {
 
-    return "פיזור מאוזן";
+    return "Balanced diversification";
 
   }
 
   if (
-    metrics.diversification === "בינוני"
+    metrics.diversification === "medium"
   ) {
 
-    return "פיזור בינוני";
+    return "Medium diversification";
 
   }
 
-  return "מבנה תיק סביר";
+  return "Reasonable portfolio structure";
 
 }

@@ -10,59 +10,51 @@ import { useLanguage } from "@/context/languageContext";
 export function InputPage() {
   const [text, setText] = useState("");
   const { analyze, isAnalyzing } = useAnalysis();
-  const { language, t } = useLanguage();
+  const { t } = useLanguage();
+
   const navigate = useNavigate();
 
-  const chipGroups = language === "en" ? [
+  const chipGroups = [
     {
-      label: "Risk Level",
-      chips: ["I am conservative and prefer low risk", "I am willing to take moderate risk", "I want high growth and accept high risk"],
-    },
-    {
-      label: "Time Horizon",
-      chips: ["My horizon is short, up to 3 years", "My horizon is around 5 to 10 years", "My horizon is long term (20+ years)"],
-    },
-    {
-      label: "Financial Knowledge",
-      chips: ["I am a complete beginner", "I have basic financial knowledge", "I am an experienced investor"],
-    },
-    {
-      label: "Interests",
-      chips: ["Interested in Technology & AI", "Interested in Healthcare", "Interested in Real Estate & Energy", "Interested in Global S&P 500 Index"],
-    },
-    {
-      label: "Preferences",
+      label: t("input_chip_risk"),
       chips: [
-        "I want passive income from dividends",
-        "I prefer index ETFs over individual stocks",
-        "I want low management fees",
-        "Not interested in crypto",
+        t("input_chip_risk_low"),
+        t("input_chip_risk_medium"),
+        t("input_chip_risk_high"),
       ],
     },
-  ] : [
     {
-      label: "רמת סיכון",
-      chips: ["אני שמרן ומעדיף סיכון נמוך", "אני מוכן לקחת סיכון בינוני", "אני מוכן לקחת סיכון גבוה"],
-    },
-    {
-      label: "אופק השקעה",
-      chips: ["האופק שלי קצר, עד 3 שנים", "האופק שלי הוא כ-5 שנים", "האופק שלי הוא 20 שנה ומעלה"],
-    },
-    {
-      label: "ידע פיננסי",
-      chips: ["אין לי ידע פיננסי בכלל", "יש לי קצת ידע בסיסי", "אני משקיע עם ניסיון"],
-    },
-    {
-      label: "תחומי עניין",
-      chips: ["מתעניין בטכנולוגיה", "מתעניין בבריאות", "מתעניין בנדל\"ן ואנרגיה", "מתעניין בפיננסים ובנקאות"],
-    },
-    {
-      label: "העדפות השקעה",
+      label: t("input_chip_horizon"),
       chips: [
-        "אני רוצה הכנסה פסיבית מדיבידנדים",
-        "אני מעדיף קרנות סל על פני מניות בודדות",
-        "אני רוצה דמי ניהול נמוכים",
-        "לא מעוניין בקריפטו",
+        t("input_chip_horizon_short"),
+        t("input_chip_horizon_medium"),
+        t("input_chip_horizon_long"),
+      ],
+    },
+    {
+      label: t("input_chip_knowledge"),
+      chips: [
+        t("input_chip_knowledge_beginner"),
+        t("input_chip_knowledge_some"),
+        t("input_chip_knowledge_experienced"),
+      ],
+    },
+    {
+      label: t("input_chip_interests"),
+      chips: [
+        t("input_chip_interest_tech"),
+        t("input_chip_interest_health"),
+        t("input_chip_interest_realestate"),
+        t("input_chip_interest_sp500"),
+      ],
+    },
+    {
+      label: t("input_chip_preferences"),
+      chips: [
+        t("input_chip_pref_dividend"),
+        t("input_chip_pref_etf"),
+        t("input_chip_pref_lowfee"),
+        t("input_chip_pref_no_crypto"),
       ],
     },
   ];
@@ -91,16 +83,13 @@ export function InputPage() {
         >
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-1.5 text-xs font-semibold text-muted-foreground">
             <Sparkles className="h-3.5 w-3.5 text-primary" />
-            {t("input_step_badge", "שלב 1 מתוך 2")}
+            {t("input_step_badge")}
           </span>
           <h1 className="mt-5 font-display text-3xl font-extrabold md:text-4xl">
-            {t("input_title", "ספרו לנו קצת על עצמכם")}
+            {t("input_title")}
           </h1>
           <p className="mx-auto mt-3 max-w-lg text-muted-foreground">
-            {t(
-              "input_subtitle",
-              "כתבו בשפה חופשית — גיל, מטרות, ידע פיננסי, רמת סיכון, תחומי עניין. ככל שתפרטו יותר, הניתוח יהיה מדויק יותר."
-            )}
+            {t("input_subtitle")}
           </p>
         </motion.div>
 
@@ -114,10 +103,7 @@ export function InputPage() {
               <textarea
                 value={text}
                 onChange={(e) => setText(e.target.value)}
-                placeholder={t(
-                  "input_placeholder",
-                  "אני בן 27.\nאני רוצה להשקיע לטווח ארוך.\nאין לי הרבה ידע בהשקעות.\nאני מוכן לקחת סיכון בינוני.\nאני מתעניין בטכנולוגיה ובריאות.\nאני רוצה להבין איך לבנות תיק השקעות."
-                )}
+                placeholder={t("input_placeholder")}
                 rows={8}
                 className="w-full resize-none rounded-xl border border-border bg-background p-4 text-sm leading-relaxed outline-none transition-shadow focus:ring-2 focus:ring-ring text-foreground placeholder:text-muted-foreground/60"
               />
@@ -145,17 +131,17 @@ export function InputPage() {
               <div className="mt-6 flex flex-col items-stretch gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
                 <span className="text-xs text-muted-foreground">
                   {text.trim().length === 0
-                    ? t("input_chips_hint", "נסו את הכפתורים למעלה כדי להתחיל מהר")
-                    : `${text.trim().length} ${t("input_chars", "תווים")}`}
+                    ? t("input_chips_hint")
+                    : `${text.trim().length} ${t("input_chars")}`}
                 </span>
                 <Button size="lg" disabled={!text.trim() || isAnalyzing} onClick={handleSubmit} className="gap-2">
                   {isAnalyzing ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      {t("input_button_analyzing", "מנתח את הפרופיל שלך...")}
+                      {t("input_button_analyzing")}
                     </>
                   ) : (
-                    t("input_button_submit", "נתח את הפרופיל שלי")
+                    t("input_button_submit")
                   )}
                 </Button>
               </div>

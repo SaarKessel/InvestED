@@ -22,7 +22,7 @@ export function AIChatCard({ result }: Props) {
     if (q.includes("סיכון") || q.includes("risk")) {
 
       setAnswer(
-        t("ai_chat_risk_a", "לפי הפרופיל שלך רמת הסיכון היא {risk}. ההמלצה מבוססת על אופק ההשקעה והיכולת שלך להתמודד עם תנודתיות.").replace("{risk}", String(result.riskDescription))
+        t("ai_chat_risk_a", "Based on your profile, the risk level is {risk}. The recommendation is based on the investment horizon and your ability to handle volatility.").replace("{risk}", String(result.riskDescription))
       );
 
       return;
@@ -33,7 +33,7 @@ export function AIChatCard({ result }: Props) {
     if (q.includes("למה") || q.includes("why")) {
 
       setAnswer(
-        t("ai_chat_why_a", "ההמלצה מבוססת על שילוב בין גיל, אופק השקעה, סיבולת סיכון ותחומי עניין.")
+        t("ai_chat_why_a", "The recommendation is based on a combination of age, investment horizon, risk tolerance, and interests.")
       );
 
       return;

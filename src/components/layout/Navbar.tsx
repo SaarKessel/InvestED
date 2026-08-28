@@ -74,7 +74,7 @@ export function Navbar() {
             className="h-10 gap-1.5 rounded-xl px-3 text-xs font-semibold text-muted-foreground hover:bg-accent hover:text-foreground"
           >
             <Globe className="h-4 w-4 text-primary" />
-            <span>{language === "he" ? "EN" : "עב"}</span>
+            <span>{language === "he" ? t("nav_lang_short_en", "EN") : t("nav_lang_short_he", "HE")}</span>
           </Button>
 
           {/* Theme Toggle */}

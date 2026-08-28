@@ -6,6 +6,7 @@ import {
   Clock,
   Target,
 } from "lucide-react";
+import { useLanguage } from "@/context/languageContext";
 
 interface Props {
   initialInvestment: number;
@@ -28,58 +29,82 @@ export function AIExplanationCard({
   goal = "growth",
   confidence = 0,
 }: Props) {
-  const safeRiskProfile = riskProfile ?? "medium";
+  const { t, language } = useLanguage();
+  const locale = language === "he" ? "he-IL" : "en-US";
 
   function riskLabel(): string {
-    if (
-      safeRiskProfile === "נמוכה" ||
-      safeRiskProfile === "בינונית" ||
-      safeRiskProfile === "בינונית-גבוהה" ||
-      safeRiskProfile === "גבוהה"
-    ) {
-      return safeRiskProfile;
-    }
+    const normalized = (safeRiskProfile ?? "medium").toLowerCase();
+    const canonicalRisk =
+      normalized === "נמוכה" || normalized === "low"
+        ? "low"
+        : normalized === "בינונית" || normalized === "medium"
+          ? "medium"
+          : normalized === "בינונית-גבוהה" || normalized === "medium_high" || normalized === "medium-high"
+            ? "medium_high"
+            : normalized === "גבוהה" || normalized === "high"
+              ? "high"
+              : "medium";
 
-    switch (safeRiskProfile) {
-      case "low":
-        return "נמוכה";
-      case "medium":
-        return "בינונית";
-      case "high":
-        return "גבוהה";
-      default:
-        return "בינונית";
-    }
+    const key = `ai_explanation_risk_${canonicalRisk}`;
+    const fallback =
+      canonicalRisk === "low"
+        ? "Low"
+        : canonicalRisk === "medium"
+          ? "Medium"
+          : canonicalRisk === "medium_high"
+            ? "Medium-High"
+            : "High";
+
+    return t(key, fallback);
   }
 
-  function goalLabel() {
-    switch (goal) {
-      case "retirement":
-        return "פרישה מוקדמת";
-      case "home":
-        return "רכישת דירה";
-      case "child":
-        return "חיסכון לילדים";
-      case "wealth":
-      case "financial_independence":
-        return "עצמאות כלכלית";
-      case "growth":
-      default:
-        return "בניית הון";
-    }
+  function goalLabel(): string {
+    const normalized = (goal ?? "growth").toLowerCase();
+    const canonicalGoal =
+      normalized === "retirement" || normalized === "פרישה מוקדמת" || normalized === "פרישה"
+        ? "retirement"
+        : normalized === "home" || normalized === "רכישת דירה" || normalized === "דירה"
+          ? "home"
+          : normalized === "child" || normalized === "children" || normalized === "חיסכון לילדים" || normalized === "ילדים"
+            ? "children"
+            : normalized === "wealth" || normalized === "עצמאות כלכלית" || normalized === "פיננסית" || normalized === "financial_independence"
+              ? "wealth"
+              : "growth";
+
+    const key = `ai_explanation_goal_${canonicalGoal === "children" ? "children" : canonicalGoal === "home" ? "house" : canonicalGoal === "retirement" ? "early_retirement" : canonicalGoal}`;
+    const fallback =
+      canonicalGoal === "retirement"
+        ? "Early Retirement"
+        : canonicalGoal === "home"
+          ? "Home Purchase"
+          : canonicalGoal === "children"
+            ? "Saving for Children"
+            : canonicalGoal === "wealth"
+              ? "Wealth Building"
+              : "General Investing";
+
+    return t(key, fallback);
   }
+
+  const safeRiskProfile = riskProfile ?? "medium";
 
   const longTerm = years >= 10;
 
   const initialInvestmentText =
     initialInvestment > 0
-      ? `זוהה סכום התחלתי של ${Math.max(0, initialInvestment ?? 0).toLocaleString("he-IL")} ₪`
-      : "לא זוהה הון התחלתי";
+      ? t(
+          "ai_explanation_base_initial",
+          `זוהה סכום התחלתי של ${Math.max(0, initialInvestment ?? 0).toLocaleString(locale)} ₪`
+        ).replace("{amount}", new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(Math.max(0, initialInvestment ?? 0)))
+      : t("ai_explanation_base_no_initial", "לא זוהה הון התחלתי");
 
   const monthlyContributionText =
     monthlyContribution > 0
-      ? `הפקדה חודשית של ${Math.max(0, monthlyContribution ?? 0).toLocaleString("he-IL")} ₪`
-      : "ללא הפקדה חודשית";
+      ? t(
+          "ai_explanation_base_monthly",
+          `הפקדה חודשית של ${Math.max(0, monthlyContribution ?? 0).toLocaleString(locale)} ₪`
+        ).replace("{amount}", new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(Math.max(0, monthlyContribution ?? 0)))
+      : t("ai_explanation_base_no_monthly", "ללא הפקדה חודשית");
 
   const baseDataExplanation = `${initialInvestmentText} ו-${monthlyContributionText}.`;
 
@@ -94,10 +119,10 @@ export function AIExplanationCard({
 
         <div>
           <h2 className="text-2xl font-bold text-foreground">
-            🤖 איך InvestED ניתח את התרחיש
+            {t("ai_explanation_title_full", "🤖 איך InvestED ניתח את התרחיש")}
           </h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Explainable AI Simulation
+            {t("ai_explanation_subtitle_full", "Explainable AI Simulation")}
           </p>
         </div>
       </div>
@@ -105,42 +130,42 @@ export function AIExplanationCard({
       <div className="space-y-4">
         <InsightRow
           icon={<CheckCircle className="h-5 w-5" />}
-          title="נתוני בסיס"
+          title={t("ai_explanation_base_data", "נתוני בסיס")}
           text={baseDataExplanation}
         />
 
         <InsightRow
           icon={<Clock className="h-5 w-5" />}
-          title="אופק השקעה"
+          title={t("ai_explanation_horizon_title", "אופק השקעה")}
           text={`${years} שנים — ${
             longTerm
-              ? "המערכת מזהה טווח המאפשר להשפעת הזמן והריבית דריבית לבוא לידי ביטוי."
-              : "טווח קצר יחסית שבו לתנודתיות השוק יש משמעות גבוהה יותר."
+              ? t("ai_explanation_horizon_long", "המערכת מזהה טווח המאפשר להשפעת הזמן והריבית דריבית לבוא לידי ביטוי.")
+              : t("ai_explanation_horizon_short", "טווח קצר יחסית שבו לתנודתיות השוק יש משמעות גבוהה יותר.")
           }`}
         />
 
         <InsightRow
           icon={<TrendingUp className="h-5 w-5" />}
-          title="מסלול שנבחר"
-          text={`התרחיש נותח לפי ${assetLabel} עם תשואה שנתית משוערת של ${annualReturnPct}%.`}
+          title={t("ai_explanation_path_title", "מסלול שנבחר")}
+          text={t("ai_explanation_path_text", "התרחיש נותח לפי {asset} עם תשואה שנתית משוערת של {return}%.").replace("{asset}", assetLabel).replace("{return}", String(annualReturnPct))}
         />
 
         <InsightRow
           icon={<Shield className="h-5 w-5" />}
-          title="רמת סיכון"
-          text={`פרופיל סיכון משוער: ${riskLabel()}. הסיווג מבוסס על סוג הנכס ואופק ההשקעה.`}
+          title={t("ai_explanation_risk_title", "רמת סיכון")}
+          text={t("ai_explanation_risk_text", "פרופיל סיכון משוער: {risk}. הסיווג מבוסס על סוג הנכס ואופק ההשקעה.").replace("{risk}", riskLabel())}
         />
 
         <InsightRow
           icon={<Target className="h-5 w-5" />}
-          title="מטרת המשתמש"
-          text={`המטרה שזוהתה: ${goalLabel()}.`}
+          title={t("ai_explanation_goal_title", "מטרת המשתמש")}
+          text={t("ai_explanation_goal_text", "המטרה שזוהתה: {goal}.").replace("{goal}", goalLabel())}
         />
       </div>
 
       <div className="mt-6 rounded-2xl bg-muted/40 p-4 border border-border/50">
         <p className="text-sm font-medium text-foreground">
-          🧠 רמת ביטחון בניתוח:
+          {t("ai_explanation_confidence_title", "🧠 רמת ביטחון בניתוח:")}
         </p>
 
         <div className="mt-3 h-3 overflow-hidden rounded-full bg-muted">
@@ -153,12 +178,12 @@ export function AIExplanationCard({
         </div>
 
         <p className="mt-2 text-sm font-bold text-primary">
-          {confidence}%
+          {t("ai_explanation_confidence_value", "{value}%").replace("{value}", String(confidence))}
         </p>
       </div>
 
       <p className="mt-5 text-xs leading-6 text-muted-foreground">
-        הדמיה זו מיועדת ללמידה פיננסית בלבד ואינה מהווה ייעוץ השקעות או המלצה לפעולה.
+        {t("ai_explanation_disclaimer_full", "הדמיה זו מיועדת ללמידה פיננסית בלבד ואינה מהווה ייעוץ השקעות או המלצה לפעולה.")}
       </p>
     </div>
   );

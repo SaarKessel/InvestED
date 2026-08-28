@@ -55,16 +55,74 @@ const cardStyle = `
 // =====================================================
 
 const INTEREST_ICONS: Record<InterestArea, string> = {
-  "טכנולוגיה": "💻",
-  "פיננסים": "💰",
-  "בריאות": "🩺",
-  "אנרגיה": "⚡",
-  "נדל\"ן": "🏢",
+  technology: "💻",
+  finance: "💰",
+  healthcare: "🩺",
+  energy: "⚡",
+  real_estate: "🏢",
 };
 
 // =====================================================
 // Helpers
 // =====================================================
+
+function investorTypeLabel(
+  type: AnalysisResult["investor"]["type"],
+  t: (key: string, fallback?: string) => string
+) {
+  switch (type) {
+    case "conservative":
+      return t("investor_type_conservative", "Conservative");
+    case "balanced":
+      return t("investor_type_balanced", "Balanced");
+    case "growth":
+      return t("investor_type_growth", "Growth");
+    case "dividend":
+      return t("investor_type_dividend", "Dividend");
+    case "passive":
+      return t("investor_type_passive", "Passive");
+    case "value":
+      return t("investor_type_value", "Value");
+    default:
+      return type;
+  }
+}
+
+function riskBandLabel(
+  band: string | undefined,
+  t: (key: string, fallback?: string) => string
+) {
+  switch (band) {
+    case "low":
+      return t("risk_band_low", "Low");
+    case "medium":
+      return t("risk_band_medium", "Medium");
+    case "high":
+      return t("risk_band_high", "High");
+    default:
+      return band ?? t("risk_band_medium", "Medium");
+  }
+}
+
+function interestLabel(
+  interest: InterestArea,
+  t: (key: string, fallback?: string) => string
+) {
+  switch (interest) {
+    case "technology":
+      return t("interest_technology", "Technology");
+    case "finance":
+      return t("interest_finance", "Finance");
+    case "healthcare":
+      return t("interest_healthcare", "Healthcare");
+    case "energy":
+      return t("interest_energy", "Energy");
+    case "real_estate":
+      return t("interest_real_estate", "Real Estate");
+    default:
+      return interest;
+  }
+}
 
 function getHorizonLabel(
   horizon: AnalysisResult["horizon"],
@@ -72,16 +130,16 @@ function getHorizonLabel(
 ) {
   switch (horizon) {
     case "short":
-      return t("profile_short", "קצר");
+      return t("profile_short", "Short");
 
     case "medium":
-      return t("profile_medium", "בינוני");
+      return t("profile_medium", "Medium");
 
     case "long":
-      return t("profile_long", "ארוך");
+      return t("profile_long", "Long");
 
     default:
-      return t("profile_unset", "לא הוגדר");
+      return t("profile_unset", "Not set");
   }
 }
 
@@ -257,15 +315,15 @@ export function InvestorTypeCard({
               font-semibold
               text-muted-foreground
             ">
-              {t("investor_type_card_profile_label", "פרופיל")}
-            </p>
+               {t("investor_type_card_profile_label", "Profile")}
+             </p>
 
-            <p className="
-              text-sm
-              font-semibold
-            ">
-              {t("xai_investor_type", "סוג משקיע")}
-            </p>
+             <p className="
+               text-sm
+               font-semibold
+             ">
+               {t("xai_investor_type", "Investor Type")}
+             </p>
           </div>
         </div>
 
@@ -274,7 +332,7 @@ export function InvestorTypeCard({
           text-2xl
           tracking-tight
         ">
-          {result.investor.type}
+          {investorTypeLabel(result.investor.type, t)}
         </CardTitle>
       </CardHeader>
 
@@ -420,8 +478,8 @@ export function RiskScoreCard({
             leading-6
             text-muted-foreground
           ">
-            {result.riskDescription?.volatility ??
-              t("profile_risk_na", "ניתוח סיכון זמין")}
+            {riskBandLabel(result.riskDescription?.volatility, t) ??
+              t("profile_risk_na", "Risk analysis available")}
           </p>
         </div>
       </CardContent>
@@ -593,7 +651,7 @@ export function InterestsCard({
                 </span>
 
                 <span>
-                  {area}
+                  {interestLabel(area, t)}
                 </span>
               </div>
             ))}

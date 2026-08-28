@@ -21,23 +21,23 @@ const CORE_SYMBOLS: { symbol: string; name: string; basePrice: number }[] = [
 ];
 
 const INTEREST_SYMBOLS: Record<InterestArea, { symbol: string; name: string; basePrice: number }[]> = {
-  "טכנולוגיה": [
+  technology: [
     { symbol: "AAPL", name: "Apple Inc.", basePrice: 210 },
     { symbol: "MSFT", name: "Microsoft Corp.", basePrice: 430 },
   ],
-  "פיננסים": [
+  finance: [
     { symbol: "JPM", name: "JPMorgan Chase & Co.", basePrice: 210 },
     { symbol: "V", name: "Visa Inc.", basePrice: 280 },
   ],
-  "בריאות": [
+  healthcare: [
     { symbol: "JNJ", name: "Johnson & Johnson", basePrice: 155 },
     { symbol: "UNH", name: "UnitedHealth Group", basePrice: 500 },
   ],
-  "אנרגיה": [
+  energy: [
     { symbol: "XOM", name: "Exxon Mobil Corp.", basePrice: 115 },
     { symbol: "CVX", name: "Chevron Corp.", basePrice: 160 },
   ],
-  "נדל\"ן": [
+  real_estate: [
     { symbol: "VNQ", name: "Vanguard Real Estate ETF", basePrice: 90 },
     { symbol: "O", name: "Realty Income Corp.", basePrice: 58 },
   ],

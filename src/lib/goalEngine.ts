@@ -83,7 +83,7 @@ export function detectTargetAmount(text: string): number {
 
   // Thousands
   const thousandMatch = cleanedText.match(
-    /(\d+(?:\.\d+)?)\s*(אלף|k)\b/i
+    /(\d+(?:\.\d+)?)\s*(?:אלף|k)(?!\w)/i
   );
 
   if (thousandMatch) {

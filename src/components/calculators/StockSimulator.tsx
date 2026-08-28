@@ -23,6 +23,7 @@ import {
   projectStockInvestment,
 } from "@/lib/stockSimulationEngine";
 
+import { useLanguage } from "@/context/languageContext";
 
 interface SimulationSeriesPoint {
   date?: string;
@@ -42,6 +43,9 @@ interface SimulationResult {
 
 
 export function StockSimulator() {
+
+  const { t, language } = useLanguage();
+  const locale = language === "he" ? "he-IL" : "en-US";
 
   const [query, setQuery] = useState("");
 
@@ -67,7 +71,7 @@ export function StockSimulator() {
       if (!scenario.symbol) {
 
         throw new Error(
-          "לא זוהה סימול מניה"
+          t("stock_simulator_no_symbol", "לא זוהה סימול מניה")
         );
 
       }
@@ -86,7 +90,7 @@ export function StockSimulator() {
         if (!market) {
 
           throw new Error(
-            "לא נמצאו נתוני מניה"
+            t("stock_simulator_no_data", "לא נמצאו נתוני מניה")
           );
 
         }
@@ -146,7 +150,7 @@ export function StockSimulator() {
       setError(
         err instanceof Error
           ? err.message
-          : "שגיאה בחישוב"
+          : t("stock_simulator_error", "שגיאה בחישוב")
       );
 
 
@@ -172,7 +176,7 @@ export function StockSimulator() {
           <TrendingUp className="h-5 w-5 text-primary"/>
 
           <h2 className="font-bold text-lg">
-            סימולטור השקעות מניות
+            {t("stock_simulator_title", "סימולטור השקעות מניות")}
           </h2>
 
         </div>
@@ -187,7 +191,7 @@ export function StockSimulator() {
             setQuery(e.target.value)
           }
 
-          placeholder="לדוגמה: אם הייתי משקיע 100 אלף שקל ב-VOO לפני 10 שנים"
+          placeholder={t("stock_simulator_placeholder", "לדוגמה: אם הייתי משקיע 100 אלף שקל ב-VOO לפני 10 שנים")}
 
           rows={3}
 
@@ -216,11 +220,12 @@ export function StockSimulator() {
           <Calculator className="h-4 w-4"/>
 
           {loading
-            ? "מחשב..."
-            : "חשב סימולציה"
+            ? t("stock_simulator_btn_loading", "מחשב...")
+            : t("stock_simulator_btn", "חשב סימולציה")
           }
 
         </Button>
+
 
 
 
@@ -263,12 +268,13 @@ export function StockSimulator() {
             ">
 
 
+
               <div className="
               rounded-xl border p-4
               ">
 
                 <p className="text-xs text-muted-foreground">
-                  השקעה
+                  {t("stock_simulator_investment", "השקעה")}
                 </p>
 
 
@@ -279,11 +285,12 @@ export function StockSimulator() {
                     result.invested ??
                     result.contributed ??
                     0
-                  ).toLocaleString()}
+                  ).toLocaleString(locale)}
 
                 </p>
 
               </div>
+
 
 
 
@@ -292,7 +299,7 @@ export function StockSimulator() {
               ">
 
                 <p className="text-xs text-muted-foreground">
-                  שווי סופי
+                  {t("stock_simulator_final", "שווי סופי")}
                 </p>
 
 
@@ -303,7 +310,7 @@ export function StockSimulator() {
                     result.finalValue ??
                     result.projectedValue ??
                     0
-                  ).toLocaleString()}
+                  ).toLocaleString(locale)}
 
                 </p>
 
@@ -311,6 +318,7 @@ export function StockSimulator() {
 
 
             </div>
+
 
 
 
@@ -372,6 +380,7 @@ export function StockSimulator() {
 
 
                 </ResponsiveContainer>
+
 
 
               </div>

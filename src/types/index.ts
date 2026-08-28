@@ -8,11 +8,11 @@
 // =====================================================
 
 export type InterestArea =
-  | "טכנולוגיה"
-  | "פיננסים"
-  | "בריאות"
-  | "אנרגיה"
-  | "נדל\"ן";
+  | "technology"
+  | "finance"
+  | "healthcare"
+  | "energy"
+  | "real_estate";
 
 
 // =====================================================
@@ -36,9 +36,9 @@ export type InvestmentHorizon =
 
 
 export type HorizonBucket =
-  | "קצר"
-  | "בינוני"
-  | "ארוך"
+  | "short"
+  | "medium"
+  | "long"
   | null;
 
 
@@ -106,12 +106,12 @@ export interface FinancialScenario {
 // =====================================================
 
 export type InvestorType =
-  | "משקיע דיבידנדים"
-  | "משקיע פסיבי"
-  | "משקיע שמרני"
-  | "משקיע צמיחה"
-  | "משקיע ערך"
-  | "משקיע מאוזן";
+  | "dividend"
+  | "passive"
+  | "conservative"
+  | "growth"
+  | "value"
+  | "balanced";
 
 
 export interface InvestorClassification {
@@ -215,9 +215,9 @@ export interface PortfolioMetrics {
    * Educational risk classification
    */
   riskLevel:
-    | "נמוך"
-    | "בינוני"
-    | "גבוה";
+    | "low"
+    | "medium"
+    | "high";
 
 
   /**

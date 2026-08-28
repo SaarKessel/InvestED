@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/primitives";
 
 import {
-  QUIZ_BANK,
+  useQuizBank,
   type QuizQuestion,
 } from "@/lib/quizBank";
 
@@ -48,15 +48,16 @@ function shuffleQuestions(
 
 
 function pickRandomQuestions(
+  questions: QuizQuestion[],
   count:number
 ){
 
-  return shuffleQuestions(QUIZ_BANK)
+  return shuffleQuestions(questions)
     .slice(
       0,
       Math.min(
         count,
-        QUIZ_BANK.length
+        questions.length
       )
     );
 
@@ -68,10 +69,11 @@ function pickRandomQuestions(
 export function QuizCard(){
 
   const { t } = useLanguage();
+  const quizBank = useQuizBank();
 
   const [questions,setQuestions] =
   useState<QuizQuestion[]>(
-  ()=>pickRandomQuestions(5)
+  ()=>pickRandomQuestions(quizBank, 5)
   );
 
   const [step,setStep] =
@@ -171,7 +173,7 @@ export function QuizCard(){
   function handleRestart(){
 
     setQuestions(
-    pickRandomQuestions(5)
+    pickRandomQuestions(quizBank, 5)
     );
 
     setStep(0);

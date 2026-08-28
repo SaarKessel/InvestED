@@ -33,52 +33,52 @@ const BASE_TEMPLATES: Record<
   RawAllocation
 > = {
 
-  "משקיע שמרני": {
-    "מניות ארה\"ב (ETF)": 20,
-    "מניות בינלאומיות (ETF)": 5,
-    "דיבידנד (ETF)": 10,
-    "אג\"ח (ETF)": 55,
-    "מזומן": 10,
+  "conservative": {
+    "US Stocks (ETF)": 20,
+    "International Stocks (ETF)": 5,
+    "Dividend (ETF)": 10,
+    "Bonds (ETF)": 55,
+    "Cash": 10,
   },
 
-  "משקיע דיבידנדים": {
-    "מניות ארה\"ב (ETF)": 25,
-    "מניות בינלאומיות (ETF)": 10,
-    "דיבידנד (ETF)": 40,
-    "אג\"ח (ETF)": 20,
-    "מזומן": 5,
+  "dividend": {
+    "US Stocks (ETF)": 25,
+    "International Stocks (ETF)": 10,
+    "Dividend (ETF)": 40,
+    "Bonds (ETF)": 20,
+    "Cash": 5,
   },
 
-  "משקיע מאוזן": {
-    "מניות ארה\"ב (ETF)": 40,
-    "מניות בינלאומיות (ETF)": 20,
-    "דיבידנד (ETF)": 15,
-    "אג\"ח (ETF)": 20,
-    "מזומן": 5,
+  "balanced": {
+    "US Stocks (ETF)": 40,
+    "International Stocks (ETF)": 20,
+    "Dividend (ETF)": 15,
+    "Bonds (ETF)": 20,
+    "Cash": 5,
   },
 
-  "משקיע ערך": {
-    "מניות ארה\"ב (ETF)": 35,
-    "מניות בינלאומיות (ETF)": 15,
-    "דיבידנד (ETF)": 25,
-    "אג\"ח (ETF)": 20,
-    "מזומן": 5,
+  "value": {
+    "US Stocks (ETF)": 35,
+    "International Stocks (ETF)": 15,
+    "Dividend (ETF)": 25,
+    "Bonds (ETF)": 20,
+    "Cash": 5,
   },
 
-  "משקיע פסיבי": {
-    "מניות ארה\"ב (ETF)": 50,
-    "מניות בינלאומיות (ETF)": 25,
-    "דיבידנד (ETF)": 5,
-    "אג\"ח (ETF)": 15,
-    "מזומן": 5,
+  "passive": {
+    "US Stocks (ETF)": 50,
+    "International Stocks (ETF)": 25,
+    "Dividend (ETF)": 5,
+    "Bonds (ETF)": 15,
+    "Cash": 5,
   },
 
-  "משקיע צמיחה": {
-    "מניות ארה\"ב (ETF)": 55,
-    "מניות בינלאומיות (ETF)": 20,
-    "דיבידנד (ETF)": 5,
-    "אג\"ח (ETF)": 15,
-    "מזומן": 5,
+  "growth": {
+    "US Stocks (ETF)": 55,
+    "International Stocks (ETF)": 20,
+    "Dividend (ETF)": 5,
+    "Bonds (ETF)": 15,
+    "Cash": 5,
   },
 
 };
@@ -92,31 +92,31 @@ function colorFor(
 ): string {
 
   if (
-    name.includes("ארה\"ב")
+    name.includes("US Stocks")
   ) {
     return COLORS.us;
   }
 
   if (
-    name.includes("בינלאומ")
+    name.includes("International")
   ) {
     return COLORS.intl;
   }
 
   if (
-    name.includes("דיבידנד")
+    name.includes("Dividend")
   ) {
     return COLORS.dividend;
   }
 
   if (
-    name.includes("אג\"ח")
+    name.includes("Bonds")
   ) {
     return COLORS.bonds;
   }
 
   if (
-    name.includes("מזומן")
+    name.includes("Cash")
   ) {
     return COLORS.cash;
   }
@@ -253,7 +253,7 @@ function adjustByProfile(
   ) {
 
     const bonds =
-      result["אג\"ח (ETF)"] ?? 0;
+      result["Bonds (ETF)"] ?? 0;
 
     const shift =
       Math.min(
@@ -261,12 +261,12 @@ function adjustByProfile(
         bonds
       );
 
-    result["אג\"ח (ETF)"] =
+    result["Bonds (ETF)"] =
       bonds - shift;
 
-    result["מניות ארה\"ב (ETF)"] =
+    result["US Stocks (ETF)"] =
       (
-        result["מניות ארה\"ב (ETF)"] ?? 0
+        result["US Stocks (ETF)"] ?? 0
       ) + shift;
 
   }
@@ -285,7 +285,7 @@ function adjustByProfile(
   ) {
 
     const stocks =
-      result["מניות ארה\"ב (ETF)"] ?? 0;
+      result["US Stocks (ETF)"] ?? 0;
 
     const shift =
       Math.min(
@@ -293,12 +293,12 @@ function adjustByProfile(
         stocks
       );
 
-    result["מניות ארה\"ב (ETF)"] =
+    result["US Stocks (ETF)"] =
       stocks - shift;
 
-    result["אג\"ח (ETF)"] =
+    result["Bonds (ETF)"] =
       (
-        result["אג\"ח (ETF)"] ?? 0
+        result["Bonds (ETF)"] ?? 0
       ) + shift;
 
   }
@@ -319,7 +319,7 @@ export function buildAllocation(
   let allocation: RawAllocation = {
     ...(
       BASE_TEMPLATES[investorType] ??
-      BASE_TEMPLATES["משקיע מאוזן"]
+      BASE_TEMPLATES["balanced"]
     ),
   };
 
@@ -337,7 +337,7 @@ export function buildAllocation(
   ) {
 
     const usAllocation =
-      allocation["מניות ארה\"ב (ETF)"] ?? 0;
+      allocation["US Stocks (ETF)"] ?? 0;
 
     const shift =
       Math.min(
@@ -345,12 +345,12 @@ export function buildAllocation(
         usAllocation
       );
 
-    allocation["מניות ארה\"ב (ETF)"] =
+    allocation["US Stocks (ETF)"] =
       usAllocation - shift;
 
-    allocation["דיבידנד (ETF)"] =
+    allocation["Dividend (ETF)"] =
       (
-        allocation["דיבידנד (ETF)"] ?? 0
+        allocation["Dividend (ETF)"] ?? 0
       ) + shift;
 
   }
@@ -364,7 +364,7 @@ export function buildAllocation(
   ) {
 
     const cash =
-      allocation["מזומן"] ?? 0;
+      allocation["Cash"] ?? 0;
 
     /*
      * Shift only what is actually removed from cash.
@@ -379,12 +379,12 @@ export function buildAllocation(
         cash
       );
 
-    allocation["מזומן"] =
+    allocation["Cash"] =
       cash - shift;
 
-    allocation["אג\"ח (ETF)"] =
+    allocation["Bonds (ETF)"] =
       (
-        allocation["אג\"ח (ETF)"] ?? 0
+        allocation["Bonds (ETF)"] ?? 0
       ) + shift;
 
   }
@@ -396,8 +396,8 @@ export function buildAllocation(
   const sectorInterests =
     flags.interests.filter(
       interest =>
-        interest === "טכנולוגיה" ||
-        interest === "בריאות"
+        interest === "technology" ||
+        interest === "healthcare"
     );
 
   if (
@@ -405,7 +405,7 @@ export function buildAllocation(
   ) {
 
     const usAllocation =
-      allocation["מניות ארה\"ב (ETF)"] ?? 0;
+      allocation["US Stocks (ETF)"] ?? 0;
 
     /*
      * Keep the sector allocation educationally
@@ -418,11 +418,11 @@ export function buildAllocation(
         usAllocation * 0.4
       );
 
-    allocation["מניות ארה\"ב (ETF)"] =
+    allocation["US Stocks (ETF)"] =
       usAllocation - carve;
 
     const label =
-      `קרנות סקטוריאליות (${sectorInterests.join("/")})`;
+      `Sector funds (${sectorInterests.join("/")})`;
 
     allocation[label] =
       (
@@ -481,8 +481,8 @@ export function portfolioNarrative(
   ) {
 
     return (
-      "לא קיימת הקצאת נכסים להצגה. " +
-      "המערכת לא הצליחה לבנות תיק חינוכי מהנתונים שסופקו."
+      "No asset allocation to display. " +
+      "The system was unable to build an educational portfolio from the provided data."
     );
 
   }
@@ -500,18 +500,18 @@ export function portfolioNarrative(
   if (!top) {
 
     return (
-      "לא קיימת הקצאת נכסים מספקת ליצירת הסבר."
+      "Insufficient allocation to generate an explanation."
     );
 
   }
 
   const parts: string[] = [
 
-    `ההקצאה לדוגמה משקפת פרופיל של "${investorType}".`,
+    `The example allocation reflects a "${investorType}" profile.`,
 
-    `הרכיב הגדול ביותר הוא ${top.name} (${Math.round(
+    `The largest component is ${top.name} (${Math.round(
       top.value
-    )}%), ולכן הוא משפיע משמעותית על מאפייני הסיכון והתשואה של התיק.`,
+    )}%), so it significantly influences the risk and return characteristics of the portfolio.`,
 
   ];
 
@@ -522,7 +522,7 @@ export function portfolioNarrative(
   const bonds =
     allocation.find(
       item =>
-        item.name.includes("אג\"ח")
+        item.name.includes("Bonds")
     );
 
   if (
@@ -531,7 +531,7 @@ export function portfolioNarrative(
   ) {
 
     parts.push(
-      "רכיב האג\"ח מהווה חלק משמעותי מהתיק ומעניק לו אופי הגנתי יותר."
+      "The bonds component forms a significant part of the portfolio and gives it a more defensive character."
     );
 
   }
@@ -543,7 +543,7 @@ export function portfolioNarrative(
   const international =
     allocation.find(
       item =>
-        item.name.includes("בינלאומ")
+        item.name.includes("International")
     );
 
   if (
@@ -552,7 +552,7 @@ export function portfolioNarrative(
   ) {
 
     parts.push(
-      "הרכיב הבינלאומי מוסיף פיזור גאוגרפי ומפחית תלות בשוק יחיד."
+      "The international component adds geographic diversification and reduces dependence on a single market."
     );
 
   }
@@ -564,7 +564,7 @@ export function portfolioNarrative(
   const sector =
     allocation.find(
       item =>
-        item.name.includes("סקטוריאל")
+        item.name.includes("Sector")
     );
 
   if (
@@ -573,7 +573,7 @@ export function portfolioNarrative(
   ) {
 
     parts.push(
-      "קיימת גם חשיפה סקטוריאלית, אשר יכולה להגדיל את הריכוזיות בענפים מסוימים."
+      "There is also sector exposure, which can increase concentration in specific industries."
     );
 
   }
@@ -583,7 +583,7 @@ export function portfolioNarrative(
   // -------------------------------------------------------------------------
 
   parts.push(
-    "זוהי המחשה חינוכית בלבד ואינה מהווה המלצת השקעה."
+    "This is an educational illustration only and does not constitute an investment recommendation."
   );
 
   return parts.join(" ");

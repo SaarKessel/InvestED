@@ -8,6 +8,10 @@ import type {
 } from "@/types";
 
 import { analyzeFinancialGoal } from "./goalEngine";
+import {
+  getHorizonProfile,
+  HORIZON_LABELS,
+} from "./investmentMappings";
 
 export type {
   FinancialScenario
@@ -27,6 +31,7 @@ export const DEFAULT_INFLATION_PCT = 2.5;
 export interface AssetClassOption {
   key: string;
   label: string;
+  i18nKey: string;
   expectedReturnPct: number;
   annualReturnPct: number;
   keywords: string[];
@@ -37,6 +42,7 @@ export const ASSET_CLASSES: AssetClassOption[] = [
   {
     key: "sp500",
     label: "מדד S&P 500",
+    i18nKey: "asset_sp500",
     expectedReturnPct: 7,
     annualReturnPct: 7,
     keywords: [
@@ -52,6 +58,7 @@ export const ASSET_CLASSES: AssetClassOption[] = [
   {
     key: "world",
     label: "מדד עולמי",
+    i18nKey: "asset_world",
     expectedReturnPct: 8,
     annualReturnPct: 8,
     keywords: [
@@ -65,6 +72,7 @@ export const ASSET_CLASSES: AssetClassOption[] = [
   {
     key: "nasdaq",
     label: "Nasdaq",
+    i18nKey: "asset_nasdaq",
     expectedReturnPct: 11,
     annualReturnPct: 11,
     keywords: [
@@ -79,6 +87,7 @@ export const ASSET_CLASSES: AssetClassOption[] = [
   {
     key: "bonds",
     label: "אג״ח",
+    i18nKey: "asset_bonds",
     expectedReturnPct: 3,
     annualReturnPct: 3,
     keywords: [
@@ -95,6 +104,7 @@ export const ASSET_CLASSES: AssetClassOption[] = [
   {
     key: "balanced",
     label: "תיק מאוזן",
+    i18nKey: "asset_balanced",
     expectedReturnPct: 7,
     annualReturnPct: 7,
     keywords: [
@@ -982,26 +992,12 @@ export function calculateHorizonAnalysis(
       ? Math.max(0, years)
       : 0;
 
-  if (safeYears < 5) {
-    return {
-      years: safeYears,
-      profile: "short",
-      label: "קצר טווח"
-    };
-  }
-
-  if (safeYears < 15) {
-    return {
-      years: safeYears,
-      profile: "medium",
-      label: "טווח בינוני"
-    };
-  }
+  const profile = getHorizonProfile(safeYears);
 
   return {
     years: safeYears,
-    profile: "long",
-    label: "טווח ארוך"
+    profile,
+    label: HORIZON_LABELS[profile].he,
   };
 }
 

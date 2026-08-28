@@ -1,3 +1,5 @@
+import { useLanguage } from "@/context/languageContext";
+
 export interface QuizQuestion {
   id: string;
   question: string;
@@ -6,82 +8,58 @@ export interface QuizQuestion {
   explanation: string;
 }
 
-export const QUIZ_BANK: QuizQuestion[] = [
-  {
-    id: "q1",
-    question: "מהי קרן סל (ETF)?",
-    options: [
-      "הלוואה שנותנים לממשלה",
-      "קרן שמחזיקה סל נכסים ונסחרת כמו מניה בודדת",
-      "סוג של חשבון חיסכון בבנק",
-    ],
-    correctIndex: 1,
-    explanation: "קרן סל מחזיקה סל של נכסים (מניות, אג\"ח וכו') ונסחרת בבורסה כמו מניה — זו הדרך הפשוטה ביותר לקבל פיזור מיידי.",
-  },
-  {
-    id: "q2",
-    question: "מהי המטרה העיקרית של פיזור השקעות (Diversification)?",
-    options: [
-      "להגדיל את הרווח המקסימלי האפשרי",
-      "להפחית את הסיכון על ידי פיזור בין נכסים שונים",
-      "להימנע מתשלום מיסים",
-    ],
-    correctIndex: 1,
-    explanation: "פיזור לא נועד למקסם רווח, אלא להקטין את הסיכון — כך שביצוע גרוע של נכס בודד לא יטביע את כל התיק.",
-  },
-  {
-    id: "q3",
-    question: "מה קורה בדרך כלל כשמישהו מנסה \"לתזמן את השוק\" (Market Timing)?",
-    options: [
-      "זה בדרך כלל מצליח למקצוענים בלבד",
-      "קשה מאוד לחזות בעקביות שיאים ושפלים, גם למומחים",
-      "זו הדרך הבטוחה ביותר להשקיע",
-    ],
-    correctIndex: 1,
-    explanation: "מחקרים רבים מראים שגם למשקיעים מקצועיים קשה מאוד לתזמן שוק בעקביות — זמן בשוק בדרך כלל מנצח תזמון שוק.",
-  },
-  {
-    id: "q4",
-    question: "מהי ריבית דריבית (Compounding)?",
-    options: [
-      "ריבית שמשלמים פעם אחת בלבד",
-      "הרווחת תשואה גם על תשואות שכבר הורווחו בעבר",
-      "עמלה שגובה הבנק על השקעות",
-    ],
-    correctIndex: 1,
-    explanation: "ריבית דריבית היא המנוע מאחורי בניית הון לטווח ארוך — כסף שמרוויח תשואה, שמרוויחה בעצמה תשואה נוספת עם הזמן.",
-  },
-  {
-    id: "q5",
-    question: "מה מייצג ציון תנודתיות (Volatility) גבוה?",
-    options: [
-      "הנכס תמיד עולה בערכו",
-      "מחיר הנכס זז בעוצמה, גם למעלה וגם למטה",
-      "הנכס בטוח יותר מהממוצע",
-    ],
-    correctIndex: 1,
-    explanation: "תנודתיות גבוהה משמעה תנודות מחיר גדולות בשני הכיוונים — לא רק סיכון לירידה, אלא גם פוטנציאל לעליות חדות.",
-  },
-  {
-    id: "q6",
-    question: "מהי דוגמה טובה לטעות השקעה נפוצה של מתחילים?",
-    options: [
-      "בניית קרן חירום לפני שמתחילים להשקיע",
-      "השקעה עקבית לאורך זמן ללא תלות במחיר (DCA)",
-      "השקעת כל החיסכון במניה בודדת שקיבלה \"טיפ חם\"",
-    ],
-    correctIndex: 2,
-    explanation: "ריכוז כל החיסכון בנכס בודד מגדיל מאוד את הסיכון הספציפי — זו אחת הטעויות הנפוצות ביותר של משקיעים מתחילים.",
-  },
-  {
-    id: "q7",
-    question: "מה ההבדל המרכזי בין השקעה פסיבית לאקטיבית?",
-    options: [
-      "פסיבית מנסה לנצח את השוק, אקטיבית עוקבת אחריו",
-      "אקטיבית מנסה לנצח את השוק, פסיבית עוקבת אחרי מדד בעלות נמוכה",
-      "אין הבדל משמעותי ביניהן",
-    ],
-    correctIndex: 1,
-    explanation: "השקעה אקטיבית מנסה לבחור נכסים \"טובים יותר\" מהשוק (לרוב בעלות גבוהה יותר), בעוד פסיבית פשוט עוקבת אחרי מדד רחב בעלות נמוכה.",
-  },
-];
+export function useQuizBank(): QuizQuestion[] {
+  const { t } = useLanguage();
+
+  return [
+    {
+      id: "q1",
+      question: t("quiz_q1"),
+      options: [t("quiz_q1_o1"), t("quiz_q1_o2"), t("quiz_q1_o3")],
+      correctIndex: 1,
+      explanation: t("quiz_q1_e"),
+    },
+    {
+      id: "q2",
+      question: t("quiz_q2"),
+      options: [t("quiz_q2_o1"), t("quiz_q2_o2"), t("quiz_q2_o3")],
+      correctIndex: 1,
+      explanation: t("quiz_q2_e"),
+    },
+    {
+      id: "q3",
+      question: t("quiz_q3"),
+      options: [t("quiz_q3_o1"), t("quiz_q3_o2"), t("quiz_q3_o3")],
+      correctIndex: 1,
+      explanation: t("quiz_q3_e"),
+    },
+    {
+      id: "q4",
+      question: t("quiz_q4"),
+      options: [t("quiz_q4_o1"), t("quiz_q4_o2"), t("quiz_q4_o3")],
+      correctIndex: 1,
+      explanation: t("quiz_q4_e"),
+    },
+    {
+      id: "q5",
+      question: t("quiz_q5"),
+      options: [t("quiz_q5_o1"), t("quiz_q5_o2"), t("quiz_q5_o3")],
+      correctIndex: 1,
+      explanation: t("quiz_q5_e"),
+    },
+    {
+      id: "q6",
+      question: t("quiz_q6"),
+      options: [t("quiz_q6_o1"), t("quiz_q6_o2"), t("quiz_q6_o3")],
+      correctIndex: 2,
+      explanation: t("quiz_q6_e"),
+    },
+    {
+      id: "q7",
+      question: t("quiz_q7"),
+      options: [t("quiz_q7_o1"), t("quiz_q7_o2"), t("quiz_q7_o3")],
+      correctIndex: 1,
+      explanation: t("quiz_q7_e"),
+    },
+  ];
+}

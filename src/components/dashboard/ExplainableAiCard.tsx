@@ -28,6 +28,44 @@ import { InfoBadge } from "@/components/ui/InfoBadge";
 
 import { useLanguage } from "@/context/languageContext";
 
+function investorTypeLabel(
+  type: string,
+  t: (key: string, fallback?: string) => string
+) {
+  switch (type) {
+    case "conservative":
+      return t("investor_type_conservative", "Conservative");
+    case "balanced":
+      return t("investor_type_balanced", "Balanced");
+    case "growth":
+      return t("investor_type_growth", "Growth");
+    case "dividend":
+      return t("investor_type_dividend", "Dividend");
+    case "passive":
+      return t("investor_type_passive", "Passive");
+    case "value":
+      return t("investor_type_value", "Value");
+    default:
+      return type;
+  }
+}
+
+function riskBandLabel(
+  band: string | undefined,
+  t: (key: string, fallback?: string) => string
+) {
+  switch (band) {
+    case "low":
+      return t("risk_band_low", "Low");
+    case "medium":
+      return t("risk_band_medium", "Medium");
+    case "high":
+      return t("risk_band_high", "High");
+    default:
+      return band ?? t("risk_band_medium", "Medium");
+  }
+}
+
 
 // =====================================================
 // Explainable AI Card
@@ -369,8 +407,11 @@ export function ExplainableAiCard({
                 "
               >
                 {
-                  result.riskDescription?.band ??
-                  t("xai_risk_default", "רמת סיכון חינוכית")
+                  riskBandLabel(
+                    result.riskDescription?.band,
+                    t
+                  ) ??
+                  t("xai_risk_default", "Educational risk level")
                 }
               </p>
 
@@ -656,7 +697,7 @@ export function ExplainableAiCard({
                 <Badge
                   variant="outline"
                 >
-                  {result.investor.type}
+                  {investorTypeLabel(result.investor.type, t)}
                 </Badge>
 
               </div>

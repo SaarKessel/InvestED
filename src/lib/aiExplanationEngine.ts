@@ -55,14 +55,30 @@ function clamp(
   );
 }
 
+const ASSET_LABELS_EN: Record<string, string> = {
+  sp500: "S&P 500 Index",
+  world: "Global Index",
+  nasdaq: "Nasdaq",
+  bonds: "Bonds",
+  balanced: "Balanced Portfolio",
+};
+
 function getAssetLabel(
-  assetKey: string
+  assetKey: string,
+  language: "he" | "en" = "he"
 ): string {
-  return (
+  const asset =
     ASSET_CLASSES.find(
-      asset => asset.key === assetKey
-    )?.label ?? assetKey
-  );
+      item => item.key === assetKey
+    );
+
+  if (!asset) {
+    return assetKey;
+  }
+
+  return language === "he"
+    ? asset.label
+    : (ASSET_LABELS_EN[assetKey] ?? asset.label);
 }
 
 // ---------------------------------------------------------------------------
@@ -70,55 +86,66 @@ function getAssetLabel(
 // ---------------------------------------------------------------------------
 
 function buildHorizonInsight(
-  years: number
+  years: number,
+  language: "he" | "en" = "he"
 ): string {
 
   if (years < 3) {
 
-    return (
-      "⏳ אופק השקעה קצר מאוד. " +
-      "בטווח כזה לתנודתיות בשוק יכולה להיות השפעה משמעותית " +
-      "על התוצאה בזמן שבו ייתכן שהכסף יידרש."
-    );
+    return language === "he"
+      ? "⏳ אופק השקעה קצר מאוד. " +
+        "בטווח כזה לתנודתיות בשוק יכולה להיות השפעה משמעותית " +
+        "על התוצאה בזמן שבו ייתכן שהכסף יידרש."
+      : "⏳ Very short investment horizon. " +
+        "Over such a period, market volatility can have a significant impact " +
+        "on the outcome when the money may be needed.";
 
   }
 
   if (years < 5) {
 
-    return (
-      "⏳ אופק השקעה קצר יחסית. " +
-      "הזמן שנותר לצבירת תשואה מוגבל יותר, ולכן חשוב לבחון " +
-      "את הקשר בין רמת הסיכון לבין מועד השימוש בכסף."
-    );
+    return language === "he"
+      ? "⏳ אופק השקעה קצר יחסית. " +
+        "הזמן שנותר לצבירת תשואה מוגבל יותר, ולכן חשוב לבחון " +
+        "את הקשר בין רמת הסיכון לבין מועד השימוש בכסף."
+      : "⏳ Relatively short horizon. " +
+        "The time left to accumulate returns is more limited, so it's important to examine " +
+        "the relationship between risk level and when the money will be used.";
 
   }
 
   if (years < 10) {
 
-    return (
-      "📊 אופק השקעה בינוני. " +
-      "יש יותר זמן להתמודד עם תנודות שוק, אך עדיין חשוב " +
-      "לבחון את רמת הסיכון ביחס למטרה ולמועד היעד."
-    );
+    return language === "he"
+      ? "📊 אופק השקעה בינוני. " +
+        "יש יותר זמן להתמודד עם תנודות שוק, אך עדיין חשוב " +
+        "לבחון את רמת הסיכון ביחס למטרה ולמועד היעד."
+      : "📊 Medium investment horizon. " +
+        "There's more time to deal with market fluctuations, but it's still important to examine " +
+        "risk level relative to the goal and target date.";
 
   }
 
   if (years < 15) {
 
-    return (
-      "📈 אופק השקעה בינוני-ארוך. " +
-      "פרק זמן כזה מאפשר לתשואה מצטברת ולריבית דריבית " +
-      "להפוך לגורם משמעותי בתוצאה."
-    );
+    return language === "he"
+      ? "📈 אופק השקעה בינוני-ארוך. " +
+        "פרק זמן כזה מאפשר לתשואה מצטברת ולריבית דריבית " +
+        "להפוך לגורם משמעותי בתוצאה."
+      : "📈 Medium-to-long horizon. " +
+        "Such a period allows compound returns and compound interest " +
+        "to become a significant factor in the outcome.";
 
   }
 
-  return (
-    "🚀 אופק השקעה ארוך. " +
-    "מספר רב של שנים מאפשר לריבית דריבית ולצבירת תשואה " +
-    "להשפיע משמעותית על צמיחת ההון, תוך יכולת טובה יותר " +
-    "להתמודד עם תנודתיות לאורך הדרך."
-  );
+  return language === "he"
+    ? "🚀 אופק השקעה ארוך. " +
+      "מספר רב של שנים מאפשר לריבית דריבית ולצבירת תשואה " +
+      "להשפיע משמעותית על צמיחת ההון, תוך יכולה טובה יותר " +
+      "להתמודד עם תנודתיות לאורך הדרך."
+    : "🚀 Long investment horizon. " +
+      "A large number of years allows compound interest and return accumulation " +
+      "to significantly impact wealth growth, with better ability to cope with volatility along the way.";
 }
 
 // ---------------------------------------------------------------------------
@@ -127,13 +154,12 @@ function buildHorizonInsight(
 
 function buildRiskProfile(
   asset: string,
-  years: number
+  years: number,
+  language: "he" | "en" = "he"
 ): {
   riskLevel: string;
   riskEmoji: string;
 } {
-
-  // Defensive assets
 
   if (
     asset === "bonds" ||
@@ -141,26 +167,22 @@ function buildRiskProfile(
   ) {
 
     return {
-      riskLevel: "נמוכה",
+      riskLevel: language === "he" ? "נמוכה" : "Low",
       riskEmoji: "🟢",
     };
 
   }
-
-  // Higher volatility assets
 
   if (
     asset === "nasdaq"
   ) {
 
     return {
-      riskLevel: "גבוהה",
+      riskLevel: language === "he" ? "גבוהה" : "High",
       riskEmoji: "🔴",
     };
 
   }
-
-  // Broad equity exposure
 
   if (
     asset === "sp500"
@@ -169,40 +191,34 @@ function buildRiskProfile(
     if (years >= 15) {
 
       return {
-        riskLevel: "בינונית-גבוהה",
+        riskLevel: language === "he" ? "בינונית-גבוהה" : "Medium-High",
         riskEmoji: "🟡",
       };
 
     }
 
     return {
-      riskLevel: "גבוהה",
+      riskLevel: language === "he" ? "גבוהה" : "High",
       riskEmoji: "🟠",
     };
 
   }
-
-  // Globally diversified equity
 
   if (
     asset === "world"
   ) {
 
     return {
-      riskLevel:
-        years >= 10
-          ? "בינונית-גבוהה"
-          : "גבוהה",
-
+      riskLevel: language === "he"
+        ? "בינונית-גבוהה"
+        : "Medium-High",
       riskEmoji: "🟡",
     };
 
   }
 
-  // Balanced / unknown assets
-
   return {
-    riskLevel: "בינונית",
+    riskLevel: language === "he" ? "בינונית" : "Medium",
     riskEmoji: "🟡",
   };
 }
@@ -212,7 +228,8 @@ function buildRiskProfile(
 // ---------------------------------------------------------------------------
 
 function buildGrowthInsight(
-  projection: ProjectionResult
+  projection: ProjectionResult,
+  language: "he" | "en" = "he"
 ): string {
 
   const finalBalance =
@@ -227,18 +244,6 @@ function buildGrowthInsight(
       0
     );
 
-  if (
-    finalBalance <= 0 ||
-    growth <= 0
-  ) {
-
-    return (
-      "📊 בתרחיש הנוכחי עיקר התוצאה נובע מההון שהושקע " +
-      "ולא מצמיחה שנצברה."
-    );
-
-  }
-
   const growthPercentage =
     Math.round(
       clamp(
@@ -250,12 +255,27 @@ function buildGrowthInsight(
       )
     );
 
-  return (
-    `📈 מתוך השווי הסופי, כ-${growthPercentage}% ` +
-    "נובע מהצמיחה שנצברה לאורך התקופה. " +
-    "ככל שההשקעה נשארת לאורך זמן, הריבית דריבית יכולה " +
-    "להפוך לחלק משמעותי יותר מהתוצאה."
-  );
+  if (
+    finalBalance <= 0 ||
+    growth <= 0
+  ) {
+
+    return language === "he"
+      ? "📊 בתרחיש הנוכחי עיקר התוצאה נובע מההון שהושקע " +
+        "ולא מצמיחה שנצברה."
+      : "📊 In the current scenario, the main result comes from the invested capital rather than from accumulated growth.";
+
+  }
+
+  return language === "he"
+    ? `📈 מתוך השווי הסופי, כ-${growthPercentage}% ` +
+      "נובע מהצמיחה שנצברה לאורך התקופה. " +
+      "ככל שההשקעה נשארת לאורך זמן, הריבית דריבית יכולה " +
+      "להפוך לחלק משמעותי יותר מהתוצאה."
+    : `📈 Of the final value, approximately ${growthPercentage}% ` +
+      "comes from investment growth over the period. " +
+      "The longer the investment remains, the more compound interest can become " +
+      "a more significant part of the outcome.";
 }
 
 // ---------------------------------------------------------------------------
@@ -263,17 +283,19 @@ function buildGrowthInsight(
 // ---------------------------------------------------------------------------
 
 function buildDiversificationInsight(
-  asset: string
+  asset: string,
+  language: "he" | "en" = "he"
 ): string {
 
   if (
     asset === "world"
   ) {
 
-    return (
-      "🌎 הנכס מייצג פיזור גיאוגרפי רחב יותר בין שווקים. " +
-      "פיזור כזה עשוי להפחית תלות בשוק או באזור גיאוגרפי יחיד."
-    );
+    return language === "he"
+      ? "🌎 הנכס מייצג פיזור גיאוגרפי רחב יותר בין שווקים. " +
+        "פיזור כזה עשוי להפחית תלות בשוק או באזור גיאוגרפי יחיד."
+      : "🌎 The asset represents broader geographic diversification across markets. " +
+        "Such diversification may reduce dependence on a single market or geographic region.";
 
   }
 
@@ -281,11 +303,12 @@ function buildDiversificationInsight(
     asset === "sp500"
   ) {
 
-    return (
-      "🇺🇸 החשיפה מתמקדת במניות של חברות אמריקאיות גדולות. " +
-      "למרות שקיימת שונות בין החברות, עדיין קיימת תלות " +
-      "משמעותית בביצועי שוק המניות האמריקאי."
-    );
+    return language === "he"
+      ? "🇺🇸 החשיפה מתמקדת במניות של חברות אמריקאיות גדולות. " +
+        "למרות שקיימת שונות בין החברות, עדיין קיימת תלות " +
+        "משמעותית בביצועי שוק המניות האמריקאי."
+      : "🇺🇸 The exposure is focused on large US companies. " +
+        "While there is variation between companies, there is still significant dependence on the performance of the US stock market.";
 
   }
 
@@ -293,11 +316,12 @@ function buildDiversificationInsight(
     asset === "nasdaq"
   ) {
 
-    return (
-      "💻 החשיפה ממוקדת יותר בחברות צמיחה וטכנולוגיה. " +
-      "מיקוד כזה עשוי להגדיל את פוטנציאל הצמיחה, אך גם " +
-      "את הרגישות לתנודתיות ולשינויים בתמחור."
-    );
+    return language === "he"
+      ? "💻 החשיפה ממוקדת יותר בחברות צמיחה וטכנולוגיה. " +
+        "מיקוד כזה עשוי להגדיל את פוטנציאל הצמיחה, אך גם " +
+        "את הרגישות לתנודתיות ולשינויים בתמחור."
+      : "💻 The exposure is more focused on growth and technology companies. " +
+        "Such focus may increase growth potential, but also sensitivity to volatility and pricing changes.";
 
   }
 
@@ -305,10 +329,11 @@ function buildDiversificationInsight(
     asset === "bonds"
   ) {
 
-    return (
-      "🛡️ אג״ח נוטה לספק אופי הגנתי יותר מתיק מנייתי, " +
-      "אך גם כאן קיימים סיכונים כגון שינויי ריבית, אשראי ואינפלציה."
-    );
+    return language === "he"
+      ? "🛡️ אג״ח נוטה לספק אופי הגנתי יותר מתיק מנייתי, " +
+        "אך גם כאן קיימים סיכונים כגון שינויי ריבית, אשראי ואינפלציה."
+      : "🛡️ Bonds tend to provide a more defensive character than a stock portfolio, " +
+        "but there are still risks such as interest rate changes, credit, and inflation.";
 
   }
 
@@ -316,18 +341,20 @@ function buildDiversificationInsight(
     asset === "cash"
   ) {
 
-    return (
-      "💰 מזומן מספק נזילות גבוהה ותנודתיות נמוכה, " +
-      "אך לאורך זמן קיימת חשיפה לסיכון אינפלציה ולעלות האלטרנטיבית " +
-      "של אי-השקעת ההון."
-    );
+    return language === "he"
+      ? "💰 מזומן מספק נזילות גבוהה ותנודתיות נמוכה, " +
+        "אך לאורך זמן קיימת חשיפה לסיכון אינפלציה ולעלות האלטרנטיבית " +
+        "של אי-השקעת ההון."
+      : "💰 Cash provides high liquidity and low volatility, " +
+        "but over time there is exposure to inflation risk and the alternative cost of not investing the capital.";
 
   }
 
-  return (
-    "🧩 רמת הפיזור תלויה במבנה הנכס ובנכסים נוספים בתיק. " +
-    "המערכת בוחנת את הנכס כחלק מתמונה רחבה יותר ולא כנכס מבודד."
-  );
+  return language === "he"
+    ? "🧩 רמת הפיזור תלויה במבנה הנכס ובנכסים נוספים בתיק. " +
+      "המערכת בוחנת את הנכס כחלק מתמונה רחבה יותר ולא כנכס מבודד."
+    : "🧩 The diversification level depends on the asset structure and additional assets in the portfolio. " +
+      "The system examines the asset as part of a broader picture, not as an isolated asset.";
 }
 
 // ---------------------------------------------------------------------------
@@ -336,24 +363,27 @@ function buildDiversificationInsight(
 
 function buildRecommendation(
   asset: string,
-  years: number
+  years: number,
+  language: "he" | "en" = "he"
 ): string {
 
   if (years < 3) {
 
-    return (
-      "⚠️ באופק קצר מאוד, כדאי לתת משקל משמעותי לנזילות " +
-      "וליכולת לספוג ירידה בשווי לפני מועד השימוש בכסף."
-    );
+    return language === "he"
+      ? "⚠️ באופק קצר מאוד, כדאי לתת משקל משמעותי לנזילות " +
+        "וליכולת לספוג ירידה בשווי לפני מועד השימוש בכסף."
+      : "⚠️ In a very short horizon, significant weight should be given to liquidity " +
+        "and the ability to absorb a decline in value before the money is needed.";
 
   }
 
   if (years < 5) {
 
-    return (
-      "⚠️ באופק קצר יחסית, חשוב לבחון האם רמת התנודתיות " +
-      "של הנכס מתאימה למועד שבו צפוי להידרש הכסף."
-    );
+    return language === "he"
+      ? "⚠️ באופק קצר יחסית, חשוב לבחון האם רמת התנודתיות " +
+        "של הנכס מתאימה למועד שבו צפוי להידרש הכסף."
+      : "⚠️ In a relatively short horizon, it's important to examine whether " +
+        "the asset's volatility level is appropriate for when the money is expected to be needed.";
 
   }
 
@@ -361,11 +391,13 @@ function buildRecommendation(
     asset === "nasdaq"
   ) {
 
-    return (
-      "📊 בגלל ריכוז יחסי בחברות צמיחה וטכנולוגיה, " +
-      "חשוב להבין שהתרחיש עשוי להיות רגיש יותר לתנודות שוק. " +
-      "פיזור בין נכסים יכול לשנות את פרופיל הסיכון הכולל."
-    );
+    return language === "he"
+      ? "📊 בגלל ריכוז יחסי בחברות צמיחה וטכנולוגיה, " +
+        "חשוב להבין שהתרחיש עשוי להיות רגיש יותר לתנודות שוק. " +
+        "פיזור בין נכסים יכול לשנות את פרופיל הסיכון הכולל."
+      : "📊 Due to the relative concentration in growth and technology companies, " +
+        "it's important to understand that the scenario may be more sensitive to market fluctuations. " +
+        "Diversification across assets can change the overall risk profile.";
 
   }
 
@@ -374,10 +406,11 @@ function buildRecommendation(
     years >= 15
   ) {
 
-    return (
-      "🚀 אופק ארוך יכול לאפשר למשקיע להתמודד עם תנודתיות " +
-      "ולנצל את אפקט הריבית דריבית. עם זאת, התשואה בפועל אינה מובטחת."
-    );
+    return language === "he"
+      ? "🚀 אופק ארוך יכול לאפשר למשקיע להתמודד עם תנודתיות " +
+        "ולנצל את אפקט הריבית דריבית. עם זאת, התשואה בפועל אינה מובטחת."
+      : "🚀 A long horizon can allow an investor to cope with volatility " +
+        "and take advantage of compound interest. However, actual returns are not guaranteed.";
 
   }
 
@@ -385,10 +418,11 @@ function buildRecommendation(
     asset === "world"
   ) {
 
-    return (
-      "🌎 פיזור גיאוגרפי רחב יכול להפחית תלות באזור יחיד. " +
-      "עם זאת, מדובר עדיין בחשיפה לשוקי מניות ולכן קיימת תנודתיות."
-    );
+    return language === "he"
+      ? "🌎 פיזור גיאוגרפי רחב יכול להפחית תלות באזור יחיד. " +
+        "עם זאת, מדובר עדיין בחשיפה לשוקי מניות ולכן קיימת תנודתיות."
+      : "🌎 Broad geographic diversification can reduce dependence on a single region. " +
+        "However, this is still exposure to stock markets, so there is volatility.";
 
   }
 
@@ -396,18 +430,21 @@ function buildRecommendation(
     asset === "bonds"
   ) {
 
-    return (
-      "🛡️ אופי אג״חי עשוי להתאים לתרחישים שבהם יציבות יחסית " +
-      "חשובה יותר ממקסום פוטנציאל הצמיחה, אך גם אג״ח אינו חסר סיכון."
-    );
+    return language === "he"
+      ? "🛡️ אופי אג״חי עשוי להתאים לתרחישים שבהם יציבות יחסית " +
+        "חשובה יותר ממקסום פוטנציאל הצמיחה, אך גם אג״ח אינו חסר סיכון."
+      : "🛡️ The bond character may be suitable for scenarios where relative stability " +
+        "is more important than maximizing growth potential, but bonds are not risk-free either.";
 
   }
 
-  return (
-    "🎯 כדאי לבחון את התרחיש ביחס למטרה, לאופק ההשקעה " +
-    "וליכולת האישית להתמודד עם ירידות. המערכת מציגה הדמיה חינוכית " +
-    "ולא תחזית לתשואה עתידית."
-  );
+  return language === "he"
+    ? "🎯 כדאי לבחון את התרחיש ביחס למטרה, לאופק ההשקעה " +
+      "וליכולת האישית להתמודד עם ירידות. המערכת מציגה הדמיה חינוכית " +
+      "ולא תחזית לתשואה עתידית."
+    : "🎯 It's advisable to examine the scenario in relation to the goal, investment horizon, " +
+      "and personal ability to cope with declines. The system presents an educational illustration " +
+      "and not a forecast of future returns.";
 }
 
 // ---------------------------------------------------------------------------
@@ -439,20 +476,21 @@ function normalizeConfidence(
 
 function buildHeadline(
   years: number,
-  assetLabel: string
+  assetLabel: string,
+  language: "he" | "en" = "he"
 ): string {
 
   if (years <= 0) {
 
-    return (
-      `ניתוח AI: תרחיש השקעה ב${assetLabel}`
-    );
+    return language === "he"
+      ? `ניתוח AI: תרחיש השקעה ב${assetLabel}`
+      : `AI Analysis: Investment in ${assetLabel}`;
 
   }
 
-  return (
-    `ניתוח AI: ${years} שנות השקעה ב${assetLabel}`
-  );
+  return language === "he"
+    ? `ניתוח AI: ${years} שנות השקעה ב${assetLabel}`
+    : `AI Analysis: ${years} years of investment in ${assetLabel}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -461,7 +499,8 @@ function buildHeadline(
 
 export function generateAIInsight(
   scenario: FinancialScenario,
-  projection: ProjectionResult
+  projection: ProjectionResult,
+  language: "he" | "en" = "he"
 ): AIInsight {
 
   const years =
@@ -477,7 +516,8 @@ export function generateAIInsight(
 
   const assetLabel =
     getAssetLabel(
-      asset
+      asset,
+      language
     );
 
   // -------------------------------------------------------------------------
@@ -490,7 +530,8 @@ export function generateAIInsight(
   } =
     buildRiskProfile(
       asset,
-      years
+      years,
+      language
     );
 
   // -------------------------------------------------------------------------
@@ -499,7 +540,8 @@ export function generateAIInsight(
 
   const horizonInsight =
     buildHorizonInsight(
-      years
+      years,
+      language
     );
 
   // -------------------------------------------------------------------------
@@ -508,7 +550,8 @@ export function generateAIInsight(
 
   const growthInsight =
     buildGrowthInsight(
-      projection
+      projection,
+      language
     );
 
   // -------------------------------------------------------------------------
@@ -517,7 +560,8 @@ export function generateAIInsight(
 
   const diversificationInsight =
     buildDiversificationInsight(
-      asset
+      asset,
+      language
     );
 
   // -------------------------------------------------------------------------
@@ -527,7 +571,8 @@ export function generateAIInsight(
   const recommendation =
     buildRecommendation(
       asset,
-      years
+      years,
+      language
     );
 
   // -------------------------------------------------------------------------
@@ -548,7 +593,8 @@ export function generateAIInsight(
     headline:
       buildHeadline(
         years,
-        assetLabel
+        assetLabel,
+        language
       ),
 
     riskLevel,

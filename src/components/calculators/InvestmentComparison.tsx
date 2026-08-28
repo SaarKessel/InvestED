@@ -4,6 +4,8 @@ import {
   type AssetClassOption,
 } from "@/lib/calculatorEngine";
 
+import { useLanguage } from "@/context/languageContext";
+
 interface InvestmentComparisonProps {
   principal: number;
   monthlyContribution: number;
@@ -22,6 +24,9 @@ export function InvestmentComparison({
   years,
   assets,
 }: InvestmentComparisonProps) {
+  const { t, language } = useLanguage();
+  const locale = language === "he" ? "he-IL" : "en-US";
+
   const comparisons: ComparisonRow[] = assets.map((asset) => ({
     asset,
     result: computeProjection(
@@ -39,11 +44,11 @@ export function InvestmentComparison({
   return (
     <div className="mt-8">
       <h3 className="text-xl font-bold">
-        השוואת מסלולי השקעה
+        {t("comparison_title", "השוואת מסלולי השקעה")}
       </h3>
 
       <p className="mt-2 text-sm text-muted-foreground">
-        אותה השקעה, מסלולים שונים — המחשה של השפעת הנחת התשואה על השווי העתידי.
+        {t("comparison_subtitle", "אותה השקעה, מסלולים שונים — המחשה של השפעת הנחת התשואה על השווי העתידי.")}
       </p>
 
       <div className="mt-5 space-y-3">
@@ -65,33 +70,33 @@ export function InvestmentComparison({
                   </p>
 
                   <p className="text-xs text-muted-foreground">
-                    תשואה שנתית משוערת:{" "}
+                    {t("comparison_annual", "תשואה שנתית משוערת:")}{" "}
                     {item.asset.expectedReturnPct}%
                   </p>
                 </div>
 
                 {isBest && (
                   <span className="rounded-full bg-primary px-3 py-1 text-xs text-primary-foreground">
-                    שווי עתידי גבוה יותר
+                    {t("comparison_higher", "שווי עתידי גבוה יותר")}
                   </span>
                 )}
               </div>
 
               <div className="mt-3 flex justify-between text-sm">
-                <span>שווי עתידי</span>
+                <span>{t("comparison_value", "שווי עתידי")}</span>
 
                 <b>
                   ₪
-                  {item.result.finalBalance.toLocaleString("he-IL")}
+                  {item.result.finalBalance.toLocaleString(locale)}
                 </b>
               </div>
 
               <div className="mt-1 flex justify-between text-sm">
-                <span>רווח</span>
+                <span>{t("comparison_profit", "רווח")}</span>
 
                 <b>
                   ₪
-                  {item.result.growth.toLocaleString("he-IL")}
+                  {item.result.growth.toLocaleString(locale)}
                 </b>
               </div>
             </div>

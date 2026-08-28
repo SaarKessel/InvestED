@@ -1,14 +1,12 @@
 import { useEffect, useRef, useState } from "react";
 import { Info } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/context/languageContext";
 
-/**
- * InfoBadge — כפתור "מה זה?" ליד פיצ'רים מרכזיים באתר.
- * עובד גם בלחיצה (מובייל) וגם ב-hover (דסקטופ), ונסגר בלחיצה בחוץ.
- */
 export function InfoBadge({ title, description }: { title?: string; description: string }) {
-  const [open, setOpen] = useState(false);
+  const { t } = useLanguage();
   const ref = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -24,7 +22,7 @@ export function InfoBadge({ title, description }: { title?: string; description:
         type="button"
         onClick={() => setOpen((o) => !o)}
         onMouseEnter={() => setOpen(true)}
-        aria-label="מה הפיצ'ר הזה עושה?"
+        aria-label={t("info_badge_label", "מה הפיצ'ר הזה עושה?")}
         className={cn(
           "flex h-5 w-5 items-center justify-center rounded-full border transition-colors",
           open ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:bg-accent"

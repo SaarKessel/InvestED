@@ -1,190 +1,77 @@
-// =====================================================
-// InvestED - Financial Insight Engine
-// =====================================================
-
-import type {
-  FinancialScenario,
-  Projection
-} from "@/types";
-
-import type {
-  InvestorClassification
-} from "@/types";
-
-
+import type { FinancialScenario, Projection } from "@/types";
+import type { InvestorClassification } from "@/types";
+import { useLanguage } from "@/context/languageContext";
 
 export interface FinancialInsight {
-
-  title:string;
-
-  description:string;
-
-  type:
-    | "growth"
-    | "risk"
-    | "goal"
-    | "education";
-
+  title: string;
+  description: string;
+  type: "growth" | "risk" | "goal" | "education";
 }
-
-
 
 export interface FinancialInsightResult {
-
-  headline:string;
-
-  insights:FinancialInsight[];
-
+  headline: string;
+  insights: FinancialInsight[];
 }
 
+export function useFinancialInsights(
+  scenario: FinancialScenario,
+  projection: Projection,
+  investor: InvestorClassification
+): FinancialInsightResult {
+  const { t } = useLanguage();
 
+  const insights: FinancialInsight[] = [];
 
-
-export function generateFinancialInsights(
-
-  scenario:FinancialScenario,
-
-  projection:Projection,
-
-  investor:InvestorClassification
-
-):FinancialInsightResult {
-
-
-  const insights:FinancialInsight[] = [];
-
-
-
-  if(
-    scenario.years >= 10
-  ){
-
+  if (scenario.years >= 10) {
     insights.push({
-
-      title:
-        "אופק השקעה ארוך",
-
-      description:
-        "משך השקעה ארוך מאפשר לנצל את אפקט הריבית דריבית ולהתמודד טוב יותר עם תנודתיות.",
-
-      type:
-        "growth"
-
+      title: t("insight_growth_title"),
+      description: t("insight_growth_desc"),
+      type: "growth",
     });
-
   }
 
-
-
-  if(
-    investor.type === "משקיע צמיחה"
-  ){
-
+  if (investor.type === t("investor_type_growth") || investor.type === "growth") {
     insights.push({
-
-      title:
-        "פרופיל צמיחה",
-
-      description:
-        "הפרופיל מצביע על נכונות לקחת סיכון גבוה יותר עבור פוטנציאל תשואה ארוך טווח.",
-
-      type:
-        "risk"
-
+      title: t("insight_risk_title"),
+      description: t("insight_risk_desc"),
+      type: "risk",
     });
-
   }
 
-
-
-  if(
-    projection.growth >
-    projection.totalContributed
-  ){
-
+  if (projection.growth > projection.totalContributed) {
     insights.push({
-
-      title:
-        "הריבית דריבית משמעותית",
-
-      description:
-        "חלק משמעותי מהתוצאה הסופית מגיע מצמיחת ההשקעה ולא רק מההפקדות.",
-
-      type:
-        "education"
-
+      title: t("insight_education_title"),
+      description: t("insight_education_desc"),
+      type: "education",
     });
-
   }
 
-
-
-  if(
-    scenario.goal === "retirement"
-  ){
-
+  if (scenario.goal === "retirement") {
     insights.push({
-
-      title:
-        "יעד פרישה",
-
-      description:
-        "התכנון מתמקד בבניית הון לטווח ארוך ועצמאות פיננסית.",
-
-      type:
-        "goal"
-
+      title: t("insight_goal_title"),
+      description: t("insight_goal_desc"),
+      type: "goal",
     });
-
   }
-
-
 
   return {
-
-    headline:
-      buildHeadline(
-        scenario,
-        investor
-      ),
-
-    insights
-
+    headline: buildHeadline(scenario, investor, t),
+    insights,
   };
-
-
 }
 
-
-
-
 function buildHeadline(
+  scenario: FinancialScenario,
+  investor: InvestorClassification,
+  t: (key: string, fallback?: string) => string
+): string {
+  if (scenario.goal === "retirement") {
+    return t("headline_retirement");
+  }
 
- scenario:FinancialScenario,
+  if (investor.type === t("investor_type_growth") || investor.type === "growth") {
+    return t("headline_growth");
+  }
 
- investor:InvestorClassification
-
-):string {
-
-
- if(
-  scenario.goal === "retirement"
- ){
-
-  return "התוכנית מתמקדת בבניית עצמאות פיננסית לאורך זמן.";
-
- }
-
-
- if(
-  investor.type === "משקיע צמיחה"
- ){
-
-  return "האסטרטגיה מתאימה למשקיע שמחפש צמיחה ארוכת טווח.";
-
- }
-
-
- return "הניתוח מבוסס על שילוב בין יעד פיננסי, זמן וסיכון.";
-
+  return t("headline_default");
 }

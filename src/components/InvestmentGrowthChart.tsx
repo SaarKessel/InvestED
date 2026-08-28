@@ -13,6 +13,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
+import { useLanguage } from "@/context/languageContext";
 
 interface ProjectionPoint {
   year: number;
@@ -24,36 +25,39 @@ interface Props {
   data: ProjectionPoint[];
 }
 
-const currencyFormatter = new Intl.NumberFormat("he-IL", {
-  style: "currency",
-  currency: "ILS",
-  maximumFractionDigits: 0,
-});
-
-function formatCurrency(value: number): string {
-  return currencyFormatter.format(value);
-}
-
-function formatAxisValue(value: number): string {
-  const numericValue = Number(value);
-
-  if (numericValue >= 1_000_000) {
-    return `₪${(numericValue / 1_000_000).toFixed(1)}M`;
-  }
-
-  if (numericValue >= 1_000) {
-    return `₪${Math.round(numericValue / 1_000)}K`;
-  }
-
-  return `₪${Math.round(numericValue)}`;
-}
-
 export function InvestmentGrowthChart({ data }: Props) {
+  const { t, language } = useLanguage();
+  const locale = language === "he" ? "he-IL" : "en-US";
+
+  const currencyFormatter = new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: "ILS",
+    maximumFractionDigits: 0,
+  });
+
+  function formatCurrency(value: number): string {
+    return currencyFormatter.format(value);
+  }
+
+  function formatAxisValue(value: number): string {
+    const numericValue = Number(value);
+
+    if (numericValue >= 1_000_000) {
+      return `₪${(numericValue / 1_000_000).toFixed(1)}M`;
+    }
+
+    if (numericValue >= 1_000) {
+      return `₪${Math.round(numericValue / 1_000)}K`;
+    }
+
+    return `₪${Math.round(numericValue)}`;
+  }
+
   if (!data || data.length === 0) {
     return (
-      <section
-        dir="rtl"
-        className="
+    <section
+      dir={language === "he" ? "rtl" : "ltr"}
+      className="
           mt-8
           rounded-3xl
           border
@@ -64,11 +68,11 @@ export function InvestmentGrowthChart({ data }: Props) {
         "
       >
         <h2 className="text-2xl font-bold">
-          📈 צמיחת ההשקעה לאורך זמן
+          {t("investment_chart_title", "📈 צמיחת ההשקעה לאורך זמן")}
         </h2>
 
         <p className="mt-2 text-sm text-muted-foreground">
-          אין מספיק נתונים להצגת גרף הצמיחה.
+          {t("investment_chart_empty", "אין מספיק נתונים להצגת גרף הצמיחה.")}
         </p>
       </section>
     );
@@ -76,8 +80,8 @@ export function InvestmentGrowthChart({ data }: Props) {
 
   return (
     <section
-      dir="rtl"
-      aria-label="גרף צמיחת ההשקעה"
+      dir={language === "he" ? "rtl" : "ltr"}
+      aria-label={t("investment_chart_aria", "גרף צמיחת ההשקעה")}
       className="
         mt-8
         rounded-3xl
@@ -90,11 +94,11 @@ export function InvestmentGrowthChart({ data }: Props) {
     >
       <div className="mb-6">
         <h2 className="text-2xl font-bold">
-          📈 צמיחת ההשקעה לאורך זמן
+          {t("investment_chart_title", "📈 צמיחת ההשקעה לאורך זמן")}
         </h2>
 
         <p className="mt-2 text-sm text-muted-foreground">
-          השוואה בין הכסף שהופקד לבין השווי שנצבר מההשקעה לאורך השנים.
+          {t("investment_chart_subtitle", "השוואה בין הכסף שהופקד לבין השווי שנצבר מההשקעה לאורך השנים.")}
         </p>
       </div>
 
@@ -121,7 +125,7 @@ export function InvestmentGrowthChart({ data }: Props) {
               tickMargin={10}
               tickFormatter={(value) => `${value}`}
               label={{
-                value: "שנים",
+                value: t("investment_chart_xaxis", "שנים"),
                 position: "insideBottom",
                 offset: -5,
               }}
@@ -139,10 +143,10 @@ export function InvestmentGrowthChart({ data }: Props) {
               formatter={(value, name) => [
                 formatCurrency(Number(value)),
                 name === "balance"
-                  ? "שווי תיק"
-                  : "סה״כ הפקדות",
+                  ? t("investment_chart_tooltip_balance", "שווי תיק")
+                  : t("investment_chart_tooltip_contributed", "סה״כ הפקדות"),
               ]}
-              labelFormatter={(label) => `שנה ${label}`}
+              labelFormatter={(label) => `${t("investment_chart_label_year", "שנה")} ${label}`}
               contentStyle={{
                 borderRadius: "12px",
                 border: "1px solid hsl(var(--border))",
@@ -159,8 +163,8 @@ export function InvestmentGrowthChart({ data }: Props) {
               height={36}
               formatter={(value) =>
                 value === "balance"
-                  ? "שווי תיק"
-                  : "סה״כ הפקדות"
+                  ? t("investment_chart_balance_label", "שווי תיק")
+                  : t("investment_chart_contributed_label", "סה״כ הפקדות")
               }
             />
 
@@ -191,21 +195,21 @@ export function InvestmentGrowthChart({ data }: Props) {
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <div className="rounded-2xl border border-border bg-muted/30 p-4">
           <p className="text-sm text-muted-foreground">
-            שווי תיק
+            {t("investment_chart_balance_label", "שווי תיק")}
           </p>
 
           <p className="mt-1 font-semibold">
-            הכסף שהצטבר כולל צמיחת ההשקעה.
+            {t("investment_chart_balance_desc", "הכסף שהצטבר כולל צמיחת ההשקעה.")}
           </p>
         </div>
 
         <div className="rounded-2xl border border-border bg-muted/30 p-4">
           <p className="text-sm text-muted-foreground">
-            סה״כ הפקדות
+            {t("investment_chart_contributed_label", "סה״כ הפקדות")}
           </p>
 
           <p className="mt-1 font-semibold">
-            הכסף שהושקע בפועל לאורך התקופה.
+            {t("investment_chart_contributed_desc", "הכסף שהושקע בפועל לאורך התקופה.")}
           </p>
         </div>
       </div>

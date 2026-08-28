@@ -2,8 +2,11 @@ import { motion } from "framer-motion";
 import { Linkedin, MessageCircle } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent, Button } from "@/components/ui/primitives";
+import { useLanguage } from "@/context/languageContext";
 
 export function ContactPage() {
+  const { t } = useLanguage();
+
   return (
     <Layout>
       <section className="container flex max-w-xl flex-col items-center py-16 text-center md:py-24">
@@ -11,10 +14,9 @@ export function ContactPage() {
           <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
             <MessageCircle className="h-7 w-7" />
           </div>
-          <h1 className="font-display text-3xl font-extrabold md:text-4xl">בואו נדבר</h1>
+          <h1 className="font-display text-3xl font-extrabold md:text-4xl">{t("contact_title")}</h1>
           <p className="mt-3 text-muted-foreground">
-            שאלות, הצעות שיפור, הזדמנויות שיתוף פעולה, או סתם רוצים להגיד שלום — הדרך הכי מהירה
-            להגיע אליי היא הודעה פרטית ב-LinkedIn.
+            {t("contact_desc")}
           </p>
         </motion.div>
 
@@ -28,11 +30,11 @@ export function ContactPage() {
             >
               <Button size="lg" className="w-full gap-2">
                 <Linkedin className="h-5 w-5" />
-                שלח לי הודעה ב-LinkedIn
+                {t("contact_linkedin")}
               </Button>
             </a>
             <p className="text-xs text-muted-foreground">
-              אני מנסה לענות לכל הודעה תוך זמן קצר.
+              {t("contact_note")}
             </p>
           </CardContent>
         </Card>

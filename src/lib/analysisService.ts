@@ -59,21 +59,21 @@ import {
 
 function normalizeHorizon(
   horizon:
-    | "קצר"
-    | "בינוני"
-    | "ארוך"
+    | "short"
+    | "medium"
+    | "long"
     | null
 ) {
 
   switch (horizon) {
 
-    case "קצר":
+    case "short":
       return "short";
 
-    case "ארוך":
+    case "long":
       return "long";
 
-    case "בינוני":
+    case "medium":
     default:
       return "medium";
 
@@ -126,11 +126,15 @@ function generateAIInsights(
 
   riskScore: number,
 
-  allocation: AllocationItem[]
+  allocation: AllocationItem[],
+
+  language: string = "en"
 
 ): AnalysisSignal[] {
 
   const insights: AnalysisSignal[] = [];
+
+  const isHebrew = language === "he";
 
 
   // -----------------------------------------------------
@@ -142,7 +146,9 @@ function generateAIInsights(
     insights.push(
       createSignal(
         "Risk Insight",
-        "המערכת זיהתה פרופיל עם יכולת להתמודד עם תנודתיות גבוהה והתמקדות בצמיחה ארוכת טווח.",
+        isHebrew
+          ? "המערכת זיהתה פרופיל עם יכולת להתמודד עם תנודתיות גבוהה והתמקדות בצמיחה ארוכת טווח."
+          : "The system identified a profile that can handle high volatility with a focus on long-term growth.",
         "risk"
       )
     );
@@ -154,7 +160,9 @@ function generateAIInsights(
     insights.push(
       createSignal(
         "Risk Insight",
-        "המערכת זיהתה העדפה ליציבות ושמירה על הון עם רמת סיכון נמוכה יותר.",
+        isHebrew
+          ? "המערכת זיהתה העדפה ליציבות ושמירה על הון עם רמת סיכון נמוכה יותר."
+          : "The system identified a preference for stability and capital preservation with a lower risk level.",
         "risk"
       )
     );
@@ -166,7 +174,9 @@ function generateAIInsights(
     insights.push(
       createSignal(
         "Risk Insight",
-        "המערכת זיהתה איזון בין רצון לצמיחה לבין ניהול סיכונים.",
+        isHebrew
+          ? "המערכת זיהתה איזון בין רצון לצמיחה לבין ניהול סיכונים."
+          : "The system identified a balance between the desire for growth and risk management.",
         "risk"
       )
     );
@@ -183,7 +193,9 @@ function generateAIInsights(
     insights.push(
       createSignal(
         "Horizon Insight",
-        "אופק השקעה ארוך מאפשר להתמקד בתהליך השקעה הדרגתי ולהתמודד טוב יותר עם תנודתיות לאורך זמן.",
+        isHebrew
+          ? "אופק השקעה ארוך מאפשר להתמקד בתהליך השקעה הדרגתי ולהתמודד טוב יותר עם תנודתיות לאורך זמן."
+          : "Long investment horizon allows focusing on a gradual investment process and better coping with volatility over time.",
         "horizon"
       )
     );
@@ -195,7 +207,9 @@ function generateAIInsights(
     insights.push(
       createSignal(
         "Horizon Insight",
-        "אופק השקעה קצר דורש דגש גבוה יותר על נזילות, תנודתיות והתאמה למועד שבו הכסף צפוי להידרש.",
+        isHebrew
+          ? "אופק השקעה קצר דורש דגש גבוה יותר על נזילות, תנודתיות והתאמה למועד שבו הכסף צפוי להידרש."
+          : "Short investment horizon requires greater emphasis on liquidity, volatility, and alignment with the expected time the money will be needed.",
         "horizon"
       )
     );
@@ -207,7 +221,9 @@ function generateAIInsights(
     insights.push(
       createSignal(
         "Horizon Insight",
-        "אופק השקעה בינוני מאפשר לשלב בין פוטנציאל צמיחה לבין בחינה של רמת הסיכון והיעד הפיננסי.",
+        isHebrew
+          ? "אופק השקעה בינוני מאפשר לשלב בין פוטנציאל צמיחה לבין בחינה של רמת הסיכון והיעד הפיננסי."
+          : "Medium investment horizon allows combining growth potential with consideration of risk level and financial goal.",
         "horizon"
       )
     );
@@ -231,7 +247,9 @@ function generateAIInsights(
   insights.push(
     createSignal(
       "Portfolio Insight",
-      `מבנה התיק החינוכי הותאם לסגנון ${investor.type}. הקצאת הנכסים הנוכחית: ${allocationText}.`,
+      isHebrew
+        ? `מבנה התיק החינוכי הותאם לסגנון "${investor.type}". הקצאת הנכסים הנוכחית: ${allocationText}.`
+        : `The educational portfolio structure is adapted to the "${investor.type}" profile. Current asset allocation: ${allocationText}.`,
       "portfolio"
     )
   );
@@ -246,7 +264,9 @@ function generateAIInsights(
     insights.push(
       createSignal(
         "Goal Insight",
-        "המטרה הפיננסית שזוהתה שולבה כחלק מתהליך הניתוח והתכנון.",
+        isHebrew
+          ? "המטרה הפיננסית שזוהתה שולבה כחלק מתהליך הניתוח והתכנון."
+          : "The identified financial goal was integrated as part of the analysis and planning process.",
         "goal"
       )
     );
@@ -271,14 +291,18 @@ function generateAiNarration(
 
   riskScore: number,
 
-  allocation: AllocationItem[]
+  allocation: AllocationItem[],
+
+  language: string = "en"
 
 ): AiNarration {
 
+  const isHebrew = language === "he";
+
   const ageText =
     flags.age
-      ? `גיל המשתמש ${flags.age}`
-      : "גיל המשתמש לא הוזן";
+      ? (isHebrew ? `גיל המשתמש ${flags.age}` : `User age: ${flags.age}`)
+      : (isHebrew ? "גיל המשתמש לא הוזן" : "User age was not provided");
 
 
   const allocationText =
@@ -296,17 +320,28 @@ function generateAiNarration(
       "InvestED Explainable AI Engine v4",
 
     profileSummary:
-      `${ageText}.
+      isHebrew
+        ? `${ageText}.
       סגנון השקעה שזוהה: ${investor.type}.
       ציון סיכון: ${riskScore}/10.
-      המערכת התאימה את הניתוח לפי אופק ההשקעה, פרופיל הסיכון והעדפות המשתמש.`,
+      המערכת התאימה את הניתוח לפי אופק ההשקעה, פרופיל הסיכון והעדפות המשתמש.`
+        : `${ageText}.
+      Identified investment style: ${investor.type}.
+      Risk score: ${riskScore}/10.
+      The system adapted the analysis according to investment horizon, risk profile, and user preferences.`,
 
     portfolioSummary:
-      `התיק החינוכי נבנה לפי עקרונות של פיזור,
+      isHebrew
+        ? `התיק החינוכי נבנה לפי עקרונות של פיזור,
       התאמת רמת סיכון ואופק השקעה.
       הקצאת הנכסים:
       ${allocationText}.
       המערכת מיועדת ללמידה פיננסית בלבד ואינה מהווה ייעוץ השקעות.`
+        : `The educational portfolio was built based on diversification principles,
+      risk level adjustment, and investment horizon.
+      Asset allocation:
+      ${allocationText}.
+      The system is intended for financial learning only and does not constitute an investment recommendation.`
 
   };
 
@@ -329,7 +364,7 @@ function buildEngineSignals(
   signals.push(
     createSignal(
       "AI Risk Analysis",
-      `${insight.riskEmoji} רמת הסיכון החינוכית של התרחיש: ${insight.riskLevel}.`,
+      `${insight.riskEmoji} The educational risk level of the scenario: ${insight.riskLevel}.`,
       "risk"
     )
   );
@@ -374,7 +409,7 @@ function buildEngineSignals(
   signals.push(
     createSignal(
       "AI Confidence",
-      `רמת הביטחון של מנוע הניתוח בתרחיש: ${insight.confidence}%.`,
+      `Analysis engine confidence in the scenario: ${insight.confidence}%.`,
       "confidence"
     )
   );
@@ -390,7 +425,8 @@ function buildEngineSignals(
 // =====================================================
 
 export function buildRuleBasedAnalysis(
-  profileText: string
+  profileText: string,
+  language: string = "en"
 ): AnalysisResult {
 
   // =====================================================
@@ -519,7 +555,8 @@ export function buildRuleBasedAnalysis(
     buildExplainability(
       flags,
       investor,
-      riskScore
+      riskScore,
+      language
     );
 
 
@@ -532,7 +569,8 @@ export function buildRuleBasedAnalysis(
       flags,
       investor,
       riskScore,
-      allocation
+      allocation,
+      language
     );
 
 
@@ -637,7 +675,9 @@ export function buildRuleBasedAnalysis(
 
       riskScore,
 
-      allocation
+      allocation,
+
+      language
 
     );
 

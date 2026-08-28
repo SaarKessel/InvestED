@@ -13,6 +13,8 @@ import {
   tryEnhanceWithOllama,
 } from "@/lib/analysisService";
 
+import { useLanguage } from "@/context/languageContext";
+
 
 export interface AnalysisContextValue {
 
@@ -51,6 +53,8 @@ export function AnalysisProvider({
 }) {
 
 
+  const { language } = useLanguage();
+
   const [profile,setProfile] =
     useState<AnalysisResult | null>(null);
 
@@ -79,7 +83,10 @@ export function AnalysisProvider({
 
 
       const ruleResult =
-        buildRuleBasedAnalysis(data);
+        buildRuleBasedAnalysis(
+          data,
+          language
+        );
 
 
 

@@ -237,7 +237,6 @@ if(
     "experienced";
 
 }
-
 const interests: InterestArea[] = [];
 
 
@@ -248,7 +247,7 @@ if(
 ){
 
   interests.push(
-    "טכנולוגיה" as InterestArea
+    "technology" as InterestArea
   );
 
 }
@@ -261,7 +260,7 @@ if(
 ){
 
   interests.push(
-    "פיננסים" as InterestArea
+    "finance" as InterestArea
   );
 
 }
@@ -273,7 +272,7 @@ if(
 ){
 
   interests.push(
-    "אנרגיה" as InterestArea
+    "energy" as InterestArea
   );
 
 }
@@ -286,7 +285,8 @@ if(
 ){
 
   interests.push(
-    "נדל״ן" as InterestArea
+    "real_estate" as InterestArea
+
   );
 
 }
@@ -406,24 +406,24 @@ export function riskScoreDescription(
 
   if(score <= 3){
     return {
-      band:"נמוך",
-      volatility:"נמוכה",
-      psychology:"העדפה ליציבות ושמירה על הון."
+      band:"low",
+      volatility:"low",
+      psychology:"Preference for stability and capital preservation."
     };
   }
 
   if(score <= 6){
     return {
-      band:"בינוני",
-      volatility:"בינונית",
-      psychology:"שילוב בין צמיחה לניהול סיכון."
+      band:"medium",
+      volatility:"medium",
+      psychology:"Balance between growth and risk management."
     };
   }
 
   return {
-    band:"גבוה",
-    volatility:"גבוהה",
-    psychology:"מוכנות לתנודתיות עבור צמיחה."
+    band:"high",
+    volatility:"high",
+    psychology:"Willingness to cope with volatility for growth potential."
   };
 
 }
@@ -443,10 +443,10 @@ export function classifyInvestor(
 
     return {
       type:
-        "משקיע שמרני" as InvestorType,
+        "conservative" as InvestorType,
 
       reason:
-        "סיכון נמוך והעדפה ליציבות ושמירה על הון."
+        "Low risk and preference for stability and capital preservation."
     };
 
   }
@@ -457,10 +457,10 @@ export function classifyInvestor(
 
     return {
       type:
-        "משקיע מאוזן" as InvestorType,
+        "balanced" as InvestorType,
 
       reason:
-        "איזון בין צמיחה לבין ניהול סיכון."
+        "Balance between growth and risk management."
     };
 
   }
@@ -470,10 +470,10 @@ export function classifyInvestor(
   return {
 
     type:
-      "משקיע צמיחה" as InvestorType,
+      "growth" as InvestorType,
 
     reason:
-      "נכונות להתמודד עם תנודתיות עבור פוטנציאל צמיחה."
+      "Willingness to cope with volatility for growth potential."
 
   };
 
@@ -487,27 +487,38 @@ export function classifyInvestor(
 export function buildExplainability(
   flags: ProfileFlags,
   classification: InvestorClassification,
-  score: number
+  score: number,
+  language: string = "en"
 ): string[] {
 
   const reasons: string[] = [];
 
+  const isHebrew = language === "he";
+
   reasons.push(
-    `סיווג משקיע: ${classification.type}`
+    isHebrew
+      ? `סיווג משקיע: ${classification.type}`
+      : `Investor classification: ${classification.type}`
   );
 
   reasons.push(
-    `הסבר: ${classification.reason}`
+    isHebrew
+      ? `הסבר: ${classification.reason}`
+      : `Explanation: ${classification.reason}`
   );
 
   reasons.push(
-    `ציון סיכון: ${score}/10`
+    isHebrew
+      ? `ציון סיכון: ${score}/10`
+      : `Risk score: ${score}/10`
   );
 
   if(flags.riskLevel){
 
     reasons.push(
-      `העדפת סיכון שזוהתה: ${flags.riskLevel}`
+      isHebrew
+        ? `העדפת סיכון שזוהתה: ${flags.riskLevel}`
+        : `Identified risk preference: ${flags.riskLevel}`
     );
 
   }
@@ -515,7 +526,9 @@ export function buildExplainability(
   if(flags.horizon){
 
     reasons.push(
-      `אופק השקעה שזוהה: ${flags.horizon}`
+      isHebrew
+        ? `אופק השקעה שזוהה: ${flags.horizon}`
+        : `Identified investment horizon: ${flags.horizon}`
     );
 
   }
@@ -523,7 +536,9 @@ export function buildExplainability(
   if(flags.age !== null){
 
     reasons.push(
-      `גיל משתמש: ${flags.age}`
+      isHebrew
+        ? `גיל משתמש: ${flags.age}`
+        : `User age: ${flags.age}`
     );
 
   }
@@ -534,7 +549,9 @@ export function buildExplainability(
   ){
 
     reasons.push(
-      `תחומי עניין: ${flags.interests.join(", ")}`
+      isHebrew
+        ? `תחומי עניין: ${flags.interests.join(", ")}`
+        : `Interest areas: ${flags.interests.join(", ")}`
     );
 
   }
@@ -557,9 +574,9 @@ export function recommendStrategies(
   if(score <= 3){
 
     strategies.push(
-      "השקעה פסיבית במדדים רחבים",
-      "שילוב קרנות אג״ח איכותיות",
-      "שמירה על רמת נזילות גבוהה"
+      "Passive investment in broad indices",
+      "Combination of quality bond funds",
+      "Maintaining a high liquidity level"
     );
 
   }
@@ -568,9 +585,9 @@ export function recommendStrategies(
   if(score > 3 && score <= 6){
 
     strategies.push(
-      "השקעה פסיבית במדדים",
-      "שילוב מניות ואג״ח",
-      "פיזור בין שווקים שונים"
+      "Passive investment in indices",
+      "Combination of stocks and bonds",
+      "Diversification across different markets"
     );
 
   }
@@ -579,31 +596,31 @@ export function recommendStrategies(
   if(score > 6){
 
     strategies.push(
-      "השקעה במדדי מניות",
-      "חשיפה לסקטורי צמיחה",
-      "השקעה לטווח ארוך"
+      "Investment in stock indices",
+      "Exposure to growth sectors",
+      "Long-term investment"
     );
 
   }
 
 
   if(
-    flags.interests.includes("טכנולוגיה" as InterestArea)
+    flags.interests.includes("technology" as InterestArea)
   ){
 
     strategies.push(
-      "למידה על תחום הטכנולוגיה והשפעתו על שוק ההון"
+      "Learning about the technology sector and its impact on the stock market"
     );
 
   }
 
 
   if(
-    flags.interests.includes("פיננסים" as InterestArea)
+    flags.interests.includes("finance" as InterestArea)
   ){
 
     strategies.push(
-      "מעקב אחר סקטור הפיננסים"
+      "Tracking the finance sector"
     );
 
   }
@@ -627,9 +644,9 @@ export function generateLearningPath(
   if(flags.knowledgeLevel === "beginner"){
 
     path.push(
-      "היכרות עם מניות, אג״ח וקרנות סל",
-      "הבנת מושגי סיכון ותשואה",
-      "בניית בסיס פיננסי אישי"
+      "Introduction to stocks, bonds and ETFs",
+      "Understanding risk and return concepts",
+      "Building a personal financial foundation"
     );
 
   }
@@ -638,9 +655,9 @@ export function generateLearningPath(
   if(flags.knowledgeLevel === "some"){
 
     path.push(
-      "בניית אסטרטגיית השקעה",
-      "הקצאת נכסים וניהול תיק",
-      "פיזור וניהול סיכונים"
+      "Building an investment strategy",
+      "Asset allocation and portfolio management",
+      "Diversification and risk management"
     );
 
   }
@@ -649,22 +666,21 @@ export function generateLearningPath(
   if(flags.knowledgeLevel === "experienced"){
 
     path.push(
-      "ניתוח מתקדם של תיק השקעות",
-      "מדדי ביצוע כמו Sharpe ו-Beta",
-      "אופטימיזציה של הקצאת נכסים"
+      "Advanced investment portfolio analysis",
+      "Performance metrics like Sharpe and Beta",
+      "Asset allocation optimization"
     );
 
   }
 
 
-  // במקרה שלא זוהתה רמת ידע
   if(path.length === 0){
 
     path.push(
-      "בסיס פיננסי",
-      "היכרות עם שוק ההון",
-      "בניית אסטרטגיית השקעה",
-      "העמקה בניהול סיכונים"
+      "Financial basics",
+      "Introduction to the stock market",
+      "Building an investment strategy",
+      "Deepening risk management"
     );
 
   }
@@ -684,21 +700,21 @@ export function explainInvestorStyle(
 
   switch(classification.type){
 
-    case "משקיע שמרני":
+    case "conservative":
 
-      return "המשקיע מתמקד בשמירה על ההון, יציבות והפחתת תנודתיות.";
+      return "The investor focuses on capital preservation, stability, and reducing volatility.";
 
-    case "משקיע מאוזן":
+    case "balanced":
 
-      return "המשקיע מחפש איזון בין צמיחה לבין ניהול סיכונים.";
+      return "The investor seeks a balance between growth and risk management.";
 
-    case "משקיע צמיחה":
+    case "growth":
 
-      return "המשקיע מוכן להתמודד עם תנודתיות גבוהה עבור פוטנציאל תשואה גבוה.";
+      return "The investor is willing to cope with high volatility for high return potential.";
 
     default:
 
-      return "סגנון השקעה מאוזן.";
+      return "Balanced investment style.";
 
   }
 
@@ -731,14 +747,14 @@ export function horizonExplanation(
 ): string {
 
   if (horizon === "long") {
-    return "אופק השקעה ארוך מאפשר חשיפה גבוהה יותר לנכסי צמיחה והתמקדות בטווח הארוך.";
+    return "Long investment horizon allows higher exposure to growth assets and focus on the long term.";
   }
 
   if (horizon === "short") {
-    return "אופק השקעה קצר דורש דגש על נזילות, יציבות והפחתת תנודתיות.";
+    return "Short investment horizon requires emphasis on liquidity, stability, and reducing volatility.";
   }
 
-  return "אופק השקעה בינוני מאפשר שילוב בין צמיחה לבין ניהול סיכון.";
+  return "Medium investment horizon allows combining growth potential with risk management.";
 }
 
 
