@@ -215,7 +215,7 @@ export function WelcomeCard({
             tracking-tight
             md:text-3xl
           ">
-            {t("profile_summary_title", "הפרופיל הפיננסי שלך מוכן 🚀")}
+            {t("profile_summary_title", "Your Financial Profile is Ready")}
           </h2>
 
           <p className="
@@ -226,7 +226,7 @@ export function WelcomeCard({
             leading-7
             text-muted-foreground
           ">
-            {t("welcome_card_subtitle", "InvestED ניתח את הנתונים שלך ויצר תמונת מצב פיננסית אישית המבוססת על המטרות, הסיכון וההעדפות ההשקעה שלך.")}
+            {t("welcome_card_subtitle", "InvestED analyzed your data and created a personal financial overview based on your goals, risk, and investment preferences.")}
           </p>
         </div>
 
@@ -401,14 +401,14 @@ export function RiskScoreCard({
               font-semibold
               text-muted-foreground
             ">
-              {t("risk_card_profile_label", "פרופיל")}
+               {t("risk_card_profile_label", "Profile")}
             </p>
 
             <p className="
               text-sm
               font-semibold
             ">
-              {t("risk_card_risk_level", "רמת סיכון")}
+               {t("risk_card_risk_level", "Risk Level")}
             </p>
           </div>
         </div>
@@ -525,14 +525,14 @@ export function HorizonCard({
               font-semibold
               text-muted-foreground
             ">
-              {t("horizon_card_time_label", "זמן")}
+               {t("horizon_card_time_label", "Time")}
             </p>
 
             <p className="
               text-sm
               font-semibold
             ">
-              {t("xai_horizon", "אופק השקעה")}
+               {t("xai_horizon", "Investment Horizon")}
             </p>
           </div>
         </div>
@@ -559,7 +559,7 @@ export function HorizonCard({
             text-muted-foreground
           ">
             {result.horizonExplanation ??
-              t("horizon_card_no_info", "לא נמצא מידע")}
+              t("horizon_card_no_info", "No information found")}
           </p>
         </div>
       </CardContent>
@@ -608,12 +608,12 @@ export function InterestsCard({
               font-semibold
               text-muted-foreground
             ">
-              {t("interests_card_preferences_label", "העדפות")}
+               {t("interests_card_preferences_label", "Preferences")}
             </p>
 
-            <CardTitle className="text-xl">
-              {t("interests_card_title", "תחומי עניין")}
-            </CardTitle>
+              <CardTitle className="text-xl">
+                {t("interests_card_title", "Interest Areas")}
+              </CardTitle>
           </div>
         </div>
       </CardHeader>
@@ -669,7 +669,7 @@ export function InterestsCard({
               text-sm
               text-muted-foreground
             ">
-              {t("interests_card_no_interests", "לא זוהו תחומי עניין")}
+              {t("interests_card_no_interests", "No interest areas identified")}
             </p>
           </div>
         )}

@@ -24,8 +24,11 @@ import type { ReactNode } from "react";
 
 import type {
   AnalysisResult,
-  AllocationItem,
 } from "@/types";
+
+import {
+  calculatePortfolioMetrics,
+} from "@/lib/portfolioIntelligence";
 
 import {
   Card,
@@ -51,47 +54,6 @@ function formatMoney(value: number) {
 }
 
 // =====================================================
-// Internal Portfolio Metrics
-// =====================================================
-
-function calculateLocalMetrics(allocation: AllocationItem[]) {
-  const largest = [...allocation].sort(
-    (a, b) => b.value - a.value
-  )[0];
-
-  const equityExposure = allocation
-    .filter(
-      (item) =>
-        item.name.includes("מניות") ||
-        item.name.includes("סקטור")
-    )
-    .reduce(
-      (sum, item) => sum + item.value,
-      0
-    );
-
-  const diversification = largest
-    ? Math.max(0, 100 - largest.value)
-    : 0;
-
-  let riskLevel = "בינוני";
-
-  if (equityExposure >= 70) {
-    riskLevel = "גבוה";
-  }
-
-  if (equityExposure <= 35) {
-    riskLevel = "נמוך";
-  }
-
-  return {
-    diversification: Math.round(diversification),
-    equityExposure: Math.round(equityExposure),
-    riskLevel,
-  };
-}
-
-// =====================================================
 // Portfolio Card
 // =====================================================
 
@@ -106,7 +68,7 @@ export function PortfolioCard({
 
   const projection = result.projection;
 
-  const metrics = calculateLocalMetrics(allocation);
+  const metrics = calculatePortfolioMetrics(allocation);
 
   const growthPercentage =
     projection && projection.finalBalance > 0
@@ -119,9 +81,9 @@ export function PortfolioCard({
       : 0;
 
   const riskLevelKey =
-    metrics.riskLevel === "גבוה"
+    metrics.riskLevel === "high"
       ? "portfolio_risk_high"
-      : metrics.riskLevel === "נמוך"
+      : metrics.riskLevel === "low"
         ? "portfolio_risk_low"
         : "portfolio_risk_medium";
 

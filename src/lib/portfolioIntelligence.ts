@@ -73,7 +73,7 @@ function normalizeAllocation(
 // Asset Classification
 // ------------------------------------------------------------
 
-function isEquityAsset(
+export function isEquityAsset(
   item: AllocationItem
 ): boolean {
 
@@ -94,6 +94,55 @@ function isEquityAsset(
     name.includes("world") ||
     name.includes("מדד") ||
     name.includes("סקטור")
+  );
+
+}
+
+export function calculateEquityExposure(
+  allocation: AllocationItem[]
+): number {
+
+  const normalized =
+    normalizeAllocation(
+      allocation
+    );
+
+  const equityExposureRaw =
+    normalized
+      .filter(
+        isEquityAsset
+      )
+      .reduce(
+        (sum, item) =>
+          sum + item.value,
+        0
+      );
+
+  return Math.round(
+    clamp(
+      equityExposureRaw,
+      0,
+      100
+    )
+  );
+
+}
+
+export function calculateFixedIncomeExposure(
+  allocation: AllocationItem[]
+): number {
+
+  const equityExposure =
+    calculateEquityExposure(
+      allocation
+    );
+
+  return Math.round(
+    clamp(
+      100 - equityExposure,
+      0,
+      100
+    )
   );
 
 }
@@ -222,16 +271,10 @@ export function calculatePortfolioMetrics(
           b.value - a.value
       )[0];
 
-  const equityExposureRaw =
-    normalized
-      .filter(
-        isEquityAsset
-      )
-      .reduce(
-        (sum, item) =>
-          sum + item.value,
-        0
-      );
+  const equityExposure =
+    calculateEquityExposure(
+      normalized
+    );
 
   /*
    * Keep the result bounded.
@@ -240,18 +283,9 @@ export function calculatePortfolioMetrics(
    * we still avoid returning impossible percentages.
    */
 
-  const equityExposure =
-    clamp(
-      equityExposureRaw,
-      0,
-      100
-    );
-
   const fixedIncomeExposure =
-    clamp(
-      100 - equityExposure,
-      0,
-      100
+    calculateFixedIncomeExposure(
+      normalized
     );
 
   // ----------------------------------------------------------

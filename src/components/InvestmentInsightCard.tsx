@@ -60,24 +60,24 @@ export function InvestmentInsightCard({
       </h2>
 
       <h3 className="mb-2 text-xl font-bold text-foreground">
-        {t("ai_insight_subtitle", "ניתוח חכם של תרחיש ההשקעה שלך")}
+        {t("ai_insight_subtitle", "Smart analysis of your investment scenario")}
       </h3>
 
       <p className="mb-6 text-sm leading-relaxed text-muted-foreground">
-        {t("ai_insight_desc", "המערכת ניתחה את הנתונים והמחישה כיצד זמן, תשואה והפקדות משפיעים על התוצאה.")}
+        {t("ai_insight_desc", "The system analyzed the data and illustrated how time, returns, and contributions affect the outcome.")}
       </p>
 
       {/* Main Metrics */}
       <div className="mb-6 grid gap-5 md:grid-cols-3">
         <div className="rounded-2xl border border-border bg-muted/20 p-5">
           <p className="mb-2 text-sm text-muted-foreground">
-            {t("ai_insight_asset", "נכס שנבחר")}
+            {t("ai_insight_asset", "Selected Asset")}
           </p>
           <p className="text-xl font-bold text-foreground">
             {assetLabel}
           </p>
           <p className="mt-2 text-sm text-muted-foreground">
-            {t("ai_insight_annual_return", "תשואה שנתית משוערת:")}{" "}
+            {t("ai_insight_annual_return", "Estimated annual return:")}{" "}
             <span className="font-bold text-foreground">
               {annualReturnPct}%
             </span>
@@ -86,13 +86,13 @@ export function InvestmentInsightCard({
 
         <div className="rounded-2xl border border-border bg-muted/20 p-5">
           <p className="mb-2 text-sm text-muted-foreground">
-            {t("ai_insight_total_invested", "סה״כ השקעה")}
+            {t("ai_insight_total_invested", "Total Invested")}
           </p>
           <p className="text-2xl font-bold text-foreground">
             {fmt.format(totalContributed)}
           </p>
           <p className="mt-2 text-sm text-muted-foreground">
-            {t("ai_insight_monthly_contribution", "הפקדה חודשית:")}{" "}
+            {t("ai_insight_monthly_contribution", "Monthly contribution:")}{" "}
             <span className="font-bold text-foreground">
               {fmt.format(monthlyContribution)}
             </span>
@@ -101,13 +101,13 @@ export function InvestmentInsightCard({
 
         <div className="rounded-2xl border border-border bg-muted/20 p-5">
           <p className="mb-2 text-sm text-muted-foreground">
-            {t("ai_insight_final_value", "שווי סופי")}
+            {t("ai_insight_final_value", "Final Value")}
           </p>
           <p className="text-2xl font-bold text-success">
             {fmt.format(finalBalance)}
           </p>
           <p className="mt-2 text-sm text-muted-foreground">
-            {t("ai_insight_multiplier", "מכפיל השקעה:")}{" "}
+            {t("ai_insight_multiplier", "Investment multiplier:")}{" "}
             <span className="font-bold text-foreground">
               x{investmentMultiple.toFixed(1)}
             </span>
@@ -125,13 +125,13 @@ export function InvestmentInsightCard({
       {/* Growth Breakdown */}
       <div className="mb-6">
         <h3 className="mb-4 text-lg font-bold text-foreground">
-          {t("ai_insight_growth_title", "💰 מאיפה הגיע השווי הסופי?")}
+          {t("ai_insight_growth_title", "💰 Where does the final value come from?")}
         </h3>
 
         <div className="grid gap-4 md:grid-cols-2">
           <div className="rounded-2xl border border-border bg-muted/20 p-5">
             <p className="mb-2 text-sm text-muted-foreground">
-              {t("ai_insight_growth_share", "📈 צמיחת ההשקעה")}
+              {t("ai_insight_growth_share", "📈 Investment Growth")}
             </p>
             <p className="text-2xl font-bold text-success">
               {growthShare}%
@@ -140,7 +140,7 @@ export function InvestmentInsightCard({
 
           <div className="rounded-2xl border border-border bg-muted/20 p-5">
             <p className="mb-2 text-sm text-muted-foreground">
-              {t("ai_insight_deposits", "💰 כסף שהופקד")}
+              {t("ai_insight_deposits", "💰 Deposited Funds")}
             </p>
             <p className="text-2xl font-bold text-foreground">
               {contributionShare}%
@@ -149,18 +149,18 @@ export function InvestmentInsightCard({
         </div>
 
         <p className="mt-4 text-sm leading-7 text-muted-foreground">
-          {t("ai_insight_growth_summary", "כ־{growth}% מהשווי הסופי נוצר מצמיחת ההשקעה, וכ־{deposits}% הגיעו מהכסף שהופקד.").replace("{growth}", String(growthShare)).replace("{deposits}", String(contributionShare))}
+          {t("ai_insight_growth_summary", "Approximately {growth}% of the final value comes from investment growth, and approximately {deposits}% comes from the funds deposited.").replace("{growth}", String(growthShare)).replace("{deposits}", String(contributionShare))}
         </p>
       </div>
 
       {/* Monthly Contribution */}
       <div className="border-t border-border pt-5">
         <p className="text-sm text-muted-foreground">
-          {t("ai_insight_monthly_label", "📌 הפקדה חודשית")}
+          {t("ai_insight_monthly_label", "📌 Monthly Contribution")}
         </p>
         <p className="mt-1 text-xl font-bold text-foreground">
           {fmt.format(monthlyContribution)}{" "}
-          {t("ai_insight_per_month", "בחודש")}
+          {t("ai_insight_per_month", "per month")}
         </p>
       </div>
     </div>

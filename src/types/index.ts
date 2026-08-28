@@ -95,6 +95,10 @@ export interface FinancialScenario {
 
   confidence: number;
 
+  confidenceLevel?: "high" | "medium" | "low";
+
+  confidenceReasons?: string[];
+
   detectedInterests: string[];
 
   riskProfile?: RiskLevel | string;

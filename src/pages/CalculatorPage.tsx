@@ -16,17 +16,17 @@ import { useLanguage } from "@/context/languageContext";
 function goalLabel(goal?: string, t?: (key: string, fallback?: string) => string) {
   switch (goal) {
     case "growth":
-      return t ? t("calc_ex_growth", "בניית הון") : "בניית הון";
+      return t ? t("calc_ex_growth", "Wealth Building") : "Wealth Building";
     case "retirement":
-      return t ? t("calc_ex_early_retirement", "פרישה מוקדמת") : "פרישה מוקדמת";
+      return t ? t("calc_ex_early_retirement", "Early Retirement") : "Early Retirement";
     case "child":
-      return t ? t("calc_ex_children", "חיסכון לילדים") : "חיסכון לילדים";
+      return t ? t("calc_ex_children", "Saving for Children") : "Saving for Children";
     case "home":
-      return t ? t("calc_ex_house", "רכישת דירה") : "רכישת דירה";
+      return t ? t("calc_ex_house", "Home Purchase") : "Home Purchase";
     case "wealth":
-      return t ? t("calc_ex_independence", "עצמאות כלכלית") : "עצמאות כלכלית";
+      return t ? t("calc_ex_independence", "Financial Independence") : "Financial Independence";
     default:
-      return t ? t("calc_ex_general", "השקעה כללית") : "השקעה כללית";
+      return t ? t("calc_ex_general", "General Investing") : "General Investing";
   }
 }
 
@@ -48,7 +48,7 @@ export default function CalculatorPage() {
   function calculate() {
     if (!input.trim()) return;
 
-    const result = analyzeFinancialScenarioWithProjection(input);
+    const result = analyzeFinancialScenarioWithProjection(input, language);
 
     if (
       !Number.isFinite(result.scenario.initialInvestment) ||
@@ -330,11 +330,11 @@ export default function CalculatorPage() {
                       {t("calc_comparison_profit")}{" "}
                       {formatMoney(asset.result.growth)}
                     </p>
-                    {asset.key === bestAsset?.key && (
-                      <span className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-yellow-500">
-                        {t("calc_comparison_leader")}
-                      </span>
-                    )}
+                     {asset.key === scenario.assetClassKey && (
+                       <span className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-primary">
+                         {t("calc_comparison_selected", "Your selected scenario")}
+                       </span>
+                     )}
                   </div>
                 ))}
               </div>

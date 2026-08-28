@@ -183,13 +183,21 @@ export function extractProfileFlags(
 
 
   const ageMatch =
-    text.match(/(\d{2})/);
+    text.match(/(?:בן|בת|i am|i'm|age[:\s]+)\s*(\d{1,3})/i);
 
 
   if(ageMatch){
 
     age =
       Number(ageMatch[1]);
+
+    if (
+      !Number.isFinite(age) ||
+      age < 10 ||
+      age > 120
+    ) {
+      age = null;
+    }
 
   }
 

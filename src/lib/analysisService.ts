@@ -5,6 +5,7 @@ import type {
   AllocationItem,
   ProfileFlags,
   InvestorClassification,
+  Projection,
 } from "@/types";
 
 
@@ -293,6 +294,8 @@ function generateAiNarration(
 
   allocation: AllocationItem[],
 
+  projection: Projection | undefined,
+
   language: string = "en"
 
 ): AiNarration {
@@ -313,11 +316,21 @@ function generateAiNarration(
       )
       .join(", ");
 
+  const growthText =
+    projection && projection.finalBalance > 0
+      ? (isHebrew
+          ? `מתוך השווי סופי של ${new Intl.NumberFormat("he-IL", { maximumFractionDigits: 0 }).format(projection.finalBalance)} ₪, ` +
+            `כ-${Math.round((projection.growth / projection.finalBalance) * 100)}% נובע מצמיחת השקעה.`
+          : `Of the final value of ${new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(projection.finalBalance)}, ` +
+            `approximately ${Math.round((projection.growth / projection.finalBalance) * 100)}% comes from investment growth.`)
+      : (isHebrew
+          ? "לא זוהה תרחיש השקעה להמחשה."
+          : "No investment scenario identified for illustration.");
 
   return {
 
     source:
-      "InvestED Explainable AI Engine v4",
+      "InvestED Explainable AI Engine v5",
 
     profileSummary:
       isHebrew
@@ -336,11 +349,13 @@ function generateAiNarration(
       התאמת רמת סיכון ואופק השקעה.
       הקצאת הנכסים:
       ${allocationText}.
+      ${growthText}
       המערכת מיועדת ללמידה פיננסית בלבד ואינה מהווה ייעוץ השקעות.`
         : `The educational portfolio was built based on diversification principles,
       risk level adjustment, and investment horizon.
       Asset allocation:
       ${allocationText}.
+      ${growthText}
       The system is intended for financial learning only and does not constitute an investment recommendation.`
 
   };
@@ -676,6 +691,8 @@ export function buildRuleBasedAnalysis(
       riskScore,
 
       allocation,
+
+      projection,
 
       language
 

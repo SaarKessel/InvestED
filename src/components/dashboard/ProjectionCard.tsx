@@ -201,8 +201,7 @@ export function ProjectionCard({
 
 
     <CardTitle>
-
-      {t("projection_title", "תחזית פיננסית חכמה")}
+      {t("projection_title", "Smart Financial Projection")}
 
     </CardTitle>
 
@@ -216,7 +215,8 @@ export function ProjectionCard({
     "
     >
 
-      {t("projection_subtitle", "סימולציה חינוכית לפי הנתונים שהוזנו")}
+
+      {t("projection_subtitle", "Educational simulation based on the data you entered")}
 
     </p>
 
@@ -267,7 +267,7 @@ export function ProjectionCard({
     text-muted-foreground
     ">
 
-      {t("projection_initial", "השקעה התחלתית")}
+      {t("projection_initial", "Initial Investment")}
 
     </p>
 
@@ -318,7 +318,7 @@ export function ProjectionCard({
     text-muted-foreground
     ">
 
-      {t("projection_total", "סך הפקדות")}
+      {t("projection_total", "Total Contributions")}
 
     </p>
 
@@ -369,7 +369,7 @@ export function ProjectionCard({
     text-muted-foreground
     ">
 
-      {t("projection_final", "שווי עתידי צפוי")}
+      {t("projection_final", "Projected Future Value")}
 
     </p>
 
@@ -420,7 +420,7 @@ export function ProjectionCard({
     text-muted-foreground
     ">
 
-      {t("projection_inflation", "ערך לאחר אינפלציה")}
+      {t("projection_inflation", "Inflation-Adjusted Value")}
 
     </p>
 
@@ -464,7 +464,7 @@ export function ProjectionCard({
     "
     >
 
-      {t("projection_assumption", "הסימולציה מבוססת על תשואה שנתית משוערת של")}
+      {t("projection_assumption", "The simulation is based on an estimated annual return of")}
 
     <span className="
     font-bold
@@ -477,7 +477,7 @@ export function ProjectionCard({
 
     </span>
 
-      {t("projection_range", "לטווח של")}
+      {t("projection_range", "Over a period of")}
 
     <span className="
     font-bold
@@ -486,7 +486,7 @@ export function ProjectionCard({
     >
 
     {" "}
-    {years} {t("projection_years", "שנים")}
+    {years} {t("projection_years", "years")}
 
     </span>
 

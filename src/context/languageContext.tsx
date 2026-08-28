@@ -41,9 +41,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       if (currentDict && key in currentDict) {
         return currentDict[key];
       }
-      if (dictionaries.he && key in dictionaries.he) {
-        return dictionaries.he[key];
-      }
       return fallback ?? key;
     };
 

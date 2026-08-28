@@ -23,10 +23,10 @@ export function DisclaimerBanner({ className }: { className?: string }) {
     >
       <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
       <p>
-        <b>{t("disclaimer_banner_bold", "לצורכי לימוד בלבד.")}</b>{" "}
+        <b>{t("disclaimer_banner_bold", "For educational purposes only.")}</b>{" "}
         {t(
           "disclaimer_banner_text",
-          "InvestED אינה מייעצת בהשקעות ואינה ממליצה לקנות או למכור נכס כלשהו. יש להתייעץ עם בעל רישיון מוסמך לפני קבלת החלטות השקעה."
+          "InvestED does not provide investment advice and does not recommend buying or selling any asset. Consult a certified financial advisor before making investment decisions."
         )}
       </p>
     </div>

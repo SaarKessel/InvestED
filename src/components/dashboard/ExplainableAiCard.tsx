@@ -28,6 +28,10 @@ import { InfoBadge } from "@/components/ui/InfoBadge";
 
 import { useLanguage } from "@/context/languageContext";
 
+import {
+  type ConfidenceResult,
+} from "@/lib/calculatorEngine";
+
 function investorTypeLabel(
   type: string,
   t: (key: string, fallback?: string) => string
@@ -113,6 +117,12 @@ export function ExplainableAiCard({
       100
     );
 
+  const confidenceLevel =
+    (scenario?.confidenceLevel as ConfidenceResult["level"]) ?? "medium";
+
+  const confidenceReasons =
+    scenario?.confidenceReasons ?? [];
+
 
   const riskScore =
     clamp(
@@ -143,19 +153,19 @@ export function ExplainableAiCard({
     switch(signal.type){
 
       case "risk":
-        return t("xai_signal_type_risk", "סיכון");
+        return t("xai_signal_type_risk", "Risk");
 
       case "horizon":
-        return t("xai_signal_type_horizon", "אופק השקעה");
+        return t("xai_signal_type_horizon", "Investment Horizon");
 
       case "portfolio":
-        return t("xai_signal_type_portfolio", "תיק השקעות");
+        return t("xai_signal_type_portfolio", "Investment Portfolio");
 
       case "goal":
-        return t("xai_signal_type_goal", "מטרה");
+        return t("xai_signal_type_goal", "Goal");
 
       case "rule":
-        return t("xai_signal_type_rule", "ניתוח");
+        return t("xai_signal_type_rule", "Analysis");
 
       default:
         return signal.title;
@@ -246,11 +256,11 @@ export function ExplainableAiCard({
                 text-xl
               "
             >
-              {t("xai_subtitle", "למה המערכת הגיעה למסקנה הזאת?")}
+              {t("xai_subtitle", "Why did the system reach this conclusion?")}
             </CardTitle>
 
             <InfoBadge
-              description={t("xai_info", "שכבת Explainable AI מציגה את הגורמים המרכזיים שהשפיעו על ניתוח המשקיע, הקצאת התיק והתכנון הפיננסי.")}
+              description={t("xai_info", "The Explainable AI layer displays the key factors that influenced the investor analysis, portfolio allocation, and financial planning.")}
             />
 
           </div>
@@ -265,7 +275,7 @@ export function ExplainableAiCard({
               text-muted-foreground
             "
           >
-            {t("xai_desc", "המערכת מפרקת את תהליך הניתוח לגורמים שניתן להבין ולבחון במקום להציג רק תוצאה סופית.")}
+            {t("xai_desc", "The system breaks down the analysis process into understandable factors instead of showing only a final result.")}
           </p>
 
         </CardHeader>
@@ -313,7 +323,7 @@ export function ExplainableAiCard({
                   font-semibold
                 "
               >
-                {t("xai_summary", "סיכום AI")}
+                {t("xai_summary", "AI Summary")}
               </p>
 
             </div>
@@ -329,7 +339,7 @@ export function ExplainableAiCard({
               {
                 result.aiNarration.profileSummary ??
                 result.explainability.summary ??
-                t("xai_summary_default", "המערכת השלימה ניתוח של פרופיל המשקיע.")
+                t("xai_summary_default", "The system completed an investor profile analysis.")
               }
             </p>
 
@@ -382,7 +392,7 @@ export function ExplainableAiCard({
                     text-xs
                   "
                 >
-                  {t("xai_risk_label", "ציון סיכון")}
+                  {t("xai_risk_label", "Risk Score")}
                 </span>
 
               </div>
@@ -466,6 +476,53 @@ export function ExplainableAiCard({
                 {confidence}%
               </p>
 
+              <p
+                className="
+                  mt-1
+                  text-xs
+                  font-medium
+                  text-muted-foreground
+                "
+              >
+                {confidenceLevel === "high"
+                  ? t("dashboard_confidence_high", "High")
+                  : confidenceLevel === "medium"
+                    ? t("dashboard_confidence_medium", "Medium")
+                    : t("dashboard_confidence_low", "Low")}
+              </p>
+
+              {confidenceReasons.length > 0 && (
+                <div
+                  className="
+                    mt-3
+                    flex
+                    flex-wrap
+                    gap-1.5
+                  "
+                >
+                  {confidenceReasons.map((reason) => (
+                    <span
+                      key={reason}
+                      className="
+                        rounded-full
+                        border
+                        border-border
+                        bg-muted/50
+                        px-2
+                        py-0.5
+                        text-[10px]
+                        font-medium
+                        text-muted-foreground
+                      "
+                    >
+                      {reason.endsWith("_missing")
+                        ? t(`confidence_reason_${reason}`, reason)
+                        : t(`confidence_reason_${reason}`, reason)}
+                    </span>
+                  ))}
+                </div>
+              )}
+
 
               <div
                 className="
@@ -531,7 +588,7 @@ export function ExplainableAiCard({
                     text-xs
                   "
                 >
-                  {t("xai_equity_label", "חשיפה מנייתית")}
+                  {t("xai_equity_label", "Equity Exposure")}
                 </span>
 
               </div>
@@ -559,7 +616,7 @@ export function ExplainableAiCard({
                   text-muted-foreground
                 "
               >
-                {t("xai_equity_sub", "לפי הקצאת הנכסים")}
+                {t("xai_equity_sub", "Based on asset allocation")}
               </p>
 
             </div>
@@ -597,7 +654,7 @@ export function ExplainableAiCard({
                     text-xs
                   "
                 >
-                  {t("xai_progress_label", "התקדמות ליעד")}
+                  {t("xai_progress_label", "Progress to Goal")}
                 </span>
 
               </div>
@@ -630,7 +687,7 @@ export function ExplainableAiCard({
                     ? formatMoney(
                         goal.expectedFinalValue
                       )
-                    : t("xai_progress_sub_no_goal", "לא הוגדר יעד")
+                    : t("xai_progress_sub_no_goal", "No goal defined")
                 }
               </p>
 
@@ -682,7 +739,7 @@ export function ExplainableAiCard({
                     font-semibold
                   "
                 >
-                  {t("xai_investor_type", "סוג משקיע")}
+                  {t("xai_investor_type", "Investor Type")}
                 </p>
 
               </div>
@@ -747,7 +804,7 @@ export function ExplainableAiCard({
                     font-semibold
                   "
                 >
-                  {t("xai_horizon", "אופק השקעה")}
+                  {t("xai_horizon", "Investment Horizon")}
                 </p>
 
               </div>
@@ -762,8 +819,8 @@ export function ExplainableAiCard({
               >
                 {
                   scenario?.years
-                    ? `${scenario.years} ${t("xai_horizon_years", "שנים")}`
-                    : t("xai_horizon_unset", "לא הוגדר")
+                    ? `${scenario.years} ${t("xai_horizon_years", "years")}`
+                    : t("xai_horizon_unset", "Not set")
                 }
               </p>
 
@@ -778,7 +835,7 @@ export function ExplainableAiCard({
               >
                 {
                   result.horizonExplanation ??
-                  t("xai_horizon_default", "האופק משפיע על האופן שבו המערכת מפרשת תנודתיות וזמן.")
+                  t("xai_horizon_default", "The horizon affects how the system interprets volatility and time.")
                 }
               </p>
 
@@ -817,7 +874,7 @@ export function ExplainableAiCard({
                   text-muted-foreground
                 "
               >
-                {t("xai_signals_title", "גורמים שהשפיעו על הניתוח")}
+                {t("xai_signals_title", "Factors that influenced the analysis")}
               </p>
 
             </div>
@@ -838,7 +895,7 @@ export function ExplainableAiCard({
                       text-muted-foreground
                     "
                   >
-                    {t("xai_signals_empty", "לא נמצאו גורמים להצגה.")}
+                    {t("xai_signals_empty", "No factors found to display.")}
                   </div>
                 )
 
@@ -980,7 +1037,7 @@ export function ExplainableAiCard({
                   font-semibold
                 "
               >
-                {t("xai_portfolio_title", "למה מבנה התיק נראה כך?")}
+                {t("xai_portfolio_title", "Why does the portfolio look like this?")}
               </p>
 
             </div>
@@ -1028,7 +1085,7 @@ export function ExplainableAiCard({
                         text-muted-foreground
                       "
                     >
-                      {t("xai_metric_diversification", "פיזור")}
+                      {t("xai_metric_diversification", "Diversification")}
                     </p>
 
                     <p
@@ -1058,7 +1115,7 @@ export function ExplainableAiCard({
                         text-muted-foreground
                       "
                     >
-                      {t("xai_metric_expected_return", "תשואה משוערת")}
+                      {t("xai_metric_expected_return", "Expected Return")}
                     </p>
 
                     <p
@@ -1088,7 +1145,7 @@ export function ExplainableAiCard({
                         text-muted-foreground
                       "
                     >
-                      {t("xai_metric_largest_position", "פוזיציה מרכזית")}
+                      {t("xai_metric_largest_position", "Key Position")}
                     </p>
 
                     <p
@@ -1122,7 +1179,7 @@ export function ExplainableAiCard({
               text-muted-foreground
             "
           >
-            {t("xai_disclaimer", "⚠️ שכבת Explainable AI מיועדת להסבר חינוכי של תהליך הניתוח בלבד. היא אינה מהווה המלצת השקעה, תחזית מובטחת או ייעוץ פיננסי.")}
+            {t("xai_disclaimer", "⚠️ The Explainable AI layer is for educational explanation of the analysis process only. It does not constitute investment advice, a guaranteed forecast, or financial consulting.")}
           </div>
 
 
@@ -1145,7 +1202,7 @@ export function ExplainableAiCard({
               "
             />
 
-            {t("xai_source_label", "מקור:")}
+            {t("xai_source_label", "Source:")}
             {" "}
             {t("xai_source", "InvestED Explainable AI Educational Engine")}
 

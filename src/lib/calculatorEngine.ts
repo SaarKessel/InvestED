@@ -31,6 +31,7 @@ export const DEFAULT_INFLATION_PCT = 2.5;
 export interface AssetClassOption {
   key: string;
   label: string;
+  englishLabel: string;
   i18nKey: string;
   expectedReturnPct: number;
   annualReturnPct: number;
@@ -42,6 +43,7 @@ export const ASSET_CLASSES: AssetClassOption[] = [
   {
     key: "sp500",
     label: "מדד S&P 500",
+    englishLabel: "S&P 500 Index",
     i18nKey: "asset_sp500",
     expectedReturnPct: 7,
     annualReturnPct: 7,
@@ -58,6 +60,7 @@ export const ASSET_CLASSES: AssetClassOption[] = [
   {
     key: "world",
     label: "מדד עולמי",
+    englishLabel: "Global Index",
     i18nKey: "asset_world",
     expectedReturnPct: 8,
     annualReturnPct: 8,
@@ -72,6 +75,7 @@ export const ASSET_CLASSES: AssetClassOption[] = [
   {
     key: "nasdaq",
     label: "Nasdaq",
+    englishLabel: "Nasdaq",
     i18nKey: "asset_nasdaq",
     expectedReturnPct: 11,
     annualReturnPct: 11,
@@ -87,6 +91,7 @@ export const ASSET_CLASSES: AssetClassOption[] = [
   {
     key: "bonds",
     label: "אג״ח",
+    englishLabel: "Bonds",
     i18nKey: "asset_bonds",
     expectedReturnPct: 3,
     annualReturnPct: 3,
@@ -104,6 +109,7 @@ export const ASSET_CLASSES: AssetClassOption[] = [
   {
     key: "balanced",
     label: "תיק מאוזן",
+    englishLabel: "Balanced Portfolio",
     i18nKey: "asset_balanced",
     expectedReturnPct: 7,
     annualReturnPct: 7,
@@ -306,7 +312,19 @@ function detectInitialAmount(text: string): number {
   const initialPatterns = [
     /(?:יש לי|יש ברשותי|ברשותי|קיים לי|מחזיק|השקעתי)\s*(?:היום|כיום|כרגע)?\s*(?:הון של|הון בסך|סכום של|סכום)?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון|thousand|million)?/i,
 
-    /(?:initial investment|starting capital|initial capital)\s*(?:of|is)?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?/i
+    /(?:initial investment|starting capital|initial capital)\s*(?:of|is|:)?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?/i,
+
+    /(?:want to|planning to|going to|would like to)\s+invest\s+(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?\s*(?:initially|upfront|as a start)?\b/i,
+
+    /(?:have|got)\s+(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?\s*(?:to invest|to start|available)?\b/i,
+
+    /(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?\s*(?:to invest|to start|initially|upfront)\b/i,
+
+    /(?:starting|beginning|starting off)\s+with\s+(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?/i,
+
+    /half\s+(?:a\s+)?million/i,
+
+    /quarter\s+(?:of\s+)?a\s+million/i,
   ];
 
   for (const pattern of initialPatterns) {
@@ -316,49 +334,76 @@ function detectInitialAmount(text: string): number {
       continue;
     }
 
-    const value = Number(
-      match[1].replace(/,/g, "")
-    );
+    let value: number;
+    let unit: string = "";
 
-    if (
-      Number.isFinite(value) &&
-      value > 0
-    ) {
-      return Math.round(
-        parseAmount(
-          value,
-          match[2] ?? ""
-        )
+    if (pattern.source.includes("half") || pattern.source.includes("quarter")) {
+      value = pattern.source.includes("quarter") ? 250000 : 500000;
+    } else {
+      value = Number(
+        match[1].replace(/,/g, "").trim()
       );
+
+      if (
+        !Number.isFinite(value) ||
+        value <= 0
+      ) {
+        continue;
+      }
+
+      unit = (match[2] ?? "").toLowerCase().trim();
     }
+
+    // If the match is clearly in a monthly-only context, skip it
+    // unless there's also explicit initial investment language elsewhere
+    const matchText = match[0].toLowerCase();
+    const isMonthlyMatch =
+      matchText.includes("per month") ||
+      matchText.includes("monthly") ||
+      matchText.includes("every month") ||
+      matchText.includes("each month") ||
+      matchText.includes("a month") ||
+      matchText.includes("בחודש") ||
+      matchText.includes("לחודש");
+
+    const hasOtherInitialContext =
+      normalized.includes("initial investment") ||
+      normalized.includes("starting capital") ||
+      normalized.includes("initial capital") ||
+      normalized.includes("want to invest") ||
+      normalized.includes("planning to invest") ||
+      normalized.includes("have") ||
+      normalized.includes("got") ||
+      normalized.includes("starting with") ||
+      normalized.includes("beginning with") ||
+      /half\s+(?:a\s+)?million/i.test(normalized) ||
+      /quarter\s+(?:of\s+)?a\s+million/i.test(normalized);
+
+    if (isMonthlyMatch && !hasOtherInitialContext) {
+      continue;
+    }
+
+    return Math.round(
+      parseAmount(
+        value,
+        unit
+      )
+    );
   }
 
-  const onlyMonthlyContext =
-    normalized.includes("בחודש") ||
-    normalized.includes("לחודש") ||
-    normalized.includes("כל חודש") ||
-    normalized.includes("מפקיד") ||
-    normalized.includes("חוסך") ||
-    normalized.includes("מפריש") ||
-    normalized.includes("per month") ||
-    normalized.includes("monthly");
+  const hebrewAmountPhrases =
+    normalized.includes("חצי מיליון") ||
+    normalized.includes("חצי מליון") ||
+    normalized.includes("מיליון וחצי") ||
+    normalized.includes("מליון וחצי") ||
+    normalized.includes("שני מיליון") ||
+    normalized.includes("שני מליון") ||
+    normalized.includes("רבע מיליון") ||
+    normalized.includes("רבע מליון");
 
-  if (onlyMonthlyContext) {
-    return 0;
+  if (hebrewAmountPhrases) {
+    return detectAmount(text);
   }
-
- if (
-  normalized.includes("חצי מיליון") ||
-  normalized.includes("חצי מליון") ||
-  normalized.includes("מיליון וחצי") ||
-  normalized.includes("מליון וחצי") ||
-  normalized.includes("שני מיליון") ||
-  normalized.includes("שני מליון") ||
-  normalized.includes("רבע מיליון") ||
-  normalized.includes("רבע מליון")
-) {
-  return detectAmount(text);
-}
 
   return 0;
 }
@@ -370,7 +415,19 @@ function detectInitialAmount(text: string): number {
   const initialPatterns = [
     /(?:יש לי|יש ברשותי|ברשותי|קיים לי|מחזיק|השקעתי)\s*(?:היום|כיום|כרגע)?\s*(?:הון של|הון בסך|סכום של|סכום)?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון|thousand|million)?/i,
 
-    /(?:initial investment|starting capital|initial capital)\s*(?:of|is)?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?/i
+    /(?:initial investment|starting capital|initial capital)\s*(?:of|is)?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?/i,
+
+    /(?:want to|planning to|going to|would like to)\s+invest\s+(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?\s*(?:initially|upfront|as a start)?\b/i,
+
+    /(?:have|got)\s+(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?\s*(?:to invest|to start|available)?\b/i,
+
+    /(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?\s*(?:to invest|to start|initially|upfront)\b/i,
+
+    /(?:starting|beginning|starting off)\s+with\s+(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?/i,
+
+    /half\s+(?:a\s+)?million/i,
+
+    /quarter\s+(?:of\s+)?a\s+million/i,
   ];
 
   for (const pattern of initialPatterns) {
@@ -378,6 +435,10 @@ function detectInitialAmount(text: string): number {
 
     if (!match) {
       continue;
+    }
+
+    if (pattern.source.includes("half") || pattern.source.includes("quarter")) {
+      return true;
     }
 
     const value = Number(
@@ -400,7 +461,9 @@ function detectInitialAmount(text: string): number {
     normalized.includes("שני מיליון") ||
     normalized.includes("שני מליון") ||
     normalized.includes("רבע מיליון") ||
-    normalized.includes("רבע מליון")
+    normalized.includes("רבע מליון") ||
+    normalized.includes("half a million") ||
+    normalized.includes("quarter of a million")
   ) {
     return true;
   }
@@ -417,36 +480,24 @@ function detectMonthlyContribution(
 ): number {
   const normalized = normalizeText(text);
 
-  const contributionVerbPattern =
-    /(?:מפקיד|מוסיף|מפריש|חוסך|invest|contribute|deposit|save)\s*(?:של\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון|thousand|million)?/i;
-
-  const contributionVerbMatch =
-    normalized.match(contributionVerbPattern);
-
-  if (contributionVerbMatch) {
-    const value = Number(
-      contributionVerbMatch[1].replace(/,/g, "")
-    );
-
-    if (
-      Number.isFinite(value) &&
-      value > 0
-    ) {
-      return Math.round(
-        parseAmount(
-          value,
-          contributionVerbMatch[2] ?? ""
-        )
-      );
-    }
-  }
-
   const patterns = [
+    // Hebrew: מפקיד X, מוסיף X, מפריש X, חוסך X (with optional monthly context)
+    /(?:מפקיד|מוסיף|מפריש|חוסך)\s+(?:של\s+)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון|thousand|million)?/i,
+
+    // English: explicit monthly patterns first (highest priority)
+    /(\d[\d,]*(?:\.\d+)?)\s*(?:shekels?|ils?|₪)?\s*(?:per month|every month|each month|a month|monthly)/i,
+
+    /(\d+(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?\s*(?:per month|every month|each month|a month|monthly)/i,
+
+    // English: "contribute X monthly", "deposit X per month", "add X every month"
+    /(?:contribute|deposit|add|contributing|depositing|adding)\s+(\d[\d,]*(?:\.\d+)?)\s*(?:shekels?|ils?|₪)?\s*(?:per month|every month|each month|monthly|a month)?/i,
+
+    /(\d+(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?\s*(?:per month|every month|each month|monthly|a month)/i,
+
+    // Hebrew: X שקל בחודש, X לחודש, X כל חודש
     /(\d[\d,]*(?:\.\d+)?)\s*(?:שקל)?\s*(?:בחודש|לחודש|כל חודש)/i,
 
     /(\d+(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)\s*(?:שקל)?\s*(?:בחודש|לחודש|כל חודש)/i,
-
-    /(\d[\d,]*(?:\.\d+)?)\s*(k|m)?\s*(?:per month|monthly|a month)/i
   ];
 
   for (const pattern of patterns) {
@@ -495,13 +546,25 @@ function detectMonthlyContribution(
 function detectAge(
   text: string
 ): number | null {
-  const match = text.match(
+  const normalized = normalizeText(text);
+
+  const hebrewMatch = normalized.match(
     /(?:אני\s*)?(?:בן|בת)\s*(\d+)/i
   );
 
-  return match
-    ? Number(match[1])
-    : null;
+  if (hebrewMatch) {
+    return Number(hebrewMatch[1]);
+  }
+
+  const englishMatch = normalized.match(
+    /(?:i am|i'm|age[:\s]+)?(\d{1,3})\s*years?\s*old/i
+  );
+
+  if (englishMatch) {
+    return Number(englishMatch[1]);
+  }
+
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -984,7 +1047,8 @@ export interface HorizonAnalysis {
 }
 
 export function calculateHorizonAnalysis(
-  years: number
+  years: number,
+  language: "he" | "en" = "he"
 ): HorizonAnalysis {
 
   const safeYears =
@@ -997,7 +1061,7 @@ export function calculateHorizonAnalysis(
   return {
     years: safeYears,
     profile,
-    label: HORIZON_LABELS[profile].he,
+    label: HORIZON_LABELS[profile][language],
   };
 }
 
@@ -1029,21 +1093,22 @@ function detectRiskProfile(
 }
 
 function getRiskLabel(
-  riskProfile: RiskProfile
+  riskProfile: RiskProfile,
+  language: "he" | "en" = "he"
 ): string {
 
   switch (riskProfile) {
     case "low":
-      return "נמוכה";
+      return language === "he" ? "נמוכה" : "Low";
 
     case "medium":
-      return "בינונית";
+      return language === "he" ? "בינונית" : "Medium";
 
     case "high":
-      return "גבוהה";
+      return language === "he" ? "גבוהה" : "High";
 
     default:
-      return "בינונית";
+      return language === "he" ? "בינונית" : "Medium";
   }
 }
 
@@ -1051,7 +1116,13 @@ function getRiskLabel(
 // Confidence
 // ---------------------------------------------------------------------------
 
-function calculateConfidence(
+export interface ConfidenceResult {
+  score: number;
+  level: "high" | "medium" | "low";
+  reasons: string[];
+}
+
+export function calculateConfidence(
   investment: number,
   monthly: number,
   age: number | null,
@@ -1059,23 +1130,69 @@ function calculateConfidence(
   asset: string,
   targetAmount: number | null,
   targetMonthlyIncome: number | null
-): number {
+): ConfidenceResult {
   let score = 0;
+  const reasons: string[] = [];
 
-  if (investment > 0) score += 20;
-  if (monthly > 0) score += 20;
-  if (age !== null) score += 15;
-  if (years > 0) score += 20;
-  if (asset) score += 15;
+  if (investment > 0) {
+    score += 20;
+    reasons.push("initial_investment_identified");
+  } else {
+    reasons.push("initial_investment_missing");
+  }
+
+  if (monthly > 0) {
+    score += 20;
+    reasons.push("monthly_contribution_identified");
+  } else {
+    reasons.push("monthly_contribution_missing");
+  }
+
+  if (age !== null) {
+    score += 15;
+    reasons.push("age_identified");
+  } else {
+    reasons.push("age_missing");
+  }
+
+  if (years > 0) {
+    score += 20;
+    reasons.push("horizon_identified");
+  } else {
+    reasons.push("horizon_missing");
+  }
+
+  if (asset && asset !== "balanced") {
+    score += 15;
+    reasons.push("asset_identified");
+  } else if (asset === "balanced") {
+    score += 10;
+    reasons.push("asset_default");
+  } else {
+    reasons.push("asset_missing");
+  }
 
   if (
     targetAmount !== null ||
     targetMonthlyIncome !== null
   ) {
     score += 10;
+    reasons.push("target_identified");
+  } else {
+    reasons.push("target_missing");
   }
 
-  return Math.min(score, 100);
+  const clampedScore = Math.min(score, 100);
+
+  let level: ConfidenceResult["level"] = "low";
+  if (clampedScore >= 80) level = "high";
+  else if (clampedScore >= 50) level = "medium";
+
+  return {
+    score: clampedScore,
+    level,
+    reasons,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -1165,7 +1282,12 @@ export function analyzeFinancialScenario(
     )!;
 
   const initialInvestment =
-    Math.max(0, detectInitialAmount(text));
+    Math.max(
+      0,
+      Number.isFinite(detectInitialAmount(text))
+        ? detectInitialAmount(text)
+        : 0
+    );
 
   const initialInvestmentSpecified =
     detectInitialAmountSpecified(text);
@@ -1234,7 +1356,29 @@ export function analyzeFinancialScenario(
         asset.key,
         resolvedTarget.targetAmount,
         targetMonthlyIncome
-      ),
+      ).score,
+
+    confidenceLevel:
+      calculateConfidence(
+        initialInvestment,
+        monthlyContribution,
+        currentAge,
+        years,
+        asset.key,
+        resolvedTarget.targetAmount,
+        targetMonthlyIncome
+      ).level,
+
+    confidenceReasons:
+      calculateConfidence(
+        initialInvestment,
+        monthlyContribution,
+        currentAge,
+        years,
+        asset.key,
+        resolvedTarget.targetAmount,
+        targetMonthlyIncome
+      ).reasons,
 
     detectedInterests: [],
 
@@ -1525,16 +1669,25 @@ export interface AIExplanationResult {
 
   confidence: number;
 
+  confidenceLevel: "high" | "medium" | "low";
+
+  confidenceReasons: string[];
+
   goal: string;
 
   explanation: string;
+
+  missingParameters: string[];
+
+  identifiedParameters: string[];
 }
 
 export function buildAIExplanationResult(
   scenario: FinancialScenario & {
     targetAmountSource: TargetAmountSource;
     withdrawalRatePct: number | null;
-  }
+  },
+  language: "he" | "en" = "he"
 ): AIExplanationResult {
 
   const asset =
@@ -1545,9 +1698,15 @@ export function buildAIExplanationResult(
       item => item.key === "balanced"
     )!;
 
+  const assetLabel =
+    language === "en"
+      ? asset.englishLabel
+      : asset.label;
+
   const horizon =
     calculateHorizonAnalysis(
-      scenario.years
+      scenario.years,
+      language
     );
 
   const normalizedRiskProfile: RiskProfile =
@@ -1557,17 +1716,45 @@ export function buildAIExplanationResult(
       ? scenario.riskProfile
       : "medium";
 
+  const confidenceResult =
+    typeof scenario.confidence === "object"
+      ? scenario.confidence
+      : calculateConfidence(
+          scenario.initialInvestment,
+          scenario.monthlyContribution,
+          scenario.currentAge,
+          scenario.years,
+          scenario.assetClassKey,
+          scenario.targetAmount,
+          scenario.targetMonthlyIncome
+        );
+
+  const missingParameters: string[] = [];
+  const identifiedParameters: string[] = [];
+
+  for (const reason of confidenceResult.reasons) {
+    if (reason.endsWith("_missing")) {
+      missingParameters.push(reason);
+    } else if (reason.endsWith("_identified") || reason.endsWith("_default")) {
+      identifiedParameters.push(reason);
+    }
+  }
+
   const explanation =
-    `המערכת ניתחה את התרחיש לפי אופק השקעה של ` +
-    `${scenario.years} שנים, חשיפה ל-${asset.label} ` +
-    `ומטרת ${scenario.goal}.`;
+    language === "he"
+      ? `המערכת ניתחה את התרחיש לפי אופק השקעה של ` +
+        `${scenario.years} שנים, חשיפה ל-${assetLabel} ` +
+        `ומטרת ${scenario.goal}.`
+      : `The system analyzed the scenario based on a ` +
+        `${scenario.years}-year investment horizon, ` +
+        `exposure to ${assetLabel}, and a ${scenario.goal} goal.`;
 
   return {
     assetClassKey:
       scenario.assetClassKey,
 
     assetLabel:
-      asset.label,
+      assetLabel,
 
     annualReturnPct:
       scenario.annualReturnPct,
@@ -1575,16 +1762,62 @@ export function buildAIExplanationResult(
     horizon,
 
     riskProfile: normalizedRiskProfile,
-riskLabel:
-      getRiskLabel(normalizedRiskProfile),
+    riskLabel:
+      getRiskLabel(normalizedRiskProfile, language),
 
     confidence:
-      scenario.confidence,
+      confidenceResult.score,
+
+    confidenceLevel:
+      confidenceResult.level,
+
+    confidenceReasons:
+      confidenceResult.reasons,
 
     goal:
       scenario.goal,
 
-    explanation
+    explanation,
+
+    missingParameters,
+
+    identifiedParameters
+  };
+}
+
+export interface ScenarioAnalysisResult {
+  conservative: ProjectionResult;
+  base: ProjectionResult;
+  optimistic: ProjectionResult;
+  conservativeReturn: number;
+  baseReturn: number;
+  optimisticReturn: number;
+}
+
+export function computeScenarioAnalysis(
+  principal: number,
+  monthlyContribution: number,
+  years: number,
+  baseReturnPct: number,
+  inflationPct: number = DEFAULT_INFLATION_PCT,
+  conservativeOffset: number = -3,
+  optimisticOffset: number = 3
+): ScenarioAnalysisResult {
+  const safeBaseReturn =
+    Number.isFinite(baseReturnPct)
+      ? baseReturnPct
+      : 7;
+
+  const conservativeReturn = Math.max(0, safeBaseReturn + conservativeOffset);
+  const optimisticReturn = Math.min(30, safeBaseReturn + optimisticOffset);
+
+  return {
+    conservative: computeProjection(principal, monthlyContribution, years, conservativeReturn, inflationPct),
+    base: computeProjection(principal, monthlyContribution, years, safeBaseReturn, inflationPct),
+    optimistic: computeProjection(principal, monthlyContribution, years, optimisticReturn, inflationPct),
+    conservativeReturn,
+    baseReturn: safeBaseReturn,
+    optimisticReturn,
   };
 }
 
@@ -1603,7 +1836,8 @@ export interface UnifiedFinancialAnalysis {
 }
 
 export function analyzeFinancialScenarioWithProjection(
-  text: string
+  text: string,
+  language: "he" | "en" = "he"
 ): UnifiedFinancialAnalysis {
   const scenario =
     analyzeFinancialScenario(text);
@@ -1616,9 +1850,10 @@ export function analyzeFinancialScenarioWithProjection(
       scenario.annualReturnPct,
       DEFAULT_INFLATION_PCT
     );
-const aiExplanation =
+  const aiExplanation =
     buildAIExplanationResult(
-      scenario
+      scenario,
+      language
     );
 
   const targetAmount =
