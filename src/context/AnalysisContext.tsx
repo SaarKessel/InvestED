@@ -120,15 +120,8 @@ export function AnalysisProvider({
 
         }
 
+      } catch(error) {
 
-
-      } catch(error){
-
-
-        console.log(
-          "Ollama unavailable",
-          error
-        );
 
 
       }

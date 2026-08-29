@@ -36,7 +36,7 @@ export function ScenarioHistoryCard({
       {scenarios.length === 0 ? (
 
         <p className="text-gray-500">
-          {t("scenario_history_empty", "אין עדיין תרחישים שמורים")}
+          {t("scenario_history_empty", "No saved scenarios yet")}
         </p>
 
       ) : (

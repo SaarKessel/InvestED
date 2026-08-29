@@ -26,7 +26,7 @@ export function FinancialRoadmapCard({ stages }: Props) {
         {stages.length === 0 ? (
 
           <div className="text-gray-500">
-            {t("roadmap_empty", "המסלול הפיננסי שלך ייבנה לאחר ניתוח הנתונים.")}
+            {t("roadmap_empty", "Your financial roadmap will be built after the analysis.")}
           </div>
 
         ) : (

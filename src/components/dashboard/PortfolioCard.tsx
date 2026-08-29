@@ -290,7 +290,7 @@ export function PortfolioCard({
 
             {allocation.length === 0 ? (
               <div className="rounded-2xl border border-dashed p-6 text-center text-sm text-muted-foreground">
-                {t("portfolio_allocation_empty", "לא נמצאה הקצאת נכסים להצגה.")}
+                {t("portfolio_allocation_empty", "No asset allocation found to display.")}
               </div>
             ) : (
               <div className="grid items-center gap-8 md:grid-cols-[minmax(280px,1fr)_minmax(260px,0.9fr)]">

@@ -73,7 +73,7 @@ export function InvestmentGrowthChart({ data, currency = "ILS" }: Props) {
         </h2>
 
         <p className="mt-2 text-sm text-muted-foreground">
-          {t("investment_chart_empty", "אין מספיק נתונים להצגת גרף הצמיחה.")}
+          {t("investment_chart_empty", "Not enough data to display the growth chart.")}
         </p>
       </section>
     );

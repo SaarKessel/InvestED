@@ -331,7 +331,7 @@ export function MarketDataCard({
 
             <div className="rounded-xl border border-border p-5 text-center text-sm text-muted-foreground">
 
-              {t("market_data_empty", "לא נמצאו נתוני שוק להצגה כרגע.")}
+              {t("market_data_empty", "No market data available to display right now.")}
 
             </div>
 

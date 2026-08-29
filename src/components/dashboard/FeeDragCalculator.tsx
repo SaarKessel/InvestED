@@ -4,6 +4,7 @@ import { BROKERS } from "@/lib/brokers";
 import { InfoBadge } from "@/components/ui/InfoBadge";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/context/languageContext";
+import { formatCurrency } from "@/lib/format";
 
 function computeAnnualCost(
   broker: (typeof BROKERS)[number],
@@ -18,7 +19,7 @@ function computeAnnualCost(
 }
 
 export function FeeDragCalculator() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [monthlyAmount, setMonthlyAmount] = useState(2000);
   const [tradesPerMonth, setTradesPerMonth] = useState(1);
 
@@ -38,16 +39,16 @@ export function FeeDragCalculator() {
       <div className="mb-4 flex items-center gap-2">
         <Calculator className="h-4 w-4 text-primary" />
         <h4 className="font-display text-sm font-bold">
-          {t("fee_calc_title", "מחשבון עמלות דינמי")}
+          {t("fee_calc_title", "Dynamic Fee Calculator")}
         </h4>
-        <InfoBadge description={t("fee_calc_info", "גררו את המחוונים כדי לראות איך סכום ההשקעה החודשי ותדירות המסחר משפיעים על העמלה השנתית הכוללת בכל בית השקעות.")} />
+        <InfoBadge description={t("fee_calc_info", "Drag the sliders to see how monthly investment amount and trading frequency affect the total annual fee across brokers.")} />
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2">
         <div>
           <div className="mb-1.5 flex items-center justify-between text-xs font-semibold">
-            <span>{t("fee_calc_monthly_label", "סכום השקעה חודשי")}</span>
-            <span className="text-primary">₪{monthlyAmount.toLocaleString()}</span>
+            <span>{t("fee_calc_monthly_label", "Monthly investment amount")}</span>
+            <span className="text-primary">{formatCurrency(monthlyAmount, "ILS", language)}</span>
           </div>
           <input
             type="range"
@@ -61,7 +62,7 @@ export function FeeDragCalculator() {
         </div>
         <div>
           <div className="mb-1.5 flex items-center justify-between text-xs font-semibold">
-            <span>{t("fee_calc_trades_label", "מספר עסקאות בחודש")}</span>
+            <span>{t("fee_calc_trades_label", "Number of trades per month")}</span>
             <span className="text-primary">{tradesPerMonth}</span>
           </div>
           <input
@@ -86,7 +87,7 @@ export function FeeDragCalculator() {
                 style={{ width: `${Math.max(4, (annualCost / maxCost) * 100)}%` }}
               />
             </div>
-            <span className="w-20 shrink-0 text-left text-xs font-bold">₪{Math.round(annualCost).toLocaleString()}</span>
+            <span className="w-20 shrink-0 text-left text-xs font-bold">{formatCurrency(Math.round(annualCost), "ILS", language)}</span>
           </div>
         ))}
       </div>
@@ -95,9 +96,9 @@ export function FeeDragCalculator() {
         <Trophy className="mt-0.5 h-3.5 w-3.5 shrink-0" />
         <p>
           <b>{cheapest.broker.name}</b>{" "}
-          {t("fee_calc_summary", "{broker} יוצא הכי משתלם בפרופיל השימוש הזה — כ-₪{cost} עמלות משוערות בשנה. הפרשים אלו הם הערכה חינוכית בלבד ותלויים בתנאים המדויקים באתר הברוקר.")
+          {t("fee_calc_summary", "{broker} is the most cost-effective for this usage profile — approximately {cost} in estimated annual fees. These differences are educational estimates and depend on the broker's exact terms.")
             .replace("{broker}", cheapest.broker.name)
-            .replace("{cost}", Math.round(cheapest.annualCost).toLocaleString())}
+            .replace("{cost}", formatCurrency(Math.round(cheapest.annualCost), "ILS", language))}
         </p>
       </div>
     </div>

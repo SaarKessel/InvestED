@@ -296,6 +296,7 @@ export default function CalculatorPage() {
               riskProfile={aiInsight?.riskLevel}
               goal={scenario.goal}
               confidence={scenario.confidence}
+              currency={scenario.currency}
             />
 
             {aiInsight && <AIInsightCard insight={aiInsight} />}
