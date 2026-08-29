@@ -8,39 +8,10 @@ import type {
   PortfolioMetrics,
 } from "@/types";
 
-// ------------------------------------------------------------
-// Safe Number
-// ------------------------------------------------------------
-
-function safeNumber(
-  value: unknown,
-  fallback = 0
-): number {
-
-  const parsed = Number(value);
-
-  return Number.isFinite(parsed)
-    ? parsed
-    : fallback;
-
-}
-
-// ------------------------------------------------------------
-// Clamp
-// ------------------------------------------------------------
-
-function clamp(
-  value: number,
-  min: number,
-  max: number
-): number {
-
-  return Math.min(
-    Math.max(value, min),
-    max
-  );
-
-}
+import {
+  clamp,
+  safeNumber,
+} from "@/lib/format";
 
 // ------------------------------------------------------------
 // Normalize Allocation

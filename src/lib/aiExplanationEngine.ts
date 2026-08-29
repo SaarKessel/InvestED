@@ -18,6 +18,10 @@ import {
   ASSET_CLASSES,
 } from "@/lib/calculatorEngine";
 
+import {
+  clamp,
+} from "@/lib/format";
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -38,21 +42,6 @@ export interface AIInsight {
   confidence: number;
 
   diversificationInsight: string;
-}
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-
-function clamp(
-  value: number,
-  min: number,
-  max: number
-): number {
-  return Math.min(
-    Math.max(value, min),
-    max
-  );
 }
 
 const ASSET_LABELS_EN: Record<string, string> = {

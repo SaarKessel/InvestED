@@ -12,23 +12,7 @@ import { AIExplanationCard } from "@/components/AIExplanationCard";
 import { InvestmentGrowthChart } from "@/components/InvestmentGrowthChart";
 import { GoalPlannerCard } from "@/components/GoalPlannerCard";
 import { useLanguage } from "@/context/languageContext";
-
-function goalLabel(goal?: string, t?: (key: string, fallback?: string) => string) {
-  switch (goal) {
-    case "growth":
-      return t ? t("calc_ex_growth", "Wealth Building") : "Wealth Building";
-    case "retirement":
-      return t ? t("calc_ex_early_retirement", "Early Retirement") : "Early Retirement";
-    case "child":
-      return t ? t("calc_ex_children", "Saving for Children") : "Saving for Children";
-    case "home":
-      return t ? t("calc_ex_house", "Home Purchase") : "Home Purchase";
-    case "wealth":
-      return t ? t("calc_ex_independence", "Financial Independence") : "Financial Independence";
-    default:
-      return t ? t("calc_ex_general", "General Investing") : "General Investing";
-  }
-}
+import { formatMoney, calculatorGoalLabel } from "@/lib/format";
 
 export default function CalculatorPage() {
   const { t, language } = useLanguage();
@@ -36,14 +20,6 @@ export default function CalculatorPage() {
 
   const [input, setInput] = useState("");
   const [analysis, setAnalysis] = useState<UnifiedFinancialAnalysis | null>(null);
-
-  function formatMoney(value: number) {
-    return new Intl.NumberFormat(locale, {
-      style: "currency",
-      currency: "ILS",
-      maximumFractionDigits: 0
-    }).format(value || 0);
-  }
 
   function calculate() {
     if (!input.trim()) return;
@@ -202,11 +178,18 @@ export default function CalculatorPage() {
 
         {/* Empty State */}
         {!scenario && (
-          <div className="mb-8 grid gap-4 md:grid-cols-4">
-            <MiniCard label={t("calc_empty_sim_label")} value={t("calc_empty_sim_value")} />
-            <MiniCard label={t("calc_empty_growth_label")} value={t("calc_empty_growth_value")} />
-            <MiniCard label={t("calc_empty_goals_label")} value={t("calc_empty_goals_value")} />
-            <MiniCard label={t("calc_empty_xai_label")} value={t("calc_empty_xai_value")} />
+          <div className="mb-8 rounded-3xl border border-border bg-card p-8 text-center md:p-12">
+            <div className="mx-auto max-w-xl">
+              <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-2xl">
+                📊
+              </div>
+              <h3 className="text-xl font-bold md:text-2xl">
+                {t("calc_empty_state_title")}
+              </h3>
+              <p className="mt-3 text-base leading-7 text-muted-foreground md:text-lg">
+                {t("calc_empty_state_subtitle")}
+              </p>
+            </div>
           </div>
         )}
 
@@ -278,7 +261,7 @@ export default function CalculatorPage() {
                 />
                 <MiniCard
                   label={t("calc_mini_goal")}
-                  value={goalLabel(scenario.goal, t)}
+                  value={calculatorGoalLabel(scenario.goal, t)}
                 />
               </div>
             </div>
@@ -290,11 +273,11 @@ export default function CalculatorPage() {
               </h2>
               <p className="text-base leading-8 text-muted-foreground md:text-lg">
                 {t("calc_insight_intro")}{" "}
-                <span className="font-bold text-foreground">{formatMoney(scenario.initialInvestment)}</span>
+                <span className="font-bold text-foreground">{formatMoney(scenario.initialInvestment, locale)}</span>
                 {" "}{t("calc_insight_monthly_with")}{" "}
-                <span className="font-bold text-foreground">{formatMoney(scenario.monthlyContribution)}</span>
+                <span className="font-bold text-foreground">{formatMoney(scenario.monthlyContribution, locale)}</span>
                 {" "}{t("calc_insight_future")}{" "}
-                <span className="font-bold text-success">{formatMoney(projection.finalBalance)}</span>
+                <span className="font-bold text-success">{formatMoney(projection.finalBalance, locale)}</span>
               </p>
             </div>
 
@@ -324,11 +307,11 @@ export default function CalculatorPage() {
                       <span className="font-semibold text-foreground">{asset.annualReturnPct}%</span>
                     </p>
                     <p className="mt-4 text-3xl font-bold tracking-tight text-foreground">
-                      {formatMoney(asset.result.finalBalance)}
+                      {formatMoney(asset.result.finalBalance, locale)}
                     </p>
                     <p className="mt-3 text-base font-bold text-success">
                       {t("calc_comparison_profit")}{" "}
-                      {formatMoney(asset.result.growth)}
+                      {formatMoney(asset.result.growth, locale)}
                     </p>
                      {asset.key === scenario.assetClassKey && (
                        <span className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-primary">
@@ -346,9 +329,9 @@ export default function CalculatorPage() {
                 {t("calc_summary_title_full")}
               </h2>
               <div className="grid gap-5 md:grid-cols-3">
-                <InfoCard title={t("calc_summary_total_contributed")} value={formatMoney(projection.totalContributed)} />
-                <InfoCard title={t("calc_summary_profit")} value={formatMoney(projection.growth)} />
-                <InfoCard title={t("calc_summary_real_value")} value={formatMoney(projection.realValueAfterInflation)} />
+                <InfoCard title={t("calc_summary_total_contributed")} value={formatMoney(projection.totalContributed, locale)} />
+                <InfoCard title={t("calc_summary_profit")} value={formatMoney(projection.growth, locale)} />
+                <InfoCard title={t("calc_summary_real_value")} value={formatMoney(projection.realValueAfterInflation, locale)} />
               </div>
             </div>
           </div>

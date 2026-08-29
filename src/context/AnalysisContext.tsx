@@ -1,6 +1,5 @@
 ﻿import React, {
   createContext,
-  useContext,
   useState
 } from "react";
 
@@ -213,23 +212,3 @@ export function AnalysisProvider({
 
 
 
-export function useAnalysisContext(){
-
-  const ctx =
-    useContext(
-      AnalysisContext
-    );
-
-
-  if(!ctx){
-
-    throw new Error(
-      "useAnalysisContext must be inside AnalysisProvider"
-    );
-
-  }
-
-
-  return ctx;
-
-}

@@ -40,18 +40,7 @@ import {
 import { BrokerComparisonTable } from "./BrokerComparisonTable";
 
 import { useLanguage } from "@/context/languageContext";
-
-// =====================================================
-// Helpers
-// =====================================================
-
-function formatMoney(value: number) {
-  return new Intl.NumberFormat("he-IL", {
-    style: "currency",
-    currency: "ILS",
-    maximumFractionDigits: 0,
-  }).format(value);
-}
+import { formatMoney } from "@/lib/format";
 
 // =====================================================
 // Portfolio Card

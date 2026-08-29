@@ -16,6 +16,7 @@ import { Layout, DisclaimerBanner } from "@/components/layout/Layout";
 import { Button, Card, CardContent } from "@/components/ui/primitives";
 import { useAnalysis } from "@/context/useAnalysis";
 import { useLanguage } from "@/context/languageContext";
+import { confidenceLabel, dashboardGoalLabel } from "@/lib/format";
 import {
   WelcomeCard,
   InvestorTypeCard,
@@ -31,28 +32,6 @@ import { ComparisonCard } from "@/components/dashboard/ComparisonCard";
 import { ConceptsCard, MistakesCard, RoadmapCard } from "@/components/dashboard/LearningCards";
 import { QuizCard } from "@/components/dashboard/QuizCard";
 import { GoalPlannerCard } from "@/components/GoalPlannerCard";
-
-function goalLabel(goal: string | undefined, t: (key: string, fallback?: string) => string) {
-  switch (goal) {
-    case "retirement":
-      return t("dashboard_goal_retirement", "Retirement & Financial Independence");
-    case "home":
-      return t("dashboard_goal_house", "Home Purchase");
-    case "child":
-      return t("dashboard_goal_children", "Children's Savings");
-    case "growth":
-      return t("dashboard_goal_wealth", "Wealth Building");
-    default:
-      return t("dashboard_goal_wealth_build", "Wealth Building");
-  }
-}
-
-function confidenceLabel(value: number | undefined, t: (key: string, fallback?: string) => string) {
-  if (!value) return t("dashboard_not_calculated", "Not calculated");
-  if (value >= 80) return t("dashboard_confidence_high", "High");
-  if (value >= 50) return t("dashboard_confidence_medium", "Medium");
-  return t("dashboard_confidence_low", "Low");
-}
 
 export function DashboardPage() {
   const { result, reset } = useAnalysis();
@@ -178,7 +157,7 @@ export function DashboardPage() {
                     </div>
                     <p className="text-xs text-muted-foreground">{t("dashboard_metric_goal")}</p>
                     <p className="mt-1.5 truncate font-bold">
-                      {goalLabel(result.scenario?.goal, t)}
+                      {dashboardGoalLabel(result.scenario?.goal, t)}
                     </p>
                   </div>
 

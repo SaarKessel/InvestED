@@ -31,44 +31,12 @@ import { useLanguage } from "@/context/languageContext";
 import {
   type ConfidenceResult,
 } from "@/lib/calculatorEngine";
-
-function investorTypeLabel(
-  type: string,
-  t: (key: string, fallback?: string) => string
-) {
-  switch (type) {
-    case "conservative":
-      return t("investor_type_conservative", "Conservative");
-    case "balanced":
-      return t("investor_type_balanced", "Balanced");
-    case "growth":
-      return t("investor_type_growth", "Growth");
-    case "dividend":
-      return t("investor_type_dividend", "Dividend");
-    case "passive":
-      return t("investor_type_passive", "Passive");
-    case "value":
-      return t("investor_type_value", "Value");
-    default:
-      return type;
-  }
-}
-
-function riskBandLabel(
-  band: string | undefined,
-  t: (key: string, fallback?: string) => string
-) {
-  switch (band) {
-    case "low":
-      return t("risk_band_low", "Low");
-    case "medium":
-      return t("risk_band_medium", "Medium");
-    case "high":
-      return t("risk_band_high", "High");
-    default:
-      return band ?? t("risk_band_medium", "Medium");
-  }
-}
+import {
+  investorTypeLabel,
+  riskBandLabel,
+  formatMoney,
+  clamp,
+} from "@/lib/format";
 
 
 // =====================================================
@@ -1219,35 +1187,4 @@ export function ExplainableAiCard({
 }
 
 
-// =====================================================
-// Helpers
-// =====================================================
 
-function formatMoney(
-  value:number
-){
-
-  return new Intl.NumberFormat(
-    "he-IL",
-    {
-      style:"currency",
-      currency:"ILS",
-      maximumFractionDigits:0,
-    }
-  ).format(value);
-
-}
-
-
-function clamp(
-  value:number,
-  min:number,
-  max:number
-){
-
-  return Math.min(
-    Math.max(value,min),
-    max
-  );
-
-}

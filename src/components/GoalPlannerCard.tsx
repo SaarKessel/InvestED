@@ -12,6 +12,7 @@ import {
   Info,
 } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
+import { formatMoney, formatCompactMoney, clamp, safeNumber } from "@/lib/format";
 
 interface Props {
   targetAmount: number | null;
@@ -26,14 +27,6 @@ interface Props {
   gap?: number;
 }
 
-function safeNumber(value: number): number {
-  return Number.isFinite(value) ? value : 0;
-}
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(safeNumber(value), min), max);
-}
-
 export function GoalPlannerCard({
   targetAmount,
   goalDescription,
@@ -46,28 +39,7 @@ export function GoalPlannerCard({
   achievable,
   gap,
 }: Props) {
-  const { t, language } = useLanguage();
-  const locale = language === "he" ? "he-IL" : "en-US";
-
-  function formatMoney(value: number): string {
-    const safeValue = safeNumber(value);
-    return new Intl.NumberFormat(locale, {
-      style: "currency",
-      currency: "ILS",
-      maximumFractionDigits: 0,
-    }).format(safeValue);
-  }
-
-  function formatCompactMoney(value: number): string {
-    const safeValue = Math.max(safeNumber(value), 0);
-    if (safeValue >= 1_000_000) {
-      return `${(safeValue / 1_000_000).toFixed(2)}M ₪`;
-    }
-    if (safeValue >= 1_000) {
-      return `${Math.round(safeValue / 1_000)}K ₪`;
-    }
-    return formatMoney(safeValue);
-  }
+  const { t } = useLanguage();
 
   const safeCurrentAmount = Math.max(safeNumber(currentAmount), 0);
   const safeExpectedFinalValue = Math.max(safeNumber(expectedFinalValue), 0);
