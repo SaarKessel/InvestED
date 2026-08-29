@@ -12,14 +12,42 @@ import { AIExplanationCard } from "@/components/AIExplanationCard";
 import { InvestmentGrowthChart } from "@/components/InvestmentGrowthChart";
 import { GoalPlannerCard } from "@/components/GoalPlannerCard";
 import { useLanguage } from "@/context/languageContext";
-import { formatMoney, calculatorGoalLabel } from "@/lib/format";
+import { formatCurrency, calculatorGoalLabel } from "@/lib/format";
+import { CURRENCIES, DEFAULT_CURRENCY } from "@/lib/currencies";
 
 export default function CalculatorPage() {
   const { t, language } = useLanguage();
-  const locale = language === "he" ? "he-IL" : "en-US";
 
   const [input, setInput] = useState("");
   const [analysis, setAnalysis] = useState<UnifiedFinancialAnalysis | null>(null);
+  const [currency, setCurrency] = useState<string>(DEFAULT_CURRENCY);
+
+  function hasExplicitCurrency(text: string): boolean {
+    const lower = text.toLowerCase();
+    return (
+      lower.includes("$") ||
+      lower.includes("€") ||
+      lower.includes("£") ||
+      lower.includes("¥") ||
+      lower.includes("₪") ||
+      lower.includes("usd") ||
+      lower.includes("eur") ||
+      lower.includes("gbp") ||
+      lower.includes("jpy") ||
+      lower.includes("ils") ||
+      lower.includes("cad") ||
+      lower.includes("aud") ||
+      lower.includes("chf") ||
+      lower.includes("שקל") ||
+      lower.includes("ש״ח") ||
+      lower.includes("ש\"ח") ||
+      lower.includes("דולר") ||
+      lower.includes("יורו") ||
+      lower.includes("לIRA") ||
+      lower.includes("פאונד") ||
+      lower.includes("ין")
+    );
+  }
 
   function calculate() {
     if (!input.trim()) return;
@@ -35,7 +63,23 @@ export default function CalculatorPage() {
       return;
     }
 
-    setAnalysis(result);
+    const resolvedCurrency = hasExplicitCurrency(input)
+      ? result.scenario.currency
+      : currency;
+
+    setAnalysis({
+      ...result,
+      scenario: {
+        ...result.scenario,
+        currency: resolvedCurrency,
+      },
+      projection: {
+        ...result.projection,
+        currency: resolvedCurrency,
+      },
+    });
+
+    setCurrency(resolvedCurrency);
   }
 
   const scenario = analysis?.scenario ?? null;
@@ -53,7 +97,9 @@ export default function CalculatorPage() {
           scenario.initialInvestment,
           scenario.monthlyContribution,
           scenario.years,
-          asset.annualReturnPct
+          asset.annualReturnPct,
+          undefined,
+          scenario.currency
         );
         return { ...asset, result };
       })
@@ -155,6 +201,24 @@ export default function CalculatorPage() {
             </div>
           </div>
 
+          {/* Currency selector */}
+          <div className="mt-5">
+            <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+              {t("calc_currency_label", "Currency")}
+            </label>
+            <select
+              value={currency}
+              onChange={e => setCurrency(e.target.value)}
+              className="h-10 rounded-xl border border-border bg-background px-3 py-2 text-sm font-medium text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              {CURRENCIES.map(c => (
+                <option key={c.code} value={c.code}>
+                  {c.code} — {c.symbol} {c.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Bottom action row */}
           <div className="mt-7 flex flex-col gap-4 border-t border-border pt-5 md:flex-row md:items-center md:justify-between">
             <p className="max-w-xl text-sm leading-6 text-muted-foreground">
@@ -205,6 +269,7 @@ export default function CalculatorPage() {
               annualReturnPct={scenario.annualReturnPct}
               monthlyContribution={scenario.monthlyContribution}
               goal={scenario.goal}
+              currency={scenario.currency}
             />
 
             {goalPlan && (
@@ -218,6 +283,7 @@ export default function CalculatorPage() {
                 progressPercentage={goalPlan.progressPercentage}
                 achievable={goalPlan.progressPercentage >= 100}
                 gap={goalPlan.gap}
+                currency={scenario.currency}
               />
             )}
 
@@ -238,7 +304,7 @@ export default function CalculatorPage() {
               <h2 className="mb-5 text-xl font-bold md:text-2xl">
                 {t("calc_chart_title_full")}
               </h2>
-              <InvestmentGrowthChart data={projection.series} />
+              <InvestmentGrowthChart data={projection.series} currency={scenario.currency} />
             </div>
 
             {/* Scenario Understanding */}
@@ -273,11 +339,11 @@ export default function CalculatorPage() {
               </h2>
               <p className="text-base leading-8 text-muted-foreground md:text-lg">
                 {t("calc_insight_intro")}{" "}
-                <span className="font-bold text-foreground">{formatMoney(scenario.initialInvestment, locale)}</span>
+                <span className="font-bold text-foreground">{formatCurrency(scenario.initialInvestment, scenario.currency, language)}</span>
                 {" "}{t("calc_insight_monthly_with")}{" "}
-                <span className="font-bold text-foreground">{formatMoney(scenario.monthlyContribution, locale)}</span>
+                <span className="font-bold text-foreground">{formatCurrency(scenario.monthlyContribution, scenario.currency, language)}</span>
                 {" "}{t("calc_insight_future")}{" "}
-                <span className="font-bold text-success">{formatMoney(projection.finalBalance, locale)}</span>
+                <span className="font-bold text-success">{formatCurrency(projection.finalBalance, scenario.currency, language)}</span>
               </p>
             </div>
 
@@ -307,11 +373,11 @@ export default function CalculatorPage() {
                       <span className="font-semibold text-foreground">{asset.annualReturnPct}%</span>
                     </p>
                     <p className="mt-4 text-3xl font-bold tracking-tight text-foreground">
-                      {formatMoney(asset.result.finalBalance, locale)}
+                      {formatCurrency(asset.result.finalBalance, scenario.currency, language)}
                     </p>
                     <p className="mt-3 text-base font-bold text-success">
                       {t("calc_comparison_profit")}{" "}
-                      {formatMoney(asset.result.growth, locale)}
+                      {formatCurrency(asset.result.growth, scenario.currency, language)}
                     </p>
                      {asset.key === scenario.assetClassKey && (
                        <span className="mt-3 inline-flex items-center gap-1 text-sm font-bold text-primary">
@@ -329,9 +395,9 @@ export default function CalculatorPage() {
                 {t("calc_summary_title_full")}
               </h2>
               <div className="grid gap-5 md:grid-cols-3">
-                <InfoCard title={t("calc_summary_total_contributed")} value={formatMoney(projection.totalContributed, locale)} />
-                <InfoCard title={t("calc_summary_profit")} value={formatMoney(projection.growth, locale)} />
-                <InfoCard title={t("calc_summary_real_value")} value={formatMoney(projection.realValueAfterInflation, locale)} />
+                <InfoCard title={t("calc_summary_total_contributed")} value={formatCurrency(projection.totalContributed, scenario.currency, language)} />
+                <InfoCard title={t("calc_summary_profit")} value={formatCurrency(projection.growth, scenario.currency, language)} />
+                <InfoCard title={t("calc_summary_real_value")} value={formatCurrency(projection.realValueAfterInflation, scenario.currency, language)} />
               </div>
             </div>
           </div>

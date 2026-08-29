@@ -823,5 +823,6 @@
   "projection_chart_disclaimer": "⚠️ The projection is for educational purposes only. The returns shown are based on the assumptions entered into the system and are not guaranteed. Actual returns may differ significantly.",
   "scenario_history_header": "Investment History",
   "calc_empty_state_title": "Describe an investment scenario to generate your projection.",
-  "calc_empty_state_subtitle": "Your simulation, growth analysis, and AI insights will appear here after you analyze a scenario."
+  "calc_empty_state_subtitle": "Your simulation, growth analysis, and AI insights will appear here after you analyze a scenario.",
+  "calc_currency_label": "Currency"
 }

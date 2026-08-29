@@ -40,7 +40,7 @@ import {
 import { BrokerComparisonTable } from "./BrokerComparisonTable";
 
 import { useLanguage } from "@/context/languageContext";
-import { formatMoney } from "@/lib/format";
+import { formatCurrency } from "@/lib/format";
 
 // =====================================================
 // Portfolio Card
@@ -51,13 +51,15 @@ export function PortfolioCard({
 }: {
   result: AnalysisResult;
 }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const allocation = result.allocation ?? [];
 
   const projection = result.projection;
 
   const metrics = calculatePortfolioMetrics(allocation);
+
+  const currency = result.scenario?.currency ?? result.currency ?? "ILS";
 
   const growthPercentage =
     projection && projection.finalBalance > 0
@@ -152,26 +154,20 @@ export function PortfolioCard({
                 <MetricCard
                   icon={<Wallet className="h-4 w-4" />}
                   title={t("portfolio_metric_total_contributions", "סה״כ הפקדות")}
-                  value={formatMoney(
-                    projection.totalContributed
-                  )}
+                  value={formatCurrency(projection.totalContributed, currency, language)}
                 />
 
                 <MetricCard
                   icon={<TrendingUp className="h-4 w-4" />}
                   title={t("portfolio_metric_future_value", "שווי עתידי")}
-                  value={formatMoney(
-                    projection.finalBalance
-                  )}
+                  value={formatCurrency(projection.finalBalance, currency, language)}
                   highlight
                 />
 
                 <MetricCard
                   icon={<Coins className="h-4 w-4" />}
                   title={t("portfolio_metric_investment_profit", "רווח מהשקעה")}
-                  value={formatMoney(
-                    projection.growth
-                  )}
+                  value={formatCurrency(projection.growth, currency, language)}
                   highlight
                 />
 

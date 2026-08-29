@@ -34,7 +34,7 @@ import {
 import {
   investorTypeLabel,
   riskBandLabel,
-  formatMoney,
+  formatCurrency,
   clamp,
 } from "@/lib/format";
 
@@ -53,22 +53,24 @@ export function ExplainableAiCard({
 
 }){
 
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const signals =
     result.explainability?.signals ?? [];
 
-
   const scenario =
     result.scenario;
-
 
   const metrics =
     result.portfolioMetrics;
 
-
   const goal =
     result.goalPlan;
+
+  const currency =
+    scenario?.currency ??
+    result.currency ??
+    "ILS";
 
 
   /*
@@ -652,8 +654,10 @@ export function ExplainableAiCard({
               >
                 {
                   goal
-                    ? formatMoney(
-                        goal.expectedFinalValue
+                    ? formatCurrency(
+                        goal.expectedFinalValue,
+                        currency,
+                        language
                       )
                     : t("xai_progress_sub_no_goal", "No goal defined")
                 }

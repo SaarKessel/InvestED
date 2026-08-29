@@ -1,24 +1,63 @@
-export function formatCompactMoney(value: number): string {
+import { getCurrencyByCode } from "@/lib/currencies";
+
+export function formatCurrency(
+  value: number,
+  currencyCode: string = "ILS",
+  language: string = "en"
+): string {
+  const currency = getCurrencyByCode(currencyCode);
+  const appLocale = language === "he" ? "he-IL" : "en-US";
+  const safeValue = Number.isFinite(value) ? value : 0;
+  return new Intl.NumberFormat(appLocale, {
+    style: "currency",
+    currency: currency.currency,
+    maximumFractionDigits: 0,
+  }).format(safeValue);
+}
+
+export function formatCompactCurrency(
+  value: number,
+  currencyCode: string = "ILS",
+  language: string = "en"
+): string {
+  const currency = getCurrencyByCode(currencyCode);
   const safeValue = Math.max(safeNumber(value), 0);
   if (safeValue >= 1_000_000) {
-    return `${(safeValue / 1_000_000).toFixed(2)}M ₪`;
+    return `${(safeValue / 1_000_000).toFixed(2)}M ${currency.symbol}`;
   }
   if (safeValue >= 1_000) {
-    return `${Math.round(safeValue / 1_000)}K ₪`;
+    return `${Math.round(safeValue / 1_000)}K ${currency.symbol}`;
   }
-  return formatMoney(safeValue, "he-IL");
+  return formatCurrency(safeValue, currencyCode, language);
 }
 
 export function formatMoney(
   value: number,
-  locale: string = "en-US"
+  locale: string = "en-US",
+  currencyCode: string = "ILS"
 ): string {
   const safeValue = Number.isFinite(value) ? value : 0;
   return new Intl.NumberFormat(locale, {
     style: "currency",
-    currency: "ILS",
+    currency: currencyCode,
     maximumFractionDigits: 0,
   }).format(safeValue);
+}
+
+export function formatCompactMoney(
+  value: number,
+  locale: string = "en-US",
+  currencyCode: string = "ILS"
+): string {
+  const currency = getCurrencyByCode(currencyCode);
+  const safeValue = Math.max(safeNumber(value), 0);
+  if (safeValue >= 1_000_000) {
+    return `${(safeValue / 1_000_000).toFixed(2)}${currency.symbol}`;
+  }
+  if (safeValue >= 1_000) {
+    return `${Math.round(safeValue / 1_000)}K ${currency.symbol}`;
+  }
+  return formatMoney(safeValue, locale, currencyCode);
 }
 
 export function clamp(

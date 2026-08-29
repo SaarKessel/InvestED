@@ -12,7 +12,7 @@ import {
   Info,
 } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
-import { formatMoney, formatCompactMoney, clamp, safeNumber } from "@/lib/format";
+import { formatCurrency, formatCompactCurrency, clamp, safeNumber } from "@/lib/format";
 
 interface Props {
   targetAmount: number | null;
@@ -25,6 +25,7 @@ interface Props {
   progressPercentage: number;
   achievable: boolean;
   gap?: number;
+  currency?: string;
 }
 
 export function GoalPlannerCard({
@@ -38,8 +39,9 @@ export function GoalPlannerCard({
   progressPercentage,
   achievable,
   gap,
+  currency = "ILS",
 }: Props) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   const safeCurrentAmount = Math.max(safeNumber(currentAmount), 0);
   const safeExpectedFinalValue = Math.max(safeNumber(expectedFinalValue), 0);
@@ -105,7 +107,7 @@ export function GoalPlannerCard({
               </div>
               <p className="mt-2 text-4xl font-black tracking-tight text-primary md:text-5xl">
                 {safeTargetAmount !== null
-                  ? formatCompactMoney(safeTargetAmount)
+                  ? formatCompactCurrency(safeTargetAmount, currency, language)
                   : goalDescription ?? t("goal_planner_default_goal")}
               </p>
               {safeTargetAmount !== null && (
@@ -149,13 +151,13 @@ export function GoalPlannerCard({
         <MetricCard
           icon={<TrendingUp className="h-4 w-4" />}
           label={t("goal_planner_future_value")}
-          value={formatMoney(safeExpectedFinalValue)}
+          value={formatCurrency(safeExpectedFinalValue, currency, language)}
           description={t("goal_planner_future_value_desc")}
         />
         <MetricCard
           icon={<Wallet className="h-4 w-4" />}
           label={t("goal_planner_current_capital")}
-          value={formatMoney(safeCurrentAmount)}
+          value={formatCurrency(safeCurrentAmount, currency, language)}
           description={t("goal_planner_current_capital_desc")}
         />
         <MetricCard
@@ -182,7 +184,7 @@ export function GoalPlannerCard({
                 {goalReached ? t("goal_planner_achieved") : t("goal_planner_gap")}
               </p>
               <p className="mt-1 text-xl font-bold">
-                {goalReached ? formatMoney(0) : formatMoney(gapToGoal)}
+                {goalReached ? formatCurrency(0, currency, language) : formatCurrency(gapToGoal, currency, language)}
               </p>
             </div>
             <BadgeStatus reached={goalReached} />
@@ -199,7 +201,7 @@ export function GoalPlannerCard({
           </div>
           <div className="mt-2 flex flex-col gap-1 sm:flex-row sm:items-baseline sm:gap-3">
             <p className="text-3xl font-black text-primary">
-              {formatMoney(safeRequiredMonthlyContribution)}
+              {formatCurrency(safeRequiredMonthlyContribution, currency, language)}
             </p>
             <span className="text-sm text-muted-foreground">
               {t("goal_planner_per_month")}
@@ -219,9 +221,9 @@ export function GoalPlannerCard({
             <p className="font-semibold">{t("goal_planner_composition_title")}</p>
           </div>
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <MiniMetric label={t("goal_planner_initial")} value={formatMoney(safeCurrentAmount)} />
-            <MiniMetric label={t("goal_planner_future_deposits")} value={formatMoney(estimatedFutureContributions)} />
-            <MiniMetric label={t("goal_planner_estimated_growth")} value={formatMoney(estimatedGrowth)} />
+            <MiniMetric label={t("goal_planner_initial")} value={formatCurrency(safeCurrentAmount, currency, language)} />
+            <MiniMetric label={t("goal_planner_future_deposits")} value={formatCurrency(estimatedFutureContributions, currency, language)} />
+            <MiniMetric label={t("goal_planner_estimated_growth")} value={formatCurrency(estimatedGrowth, currency, language)} />
           </div>
           <div className="mt-4 flex items-start gap-2 text-xs leading-relaxed text-muted-foreground">
             <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
@@ -256,7 +258,7 @@ export function GoalPlannerCard({
               <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                 {t("goal_planner_status_future_value")}{" "}
                 <span className="font-bold text-foreground">
-                  {formatMoney(safeExpectedFinalValue)}
+                  {formatCurrency(safeExpectedFinalValue, currency, language)}
                 </span>
               </p>
             </div>

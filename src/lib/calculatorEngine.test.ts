@@ -410,6 +410,29 @@ describe("English projection with non-zero values", () => {
     expect(result.projection.growth).toBeGreaterThan(0);
     expect(result.aiExplanation.riskLabel).toBe("Medium");
   });
+
+  it("propagates detected currency through scenario and projection", () => {
+    const result = analyzeFinancialScenarioWithProjection(
+      "I have $50,000 and invest $1,000 monthly for 20 years",
+      "en"
+    );
+
+    expect(result.scenario.currency).toBe("USD");
+    expect(result.projection.currency).toBe("USD");
+  });
+
+  it("does not mix currencies in projection series", () => {
+    const result = analyzeFinancialScenarioWithProjection(
+      "I have €100,000 and invest €2,000 monthly for 20 years",
+      "en"
+    );
+
+    expect(result.scenario.currency).toBe("EUR");
+    expect(result.projection.currency).toBe("EUR");
+    for (const point of result.projection.series) {
+      expect(point.currency).toBe("EUR");
+    }
+  });
 });
 
 describe("Scenario analysis with conservative/base/optimistic returns", () => {
@@ -624,5 +647,20 @@ describe("Confidence calculation explainability", () => {
     );
 
     expect(withInvestment.confidence).toBeGreaterThan(noInvestment.confidence);
+  });
+
+  it("detects USD from explicit dollar symbols", () => {
+    const scenario = analyzeFinancialScenario("I have $50,000 and invest $1,000 monthly for 20 years");
+    expect(scenario.currency).toBe("USD");
+  });
+
+  it("detects ILS from explicit shekel symbols", () => {
+    const scenario = analyzeFinancialScenario("יש לי 50,000 שקל ומפקיד 1,000 שקל בחודש ל-20 שנה");
+    expect(scenario.currency).toBe("ILS");
+  });
+
+  it("defaults to ILS when no currency is detected", () => {
+    const scenario = analyzeFinancialScenario("I have 50000 and invest 1000 monthly for 20 years");
+    expect(scenario.currency).toBe("ILS");
   });
 });

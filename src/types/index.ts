@@ -61,7 +61,6 @@ export type FinancialGoal =
 // =====================================================
 // Financial Scenario
 // =====================================================
-
 export interface FinancialScenario {
 
   initialInvestment: number;
@@ -102,6 +101,9 @@ export interface FinancialScenario {
   detectedInterests: string[];
 
   riskProfile?: RiskLevel | string;
+
+  currency: string;
+
 }
 
 
@@ -297,7 +299,11 @@ export interface Projection {
 
     balance: number;
 
+    currency: string;
+
   }[];
+
+  currency: string;
 
 }
 
@@ -376,6 +382,8 @@ export interface AnalysisResult {
      */
     gap: number;
 
+    currency: string;
+
   };
 
 
@@ -389,6 +397,8 @@ export interface AnalysisResult {
 
 
   aiNarration: AiNarration;
+
+  currency: string;
 
 }
 

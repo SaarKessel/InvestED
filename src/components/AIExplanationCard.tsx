@@ -7,6 +7,7 @@ import {
   Target,
 } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
+import { formatCurrency } from "@/lib/format";
 
 interface Props {
   initialInvestment: number;
@@ -17,6 +18,7 @@ interface Props {
   riskProfile?: string | null;
   goal?: string;
   confidence?: number;
+  currency?: string;
 }
 
 export function AIExplanationCard({
@@ -28,9 +30,9 @@ export function AIExplanationCard({
   riskProfile,
   goal = "growth",
   confidence = 0,
+  currency = "ILS",
 }: Props) {
   const { t, language } = useLanguage();
-  const locale = language === "he" ? "he-IL" : "en-US";
 
   function riskLabel(): string {
     const normalized = (safeRiskProfile ?? "medium").toLowerCase();
@@ -94,19 +96,19 @@ export function AIExplanationCard({
     initialInvestment > 0
       ? t(
           "ai_explanation_base_initial",
-          `זוהה סכום התחלתי של ${Math.max(0, initialInvestment ?? 0).toLocaleString(locale)} ₪`
-        ).replace("{amount}", new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(Math.max(0, initialInvestment ?? 0)))
-      : t("ai_explanation_base_no_initial", "לא זוהה הון התחלתי");
+          `Identified initial capital of ${formatCurrency(Math.max(0, initialInvestment ?? 0), currency, language)}`
+        ).replace("{amount}", formatCurrency(Math.max(0, initialInvestment ?? 0), currency, language))
+      : t("ai_explanation_base_no_initial", "No initial capital identified");
 
   const monthlyContributionText =
     monthlyContribution > 0
       ? t(
           "ai_explanation_base_monthly",
-          `הפקדה חודשית של ${Math.max(0, monthlyContribution ?? 0).toLocaleString(locale)} ₪`
-        ).replace("{amount}", new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(Math.max(0, monthlyContribution ?? 0)))
-      : t("ai_explanation_base_no_monthly", "ללא הפקדה חודשית");
+          `Monthly contribution of ${formatCurrency(Math.max(0, monthlyContribution ?? 0), currency, language)}`
+        ).replace("{amount}", formatCurrency(Math.max(0, monthlyContribution ?? 0), currency, language))
+      : t("ai_explanation_base_no_monthly", "No monthly contribution");
 
-  const baseDataExplanation = `${initialInvestmentText} ו-${monthlyContributionText}.`;
+  const baseDataExplanation = `${initialInvestmentText} and ${monthlyContributionText}.`;
 
   return (
     <div
@@ -118,54 +120,54 @@ export function AIExplanationCard({
         </div>
 
         <div>
-          <h2 className="text-2xl font-bold text-foreground">
-            {t("ai_explanation_title_full", "🤖 איך InvestED ניתח את התרחיש")}
-          </h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            {t("ai_explanation_subtitle_full", "Explainable AI Simulation")}
-          </p>
+      <h2 className="text-2xl font-bold text-foreground">
+        {t("ai_explanation_title_full", "🤖 How InvestED Analyzed Your Scenario")}
+      </h2>
+      <p className="mt-1 text-sm text-muted-foreground">
+        {t("ai_explanation_subtitle_full", "Explainable AI Simulation")}
+      </p>
         </div>
       </div>
 
       <div className="space-y-4">
         <InsightRow
           icon={<CheckCircle className="h-5 w-5" />}
-          title={t("ai_explanation_base_data", "נתוני בסיס")}
+          title={t("ai_explanation_base_data", "Base Data")}
           text={baseDataExplanation}
         />
 
         <InsightRow
           icon={<Clock className="h-5 w-5" />}
-          title={t("ai_explanation_horizon_title", "אופק השקעה")}
-          text={`${years} שנים — ${
+          title={t("ai_explanation_horizon_title", "Investment Horizon")}
+          text={`${years} years — ${
             longTerm
-              ? t("ai_explanation_horizon_long", "המערכת מזהה טווח המאפשר להשפעת הזמן והריבית דריבית לבוא לידי ביטוי.")
-              : t("ai_explanation_horizon_short", "טווח קצר יחסית שבו לתנודתיות השוק יש משמעות גבוהה יותר.")
+              ? t("ai_explanation_horizon_long", "The system identified a long-term horizon where time and compound interest can significantly impact growth.")
+              : t("ai_explanation_horizon_short", "A relatively short horizon where market volatility has a higher impact.")
           }`}
         />
 
         <InsightRow
           icon={<TrendingUp className="h-5 w-5" />}
-          title={t("ai_explanation_path_title", "מסלול שנבחר")}
-          text={t("ai_explanation_path_text", "התרחיש נותח לפי {asset} עם תשואה שנתית משוערת של {return}%.").replace("{asset}", assetLabel).replace("{return}", String(annualReturnPct))}
+          title={t("ai_explanation_path_title", "Chosen Path")}
+          text={t("ai_explanation_path_text", "The scenario was analyzed based on {asset} with an estimated annual return of {return}%.").replace("{asset}", assetLabel).replace("{return}", String(annualReturnPct))}
         />
 
         <InsightRow
           icon={<Shield className="h-5 w-5" />}
-          title={t("ai_explanation_risk_title", "רמת סיכון")}
-          text={t("ai_explanation_risk_text", "פרופיל סיכון משוער: {risk}. הסיווג מבוסס על סוג הנכס ואופק ההשקעה.").replace("{risk}", riskLabel())}
+          title={t("ai_explanation_risk_title", "Risk Level")}
+          text={t("ai_explanation_risk_text", "Estimated risk profile: {risk}. The classification is based on asset type and investment horizon.").replace("{risk}", riskLabel())}
         />
 
         <InsightRow
           icon={<Target className="h-5 w-5" />}
-          title={t("ai_explanation_goal_title", "מטרת המשתמש")}
-          text={t("ai_explanation_goal_text", "המטרה שזוהתה: {goal}.").replace("{goal}", goalLabel())}
+          title={t("ai_explanation_goal_title", "User Goal")}
+          text={t("ai_explanation_goal_text", "Identified goal: {goal}.").replace("{goal}", goalLabel())}
         />
       </div>
 
       <div className="mt-6 rounded-2xl bg-muted/40 p-4 border border-border/50">
         <p className="text-sm font-medium text-foreground">
-          {t("ai_explanation_confidence_title", "🧠 רמת ביטחון בניתוח:")}
+          {t("ai_explanation_confidence_title", "🧠 Confidence in this analysis:")}
         </p>
 
         <div className="mt-3 h-3 overflow-hidden rounded-full bg-muted">
@@ -183,7 +185,7 @@ export function AIExplanationCard({
       </div>
 
       <p className="mt-5 text-xs leading-6 text-muted-foreground">
-        {t("ai_explanation_disclaimer_full", "הדמיה זו מיועדת ללמידה פיננסית בלבד ואינה מהווה ייעוץ השקעות או המלצה לפעולה.")}
+        {t("ai_explanation_disclaimer_full", "This simulation is for financial education purposes only and does not constitute investment advice or a recommendation to act.")}
       </p>
     </div>
   );

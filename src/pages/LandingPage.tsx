@@ -146,11 +146,11 @@ export function LandingPage() {
           >
             {t(
               "hero_desc",
-              "InvestED הופכת עולם מורכב של ETF, פיזור, סיכון והקצאת נכסים לחוויית למידה אישית, אינטראקטיבית וברורה."
+              "InvestED turns the complex world of ETFs, diversification, risk and asset allocation into a clear, interactive, personalized learning experience."
             )}
 
             <span className="mt-3 block text-xs sm:text-sm">
-              {t("hero_disclaimer", "לצורכי לימוד בלבד — לא ייעוץ השקעות.")}
+              {t("hero_disclaimer", "For educational purposes only — not investment advice.")}
             </span>
           </motion.p>
 
@@ -227,7 +227,7 @@ export function LandingPage() {
             <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
               {t(
                 "features_subtitle",
-                "שילוב של AI, פיננסים ועיצוב חוויית משתמש כדי להפוך השקעות למובנות יותר."
+                "Combining AI, finance, and UX design to make investing more understandable."
               )}
             </p>
           </div>
@@ -327,7 +327,7 @@ export function LandingPage() {
             <p className="mt-4 text-muted-foreground">
               {t(
                 "audience_subtitle",
-                "InvestED נבנתה עבור אנשים שרוצים להבין את עולם ההשקעות לפני שהם מקבלים החלטות."
+                "InvestED was built for people who want to understand the world of investing before making decisions."
               )}
             </p>
 
@@ -424,7 +424,7 @@ export function LandingPage() {
                   <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                     {t(
                       "sample_card_insight_text",
-                      "אופק השקעה ארוך מאפשר לריבית דריבית להשפיע משמעותית על צמיחת ההון."
+                      "A long investment horizon allows compound interest to significantly impact wealth growth."
                     )}
                   </p>
                 </div>
@@ -448,7 +448,7 @@ export function LandingPage() {
             <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
               {t(
                 "tech_subtitle",
-                "פרויקט FinTech אישי המשלב פיתוח תוכנה, AI וחינוך פיננסי."
+                "A personal FinTech project combining software development, AI, and financial education."
               )}
             </p>
           </div>
@@ -500,7 +500,7 @@ export function LandingPage() {
                 <p className="mx-auto mt-4 max-w-xl leading-relaxed text-muted-foreground">
                   {t(
                     "final_cta_subtitle",
-                    "כתבו כמה משפטים על עצמכם וקבלו ניתוח לימודי מבוסס AI בתוך פחות מדקה."
+                    "Write a few sentences about yourself and get a personalized AI-based financial analysis in under a minute."
                   )}
                 </p>
 
@@ -509,7 +509,7 @@ export function LandingPage() {
                     size="lg"
                     className="group gap-2 rounded-xl px-7"
                   >
-                    {t("final_cta_button", "התחילו ניתוח AI")}
+                    {t("final_cta_button", "Start AI Analysis")}
                     <ArrowIcon
                       className={`h-4 w-4 transition-transform duration-200 ${arrowHoverClass}`}
                     />

@@ -2,7 +2,6 @@
 // InvestED — Investment Growth Chart
 // Portfolio Growth Visualization
 // ---------------------------------------------------------------------------
-
 import {
   LineChart,
   Line,
@@ -14,6 +13,7 @@ import {
   Legend,
 } from "recharts";
 import { useLanguage } from "@/context/languageContext";
+import { getCurrencyByCode } from "@/lib/currencies";
 
 interface ProjectionPoint {
   year: number;
@@ -23,34 +23,35 @@ interface ProjectionPoint {
 
 interface Props {
   data: ProjectionPoint[];
+  currency?: string;
 }
 
-export function InvestmentGrowthChart({ data }: Props) {
+export function InvestmentGrowthChart({ data, currency = "ILS" }: Props) {
   const { t, language } = useLanguage();
   const locale = language === "he" ? "he-IL" : "en-US";
 
-  const currencyFormatter = new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: "ILS",
-    maximumFractionDigits: 0,
-  });
+  const currencyInfo = getCurrencyByCode(currency);
 
   function formatCurrency(value: number): string {
-    return currencyFormatter.format(value);
+    return new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency: currencyInfo.currency,
+      maximumFractionDigits: 0,
+    }).format(value);
   }
 
   function formatAxisValue(value: number): string {
     const numericValue = Number(value);
 
     if (numericValue >= 1_000_000) {
-      return `₪${(numericValue / 1_000_000).toFixed(1)}M`;
+      return `${currencyInfo.symbol}${(numericValue / 1_000_000).toFixed(1)}M`;
     }
 
     if (numericValue >= 1_000) {
-      return `₪${Math.round(numericValue / 1_000)}K`;
+      return `${currencyInfo.symbol}${Math.round(numericValue / 1_000)}K`;
     }
 
-    return `₪${Math.round(numericValue)}`;
+    return `${currencyInfo.symbol}${Math.round(numericValue)}`;
   }
 
   if (!data || data.length === 0) {

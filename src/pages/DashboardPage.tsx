@@ -217,6 +217,7 @@ export function DashboardPage() {
                   progressPercentage={result.goalPlan.progressPercentage}
                   achievable={result.goalPlan.achievable}
                   gap={result.goalPlan.gap}
+                  currency={result.goalPlan.currency}
                 />
               </div>
             )}

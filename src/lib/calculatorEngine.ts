@@ -156,6 +156,94 @@ function normalizeText(text: string): string {
 }
 
 // ---------------------------------------------------------------------------
+// Currency Detection
+// ---------------------------------------------------------------------------
+
+function detectCurrency(text: string): string {
+  const normalized = text.toLowerCase();
+
+  if (
+    normalized.includes("usd") ||
+    normalized.includes("$") ||
+    normalized.includes("dollar") ||
+    normalized.includes("דולר") ||
+    normalized.includes(" dollar")
+  ) {
+    return "USD";
+  }
+
+  if (
+    normalized.includes("eur") ||
+    normalized.includes("€") ||
+    normalized.includes("euro") ||
+    normalized.includes("יורו") ||
+    normalized.includes(" euro")
+  ) {
+    return "EUR";
+  }
+
+  if (
+    normalized.includes("gbp") ||
+    normalized.includes("£") ||
+    normalized.includes("pound") ||
+    normalized.includes("לIRA") ||
+    normalized.includes("פאונד") ||
+    normalized.includes(" pound")
+  ) {
+    return "GBP";
+  }
+
+  if (
+    normalized.includes("jpy") ||
+    normalized.includes("¥") ||
+    normalized.includes("yen") ||
+    normalized.includes("ין") ||
+    normalized.includes("yen")
+  ) {
+    return "JPY";
+  }
+
+  if (
+    normalized.includes("cad") ||
+    normalized.includes("c$") ||
+    normalized.includes("canadian") ||
+    normalized.includes("קנדי")
+  ) {
+    return "CAD";
+  }
+
+  if (
+    normalized.includes("aud") ||
+    normalized.includes("a$") ||
+    normalized.includes("australian") ||
+    normalized.includes("אוסטרלי")
+  ) {
+    return "AUD";
+  }
+
+  if (
+    normalized.includes("chf") ||
+    normalized.includes("swiss") ||
+    normalized.includes("שוויצרי")
+  ) {
+    return "CHF";
+  }
+
+  if (
+    normalized.includes("₪") ||
+    normalized.includes("ils") ||
+    normalized.includes("shekel") ||
+    normalized.includes("שקל") ||
+    normalized.includes("ש״ח") ||
+    normalized.includes("ש\"ח")
+  ) {
+    return "ILS";
+  }
+
+  return "ILS";
+}
+
+// ---------------------------------------------------------------------------
 // Asset Detection
 // ---------------------------------------------------------------------------
 
@@ -1385,7 +1473,11 @@ export function analyzeFinancialScenario(
     targetAmountSource:
       resolvedTarget.source,
 
-    withdrawalRatePct
+    withdrawalRatePct,
+
+    currency:
+      detectCurrency(text)
+
   };
 }
 
@@ -1397,6 +1489,7 @@ export interface ProjectionPoint {
   year: number;
   contributed: number;
   balance: number;
+  currency: string;
 }
 
 export interface ProjectionResult {
@@ -1405,6 +1498,7 @@ export interface ProjectionResult {
   growth: number;
   realValueAfterInflation: number;
   series: ProjectionPoint[];
+  currency: string;
 }
 
 export function computeProjection(
@@ -1413,7 +1507,8 @@ export function computeProjection(
   years: number,
   annualReturnPct: number,
   inflationPct: number =
-    DEFAULT_INFLATION_PCT
+    DEFAULT_INFLATION_PCT,
+  currency: string = "ILS"
 ): ProjectionResult {
   const safePrincipal =
     Math.max(
@@ -1462,7 +1557,8 @@ export function computeProjection(
       contributed:
         Math.round(contributed),
       balance:
-        Math.round(balance)
+        Math.round(balance),
+      currency
     }
   ];
 
@@ -1493,7 +1589,8 @@ export function computeProjection(
           Math.round(contributed),
 
         balance:
-          Math.round(balance)
+          Math.round(balance),
+        currency
       });
     }
   }
@@ -1523,7 +1620,8 @@ export function computeProjection(
           : balance
       ),
 
-    series
+    series,
+    currency
   };
 }
 
@@ -1848,7 +1946,8 @@ export function analyzeFinancialScenarioWithProjection(
       scenario.monthlyContribution,
       scenario.years,
       scenario.annualReturnPct,
-      DEFAULT_INFLATION_PCT
+      DEFAULT_INFLATION_PCT,
+      scenario.currency
     );
   const aiExplanation =
     buildAIExplanationResult(

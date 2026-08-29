@@ -30,6 +30,10 @@ import {
   calculatePortfolioMetrics,
 } from "./portfolioIntelligence";
 
+import {
+  formatCurrency,
+} from "@/lib/format";
+
 
 import {
   analyzeFinancialScenario,
@@ -319,9 +323,9 @@ function generateAiNarration(
   const growthText =
     projection && projection.finalBalance > 0
       ? (isHebrew
-          ? `מתוך השווי סופי של ${new Intl.NumberFormat("he-IL", { maximumFractionDigits: 0 }).format(projection.finalBalance)} ₪, ` +
+          ? `מתוך השווי סופי של ${formatCurrency(projection.finalBalance, projection.currency, "he")}, ` +
             `כ-${Math.round((projection.growth / projection.finalBalance) * 100)}% נובע מצמיחת השקעה.`
-          : `Of the final value of ${new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(projection.finalBalance)}, ` +
+          : `Of the final value of ${formatCurrency(projection.finalBalance, projection.currency, "en")}, ` +
             `approximately ${Math.round((projection.growth / projection.finalBalance) * 100)}% comes from investment growth.`)
       : (isHebrew
           ? "לא זוהה תרחיש השקעה להמחשה."
@@ -546,7 +550,11 @@ export function buildRuleBasedAnalysis(
 
       scenario.years,
 
-      scenario.annualReturnPct
+      scenario.annualReturnPct,
+
+      undefined,
+
+      scenario.currency
 
     );
 
@@ -661,19 +669,16 @@ export function buildRuleBasedAnalysis(
 
   const goalPlan =
     targetAmount > 0
-      ? analyzeFinancialGoal(
-
-          scenario.initialInvestment,
-
-          targetAmount,
-
-          scenario.years,
-
-          scenario.annualReturnPct,
-
-          scenario.monthlyContribution
-
-        )
+      ? {
+          ...analyzeFinancialGoal(
+            scenario.initialInvestment,
+            targetAmount,
+            scenario.years,
+            scenario.annualReturnPct,
+            scenario.monthlyContribution
+          ),
+          currency: scenario.currency,
+        }
       : undefined;
 
 
@@ -791,7 +796,9 @@ export function buildRuleBasedAnalysis(
         combinedPortfolioSummary ||
         fallbackPortfolioText
 
-    }
+    },
+
+    currency: scenario?.currency ?? "ILS"
 
   };
 

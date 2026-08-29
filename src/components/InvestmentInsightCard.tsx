@@ -1,4 +1,5 @@
 import { useLanguage } from "@/context/languageContext";
+import { formatCurrency } from "@/lib/format";
 
 interface InvestmentInsightCardProps {
   finalBalance: number;
@@ -9,6 +10,7 @@ interface InvestmentInsightCardProps {
   annualReturnPct: number;
   monthlyContribution: number;
   goal?: string;
+  currency?: string;
 }
 
 export function InvestmentInsightCard({
@@ -20,9 +22,9 @@ export function InvestmentInsightCard({
   annualReturnPct,
   monthlyContribution,
   goal: _goal,
+  currency = "ILS",
 }: InvestmentInsightCardProps) {
   const { language, t } = useLanguage();
-  const locale = language === "he" ? "he-IL" : "en-US";
 
   const growthShare =
     finalBalance > 0 ? Math.round((growth / finalBalance) * 100) : 0;
@@ -46,12 +48,6 @@ export function InvestmentInsightCard({
 
   const investmentMultiple =
     totalContributed > 0 ? finalBalance / totalContributed : 0;
-
-  const fmt = new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: "ILS",
-    maximumFractionDigits: 0,
-  });
 
   return (
     <div className="rounded-3xl border border-border bg-card p-6 shadow-soft">
@@ -89,12 +85,12 @@ export function InvestmentInsightCard({
             {t("ai_insight_total_invested", "Total Invested")}
           </p>
           <p className="text-2xl font-bold text-foreground">
-            {fmt.format(totalContributed)}
+            {formatCurrency(totalContributed, currency, language)}
           </p>
           <p className="mt-2 text-sm text-muted-foreground">
             {t("ai_insight_monthly_contribution", "Monthly contribution:")}{" "}
             <span className="font-bold text-foreground">
-              {fmt.format(monthlyContribution)}
+              {formatCurrency(monthlyContribution, currency, language)}
             </span>
           </p>
         </div>
@@ -104,7 +100,7 @@ export function InvestmentInsightCard({
             {t("ai_insight_final_value", "Final Value")}
           </p>
           <p className="text-2xl font-bold text-success">
-            {fmt.format(finalBalance)}
+            {formatCurrency(finalBalance, currency, language)}
           </p>
           <p className="mt-2 text-sm text-muted-foreground">
             {t("ai_insight_multiplier", "Investment multiplier:")}{" "}
@@ -159,7 +155,7 @@ export function InvestmentInsightCard({
           {t("ai_insight_monthly_label", "📌 Monthly Contribution")}
         </p>
         <p className="mt-1 text-xl font-bold text-foreground">
-          {fmt.format(monthlyContribution)}{" "}
+          {formatCurrency(monthlyContribution, currency, language)}{" "}
           {t("ai_insight_per_month", "per month")}
         </p>
       </div>
