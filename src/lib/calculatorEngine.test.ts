@@ -663,4 +663,19 @@ describe("Confidence calculation explainability", () => {
     const scenario = analyzeFinancialScenario("I have 50000 and invest 1000 monthly for 20 years");
     expect(scenario.currency).toBe("ILS");
   });
+
+  it("does not falsely detect JPY from Hebrew text containing יין", () => {
+    const scenario = analyzeFinancialScenario("אני בן 30, משקיע ביין ובנכסים ל-10 שנים");
+    expect(scenario.currency).not.toBe("JPY");
+  });
+
+  it("does not falsely detect JPY from Hebrew text containing בניין", () => {
+    const scenario = analyzeFinancialScenario("אני רוצה להשקיע בבניין מגורים ל-15 שנה");
+    expect(scenario.currency).not.toBe("JPY");
+  });
+
+  it("detects ILS from shekel text even when other Hebrew words are present", () => {
+    const scenario = analyzeFinancialScenario("יש לי 100 אלף שקל להשקיע בבניין ל-10 שנים");
+    expect(scenario.currency).toBe("ILS");
+  });
 });

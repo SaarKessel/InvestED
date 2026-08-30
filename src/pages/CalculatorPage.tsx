@@ -22,32 +22,6 @@ export default function CalculatorPage() {
   const [analysis, setAnalysis] = useState<UnifiedFinancialAnalysis | null>(null);
   const [currency, setCurrency] = useState<string>(DEFAULT_CURRENCY);
 
-  function hasExplicitCurrency(text: string): boolean {
-    const lower = text.toLowerCase();
-    return (
-      lower.includes("$") ||
-      lower.includes("€") ||
-      lower.includes("£") ||
-      lower.includes("¥") ||
-      lower.includes("₪") ||
-      lower.includes("usd") ||
-      lower.includes("eur") ||
-      lower.includes("gbp") ||
-      lower.includes("jpy") ||
-      lower.includes("ils") ||
-      lower.includes("cad") ||
-      lower.includes("aud") ||
-      lower.includes("chf") ||
-      lower.includes("שקל") ||
-      lower.includes("ש״ח") ||
-      lower.includes("ש\"ח") ||
-      lower.includes("דולר") ||
-      lower.includes("יורו") ||
-      lower.includes("לIRA") ||
-      lower.includes("פאונד") ||
-      lower.includes("ין")
-    );
-  }
 
   function calculate() {
     if (!input.trim()) return;
@@ -63,23 +37,17 @@ export default function CalculatorPage() {
       return;
     }
 
-    const resolvedCurrency = hasExplicitCurrency(input)
-      ? result.scenario.currency
-      : currency;
-
     setAnalysis({
       ...result,
       scenario: {
         ...result.scenario,
-        currency: resolvedCurrency,
+        currency,
       },
       projection: {
         ...result.projection,
-        currency: resolvedCurrency,
+        currency,
       },
     });
-
-    setCurrency(resolvedCurrency);
   }
 
   const scenario = analysis?.scenario ?? null;

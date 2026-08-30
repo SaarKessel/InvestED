@@ -196,8 +196,6 @@ function detectCurrency(text: string): string {
   if (
     normalized.includes("jpy") ||
     normalized.includes("¥") ||
-    normalized.includes("yen") ||
-    normalized.includes("ין") ||
     normalized.includes("yen")
   ) {
     return "JPY";
