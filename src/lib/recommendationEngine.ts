@@ -1,7 +1,8 @@
 ﻿import type { InvestmentProfile } from "@/data/investmentModels";
 
 export function generateRecommendations(
-  profile: InvestmentProfile
+  profile: InvestmentProfile,
+  language: "he" | "en" = "he"
 ): string[] {
 
   const recommendations: string[] = [];
@@ -10,7 +11,9 @@ export function generateRecommendations(
   if (profile.years >= 10) {
 
     recommendations.push(
-      "אורך טווח ארוך מאפשר לריבית דריבית להיות מנוע מרכזי בבניית ההון."
+      language === "he"
+        ? "אורך טווח ארוך מאפשר לריבית דריבית להיות מנוע מרכזי בבניית ההון."
+        : "A long-term horizon allows compound interest to be a central engine in building wealth."
     );
 
   }
@@ -19,14 +22,18 @@ export function generateRecommendations(
   if (profile.risk === "Growth") {
 
     recommendations.push(
-      "פרופיל צמיחה עשוי להיות רגיש יותר לתנודות שוק, ולכן פיזור בין נכסים יכול לשנות את פרופיל הסיכון הכולל."
+      language === "he"
+        ? "פרופיל צמיחה עשוי להיות רגיש יותר לתנודות שוק, ולכן פיזור בין נכסים יכול לשנות את פרופיל הסיכון הכולל."
+        : "A growth profile may be more sensitive to market fluctuations, so diversification across assets can change the overall risk profile."
     );
 
   }
 
 
   recommendations.push(
-    "חשוב לבחון את התרחיש ביחס למטרה, לאופק ההשקעה ויכולת האישית להתמודד עם ירידות."
+language === "he"
+      ? "חשוב לבחון את התרחיש ביחס למטרה, לאופק ההשקעה ויכולת האישית להתמודד עם ירידות."
+      : "It's important to examine the scenario in relation to the goal, investment horizon, and personal ability to cope with declines."
   );
 
 

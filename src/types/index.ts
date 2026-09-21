@@ -502,17 +502,42 @@ export interface Strategy {
     | "growth"
     | "value";
 
-  name: string;
+  name:
+    | string
+    | {
+        he: string;
+        en: string;
+      };
 
   riskLevel: number;
 
-  whatItIs: string;
+  whatItIs:
+    | string
+    | {
+        he: string;
+        en: string;
+      };
 
-  suitableFor: string;
+  suitableFor:
+    | string
+    | {
+        he: string;
+        en: string;
+      };
 
-  pros: string[];
+  pros:
+    | string[]
+    | {
+        he: string[];
+        en: string[];
+      };
 
-  cons: string[];
+  cons:
+    | string[]
+    | {
+        he: string[];
+        en: string[];
+      };
 
   stocks: string[];
 
@@ -525,30 +550,70 @@ export interface Strategy {
 
 export interface FinanceConcept {
 
-  term: string;
+  term:
+    | string
+    | {
+        he: string;
+        en: string;
+      };
 
-  definition: string;
+  definition:
+    | string
+    | {
+        he: string;
+        en: string;
+      };
 
 }
 
 
 export interface Mistake {
 
-  title: string;
+  title:
+    | string
+    | {
+        he: string;
+        en: string;
+      };
 
-  detail: string;
+  detail:
+    | string
+    | {
+        he: string;
+        en: string;
+      };
 
 }
 
 
 export interface RoadmapStage {
 
-  stage: string;
+  stage:
+    | string
+    | {
+        he: string;
+        en: string;
+      };
 
-  title: string;
+  title:
+    | string
+    | {
+        he: string;
+        en: string;
+      };
 
-  description?: string;
+  description?:
+    | string
+    | {
+        he: string;
+        en: string;
+      };
 
-  topics: string[];
+  topics:
+    | string[]
+    | {
+        he: string[];
+        en: string[];
+      };
 
 }

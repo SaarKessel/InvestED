@@ -23,8 +23,24 @@ function getRiskStyle(level: number) {
   return "bg-danger/10 text-danger border-danger/20";
 }
 
+function localized(
+  value: string | { he: string; en: string },
+  language: string
+): string {
+  if (typeof value === "string") return value;
+  return language === "he" ? value.he : value.en;
+}
+
+function localizedArray(
+  value: string[] | { he: string[]; en: string[] },
+  language: string
+): string[] {
+  if (Array.isArray(value)) return value;
+  return language === "he" ? value.he : value.en;
+}
+
 export function StrategiesCard() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   return (
     <motion.div
@@ -45,106 +61,114 @@ export function StrategiesCard() {
           <div className="flex items-center gap-2 text-primary">
             <Layers className="h-4 w-4" />
             <span className="text-xs font-bold uppercase tracking-wide">
-              {t("strategies_title", "אסטרטגיות השקעה")}
+              {t("strategies_title", "Investment Strategies")}
             </span>
           </div>
 
           <CardTitle className="text-xl">
-            {t("strategies_subtitle", "היכרות עם סגנונות השקעה מרכזיים")}
+            {t("strategies_subtitle", "Understanding key investment styles")}
           </CardTitle>
         </CardHeader>
 
         <CardContent>
           <div className="grid gap-5 md:grid-cols-2">
-            {STRATEGIES.map((strategy) => (
-              <div
-                key={strategy.id}
-                className="rounded-2xl border border-border bg-card p-5"
-              >
-                <div className="mb-3 flex items-center justify-between">
-                  <h3 className="font-display text-lg font-bold">
-                    {strategy.name}
-                  </h3>
+            {STRATEGIES.map((strategy) => {
+              const name = localized(strategy.name, language);
+              const whatItIs = localized(strategy.whatItIs, language);
+              const suitableFor = localized(strategy.suitableFor, language);
+              const pros = localizedArray(strategy.pros, language);
+              const cons = localizedArray(strategy.cons, language);
 
-                  <span
-                    className={`rounded-full border px-3 py-1 text-xs font-bold ${getRiskStyle(strategy.riskLevel)}`}
-                  >
-                    {t("strategies_risk_label", "סיכון {level}/10").replace("{level}", String(strategy.riskLevel))}
-                  </span>
-                </div>
+              return (
+                <div
+                  key={strategy.id}
+                  className="rounded-2xl border border-border bg-card p-5"
+                >
+                  <div className="mb-3 flex items-center justify-between">
+                    <h3 className="font-display text-lg font-bold">
+                      {name}
+                    </h3>
 
-                <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
-                  {strategy.whatItIs}
-                </p>
-
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                  <div>
-                    <p className="mb-2 flex items-center gap-1 text-sm font-bold text-success">
-                      <Check className="h-4 w-4" />
-                      {t("strategies_pros", "יתרונות")}
-                    </p>
-
-                    <ul className="space-y-2">
-                      {strategy.pros.map((item) => (
-                        <li
-                          key={item}
-                          className="flex items-start gap-2 text-xs text-muted-foreground"
-                        >
-                          <Check className="mt-0.5 h-3 w-3 shrink-0 text-success" />
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
+                    <span
+                      className={`rounded-full border px-3 py-1 text-xs font-bold ${getRiskStyle(strategy.riskLevel)}`}
+                    >
+                      {t("strategies_risk_label", "Risk {level}/10").replace("{level}", String(strategy.riskLevel))}
+                    </span>
                   </div>
 
-                  <div>
-                    <p className="mb-2 flex items-center gap-1 text-sm font-bold text-danger">
-                      <X className="h-4 w-4" />
-                      {t("strategies_cons", "חסרונות")}
-                    </p>
-
-                    <ul className="space-y-2">
-                      {strategy.cons.map((item) => (
-                        <li
-                          key={item}
-                          className="flex items-start gap-2 text-xs text-muted-foreground"
-                        >
-                          <X className="mt-0.5 h-3 w-3 shrink-0 text-danger" />
-                          {item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-
-                <div className="mt-5 border-t border-border pt-4">
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    <span className="font-bold text-foreground">
-                      {t("strategies_suitable", "למי זה מתאים:")}
-                    </span>{" "}
-                    {strategy.suitableFor}
-                  </p>
-                </div>
-
-                <div className="mt-4 border-t border-border pt-4">
-                  <p className="mb-2 text-xs font-bold text-muted-foreground">
-                    {t("strategies_stocks_label", "דוגמאות מוכרות לנכסים בסגנון הזה ")}{" "}
-                    <span className="text-primary">{t("strategies_learning_only", "*לימוד בלבד*")}</span>
+                  <p className="mb-4 text-sm leading-relaxed text-muted-foreground">
+                    {whatItIs}
                   </p>
 
-                  <div className="flex flex-wrap gap-2">
-                    {strategy.stocks.map((stock) => (
-                      <span
-                        key={stock}
-                        className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary"
-                      >
-                        {stock}
-                      </span>
-                    ))}
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    <div>
+                      <p className="mb-2 flex items-center gap-1 text-sm font-bold text-success">
+                        <Check className="h-4 w-4" />
+                        {t("strategies_pros", "Pros")}
+                      </p>
+
+                      <ul className="space-y-2">
+                        {pros.map((item) => (
+                          <li
+                            key={item}
+                            className="flex items-start gap-2 text-xs text-muted-foreground"
+                          >
+                            <Check className="mt-0.5 h-3 w-3 shrink-0 text-success" />
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div>
+                      <p className="mb-2 flex items-center gap-1 text-sm font-bold text-danger">
+                        <X className="h-4 w-4" />
+                        {t("strategies_cons", "Cons")}
+                      </p>
+
+                      <ul className="space-y-2">
+                        {cons.map((item) => (
+                          <li
+                            key={item}
+                            className="flex items-start gap-2 text-xs text-muted-foreground"
+                          >
+                            <X className="mt-0.5 h-3 w-3 shrink-0 text-danger" />
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+
+                  <div className="mt-5 border-t border-border pt-4">
+                    <p className="text-sm leading-relaxed text-muted-foreground">
+                      <span className="font-bold text-foreground">
+                        {t("strategies_suitable", "Suitable for:")}
+                      </span>{" "}
+                      {suitableFor}
+                    </p>
+                  </div>
+
+                  <div className="mt-4 border-t border-border pt-4">
+                    <p className="mb-2 text-xs font-bold text-muted-foreground">
+                      {t("strategies_stocks_label", "Example assets for this style ")}{" "}
+                      <span className="text-primary">{t("strategies_learning_only", "*For learning only*")}</span>
+                    </p>
+
+                    <div className="flex flex-wrap gap-2">
+                      {strategy.stocks.map((stock) => (
+                        <span
+                          key={stock}
+                          className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary"
+                        >
+                          {stock}
+                        </span>
+                      ))}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </CardContent>
       </Card>

@@ -110,11 +110,11 @@ export function PortfolioCard({
 
           <div className="mt-3">
             <CardTitle className="text-2xl md:text-3xl">
-              {t("portfolio_title", "הקצאת נכסים וניתוח תיק AI")}
+              {t("portfolio_title", "Asset Allocation & AI Portfolio Analysis")}
             </CardTitle>
 
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-              {t("portfolio_subtitle", "המחשה לימודית של פיזור הנכסים, החשיפה המנייתית וההשפעה האפשרית של זמן וצמיחה על התיק.")}
+              {t("portfolio_subtitle", "An educational illustration of asset diversification, equity exposure, and the possible impact of time and growth on the portfolio.")}
             </p>
           </div>
 
@@ -124,7 +124,7 @@ export function PortfolioCard({
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-warning" />
 
             <span>
-              {t("portfolio_disclaimer", "הנתונים מוצגים לצורכי לימוד פיננסית בלבד ואינם מהווים המלצת השקעה.")}
+              {t("portfolio_disclaimer", "The data is presented for educational financial purposes only and does not constitute an investment recommendation.")}
             </span>
           </div>
         </CardHeader>
@@ -141,42 +141,42 @@ export function PortfolioCard({
                   <TrendingUp className="h-4 w-4 text-primary" />
 
                   <h3 className="text-sm font-bold">
-                    {t("portfolio_projection_title", "תחזית פיננסית")}
+                    {t("portfolio_projection_title", "Financial Projection")}
                   </h3>
                 </div>
 
                 <p className="mt-1 text-xs text-muted-foreground">
-                  {t("portfolio_projection_subtitle", "המחשה של התוצאה האפשרית לאורך תקופת ההשקעה.")}
+                  {t("portfolio_projection_subtitle", "Illustration of the possible outcome over the investment period.")}
                 </p>
               </div>
 
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 <MetricCard
                   icon={<Wallet className="h-4 w-4" />}
-                  title={t("portfolio_metric_total_contributions", "סה״כ הפקדות")}
+                  title={t("portfolio_metric_total_contributions", "Total Contributions")}
                   value={formatCurrency(projection.totalContributed, currency, language)}
                 />
 
                 <MetricCard
                   icon={<TrendingUp className="h-4 w-4" />}
-                  title={t("portfolio_metric_future_value", "שווי עתידי")}
+                  title={t("portfolio_metric_future_value", "Future Value")}
                   value={formatCurrency(projection.finalBalance, currency, language)}
                   highlight
                 />
 
                 <MetricCard
                   icon={<Coins className="h-4 w-4" />}
-                  title={t("portfolio_metric_investment_profit", "רווח מהשקעה")}
+                  title={t("portfolio_metric_investment_profit", "Investment Profit")}
                   value={formatCurrency(projection.growth, currency, language)}
                   highlight
                 />
 
                 <MetricCard
                   icon={<CalendarDays className="h-4 w-4" />}
-                  title={t("portfolio_metric_period", "תקופה")}
+                  title={t("portfolio_metric_period", "Period")}
                   value={
                     result.scenario?.years
-                      ? `${result.scenario.years} ${t("xai_horizon_years", "שנים")}`
+                      ? `${result.scenario.years} ${t("xai_horizon_years", "years")}`
                       : "-"
                   }
                 />
@@ -193,11 +193,11 @@ export function PortfolioCard({
               <div className="mb-3 flex items-center justify-between gap-4">
                 <div>
                   <p className="text-sm font-semibold">
-                    {t("portfolio_growth_contribution_title", "תרומת הצמיחה לשווי הסופי")}
+                    {t("portfolio_growth_contribution_title", "Contribution to Final Value")}
                   </p>
 
                   <p className="mt-1 text-xs text-muted-foreground">
-                    {t("portfolio_growth_contribution_subtitle", "החלק היחסי של הצמיחה מתוך השווי הסופי.")}
+                    {t("portfolio_growth_contribution_subtitle", "The relative share of growth from the final value.")}
                   </p>
                 </div>
 
@@ -233,12 +233,12 @@ export function PortfolioCard({
                 <ShieldCheck className="h-4 w-4 text-primary" />
 
                 <h3 className="text-sm font-bold">
-                  {t("portfolio_health_metrics_title", "מדדי תיק")}
+                  {t("portfolio_health_metrics_title", "Portfolio Metrics")}
                 </h3>
               </div>
 
               <p className="mt-1 text-xs text-muted-foreground">
-                {t("portfolio_health_metrics_subtitle", "מדדים חישוביים להמחשת מבנה התיק ורמת החשיפה.")}
+                {t("portfolio_health_metrics_subtitle", "Computational metrics to illustrate portfolio structure and exposure level.")}
               </p>
             </div>
 
@@ -247,7 +247,7 @@ export function PortfolioCard({
                 icon={
                   <ShieldCheck className="h-4 w-4" />
                 }
-                title={t("portfolio_metric_diversification", "פיזור תיק")}
+                title={t("portfolio_metric_diversification", "Portfolio Diversification")}
                 value={`${metrics.diversification}%`}
               />
 
@@ -255,7 +255,7 @@ export function PortfolioCard({
                 icon={
                   <BarChart3 className="h-4 w-4" />
                 }
-                title={t("portfolio_metric_equity_exposure", "חשיפה מנייתית")}
+                title={t("portfolio_metric_equity_exposure", "Equity Exposure")}
                 value={`${metrics.equityExposure}%`}
               />
 
@@ -263,7 +263,7 @@ export function PortfolioCard({
                 icon={
                   <ShieldCheck className="h-4 w-4" />
                 }
-                title={t("portfolio_metric_risk_level", "רמת סיכון")}
+                title={t("portfolio_metric_risk_level", "Risk Level")}
                 value={t(riskLevelKey, metrics.riskLevel)}
               />
             </div>
@@ -279,12 +279,12 @@ export function PortfolioCard({
                 <PieChartIcon className="h-4 w-4 text-primary" />
 
                 <h3 className="text-sm font-bold">
-                  {t("portfolio_allocation_title", "הקצאת נכסים")}
+                  {t("portfolio_allocation_title", "Recommended Portfolio Allocation 📊")}
                 </h3>
               </div>
 
               <p className="mt-1 text-xs text-muted-foreground">
-                {t("portfolio_allocation_subtitle", "המחשה ויזואלית של חלוקת הנכסים בתרחיש הלימודי.")}
+                {t("portfolio_allocation_subtitle", "Visual illustration of asset allocation in the educational scenario.")}
               </p>
             </div>
 
@@ -334,7 +334,7 @@ export function PortfolioCard({
                   <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
                     <div className="text-center">
                       <p className="text-xs text-muted-foreground">
-                        {t("portfolio_assets_label", "נכסים")}
+                        {t("portfolio_assets_label", "Assets")}
                       </p>
 
                       <p className="text-xl font-extrabold">
@@ -418,11 +418,11 @@ export function PortfolioCard({
 
               <div>
                 <h4 className="text-sm font-bold">
-                  {t("portfolio_ai_explanation_title", "למה נבחר המבנה הזה?")}
+                  {t("portfolio_ai_explanation_title", "Why was this structure chosen?")}
                 </h4>
 
                 <p className="text-xs text-muted-foreground">
-                  {t("portfolio_ai_explanation_subtitle", "הסבר לימודי מבוסס AI")}
+                  {t("portfolio_ai_explanation_subtitle", "AI-based educational explanation")}
                 </p>
               </div>
             </div>
@@ -439,11 +439,11 @@ export function PortfolioCard({
           <section className="border-t border-border/60 pt-7">
             <div className="mb-5">
               <h3 className="text-sm font-bold">
-                {t("portfolio_broker_comparison_title", "השוואת ברוקרים")}
+                {t("portfolio_broker_comparison_title", "Broker Comparison")}
               </h3>
 
               <p className="mt-1 text-xs text-muted-foreground">
-                {t("portfolio_broker_comparison_subtitle", "מידע השוואתי לצורכי למידה והיכרות עם מבנה העלויות.")}
+                {t("portfolio_broker_comparison_subtitle", "Comparative information for learning and understanding cost structures.")}
               </p>
             </div>
 

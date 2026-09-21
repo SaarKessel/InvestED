@@ -20,7 +20,7 @@ export function PortfolioAllocationCard({
     <div className="rounded-2xl bg-white p-6 shadow">
 
       <h2 className="mb-5 text-xl font-bold">
-        {t("portfolio_allocation_title_short", "הקצאת תיק מומלצת 📊")}
+        {t("portfolio_allocation_title_short", "Recommended Portfolio Allocation 📊")}
       </h2>
 
 

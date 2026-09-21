@@ -219,7 +219,7 @@ export function QuizCard(){
 
     <span className="text-xs font-bold uppercase tracking-wide">
 
-      {t("quiz_title", "בוחן ידע מהיר")}
+      {t("quiz_title", "Quick Knowledge Quiz")}
 
     </span>
 
@@ -228,7 +228,7 @@ export function QuizCard(){
 
     <CardTitle className="text-xl">
 
-      {t("quiz_subtitle", "בדקו את עצמכם — 5 שאלות, 2 דקות")}
+      {t("quiz_subtitle", "Test yourself — 5 questions, 2 minutes")}
 
     </CardTitle>
 
@@ -272,7 +272,7 @@ export function QuizCard(){
 
     ?
 
-    t("quiz_perfect", "ציון מושלם! נראה שהמושגים האלה כבר ברורים לך.")
+    t("quiz_perfect", "Perfect score! Looks like these concepts are clear to you.")
 
     :
 
@@ -280,11 +280,11 @@ export function QuizCard(){
 
     ?
 
-    t("quiz_good", "לא רע בכלל! כדאי לחזור על המושגים שהחמצת.")
+    t("quiz_good", "Not bad! Worth revisiting the concepts you missed.")
 
     :
 
-    t("quiz_okay", "התחלה טובה — כדאי לעבור שוב על החומר ולנסות שוב.")
+    t("quiz_okay", "Good start — worth going over the material and trying again.")
 
     }
 
@@ -300,7 +300,7 @@ export function QuizCard(){
 
     <RotateCcw className="h-4 w-4"/>
 
-    {t("quiz_restart", "בוחן חדש")}
+    {t("quiz_restart", "New Quiz")}
 
     </Button>
 
@@ -520,11 +520,11 @@ export function QuizCard(){
 
     ?
 
-    t("quiz_finish", "סיום הבוחן")
+    t("quiz_finish", "End of Quiz")
 
     :
 
-    t("quiz_next", "לשאלה הבאה")
+    t("quiz_next", "Next Question")
 
     }
 
