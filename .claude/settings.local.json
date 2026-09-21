@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rtk git *)",
+      "Bash(rtk ls *)",
+      "Bash(rtk tree *)",
+      "Bash(grep -rl \"[א-ת]{3,}\" src/ --include=\"*.tsx\" --include=\"*.ts\")",
+      "Bash(rtk wc *)",
+      "Bash(npm test *)",
+      "Bash(node *)"
+    ]
+  }
+}

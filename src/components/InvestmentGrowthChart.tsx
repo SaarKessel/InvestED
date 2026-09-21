@@ -69,7 +69,7 @@ export function InvestmentGrowthChart({ data, currency = "ILS" }: Props) {
         "
       >
         <h2 className="text-2xl font-bold">
-          {t("investment_chart_title", "📈 צמיחת ההשקעה לאורך זמן")}
+          {t("investment_chart_title", "📈 Investment Growth Over Time")}
         </h2>
 
         <p className="mt-2 text-sm text-muted-foreground">
@@ -82,7 +82,7 @@ export function InvestmentGrowthChart({ data, currency = "ILS" }: Props) {
   return (
     <section
       dir={language === "he" ? "rtl" : "ltr"}
-      aria-label={t("investment_chart_aria", "גרף צמיחת ההשקעה")}
+      aria-label={t("investment_chart_aria", "Investment growth chart")}
       className="
         mt-8
         rounded-3xl
@@ -95,11 +95,11 @@ export function InvestmentGrowthChart({ data, currency = "ILS" }: Props) {
     >
       <div className="mb-6">
         <h2 className="text-2xl font-bold">
-          {t("investment_chart_title", "📈 צמיחת ההשקעה לאורך זמן")}
+          {t("investment_chart_title", "📈 Investment Growth Over Time")}
         </h2>
 
         <p className="mt-2 text-sm text-muted-foreground">
-          {t("investment_chart_subtitle", "השוואה בין הכסף שהופקד לבין השווי שנצבר מההשקעה לאורך השנים.")}
+          {t("investment_chart_subtitle", "Comparison between the money contributed and the value accumulated from the investment over the years.")}
         </p>
       </div>
 
@@ -126,7 +126,7 @@ export function InvestmentGrowthChart({ data, currency = "ILS" }: Props) {
               tickMargin={10}
               tickFormatter={(value) => `${value}`}
               label={{
-                value: t("investment_chart_xaxis", "שנים"),
+                value: t("investment_chart_xaxis", "Years"),
                 position: "insideBottom",
                 offset: -5,
               }}
@@ -144,10 +144,10 @@ export function InvestmentGrowthChart({ data, currency = "ILS" }: Props) {
               formatter={(value, name) => [
                 formatCurrency(Number(value)),
                 name === "balance"
-                  ? t("investment_chart_tooltip_balance", "שווי תיק")
-                  : t("investment_chart_tooltip_contributed", "סה״כ הפקדות"),
+                  ? t("investment_chart_tooltip_balance", "Portfolio Value")
+                  : t("investment_chart_tooltip_contributed", "Total Contributions"),
               ]}
-              labelFormatter={(label) => `${t("investment_chart_label_year", "שנה")} ${label}`}
+              labelFormatter={(label) => `${t("investment_chart_label_year", "Year")} ${label}`}
               contentStyle={{
                 borderRadius: "12px",
                 border: "1px solid hsl(var(--border))",
@@ -164,8 +164,8 @@ export function InvestmentGrowthChart({ data, currency = "ILS" }: Props) {
               height={36}
               formatter={(value) =>
                 value === "balance"
-                  ? t("investment_chart_balance_label", "שווי תיק")
-                  : t("investment_chart_contributed_label", "סה״כ הפקדות")
+                  ? t("investment_chart_balance_label", "Portfolio Value")
+                  : t("investment_chart_contributed_label", "Total Contributions")
               }
             />
 
@@ -196,21 +196,21 @@ export function InvestmentGrowthChart({ data, currency = "ILS" }: Props) {
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <div className="rounded-2xl border border-border bg-muted/30 p-4">
           <p className="text-sm text-muted-foreground">
-            {t("investment_chart_balance_label", "שווי תיק")}
+            {t("investment_chart_balance_label", "Portfolio Value")}
           </p>
 
           <p className="mt-1 font-semibold">
-            {t("investment_chart_balance_desc", "הכסף שהצטבר כולל צמיחת ההשקעה.")}
+            {t("investment_chart_balance_desc", "The accumulated value including investment growth.")}
           </p>
         </div>
 
         <div className="rounded-2xl border border-border bg-muted/30 p-4">
           <p className="text-sm text-muted-foreground">
-            {t("investment_chart_contributed_label", "סה״כ הפקדות")}
+            {t("investment_chart_contributed_label", "Total Contributions")}
           </p>
 
           <p className="mt-1 font-semibold">
-            {t("investment_chart_contributed_desc", "הכסף שהושקע בפועל לאורך התקופה.")}
+            {t("investment_chart_contributed_desc", "The money actually invested over the period.")}
           </p>
         </div>
       </div>

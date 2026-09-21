@@ -36,13 +36,13 @@ export function InvestmentInsightCard({
   let icon = "";
 
   if (years >= 15) {
-    insight = t("ai_insight_horizon_long", "אופק השקעה ארוך של {years} שנים מאפשר לריבית דריבית להשפיע בצורה משמעותית על צמיחת ההון, אך חשוב עדיין להתאים את רמת הסיכון למטרת ההשקעה.").replace("{years}", String(years));
+    insight = t("ai_insight_horizon_long", "🚀 Long investment horizon. A large number of years allows compound interest and return accumulation to significantly impact wealth growth, with better ability to cope with volatility along the way.").replace("{years}", String(years));
     icon = "🚀";
   } else if (years >= 5) {
-    insight = t("ai_insight_horizon_medium", "אופק השקעה בינוני של {years} שנים מאפשר לזמן ולריבית דריבית להשפיע על צמיחת ההון, תוך התחשבות בתנודתיות וברמת הסיכון.").replace("{years}", String(years));
+    insight = t("ai_insight_horizon_medium", "📊 Medium investment horizon. There's more time to deal with market fluctuations, but it's still important to examine risk level relative to the goal and target date.").replace("{years}", String(years));
     icon = "📈";
   } else {
-    insight = t("ai_insight_horizon_short", "בטווח קצר יותר, לתנודתיות השוק יכולה להיות השפעה משמעותית ולכן חשוב להתאים את רמת הסיכון לאופק ההשקעה.");
+    insight = t("ai_insight_horizon_short", "⏳ Relatively short horizon. The time left to accumulate returns is more limited, so it's important to examine the relationship between risk level and when the money will be used.");
     icon = "⚠️";
   }
 

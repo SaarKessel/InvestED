@@ -13,8 +13,6 @@ import {
 } from "@/lib/analysisService";
 
 import { useLanguage } from "@/context/languageContext";
-
-
 export interface AnalysisContextValue {
 
   profile: AnalysisResult | null;
@@ -35,79 +33,46 @@ export interface AnalysisContextValue {
 
 }
 
-
-
 export const AnalysisContext =
   createContext<AnalysisContextValue | undefined>(
     undefined
   );
-
-
-
-
 export function AnalysisProvider({
   children,
 }: {
   children: React.ReactNode;
 }) {
-
-
   const { language } = useLanguage();
 
   const [profile,setProfile] =
     useState<AnalysisResult | null>(null);
 
-
-
   const [result,setResult] =
     useState<AnalysisResult | null>(null);
 
-
-
   const [isAnalyzing,setIsAnalyzing] =
     useState(false);
-
-
-
-
   const analyze = async (
     data:string
   ) => {
-
-
     setIsAnalyzing(true);
-
-
     try {
-
-
       const ruleResult =
         buildRuleBasedAnalysis(
           data,
           language
         );
 
-
-
       let finalResult =
         ruleResult;
-
-
-
-
       try {
-
-
         const aiResult =
           await tryEnhanceWithOllama(
-            ruleResult
+            ruleResult,
+            language
           );
 
-
-
         if(aiResult){
-
-
           finalResult = {
 
             ...ruleResult,
@@ -116,59 +81,30 @@ export function AnalysisProvider({
               aiResult
 
           };
-
-
         }
 
       } catch(error) {
-
-
+        console.error("Analysis enhancement error:", error);
 
       }
-
-
-
-
       setProfile(
         finalResult
       );
-
-
       setResult(
         finalResult
       );
 
-
-
     }
     finally {
-
-
       setIsAnalyzing(false);
-
-
     }
-
-
   };
 
-
-
-
-
   const reset = () => {
-
-
     setProfile(null);
 
     setResult(null);
-
-
   };
-
-
-
-
 
   return (
 
@@ -197,11 +133,5 @@ export function AnalysisProvider({
     </AnalysisContext.Provider>
 
   );
-
-
 }
-
-
-
-
 

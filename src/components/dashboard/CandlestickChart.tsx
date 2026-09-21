@@ -464,25 +464,25 @@ shadow-lg
 
 
 <p>
-{t("candle_open", "פתיחה:")}
+{t("candle_open", "Open:")}
 ${candle.open?.toFixed(2)}
 </p>
 
 
 <p>
-{t("candle_close", "סגירה:")}
+{t("candle_close", "Close:")}
 ${candle.close?.toFixed(2)}
 </p>
 
 
 <p>
-{t("candle_high", "גבוה:")}
+{t("candle_high", "High:")}
 ${candle.high?.toFixed(2)}
 </p>
 
 
 <p>
-{t("candle_low", "נמוך:")}
+{t("candle_low", "Low:")}
 ${candle.low?.toFixed(2)}
 </p>
 

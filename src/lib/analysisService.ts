@@ -445,7 +445,7 @@ function buildEngineSignals(
 
 export function buildRuleBasedAnalysis(
   profileText: string,
-  language: string = "en"
+  language: "he" | "en" = "en"
 ): AnalysisResult {
 
   // =====================================================
@@ -566,7 +566,8 @@ export function buildRuleBasedAnalysis(
   const aiInsight =
     generateAIInsight(
       scenario,
-      projection
+      projection,
+      language
     );
 
 
@@ -810,9 +811,8 @@ export function buildRuleBasedAnalysis(
 // =====================================================
 
 export async function tryEnhanceWithOllama(
-
-  result: AnalysisResult
-
+  result: AnalysisResult,
+  language: "he" | "en" = "he"
 ): Promise<
   AnalysisResult["aiNarration"] | null
 > {
@@ -867,35 +867,22 @@ Largest position: ${portfolioMetrics.largestPosition} (${portfolioMetrics.larges
   // =====================================================
 
   const [
-
     profileSummary,
-
-    portfolioSummary
-
+    portfolioSummary,
   ] = await Promise.all([
-
     explainInvestorProfile(
-
       result.investor.type,
-
       result.riskScore,
-
       result.investor.reason,
-
-      result.profileText
-
+      result.profileText,
+      language
     ),
-
     explainPortfolio(
-
       result.investor.type,
-
       allocationSummary,
-
-      portfolioContext
-
-    )
-
+      portfolioContext,
+      language
+    ),
   ]);
 
 

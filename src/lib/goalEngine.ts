@@ -301,7 +301,8 @@ export interface RetirementPlan {
 // ---------------------------------------------------------------------------
 
 export function buildRetirementPlan(
-  input: RetirementPlanInput
+  input: RetirementPlanInput,
+  language: "he" | "en" = "he"
 ): RetirementPlan {
   const yearsRemaining = Math.max(
     input.expectedRetirementAge -
@@ -522,15 +523,21 @@ export function buildRetirementPlan(
 
   if (yearsRemaining >= 20) {
     recommendations.push(
-      "אופק השקעה ארוך מאפשר לריבית דריבית להיות מנוע מרכזי בבניית ההון."
+      language === "he"
+        ? "אופק השקעה ארוך מאפשר לריבית דריבית להיות מנוע מרכזי בבניית ההון."
+        : "A long investment horizon allows compound interest to be a central engine in building wealth."
     );
   } else if (yearsRemaining > 0) {
     recommendations.push(
-      "אופק ההשקעה משמעותי, ולכן עקביות בהפקדות יכולה להשפיע מהותית על התוצאה."
+      language === "he"
+        ? "אופק ההשקעה משמעותי, ולכן עקביות בהפקדות יכולה להשפיע מהותית על התוצאה."
+        : "A significant investment horizon means consistent contributions can significantly affect the outcome."
     );
   } else {
     recommendations.push(
-      "יש לבחון מחדש את יעד הפרישה ואת מקורות ההכנסה הצפויים."
+      language === "he"
+        ? "יש לבחון מחדש את יעד הפרישה ואת מקורות ההכנסה הצפויים."
+        : "It's advisable to re-examine the retirement goal and expected income sources."
     );
   }
 
@@ -539,16 +546,22 @@ export function buildRetirementPlan(
     requiredMonthlyContribution
   ) {
     recommendations.push(
-      "הגדלת ההפקדה החודשית עשויה לשפר את הסיכוי להגיע ליעד."
+      language === "he"
+        ? "הגדלת ההפקדה החודשית עשויה לשפר את הסיכוי להגיע ליעד."
+        : "Increasing the monthly contribution may improve the chances of reaching the goal."
     );
   } else {
     recommendations.push(
-      "רמת ההפקדה הנוכחית תואמת או עולה על ההפקדה המחושבת לפי ההנחות."
+      language === "he"
+        ? "רמת ההפקדה הנוכחית תואמת או עולה על ההפקדה המחושבת לפי ההנחות."
+        : "The current contribution level meets or exceeds the calculated contribution based on the assumptions."
     );
   }
 
   recommendations.push(
-    "התרחיש הוא הדמיה חינוכית המבוססת על תשואה והנחות אינפלציה ואינו מהווה הבטחת תשואה."
+    language === "he"
+      ? "התרחיש הוא הדמיה חינוכית המבוססת על תשואה והנחות אינפלציה ואינו מהווה הבטחת תשואה."
+      : "The scenario is an educational illustration based on return and inflation assumptions and does not guarantee actual returns."
   );
 
   return {

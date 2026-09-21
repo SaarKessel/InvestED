@@ -130,10 +130,10 @@ export function LandingPage() {
             transition={{ duration: 0.6 }}
             className="max-w-4xl text-balance font-display text-4xl font-extrabold leading-[1.08] tracking-tight text-foreground sm:text-5xl md:text-6xl lg:text-7xl"
           >
-            {t("hero_title_prefix", "הכירו את סגנון ההשקעה שלכם")}
+            {t("hero_title_prefix", "Discover your investing style")}
             <br />
             <span className="gradient-text">
-              {t("hero_title_highlight", "בעזרת AI")}
+              {t("hero_title_highlight", "with AI")}
             </span>
           </motion.h1>
 
@@ -166,7 +166,7 @@ export function LandingPage() {
                 size="lg"
                 className="group h-12 w-full gap-2 rounded-xl px-7 sm:w-auto"
               >
-                {t("hero_cta_start", "גלו את הפרופיל שלכם")}
+                {t("hero_cta_start", "Discover Your Profile")}
                 <ArrowIcon
                   className={`h-4 w-4 transition-transform duration-200 ${arrowHoverClass}`}
                 />
@@ -179,7 +179,7 @@ export function LandingPage() {
                 variant="outline"
                 className="h-12 w-full rounded-xl px-7 sm:w-auto"
               >
-                {t("hero_cta_about", "על הפרויקט")}
+                {t("hero_cta_about", "About the Project")}
               </Button>
             </Link>
           </motion.div>
@@ -221,7 +221,7 @@ export function LandingPage() {
         <div className="container">
           <div className="mb-14 text-center">
             <h2 className="font-display text-3xl font-bold text-foreground md:text-4xl">
-              {t("features_title", "מה זה InvestED?")}
+              {t("features_title", "What is InvestED?")}
             </h2>
 
             <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
@@ -270,11 +270,11 @@ export function LandingPage() {
         <div className="container">
           <div className="mb-14 text-center">
             <h2 className="font-display text-3xl font-bold text-foreground md:text-4xl">
-              {t("how_it_works_title", "איך זה עובד?")}
+              {t("how_it_works_title", "How does it work?")}
             </h2>
 
             <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
-              {t("how_it_works_subtitle", "שלושה שלבים פשוטים וקבלת דשבורד לימודי אישי.")}
+              {t("how_it_works_subtitle", "Three simple steps to your personalized learning dashboard.")}
             </p>
           </div>
 
@@ -317,11 +317,11 @@ export function LandingPage() {
         <div className="container grid items-center gap-12 md:grid-cols-2">
           <div>
             <span className="mb-3 inline-block text-sm font-semibold text-primary">
-              {t("audience_badge", "למידה פיננסית בגובה העיניים")}
+              {t("audience_badge", "Accessible Financial Learning")}
             </span>
 
             <h2 className="font-display text-3xl font-bold text-foreground md:text-4xl">
-              {t("audience_title", "למי זה מתאים?")}
+              {t("audience_title", "Who is this for?")}
             </h2>
 
             <p className="mt-4 text-muted-foreground">
@@ -345,7 +345,7 @@ export function LandingPage() {
 
             <Link to="/start" className="mt-8 inline-block">
               <Button size="lg" className="group gap-2 rounded-xl">
-                {t("audience_cta", "התחילו עכשיו")}
+                {t("audience_cta", "Start Now")}
                 <ArrowIcon
                   className={`h-4 w-4 transition-transform duration-200 ${arrowHoverClass}`}
                 />
@@ -365,19 +365,19 @@ export function LandingPage() {
                     </span>
 
                     <span className="mt-1 block text-sm font-semibold text-foreground">
-                      {t("sample_card_title", "דוגמה לפרופיל משקיע")}
+                      {t("sample_card_title", "Sample Investor Profile")}
                     </span>
                   </div>
 
                   <span className="rounded-full bg-primary/10 px-3 py-1 text-xs font-bold text-primary">
-                    {t("sample_card_risk", "8/10 סיכון")}
+                    {t("sample_card_risk", "8/10 Risk")}
                   </span>
                 </div>
 
                 <div>
                   <div className="mb-2 flex justify-between text-xs text-muted-foreground">
-                    <span>{t("sample_card_risk_label", "רמת סיכון")}</span>
-                    <span>{t("sample_card_risk_high", "גבוהה")}</span>
+                    <span>{t("sample_card_risk_label", "Risk Level")}</span>
+                    <span>{t("sample_card_risk_high", "High")}</span>
                   </div>
 
                   <div className="h-2 overflow-hidden rounded-full bg-muted">
@@ -388,15 +388,15 @@ export function LandingPage() {
                 <div className="grid grid-cols-3 gap-3">
                   {[
                     {
-                      label: t("sample_card_asset_us", "מניות ארה״ב"),
+                      label: t("sample_card_asset_us", "US Equities"),
                       value: "50%",
                     },
                     {
-                      label: t("sample_card_asset_intl", "בינלאומי"),
+                      label: t("sample_card_asset_intl", "International"),
                       value: "20%",
                     },
                     {
-                      label: t("sample_card_asset_tech", "טכנולוגיה"),
+                      label: t("sample_card_asset_tech", "Technology"),
                       value: "15%",
                     },
                   ].map((item) => (
@@ -442,7 +442,7 @@ export function LandingPage() {
         <div className="container">
           <div className="mb-10 text-center">
             <h2 className="font-display text-3xl font-bold text-foreground">
-              {t("tech_title", "בנוי בטכנולוגיות מודרניות")}
+              {t("tech_title", "Built with Modern Technologies")}
             </h2>
 
             <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
@@ -494,7 +494,7 @@ export function LandingPage() {
                 </div>
 
                 <h2 className="font-display text-3xl font-bold text-foreground md:text-4xl">
-                  {t("final_cta_title", "מוכנים להכיר את פרופיל ההשקעה שלכם?")}
+                  {t("final_cta_title", "Ready to discover your investment profile?")}
                 </h2>
 
                 <p className="mx-auto mt-4 max-w-xl leading-relaxed text-muted-foreground">

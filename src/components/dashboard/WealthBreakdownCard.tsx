@@ -39,7 +39,7 @@ export function WealthBreakdownCard({ result }: Props) {
     >
 
       <h2 className="mb-5 text-xl font-bold">
-        {t("wealth_breakdown_title", "💰 איך נבנה ההון שלך?")}
+        {t("wealth_breakdown_title", "💰 How is your wealth built?")}
       </h2>
 
 
@@ -49,7 +49,7 @@ export function WealthBreakdownCard({ result }: Props) {
         <div>
           <div className="flex justify-between">
             <span>
-              {t("wealth_breakdown_deposits", "כסף שהפקדת")}
+              {t("wealth_breakdown_deposits", "Money you deposited")}
             </span>
 
             <strong>
@@ -74,7 +74,7 @@ export function WealthBreakdownCard({ result }: Props) {
         <div>
           <div className="flex justify-between">
             <span>
-              {t("wealth_breakdown_growth", "צמיחת השקעה")}
+              {t("wealth_breakdown_growth", "Investment growth")}
             </span>
 
             <strong>
@@ -101,7 +101,7 @@ export function WealthBreakdownCard({ result }: Props) {
 
 
       <p className="mt-5 text-gray-600">
-        {t("wealth_breakdown_summary", "🚀 כ־{pct}% מההון העתידי שלך נוצר בזכות צמיחת ההשקעה לאורך זמן.").replace("{pct}", String(growthPercent))}
+        {t("wealth_breakdown_summary", "🚀 About {pct}% of your future wealth is created by investment growth over time.").replace("{pct}", String(growthPercent))}
       </p>
 
 
