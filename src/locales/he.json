@@ -296,7 +296,7 @@
   "learning_roadmap_title": "מסלול למידה אישי",
   "market_data_title": "גרפים ונתוני שוק",
   "market_data_subtitle": "נכסים לפי תחומי העניין שלך",
-  "market_data_live": "נתונים חיים",
+  "market_data_live": "נתוני שוק עדכניים",
   "market_data_mock": "נתונים מדומים",
   "market_data_empty": "לא נמצאו נתוני שוק להצגה כרגע.",
   "market_data_disclaimer": "לצורכי לימוד בלבד — לא המלצה לקנות או למכור נכס.",
@@ -824,5 +824,12 @@
   "scenario_history_header": "היסטוריית השקעות",
   "calc_empty_state_title": "תאר תרחיש השקעה כדי לייצר את התחזית שלך.",
   "calc_empty_state_subtitle": "הסימולציה, ניתוח הצמיחה ותובנות ה-AI יופיעו כאן לאחר שתנתח תרחיש.",
-  "calc_currency_label": "מטבע"
+  "calc_currency_label": "מטבע",
+  "copilot_header": "InvestED AI Copilot",
+  "copilot_subtitle": "שכבת מודיעין פיננסי המחוברת למנועים של InvestED",
+  "copilot_empty": "אפשר לשאול על חישוב, נכס שוק, השוואה, פרופיל או מושג פיננסי.",
+  "copilot_input": "שאל את InvestED",
+  "copilot_placeholder": "שאל את InvestED...",
+  "copilot_send": "שלח",
+  "copilot_error": "ה-Copilot לא הצליח להשלים את הבקשה. אפשר לנסות שוב."
 }

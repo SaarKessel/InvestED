@@ -6,6 +6,8 @@ import {
 } from "./conversationContext";
 import { buildRuleBasedAnalysis, tryEnhanceWithOllama } from "./analysisService";
 import { fetchMarketAssetBySymbol } from "./marketData";
+import { calculateRsi, calculateVolatility } from "./market/indicators";
+import { buildCopilotResponse, type CopilotResponse } from "./copilotResponse";
 
 // The shared AssetAnalysis type lives in @/types so analysisService
 // and ollamaClient no longer import it from this module (which
@@ -17,6 +19,7 @@ export interface AIConversationTurn {
   result: AnalysisResult | null;
   clarification: string | null;
   assetAnalyses: AssetAnalysis[];
+  response: CopilotResponse;
 }
 
 export interface AIConversationDependencies {
@@ -33,31 +36,6 @@ const defaultDependencies: AIConversationDependencies = {
   enhance: tryEnhanceWithOllama,
 };
 
-function calculateVolatility(asset: MarketAsset): number {
-  const returns = asset.history.slice(1).map((point, index) => {
-    const previous = asset.history[index].close || asset.history[index].price;
-    const current = point.close || point.price;
-    return previous > 0 ? (current - previous) / previous : 0;
-  });
-  if (returns.length === 0) return 0;
-  const mean = returns.reduce((sum, value) => sum + value, 0) / returns.length;
-  const variance = returns.reduce((sum, value) => sum + (value - mean) ** 2, 0) / returns.length;
-  return Math.round(Math.sqrt(variance) * 10000) / 100;
-}
-
-function calculateRsi(asset: MarketAsset): number | null {
-  const changes = asset.history.slice(1).map((point, index) => {
-    const previous = asset.history[index].close || asset.history[index].price;
-    const current = point.close || point.price;
-    return current - previous;
-  }).slice(-14);
-  if (changes.length === 0) return null;
-  const gains = changes.reduce((sum, value) => sum + Math.max(value, 0), 0) / changes.length;
-  const losses = changes.reduce((sum, value) => sum + Math.max(-value, 0), 0) / changes.length;
-  if (losses === 0) return gains === 0 ? 50 : 100;
-  return Math.round((100 - 100 / (1 + gains / losses)) * 100) / 100;
-}
-
 async function loadAssets(
   resolution: TurnResolution,
   fetchAsset: AIConversationDependencies["fetchAsset"]
@@ -67,17 +45,24 @@ async function loadAssets(
     : resolution.currentAsset
       ? [resolution.currentAsset]
       : [];
-  const loaded = await Promise.all(symbols.map(async (symbol) => {
+  const loaded = await Promise.all(symbols.map(async (symbol): Promise<AssetAnalysis | null> => {
     const asset = await fetchAsset(symbol);
-    return asset ? {
+    if (!asset) return null;
+    // Unknown provenance is never presented as live data.
+    const dataSource = asset.dataSource ?? "mock";
+    return {
       symbol,
       price: asset.price,
       changePercent: asset.changePercent,
-      volatilityPct: calculateVolatility(asset),
-      rsi: calculateRsi(asset),
-      // Unknown provenance is never presented as live data.
-      dataSource: asset.dataSource ?? "mock",
-    } : null;
+      volatilityPct: calculateVolatility(asset.history),
+      rsi: calculateRsi(asset.history),
+      dataSource,
+      isMock: asset.isMock ?? dataSource === "mock",
+      timestamp: asset.timestamp ?? null,
+      freshness: asset.freshness ?? (dataSource === "mock" ? "simulated" : undefined),
+      currency: asset.currency ?? null,
+      marketStatus: asset.marketStatus ?? "unknown",
+    };
   }));
   return loaded.filter((asset): asset is AssetAnalysis => asset !== null);
 }
@@ -103,6 +88,7 @@ export async function processAIMessage(
       result: null,
       clarification: resolution.clarification?.question ?? null,
       assetAnalyses: [],
+      response: buildCopilotResponse(message, resolution, null, []),
     };
   }
 
@@ -129,5 +115,12 @@ export async function processAIMessage(
     result: finalResult,
     clarification: null,
     assetAnalyses,
+    response: buildCopilotResponse(
+      message,
+      resolution,
+      finalResult,
+      assetAnalyses,
+      enhanced?.conversationSummary ?? null
+    ),
   };
 }

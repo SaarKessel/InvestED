@@ -44,6 +44,8 @@ export type ConversationIntent =
   | "asset_analysis"
   | "investor_profile_fit"
   | "comparison"
+  | "educational_question"
+  | "strategy_question"
   | "general";
 
 export interface FinancialParameters {
@@ -225,6 +227,8 @@ const COMPARATIVE_PATTERNS: RegExp[] = [
   /איזה\s+מהם/i,
   /\bwhich\s+is\s+more\b/i,
   /\bwhich\s+one\b/i,
+  /\bwhich\s+(?:has|performed|performs|did)\b/i,
+  /\bwhich\s+.*\b(?:better|worse)\b/i,
   /\bmore\s+(volatile|risky|expensive|stable|profitable)\b/i,
 ];
 
@@ -370,6 +374,20 @@ const PROFILE_KEYWORDS =
 const ANALYSIS_KEYWORDS =
   /\brsi\b|\bmacd\b|\banaly[sz]e\b|\banalysis\b|volatil|\bprice\b|ניתוח|תנודתיות|מחיר|לנתח|צופה|תחזית/i;
 
+// Singular market questions need one asset. When the active context contains
+// multiple compared assets, a missing subject is ambiguous rather than an
+// educational/general question. Comparative/plural questions are handled by
+// COMPARATIVE_PATTERNS and continue to use the full comparison set.
+const SINGULAR_MARKET_DATA_KEYWORDS =
+  /\bprice\b|\brsi\b|\bmacd\b|volatil|performance|performed|\breturn\b|\bchange\b|מחיר|תנודתיות|ביצועים|תשואה|שינוי/i;
+
+const AMBIGUOUS_ASSET_REFERENCE =
+  /\b(?:it|this asset|this stock|this one|the asset|the stock|the one)\b|(?:הנכס|המניה|אותו|אותה|הוא|היא)/i;
+
+const STRATEGY_KEYWORDS = /strategy|allocation|portfolio strategy|אסטרטג|הקצא/i;
+
+const EDUCATIONAL_KEYWORDS = /what\s+is|what\s+does|difference\s+between|why\s+does|explain|how\s+does|מה\s+זה|מה\s+ההבדל|תסביר|למה/i;
+
 const FINANCIAL_KEYWORDS =
   /משקיע|השקעה|חוסך|חיסכון|מפקיד|הפקדה|פנסיה|פרישה|תשואה|\binvest|\bsav(e|ing)|deposit|contribution|projection|retir|\breturn\b|חישוב|calculate/i;
 
@@ -393,6 +411,8 @@ function detectExplicitIntent(
   if (FINANCIAL_KEYWORDS.test(text) || hasExplicitFinancial) {
     return "financial_projection";
   }
+  if (STRATEGY_KEYWORDS.test(text)) return "strategy_question";
+  if (EDUCATIONAL_KEYWORDS.test(text)) return "educational_question";
 
   // A bare asset mention ("What about AMD?") is an entity
   // signal, not a new intent: the turn inherits the
@@ -529,7 +549,15 @@ export function createConversationSession(options?: {
     // -------------------------------------------------
     // Precedence 1-2: current-turn information and entities
     // -------------------------------------------------
-    let intent: ConversationIntent | null = explicitIntent;
+    const ambiguousComparisonAsset =
+      assets.length === 0 &&
+      state.comparisonSet.length > 1 &&
+      !comparativeMarker &&
+      (SINGULAR_MARKET_DATA_KEYWORDS.test(text) || AMBIGUOUS_ASSET_REFERENCE.test(text));
+
+    let intent: ConversationIntent | null = ambiguousComparisonAsset
+      ? "asset_analysis"
+      : explicitIntent;
 
     // -------------------------------------------------
     // Precedence 3: relevant conversation context
@@ -547,10 +575,10 @@ export function createConversationSession(options?: {
     const resolvedComparisonSet =
       assets.length >= 2
         ? assets
-        : intent === "comparison" && isFollowUp && hasContext
+        : ambiguousComparisonAsset
           ? [...state.comparisonSet]
-          : assets.length >= 2
-            ? assets
+          : intent === "comparison" && isFollowUp && hasContext
+            ? [...state.comparisonSet]
             : [];
 
     const explicitAsset =
@@ -572,7 +600,15 @@ export function createConversationSession(options?: {
     // -------------------------------------------------
     let clarification: ClarificationRequest | null = null;
 
-    if (isFollowUp && !hasContext) {
+    if (ambiguousComparisonAsset) {
+      const candidates = state.comparisonSet.join(" and ");
+      clarification = {
+        question: language === "en"
+          ? `Which asset do you mean: ${candidates}?`
+          : `לאיזה נכס התכוונת: ${state.comparisonSet.join(" או ")}?`,
+        missing: ["asset"],
+      };
+    } else if (isFollowUp && !hasContext) {
       clarification = buildClarification(["prior_context"], language);
     } else if (intent === "comparison" && resolvedComparisonSet.length < 2) {
       clarification = buildClarification(["comparison_assets"], language);
@@ -614,7 +650,12 @@ export function createConversationSession(options?: {
     // every carried value is reported in inheritedFromContext.
     // -------------------------------------------------
     let scenario: MergedScenario | null = null;
-    const mergedFinancial: FinancialParameters = { ...state.financialParameters };
+    // Standalone scenarios start clean. Only a real follow-up may carry prior
+    // financial values, so onboarding/profile defaults cannot leak into a new
+    // explicit calculation.
+    const mergedFinancial: FinancialParameters = isFollowUp
+      ? { ...state.financialParameters }
+      : { ...EMPTY_FINANCIAL };
 
     if (intent === "financial_projection") {
       scenario = analyzeFinancialScenario(text);
@@ -647,10 +688,13 @@ export function createConversationSession(options?: {
       }
 
       if (explicit.initialInvestment !== null) {
+        scenario.initialInvestment = explicit.initialInvestment;
+        scenario.initialInvestmentSpecified = true;
         overrides.push("initialInvestment");
         mergedFinancial.initialInvestment = explicit.initialInvestment;
       } else if (isFollowUp && state.financialParameters.initialInvestment !== null) {
         scenario.initialInvestment = state.financialParameters.initialInvestment;
+        scenario.initialInvestmentSpecified = true;
         inheritedFromContext.push("initialInvestment");
       }
 

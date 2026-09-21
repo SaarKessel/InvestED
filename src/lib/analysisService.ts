@@ -765,6 +765,10 @@ export function buildRuleBasedAnalysis(
       comparisonSet: [...resolution.comparisonSet],
       inheritedFromContext: [...resolution.inheritedFromContext],
       assetAnalyses,
+      dataSources: [...new Set(assetAnalyses.map((asset) => asset.dataSource))],
+      dataFreshness: [...new Set(assetAnalyses.map((asset) => asset.freshness ?? (asset.isMock ? "simulated" : "unavailable")))],
+      profileContextUsed: resolution.investorProfileContext !== null,
+      calculationUsed: resolution.scenario !== null,
     } : undefined,
 
     flags,

@@ -1,65 +1,29 @@
-import type { InterestArea, MarketAsset } from "@/types";
+import type { CandleDatum, InterestArea, MarketAsset, MarketDataSource } from "@/types";
+import { buildSymbolPlan, findKnownAsset, MAX_SYMBOLS, type KnownAsset } from "./market/knownAssets";
+import { computeFreshness } from "./market/freshness";
+import { resolveAssetSymbol } from "./market/symbolResolution";
+import { isHistoryRange, type HistoryRange } from "./market/providers/types";
 
 // ---------------------------------------------------------------------------
-// InvestED — Market Data Service
+// InvestED — Market Data Client Service
 //
-// ברירת המחדל: נתונים אמיתיים מ-Yahoo Finance, דרך פונקציית ה-Serverless
-// שנמצאת ב-/api/market-quote (ראו api/market-quote.js). זה עובד אוטומטית
-// כשהאתר רץ ב-Vercel. אם ה-API לא זמין (למשל בהרצה מקומית עם `npm run dev`
-// בלי `vercel dev`, או אם Yahoo חוסם את הבקשה) — נופלים אוטומטית לנתונים
-// מדומים, כדי שהדשבורד תמיד יעבוד.
+// ברירת המחדל: נתונים אמיתיים דרך שכבת ה-Market Data בצד השרת
+// (/api/market-quote — MarketDataService ← ProviderRouter ←
+// Alpha Vantage / Yahoo Finance). זה עובד אוטומטית כשהאתר רץ ב-Vercel.
+// אם ה-API לא זמין (למשל בהרצה מקומית עם `npm run dev` בלי
+// `vercel dev`) — נופלים אוטומטית לנתונים מדומים שתמיד מסומנים
+// כ-mock/simulated, כדי שהדשבורד יעבוד בפיתוח בלי לראמות "נתונים
+// אמיתיים".
 //
-// הבחירה אילו סמלים להציג מתבססת על תחומי העניין שזוהו בפרומפט של המשתמש,
-// כך שהגרף באמת "מגיב" למה שהמשתמש כתב.
+// כל asset שחוזר מכאן נושא את מקור הנתונים, חותמת הזמן, מצב ה-freshness
+// ומצב ה-mock שלו. נתון מדומה לעולם לא מוצג כאילו הוא נתון שוק אמיתי.
 // ---------------------------------------------------------------------------
 
-const CORE_SYMBOLS: { symbol: string; name: string; basePrice: number }[] = [
-  { symbol: "VOO", name: "Vanguard S&P 500 ETF", basePrice: 512 },
-  { symbol: "VTI", name: "Vanguard Total Stock Market ETF", basePrice: 268 },
-  { symbol: "VXUS", name: "Vanguard Total International Stock ETF", basePrice: 63 },
-  { symbol: "BND", name: "Vanguard Total Bond Market ETF", basePrice: 73 },
-];
-
-const INTEREST_SYMBOLS: Record<InterestArea, { symbol: string; name: string; basePrice: number }[]> = {
-  technology: [
-    { symbol: "AAPL", name: "Apple Inc.", basePrice: 210 },
-    { symbol: "MSFT", name: "Microsoft Corp.", basePrice: 430 },
-  ],
-  finance: [
-    { symbol: "JPM", name: "JPMorgan Chase & Co.", basePrice: 210 },
-    { symbol: "V", name: "Visa Inc.", basePrice: 280 },
-  ],
-  healthcare: [
-    { symbol: "JNJ", name: "Johnson & Johnson", basePrice: 155 },
-    { symbol: "UNH", name: "UnitedHealth Group", basePrice: 500 },
-  ],
-  energy: [
-    { symbol: "XOM", name: "Exxon Mobil Corp.", basePrice: 115 },
-    { symbol: "CVX", name: "Chevron Corp.", basePrice: 160 },
-  ],
-  real_estate: [
-    { symbol: "VNQ", name: "Vanguard Real Estate ETF", basePrice: 90 },
-    { symbol: "O", name: "Realty Income Corp.", basePrice: 58 },
-  ],
-};
-
-const MAX_SYMBOLS = 8;
-
-function buildSymbolPlan(interests: InterestArea[]) {
-  const plan = [...CORE_SYMBOLS];
-  const seen = new Set(plan.map((p) => p.symbol));
-
-  for (const interest of interests) {
-    for (const candidate of INTEREST_SYMBOLS[interest] ?? []) {
-      if (plan.length >= MAX_SYMBOLS) break;
-      if (seen.has(candidate.symbol)) continue;
-      plan.push(candidate);
-      seen.add(candidate.symbol);
-    }
-  }
-
-  return plan;
-}
+// Note: rate-limit protection lives in the server-side cache
+// (api/market-quote: short quote TTL, long history TTL). The client
+// deliberately keeps no response cache of its own — every caller gets
+// fresh provenance, and stale-looking data can never outlive its TTL
+// inside the UI layer.
 
 // ---------------------------------------------------------------------------
 // Mock fallback (deterministic per-symbol, so it looks stable across renders)
@@ -79,9 +43,9 @@ function seedFromSymbol(symbol: string): number {
   return seed;
 }
 
-function generateMockHistory(basePrice: number, seed: number, days = 90) {
+function generateMockHistory(basePrice: number, seed: number, days = 90): CandleDatum[] {
   const rand = seededRandom(seed);
-  const history: { date: string; price: number; open: number; high: number; low: number; close: number }[] = [];
+  const history: CandleDatum[] = [];
   let price = basePrice * 0.9;
   const today = new Date();
 
@@ -107,7 +71,7 @@ function generateMockHistory(basePrice: number, seed: number, days = 90) {
   return history;
 }
 
-function buildMockAsset(item: { symbol: string; name: string; basePrice: number }): MarketAsset {
+function buildMockAsset(item: KnownAsset): MarketAsset {
   const history = generateMockHistory(item.basePrice, seedFromSymbol(item.symbol));
   const last = history[history.length - 1].price;
   const prev = history[history.length - 2]?.price ?? last;
@@ -116,10 +80,20 @@ function buildMockAsset(item: { symbol: string; name: string; basePrice: number 
   return {
     symbol: item.symbol,
     name: item.name,
+    assetType: item.assetType,
     price: last,
+    previousClose: prev,
+    change: Math.round((last - prev) * 100) / 100,
     changePercent: Math.round(changePercent * 100) / 100,
+    currency: null,
+    volume: null,
+    marketStatus: "unknown",
     history,
+    // Simulated fallback data is always labeled as simulated.
     dataSource: "mock",
+    timestamp: null,
+    freshness: "simulated",
+    isMock: true,
   };
 }
 
@@ -128,75 +102,158 @@ function buildMockAssets(interests: InterestArea[]): MarketAsset[] {
 }
 
 // ---------------------------------------------------------------------------
+// API response mapping (truthful provenance)
+// ---------------------------------------------------------------------------
+
+/** The wire shape of one asset from /api/market-quote. */
+interface ApiMarketAsset {
+  symbol?: string;
+  name?: string;
+  assetType?: MarketAsset["assetType"];
+  price?: number | null;
+  previousClose?: number | null;
+  change?: number | null;
+  changePercent?: number | null;
+  currency?: string | null;
+  volume?: number | null;
+  marketStatus?: MarketAsset["marketStatus"];
+  history?: CandleDatum[];
+  dataSource?: string | null;
+  timestamp?: string | null;
+  freshness?: MarketAsset["freshness"];
+  error?: string;
+}
+
+function isRealProviderSource(value: unknown): value is Exclude<MarketDataSource, "mock"> {
+  return value === "alpha_vantage" || value === "yahoo_finance";
+}
+
+const FRESHNESS_VALUES = ["current", "recent", "stale", "simulated", "unavailable"];
+
+function mapApiAsset(api: ApiMarketAsset, fallback: KnownAsset | undefined, seedIndex: number): MarketAsset | null {
+  // An asset the server could not serve (price=null, freshness
+  // "unavailable") is dropped here — never replaced with silent mock.
+  if (!api || typeof api.price !== "number" || !Number.isFinite(api.price)) return null;
+
+  const symbol = api.symbol || fallback?.symbol || "UNKNOWN";
+  const hasRealHistory = Array.isArray(api.history) && api.history.length > 1;
+
+  if (hasRealHistory) {
+    const dataSource: MarketDataSource = isRealProviderSource(api.dataSource)
+      ? api.dataSource
+      : "yahoo_finance";
+    return {
+      symbol,
+      name: api.name || fallback?.name || symbol,
+      assetType: api.assetType ?? fallback?.assetType ?? "unknown",
+      price: api.price,
+      previousClose: api.previousClose ?? null,
+      change: api.change ?? null,
+      changePercent: typeof api.changePercent === "number" ? api.changePercent : 0,
+      currency: api.currency ?? null,
+      volume: api.volume ?? null,
+      marketStatus: api.marketStatus ?? "unknown",
+      history: api.history!,
+      dataSource,
+      timestamp: api.timestamp ?? null,
+      freshness:
+        api.freshness && FRESHNESS_VALUES.includes(api.freshness) && api.freshness !== "simulated"
+          ? api.freshness
+          : computeFreshness({ dataSource, timestamp: api.timestamp ?? null }),
+      isMock: false,
+    };
+  }
+
+  // The last price may be real, but a simulated history makes every
+  // derived indicator (RSI, volatility) simulated — so the whole asset
+  // is labeled mock. This rule is a Phase 3C truthfulness guarantee.
+  const known = findKnownAsset(symbol);
+  const history = generateMockHistory(api.price || 100, seedFromSymbol(symbol) + seedIndex);
+  return {
+    symbol,
+    name: api.name || fallback?.name || symbol,
+    assetType: api.assetType ?? known?.assetType ?? "unknown",
+    price: api.price,
+    previousClose: api.previousClose ?? null,
+    change: api.change ?? null,
+    changePercent: typeof api.changePercent === "number" ? api.changePercent : 0,
+    currency: api.currency ?? null,
+    volume: api.volume ?? null,
+    marketStatus: "unknown",
+    history,
+    dataSource: "mock",
+    timestamp: api.timestamp ?? null,
+    freshness: "simulated",
+    isMock: true,
+  };
+}
+
+function normalizeRange(period?: string): HistoryRange {
+  return period && isHistoryRange(period) ? period : "3mo";
+}
+
+async function requestAssets(symbols: string[], range: HistoryRange): Promise<MarketAsset[]> {
+  const symbolQuery = symbols.join(",");
+  const response = await fetch(
+    `/api/market-quote?symbols=${encodeURIComponent(symbolQuery)}&range=${range}`
+  );
+  if (!response.ok) throw new Error(`market-quote responded ${response.status}`);
+
+  const data = await response.json();
+  if (!Array.isArray(data?.assets)) throw new Error("malformed response from market-quote");
+
+  const assets = (data.assets as ApiMarketAsset[])
+    .map((api, idx) => mapApiAsset(api, findKnownAsset(symbols[idx]), idx))
+    .filter((asset): asset is MarketAsset => asset !== null);
+
+  if (assets.length === 0) throw new Error("empty response from market-quote");
+  return assets;
+}
+
+// ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
 export interface MarketDataFetchResult {
   assets: MarketAsset[];
+  /**
+   * True only when every returned asset came from a real market-data
+   * provider (none simulated). The UI labels this state "Latest market
+   * data" — never "Live", because free provider tiers serve delayed
+   * data and the app cannot verify live-ness.
+   */
   isLive: boolean;
 }
 
 export async function fetchMarketAssets(interests: InterestArea[] = []): Promise<MarketDataFetchResult> {
-  const plan = buildSymbolPlan(interests);
-  const symbolQuery = plan.map((p) => p.symbol).join(",");
+  const plan = buildSymbolPlan(interests).slice(0, MAX_SYMBOLS);
+  const symbols = plan.map((p) => p.symbol);
 
   try {
-    const response = await fetch(`/api/market-quote?symbols=${encodeURIComponent(symbolQuery)}`);
-    if (!response.ok) throw new Error(`market-quote responded ${response.status}`);
-
-    const data = await response.json();
-    if (!Array.isArray(data?.assets) || data.assets.length === 0) {
-      throw new Error("empty response from market-quote");
-    }
-
-    const assets: MarketAsset[] = data.assets.map((a: MarketAsset, idx: number) => {
-      const hasRealHistory = Array.isArray(a.history) && a.history.length > 1;
-      return {
-        symbol: a.symbol || plan[idx]?.symbol,
-        name: a.name || plan[idx]?.name,
-        price: a.price,
-        changePercent: a.changePercent,
-        history: hasRealHistory ? a.history : generateMockHistory(a.price || 100, idx),
-        // When the history had to be simulated, derived indicators are
-        // mock even though the last price came from the provider.
-        dataSource: hasRealHistory ? "yahoo_finance" as const : "mock" as const,
-      };
-    });
-
-    return { assets, isLive: true };
+    const assets = await requestAssets(symbols, "3mo");
+    return { assets, isLive: assets.every((asset) => asset.isMock === false) };
   } catch {
     // נופלים בחזרה לנתונים מדומים — בפיתוח מקומי (npm run dev), או אם
-    // Yahoo Finance חסם/שינה את ה-API.
+    // שכבת ה-providers לא זמינה. תמיד מסומן mock/simulated.
     return { assets: buildMockAssets(interests), isLive: false };
   }
 }
+
 export async function fetchMarketAssetBySymbol(
   symbol: string,
-  _period?: string,
+  period?: string,
   _interval?: string
-) {
-  const normalized = symbol.trim().toUpperCase();
-  if (!/^[A-Z]{1,5}$/.test(normalized)) return null;
+): Promise<MarketAsset | null> {
+  const resolution = resolveAssetSymbol(symbol);
+  if (!resolution) return null;
+  const normalized = resolution.symbol;
+  const range = normalizeRange(period);
 
   try {
-    const response = await fetch(`/api/market-quote?symbols=${encodeURIComponent(normalized)}`);
-    if (!response.ok) throw new Error(`market-quote responded ${response.status}`);
-    const data = await response.json();
-    const candidate = Array.isArray(data?.assets) ? data.assets[0] as MarketAsset | undefined : undefined;
-    if (!candidate || !Number.isFinite(candidate.price)) throw new Error("empty response");
-    const hasRealHistory = Array.isArray(candidate.history) && candidate.history.length > 1;
-    return {
-      ...candidate,
-      symbol: normalized,
-      name: candidate.name || normalized,
-      history: hasRealHistory
-        ? candidate.history
-        : generateMockHistory(candidate.price, seedFromSymbol(normalized)),
-      // Simulated history means simulated RSI/volatility downstream,
-      // so the asset is labeled mock unless the history is real.
-      dataSource: hasRealHistory ? "yahoo_finance" as const : "mock" as const,
-    };
+    const assets = await requestAssets([normalized], range);
+    return assets[0] ?? null;
   } catch {
-    return buildMockAsset({ symbol: normalized, name: normalized, basePrice: 100 });
+    // API unreachable (local dev, provider outage): labeled mock fallback.
+    return buildMockAsset({ symbol: normalized, name: normalized, assetType: "unknown", basePrice: 100 });
   }
 }

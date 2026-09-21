@@ -32,6 +32,7 @@ import { ComparisonCard } from "@/components/dashboard/ComparisonCard";
 import { ConceptsCard, MistakesCard, RoadmapCard } from "@/components/dashboard/LearningCards";
 import { QuizCard } from "@/components/dashboard/QuizCard";
 import { GoalPlannerCard } from "@/components/GoalPlannerCard";
+import { AIChatCard } from "@/components/dashboard/AIChatCard";
 
 export function DashboardPage() {
   const { result, reset } = useAnalysis();
@@ -224,6 +225,10 @@ export function DashboardPage() {
 
             <div className="lg:col-span-2">
               <StrategiesCard />
+            </div>
+
+            <div className="lg:col-span-2">
+              <AIChatCard />
             </div>
 
             <div className="lg:col-span-2">

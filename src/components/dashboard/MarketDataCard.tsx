@@ -266,11 +266,11 @@ export function MarketDataCard({
 
                   ?
 
-                  t("market_data_live", "Live data")
+                  t("market_data_live", "Latest market data")
 
                   :
 
-                  t("market_data_mock", "Mock data")
+                  t("market_data_mock", "Simulated data")
 
                 }
 

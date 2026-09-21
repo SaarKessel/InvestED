@@ -155,9 +155,15 @@ export async function explainConversationTurn(
     : resolution.language === "en"
       ? "Answer in English."
       : "Answer in the same mixed Hebrew/English style as the user.";
-  const mockAssets = assets.filter((asset) => asset.dataSource === "mock");
+  const mockAssets = assets.filter((asset) => asset.dataSource === "mock" || asset.isMock === true);
   const mockWarning = mockAssets.length > 0
     ? `WARNING: the market data for ${mockAssets.map((asset) => asset.symbol).join(", ")} is SIMULATED (mock) because the live market-data provider was unavailable. Never present these prices, RSI, or volatility values as current real market data; state clearly that they are simulated values.`
+    : null;
+  const provenanceInstruction = "Every asset carries its dataSource, freshness, and timestamp. Describe market values as the latest available data and mention their source or timestamp when relevant; never describe them as live or real-time quotes.";
+  // The in-session investor profile is private context. Only include it
+  // when this turn explicitly asks for a profile-fit assessment.
+  const profileForPrompt = resolution.intent === "investor_profile_fit"
+    ? resolution.investorProfileContext
     : null;
 
   const prompt = [
@@ -166,9 +172,10 @@ export async function explainConversationTurn(
     `Resolved financial scenario: ${JSON.stringify(resolution.scenario)}.`,
     `Active asset: ${resolution.currentAsset ?? "none"}.`,
     `Comparison set: ${JSON.stringify(resolution.comparisonSet)}.`,
-    `Investor profile supplied by the application: ${JSON.stringify(resolution.investorProfileContext)}.`,
+    `Investor profile supplied by the application: ${JSON.stringify(profileForPrompt)}.`,
     `Market analysis supplied by the market-data layer: ${JSON.stringify(assets)}.`,
     mockWarning,
+    provenanceInstruction,
     `Rule-based result: ${JSON.stringify({ investor: result.investor, riskScore: result.riskScore, projection: result.projection })}.`,
     "Explain only the supplied facts. Never invent market data or an investor profile.",
   ].filter((line): line is string => line !== null).join("\n");

@@ -339,12 +339,16 @@ export interface AnalysisResult {
   profileText: string;
 
   conversation?: {
-    intent: "financial_projection" | "asset_analysis" | "investor_profile_fit" | "comparison" | "general";
+    intent: "financial_projection" | "asset_analysis" | "investor_profile_fit" | "comparison" | "educational_question" | "strategy_question" | "general";
     language: "he" | "en" | "mixed";
     currentAsset: string | null;
     comparisonSet: string[];
     inheritedFromContext: string[];
-    assetAnalyses: { symbol: string; price: number; changePercent: number; volatilityPct: number; rsi: number | null }[];
+    assetAnalyses: AssetAnalysis[];
+    dataSources: MarketDataSource[];
+    dataFreshness: MarketDataFreshness[];
+    profileContextUsed: boolean;
+    calculationUsed: boolean;
   };
 
   flags: ProfileFlags;
@@ -437,17 +441,56 @@ export interface CandleDatum {
 
   price: number;
 
+  volume?: number | null;
+
 }
+
+/** Alias used by the market-data layer for the same price point. */
+export type MarketPricePoint = CandleDatum;
 
 
 /**
- * Machine-readable origin of market data. "yahoo_finance" means the
- * values came from the live Yahoo Finance proxy (/api/market-quote);
- * "mock" means they are simulated fallback values.
+ * Machine-readable origin of market data. "alpha_vantage" and
+ * "yahoo_finance" mean the values came from a real market-data
+ * provider (via the /api/market-quote provider router); "mock" means
+ * they are simulated fallback values and must never be presented as
+ * real market data.
  */
 export type MarketDataSource =
+  | "alpha_vantage"
   | "yahoo_finance"
   | "mock";
+
+export type MarketAssetType =
+  | "stock"
+  | "etf"
+  | "fund"
+  | "index"
+  | "unknown";
+
+export type MarketStatus =
+  | "open"
+  | "closed"
+  | "pre_market"
+  | "after_hours"
+  | "unknown";
+
+/**
+ * Truthful freshness classification, always derived from real
+ * timestamps (never fabricated):
+ * - "current": provider timestamp within the last few minutes
+ * - "recent": provider timestamp older, but within the last days
+ *   (e.g. market closed, weekend)
+ * - "stale": real data too old to call recent
+ * - "simulated": mock data
+ * - "unavailable": no data at all
+ */
+export type MarketDataFreshness =
+  | "current"
+  | "recent"
+  | "stale"
+  | "simulated"
+  | "unavailable";
 
 export interface MarketAsset {
 
@@ -455,14 +498,41 @@ export interface MarketAsset {
 
   name: string;
 
+  assetType?: MarketAssetType;
+
   price: number;
 
+  previousClose?: number | null;
+
+  change?: number | null;
+
   changePercent: number;
+
+  currency?: string | null;
+
+  volume?: number | null;
+
+  marketStatus?: MarketStatus;
 
   history: CandleDatum[];
 
   /** Origin of this asset's data; absent only in legacy fixtures. */
   dataSource?: MarketDataSource;
+
+  /**
+   * The provider's own timestamp for this data (ISO string), when
+   * the provider supplies one. Null when unknown.
+   */
+  timestamp?: string | null;
+
+  /** Freshness derived from real timestamps only. */
+  freshness?: MarketDataFreshness;
+
+  /**
+   * True only for simulated fallback data. Absent/false means real
+   * provider data. Unknown provenance is treated as mock downstream.
+   */
+  isMock?: boolean;
 
 }
 
@@ -486,6 +556,19 @@ export interface AssetAnalysis {
 
   /** Always known for real orchestration assets. */
   dataSource: MarketDataSource;
+
+  /** True only for simulated fallback data; unknown provenance is mock. */
+  isMock?: boolean;
+
+  /** Provider timestamp for the underlying data (ISO), when known. */
+  timestamp?: string | null;
+
+  /** Truthful freshness classification, when known. */
+  freshness?: MarketDataFreshness;
+
+  currency?: string | null;
+
+  marketStatus?: MarketStatus;
 
 }
 

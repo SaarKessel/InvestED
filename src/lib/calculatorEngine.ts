@@ -400,6 +400,10 @@ function detectInitialAmount(text: string): number {
 
     /(?:initial investment|starting capital|initial capital)\s*(?:of|is|:)?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?/i,
 
+    // Explicit lump sum with a horizon. The horizon/upfront lookahead keeps
+    // monthly "invest X per month" phrases in the monthly parser.
+    /(?:if\s+i\s+|i\s+)?invest\s+(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪|usd|dollars?)?\s*(?=for\s+\d+\s*years?|over\s+\d+\s*years?|initially\b|upfront\b)/i,
+
     /(?:want to|planning to|going to|would like to)\s+invest\s+(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?\s*(?:initially|upfront|as a start)?\b/i,
 
     /(?:have|got)\s+(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?\s*(?:to invest|to start|available)?\b/i,
@@ -502,6 +506,10 @@ function detectInitialAmount(text: string): number {
     /(?:יש לי|יש ברשותי|ברשותי|קיים לי|מחזיק|השקעתי)\s*(?:היום|כיום|כרגע)?\s*(?:הון של|הון בסך|סכום של|סכום)?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון|thousand|million)?/i,
 
     /(?:initial investment|starting capital|initial capital)\s*(?:of|is)?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?/i,
+
+    // Explicit lump sum with a horizon. The horizon/upfront lookahead keeps
+    // monthly "invest X per month" phrases in the monthly parser.
+    /(?:if\s+i\s+|i\s+)?invest\s+(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪|usd|dollars?)?\s*(?=for\s+\d+\s*years?|over\s+\d+\s*years?|initially\b|upfront\b)/i,
 
     /(?:want to|planning to|going to|would like to)\s+invest\s+(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?\s*(?:initially|upfront|as a start)?\b/i,
 

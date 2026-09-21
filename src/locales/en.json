@@ -296,8 +296,8 @@
   "learning_roadmap_title": "Personal Learning Track",
   "market_data_title": "Market Charts and Data",
   "market_data_subtitle": "Assets based on your interests",
-  "market_data_live": "Live data",
-  "market_data_mock": "Mock data",
+  "market_data_live": "Latest market data",
+  "market_data_mock": "Simulated data",
   "market_data_empty": "No market data available to display right now.",
   "market_data_disclaimer": "For educational purposes only — not a recommendation to buy or sell any asset.",
   "portfolio_allocation_title": "Recommended Portfolio Allocation 📊",
@@ -824,5 +824,12 @@
   "scenario_history_header": "Investment History",
   "calc_empty_state_title": "Describe an investment scenario to generate your projection.",
   "calc_empty_state_subtitle": "Your simulation, growth analysis, and AI insights will appear here after you analyze a scenario.",
-  "calc_currency_label": "Currency"
+  "calc_currency_label": "Currency",
+  "copilot_header": "InvestED AI Copilot",
+  "copilot_subtitle": "AI-powered financial intelligence connected to InvestED's engines",
+  "copilot_empty": "Ask about a calculation, market asset, comparison, your profile, or a financial concept.",
+  "copilot_input": "Ask InvestED",
+  "copilot_placeholder": "Ask InvestED...",
+  "copilot_send": "Send",
+  "copilot_error": "The Copilot could not complete that request. Please try again."
 }
