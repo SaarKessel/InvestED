@@ -21,6 +21,7 @@ const AICopilotPage = lazy(() => import("@/pages/AICopilotPage"));
 const TriviaPage = lazy(() => import("@/pages/TriviaPage"));
 const NewsPage = lazy(() => import("@/pages/NewsPage"));
 const SimulationPage = lazy(() => import("@/pages/SimulationPage"));
+const LearnPage = lazy(() => import("@/pages/LearnPage"));
 const DataControlsPage = lazy(() => import("@/pages/DataControlsPage"));
 
 export default function App() {
@@ -40,6 +41,7 @@ export default function App() {
               <Route path="/trivia" element={<Suspense fallback={null}><TriviaPage /></Suspense>} />
               <Route path="/news" element={<Suspense fallback={null}><NewsPage /></Suspense>} />
               <Route path="/simulation" element={<Suspense fallback={null}><SimulationPage /></Suspense>} />
+              <Route path="/learn" element={<Suspense fallback={null}><LearnPage /></Suspense>} />
               <Route
                 path="/strategy-lab"
                 element={
