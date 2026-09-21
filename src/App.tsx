@@ -18,6 +18,9 @@ import { NotFoundPage } from "@/pages/NotFoundPage";
 const StrategyLabPage = lazy(() => import("@/pages/StrategyLabPage"));
 const AssetResearchPage = lazy(() => import("@/pages/AssetResearchPage"));
 const AICopilotPage = lazy(() => import("@/pages/AICopilotPage"));
+const TriviaPage = lazy(() => import("@/pages/TriviaPage"));
+const NewsPage = lazy(() => import("@/pages/NewsPage"));
+const SimulationPage = lazy(() => import("@/pages/SimulationPage"));
 const DataControlsPage = lazy(() => import("@/pages/DataControlsPage"));
 
 export default function App() {
@@ -34,6 +37,9 @@ export default function App() {
               <Route path="/calculator" element={<CalculatorPage />} />
               <Route path="/research" element={<Suspense fallback={null}><AssetResearchPage /></Suspense>} />
               <Route path="/chat" element={<Suspense fallback={null}><AICopilotPage /></Suspense>} />
+              <Route path="/trivia" element={<Suspense fallback={null}><TriviaPage /></Suspense>} />
+              <Route path="/news" element={<Suspense fallback={null}><NewsPage /></Suspense>} />
+              <Route path="/simulation" element={<Suspense fallback={null}><SimulationPage /></Suspense>} />
               <Route
                 path="/strategy-lab"
                 element={

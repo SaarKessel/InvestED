@@ -15,6 +15,9 @@ import {
 } from "lucide-react";
 
 import { Layout } from "@/components/layout/Layout";
+import { TickerTape } from "@/components/TickerTape";
+import { AINewsSection } from "@/components/news/AINewsSection";
+import { FlaskConical } from "lucide-react";
 import { Button, Card, CardContent } from "@/components/ui/primitives";
 import { useLanguage } from "@/context/languageContext";
 
@@ -214,6 +217,12 @@ export function LandingPage() {
       </section>
 
       {/* =========================================================
+          MARKET TICKER
+      ========================================================= */}
+
+      <TickerTape />
+
+      {/* =========================================================
           FEATURES
       ========================================================= */}
 
@@ -304,6 +313,67 @@ export function LandingPage() {
               </CardContent>
             </Card>
           </motion.div>
+        </div>
+      </section>
+
+      {/* =========================================================
+          AI NEWS
+      ========================================================= */}
+
+      <AINewsSection />
+
+      {/* =========================================================
+          PLAY / PRACTICE (trivia + simulation)
+      ========================================================= */}
+
+      <section className="border-t border-border/60 bg-muted/30 py-24">
+        <div className="container">
+          <div className="mb-14 text-center">
+            <span className="mb-3 inline-block rounded-full border border-primary/15 bg-primary/5 px-3 py-1.5 text-xs font-bold text-primary">
+              {t("play_section_tag")}
+            </span>
+            <h2 className="font-display text-3xl font-bold text-foreground md:text-4xl">
+              {t("play_section_title")}
+            </h2>
+            <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
+              {t("play_section_subtitle")}
+            </p>
+          </div>
+
+          <div className="mx-auto grid max-w-4xl gap-5 sm:grid-cols-2">
+            {[
+              {
+                to: "/trivia",
+                icon: Brain,
+                title: t("trivia_card_title"),
+                desc: t("trivia_card_desc"),
+                cta: t("trivia_card_cta"),
+              },
+              {
+                to: "/simulation",
+                icon: FlaskConical,
+                title: t("sim_card_title"),
+                desc: t("sim_card_desc"),
+                cta: t("sim_card_cta"),
+              },
+            ].map((card) => (
+              <Link key={card.to} to={card.to}>
+                <Card className="group h-full transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+                  <CardContent className="flex h-full flex-col p-7">
+                    <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                      <card.icon className="h-5 w-5" />
+                    </div>
+                    <h3 className="font-display text-lg font-bold text-foreground">{card.title}</h3>
+                    <p className="mt-2 flex-1 text-sm leading-relaxed text-muted-foreground">{card.desc}</p>
+                    <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-semibold text-primary">
+                      {card.cta}
+                      <ArrowIcon className={`h-4 w-4 transition-transform duration-200 ${arrowHoverClass}`} />
+                    </span>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
+          </div>
         </div>
       </section>
 

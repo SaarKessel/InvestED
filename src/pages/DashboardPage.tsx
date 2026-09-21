@@ -30,7 +30,7 @@ import { PortfolioCard } from "@/components/dashboard/PortfolioCard";
 import { MarketDataCard } from "@/components/dashboard/MarketDataCard";
 import { ComparisonCard } from "@/components/dashboard/ComparisonCard";
 import { ConceptsCard, MistakesCard, RoadmapCard } from "@/components/dashboard/LearningCards";
-import { QuizCard } from "@/components/dashboard/QuizCard";
+import { TriviaPromoCard } from "@/components/dashboard/TriviaPromoCard";
 import { GoalPlannerCard } from "@/components/GoalPlannerCard";
 import { DashboardProductNav, DashboardUnavailableModules } from "@/components/dashboard/DashboardProductNav";
 
@@ -265,7 +265,7 @@ export function DashboardPage() {
             </div>
 
             <div className="lg:col-span-2">
-              <QuizCard />
+              <TriviaPromoCard />
             </div>
           </motion.div>
 

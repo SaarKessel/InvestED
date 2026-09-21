@@ -319,3 +319,22 @@
 :where(button,[role="button"]){ touch-action: manipulation; }
 @media (prefers-reduced-motion: reduce) { *,*::before,*::after { scroll-behavior:auto!important; animation-duration:.01ms!important; animation-iteration-count:1!important; transition-duration:.01ms!important; } }
 @media (max-width: 640px) { .container { padding-inline: 1rem; } }
+
+/* Market ticker marquee (Fox News style) */
+@keyframes ticker-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.ticker-tape {
+  animation: ticker-scroll 45s linear infinite;
+}
+.ticker-tape:hover {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticker-tape {
+    animation: none;
+    flex-wrap: wrap;
+    white-space: normal;
+  }
+}

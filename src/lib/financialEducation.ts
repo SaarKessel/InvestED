@@ -570,7 +570,32 @@ export function explainFinancialConcepts(message: string, language: Conversation
   return language === "en" ? matches[0].en : matches[0].he;
 }
 
+
+// ---------------------------------------------------------------------------
+// Special-question detectors (tricky-question honesty)
+//
+// Free-form chats attract prediction requests ("will TSLA go up tomorrow?")
+// and guarantee requests ("a safe investment with high returns"). Both are
+// detected here so the copilot can answer honestly instead of implying an
+// answer it cannot support.
+// ---------------------------------------------------------------------------
+
+const PREDICTION_RE =
+  /\bwill\b.*\b(go up|rise|rally|fall|drop|crash|go down|recover)\b|\bpredict\b|\bforecast\b|\bprice target\b|תחזית|יעלה|יירד|ירד\?|מה\s+יהיה|מה\s+תהיה|צפוי\s+ל/i;
+
+export function isPredictionQuestion(message: string): boolean {
+  return PREDICTION_RE.test(message);
+}
+
+const GUARANTEE_RE =
+  /\bguarantee(?:d|s)?\b|\brisk[ -]?free\b|safe.{0,20}high.{0,10}return|מובטח|בטוח.{0,20}תשואה|תשואה.{0,20}מובטחת|בלי\s+סיכון|ללא\s+סיכון/i;
+
+export function isGuaranteeQuestion(message: string): boolean {
+  return GUARANTEE_RE.test(message);
+}
+
 const HOLDING_PATTERNS = [
+  /(?:^|[\s,(])([\d,.]+)\s+([A-Z][A-Z0-9.-]{0,9})\s+(?:shares?|units?|מניות|יחידות)\b/i,
   /(?:יש\s+לי|מחזיק(?:ה)?(?:\s+ב)?)\s*([\d,.]+)\s*(?:מניות|יחידות)(?:\s*(?:של|ב)[-\s]*([A-Z][A-Z0-9.-]{0,9}))?/i,
   /([\d,.]+)\s*(?:מניות|יחידות)\s*(?:של|ב)?\s*([A-Z][A-Z0-9.-]{0,9})/i,
   /(?:i\s+(?:have|own|hold)|my)\s*([\d,.]+)\s*(?:shares?|units?)\s*(?:of|in)?\s*([A-Z][A-Z0-9.-]{0,9})?/i,
@@ -620,27 +645,39 @@ export interface PurchasePowerResult extends PurchasePowerRequest {
 }
 
 const PURCHASE_PATTERNS = [
-  /(?:יש\s+לי|עם)\s*([\d,.]+)\s*(אלף|מיליון)?\s*(שקל|ש["״']?ח|ILS|דולר|USD|יורו|EUR|פאונד|GBP).*?(?:כמה|how many).*?(?:מניות|יחידות|shares?|units?).*?([A-Z][A-Z0-9.-]{0,9})/i,
-  /(?:i\s+have|with)\s*([\d,.]+)\s*(thousand|million)?\s*(ILS|NIS|USD|dollars?|EUR|euros?|GBP|pounds?).*?(?:how many).*?(?:shares?|units?).*?([A-Z][A-Z0-9.-]{0,9})/i,
+  // Statement-first: "יש לי 10,000 דולר, כמה מניות של VOO אפשר לקנות?"
+  /(?:יש\s+לי|עם)\s*(?<amount>[\d,.]+)\s*(?<multiplier>אלף|מיליון)?\s*(?<currency>שקל|ש["״']?ח|ILS|NIS|דולר|USD|יורו|EUR|פאונד|GBP).*?(?:כמה|how many).*?(?:מניות|יחידות|shares?|units?).*?(?<symbol>[A-Z][A-Z0-9.-]{0,9})/i,
+  /(?:i\s+have|with)\s*(?<amount>[\d,.]+)\s*(?<multiplier>thousand|million)?\s*(?<currency>ILS|NIS|USD|dollars?|EUR|euros?|GBP|pounds?).*?(?:how many).*?(?:shares?|units?).*?(?<symbol>[A-Z][A-Z0-9.-]{0,9})/i,
+  // Question-first: "כמה מניות של VOO אפשר לקנות ב-10,000 דולר?"
+  /כמה\s*(?:מניות|יחידות)\s*(?:של|ב)\s*(?<symbol>[A-Z][A-Z0-9.-]{0,9})\s*.*?(?:לקנות|אקנה|קונה)\s*(?:ב|עם|באמצעות)?\s*[-–—]?\s*(?<amount>[\d,.]+)\s*(?<multiplier>אלף|מיליון)?\s*(?<currency>שקלים|שקל|ש["״']?ח|₪|ILS|NIS|דולרים|דולר|USD|יורו|EUR|פאונד|GBP)/i,
+  // Question-first English: "how many VOO shares can I buy with $10,000?"
+  /how\s+many\s+(?:(?:shares?|units?)\s+(?:of\s+)?)?(?<symbol>[A-Z][A-Z0-9.-]{0,9})\s+(?:(?:shares?|units?)\s+)?(?:can|could)\s+(?:i|we)\s+(?:buy|get|afford)\s+(?:with|for)\s*\$?\s*(?<amount>[\d,.]+)\s*(?<multiplier>thousand|million)?\s*(?<currency>ILS|NIS|USD|dollars?|EUR|euros?|GBP|pounds?)?/i,
 ];
 
 function currencyCode(raw: string): PurchasePowerRequest["sourceCurrency"] | null {
   if (/שקל|ש["״']?ח|ILS|NIS/i.test(raw)) return "ILS";
-  if (/דולר|USD|dollars?/i.test(raw)) return "USD";
+  if (/דולר|USD|dollars?|\$/i.test(raw)) return "USD";
   if (/יורו|EUR|euros?/i.test(raw)) return "EUR";
   if (/פאונד|GBP|pounds?/i.test(raw)) return "GBP";
   return null;
 }
 
+const PURCHASE_SYMBOL_STOPWORDS = new Set(["AT", "THE", "OF", "IN", "ON", "AN", "TO", "A", "I", "CAN", "HOW", "MANY", "BUY", "WITH", "FOR"]);
+
 export function parsePurchasePowerRequest(message: string): PurchasePowerRequest | null {
   for (const pattern of PURCHASE_PATTERNS) {
     const match = message.match(pattern);
-    if (!match) continue;
-    const multiplier = /אלף|thousand/i.test(match[2] ?? "") ? 1_000 : /מיליון|million/i.test(match[2] ?? "") ? 1_000_000 : 1;
-    const amount = Number(match[1].replace(/,/g, "")) * multiplier;
-    const sourceCurrency = currencyCode(match[3]);
+    if (!match?.groups) continue;
+    const rawSymbol = match.groups.symbol?.toUpperCase().replace(/\.+$/, "") ?? "";
+    if (!rawSymbol || PURCHASE_SYMBOL_STOPWORDS.has(rawSymbol)) continue;
+    const multiplierRaw = match.groups.multiplier ?? "";
+    const multiplier = /אלף|thousand/i.test(multiplierRaw) ? 1_000 : /מיליון|million/i.test(multiplierRaw) ? 1_000_000 : 1;
+    const amount = Number((match.groups.amount ?? "").replace(/,/g, "")) * multiplier;
+    // A bare "$" in the matched text counts as USD; otherwise a currency word is required.
+    const currencyRaw = match.groups.currency ?? (/\$\s*\d|\d[\d,.]*\s*\$/.test(match[0]) ? "USD" : "");
+    const sourceCurrency = currencyCode(currencyRaw);
     if (!sourceCurrency || !Number.isFinite(amount) || amount <= 0) return null;
-    return { amount, sourceCurrency, symbol: match[4].toUpperCase().replace(/\.+$/, "") };
+    return { amount, sourceCurrency, symbol: rawSymbol };
   }
   return null;
 }

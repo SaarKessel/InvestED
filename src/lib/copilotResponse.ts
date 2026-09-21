@@ -2,7 +2,7 @@ import type { AnalysisResult, AssetAnalysis, MarketDataFreshness, MarketDataSour
 import type { ClarificationRequest, ConversationIntent, ConversationLanguage, TurnResolution } from "./conversationContext";
 import type { AssetResearch } from "./research/assetResearchEngine";
 import type { StrategyComparisonResult, StrategyExplanation, StrategyMarketExample } from "./strategy/strategyEngine";
-import { explainFinancialConcepts, type HoldingValuation, type PurchasePowerResult } from "./financialEducation";
+import { explainFinancialConcepts, isGuaranteeQuestion, isPredictionQuestion, type HoldingValuation, type PurchasePowerResult } from "./financialEducation";
 import type { QAOutcome } from "./financialQA";
 
 export type CopilotDataDependency = "market" | "financial_engine" | "investor_profile" | "strategy_engine";
@@ -61,7 +61,9 @@ function educationalFallback(message: string, language: ConversationLanguage): s
   if (/dollar.?cost|מיצוע/i.test(message)) return he
     ? "מיצוע עלויות הוא השקעת סכום קבוע במרווחי זמן קבועים. כך קונים יותר יחידות כשהמחיר נמוך ופחות כשהוא גבוה, בלי לנסות לתזמן את השוק."
     : "Dollar-cost averaging means investing a fixed amount on a regular schedule. You buy more units when prices are lower and fewer when they are higher, without trying to time the market.";
-  return he ? "אסביר את הנושא במונחים פיננסיים פשוטים ובהקשר חינוכי, בלי להמציא נתונים או לתת הוראת קנייה או מכירה." : "I can explain this in clear financial terms for education, without inventing data or giving a buy/sell instruction.";
+  return he
+    ? "זו שאלה שאין לי עליה מענה מהימן — אני בנויה לחינוך פיננסי: מושגים, חישובים, נתוני שוק והשוואות. שאלו אותי אחת מהאלה."
+    : "That's outside what I can reliably answer — I'm built for financial education: concepts, calculations, market data and comparisons. Ask me one of those.";
 }
 
 function strategyMarketText(examples: StrategyMarketExample[], language: ConversationLanguage): string {
@@ -158,10 +160,41 @@ export function buildCopilotResponse(
   const holdingValuation = qaOutcome?.holdingValuation ?? null;
   const conceptExplanation = explainFinancialConcepts(message, resolution.language);
 
+  // Zero-input financial questions ("give me a guaranteed investment")
+  // must never render as a projection of zeros — ask for real inputs.
+  const noFinancialInputs =
+    resolution.scenario !== null &&
+    resolution.financialParameters.initialInvestment === null &&
+    resolution.financialParameters.monthlyContribution === null &&
+    resolution.financialParameters.years === null &&
+    resolution.financialParameters.annualReturnPct === null;
+
   let text = enhancedText ?? "";
   if (qaOutcome) text = qaOutcome.text;
   else if (resolution.status === "needs_clarification") text = resolution.clarification?.question ?? "";
-  else if (conceptExplanation && !strategyOutput && assets.length === 0) text = conceptExplanation;
+  else if (isGuaranteeQuestion(message)) {
+    text = resolution.language === "en"
+      ? "There is no such thing as a guaranteed high-return investment — a promise like that is a classic fraud red flag. Higher expected return always comes with higher risk. I can explain the risk/return trade-off or walk you through lower-risk options like deposits and bonds."
+      : "אין דבר כזה השקעה בטוחה עם תשואה גבוהה מובטחת — הבטחה כזו היא סימן אזהרה קלאסי להונאה. תשואה צפויה גבוהה יותר מגיעה תמיד עם סיכון גבוה יותר. אני יכולה להסביר את היחס בין סיכון לתשואה או להציג אפשרויות בסיכון נמוך כמו פיקדונות ואג״ח.";
+  } else if (isPredictionQuestion(message)) {
+    const base = resolution.language === "en"
+      ? "I can't predict where prices will go — nobody reliably can, and anyone who claims otherwise is guessing."
+      : "אני לא יכולה לנבא לאן המחירים ילכו — אף אחד לא יכול באופן מהימן, ומי שטוען אחרת מנחש.";
+    const asset = assets[0];
+    if (asset && !asset.isMock && asset.freshness !== "simulated") {
+      text = resolution.language === "en"
+        ? `${base} What I can give you is the latest real data: ${asset.symbol} at ${asset.price.toFixed(2)} ${asset.currency ?? ""} (${asset.changePercent.toFixed(2)}%), from the provider's latest data — which says nothing about tomorrow. I can also explain volatility and risk, or run an educational scenario.`
+        : `${base} מה שכן אפשר לתת זה את הנתון האמיתי האחרון: ${asset.symbol} ב-${asset.price.toFixed(2)} ${asset.currency ?? ""} (${asset.changePercent.toFixed(2)}%), לפי נתון הספק האחרון — והוא לא אומר דבר על מחר. אפשר גם להסביר תנודתיות וסיכון, או להריץ תרחיש לימודי.`;
+    } else {
+      text = resolution.language === "en"
+        ? `${base} I can explain the concepts that actually drive long-term outcomes (diversification, horizon, costs) or run an educational scenario with explicit assumptions.`
+        : `${base} אני כן יכולה להסביר את המושגים שבאמת מניעים תוצאות ארוכות טווח (פיזור, אופק, עלויות) או להריץ תרחיש לימודי עם הנחות מפורשות.`;
+    }
+  } else if (noFinancialInputs) {
+    text = resolution.language === "en"
+      ? "To run that calculation I need the real inputs: how much (one-time and/or monthly), for how many years, and what annual return assumption. For example: '500 ILS a month for 10 years at 7%'."
+      : "כדי להריץ את החישוב אני צריכה את הקלטים האמיתיים: כמה כסף (חד-פעמי ו/או חודשי), לכמה שנים, ובאיזו הנחת תשואה שנתית. למשל: '500 ש״ח בחודש ל-10 שנים ב-7%'.";
+  } else if (conceptExplanation && !strategyOutput && assets.length === 0) text = conceptExplanation;
   else if (!text && marketNeeded && assets.length === 0) text = resolution.language === "en"
     ? "Market data is unavailable right now, so I won't invent a price or indicator. I can still explain the concept without current market values."
     : "נתוני השוק אינם זמינים כרגע, ולכן לא אמציא מחיר או מדד. אפשר עדיין להסביר את המושג בלי ערכי שוק עדכניים.";
@@ -176,7 +209,7 @@ export function buildCopilotResponse(
     text = resolution.language === "en"
       ? `${asset.symbol}: ${simulated ? "simulated value" : "latest available price"} ${asset.price.toFixed(2)} ${asset.currency ?? ""}, change ${asset.changePercent.toFixed(2)}%, RSI ${asset.rsi?.toFixed(1) ?? "unavailable"}, volatility ${asset.volatilityPct.toFixed(2)}%.`
       : `${asset.symbol}: ${simulated ? "ערך מדומה" : "מחיר זמין אחרון"} ${asset.price.toFixed(2)} ${asset.currency ?? ""}, שינוי ${asset.changePercent.toFixed(2)}%, RSI ${asset.rsi?.toFixed(1) ?? "לא זמין"}, תנודתיות ${asset.volatilityPct.toFixed(2)}%.`;
-  } else if (!text && financialNeeded && result) text = resolution.language === "en"
+  } else if (!text && financialNeeded && result && !noFinancialInputs) text = resolution.language === "en"
     ? `Using the financial engine: projected final balance ${money(result.projection.finalBalance, result.projection.currency)} after ${result.scenario?.years} years, from ${money(result.projection.totalContributed, result.projection.currency)} contributed. This is an educational projection based on the stated return assumption.`
     : `לפי המנוע הפיננסי: יתרה חזויה של ${money(result.projection.finalBalance, result.projection.currency)} אחרי ${result.scenario?.years} שנים, מתוך הפקדות של ${money(result.projection.totalContributed, result.projection.currency)}. זו תחזית לימודית המבוססת על הנחת התשואה שנמסרה.`;
   else if (!text && resolution.intent === "investor_profile_fit" && profileUsed) text = resolution.language === "en"
