@@ -15,7 +15,7 @@ function setup(overrides: Partial<Record<string, MarketAsset | null>> = {}) {
 }
 
 describe("Phase 5 central AI Copilot orchestration", () => {
-  it("routes market data and preserves provenance in the final response", async () => { const { deps, fetchAsset } = setup(); const turn = await processAIMessage(createConversationSession(), "What is NVDA doing?", "en", deps); expect(fetchAsset).toHaveBeenCalledWith("NVDA"); expect(turn.response.assets[0].symbol).toBe("NVDA"); expect(turn.response.dataSources).toEqual(["yahoo_finance"]); expect(turn.response.dataFreshness).toEqual(["current"]); expect(turn.response.text).toContain("Source: yahoo finance"); });
+  it("routes market data and preserves provenance in the final response", async () => { const { deps, fetchAsset } = setup(); const turn = await processAIMessage(createConversationSession(), "What is NVDA doing?", "en", deps); expect(fetchAsset).toHaveBeenCalledWith("NVDA"); expect(turn.response.assets[0].symbol).toBe("NVDA"); expect(turn.response.dataSources).toEqual(["yahoo_finance"]); expect(turn.response.dataFreshness).toEqual(["current"]); expect(turn.response.text).not.toMatch(/Source:|מקור:/); });
   it("resolves NVDA to AMD follow-up in the final response", async () => { const session=createConversationSession(); const {deps}=setup(); await processAIMessage(session,"What is NVDA's price?","en",deps); const turn=await processAIMessage(session,"What about AMD?","en",deps); expect(turn.response.assets.map(a=>a.symbol)).toEqual(["AMD"]); });
   it("financial follow-ups use the financial engine and preserve currency", async () => { const session=createConversationSession(); const {deps,fetchAsset}=setup(); await processAIMessage(session,"Calculate 2,000 USD per month for 15 years at 7%.","en",deps); const turn=await processAIMessage(session,"What if I increase it to 3,000?","en",deps); expect(turn.result?.scenario).toMatchObject({monthlyContribution:3000,years:15,currency:"USD"}); expect(turn.response.calculation?.totalContributed).toBe(540000); expect(turn.response.dataDependencies).toEqual(["financial_engine"]); expect(fetchAsset).not.toHaveBeenCalled(); });
   it("preserves financial context when a mixed follow-up adds VTI", async () => { const session=createConversationSession(); const {deps}=setup(); await processAIMessage(session,"Calculate 2,000 ILS per month for 15 years at 7%.","en",deps); const turn=await processAIMessage(session,"What if instead I invest it in VTI?","en",deps); expect(turn.resolution.currentAsset).toBe("VTI"); expect(turn.resolution.financialParameters).toMatchObject({monthlyContribution:2000,years:15,currency:"ILS",annualReturnPct:7}); expect(turn.response.dataDependencies).toContain("market"); });
@@ -146,8 +146,8 @@ describe("Copilot profile privacy", () => {
     expect(fetchAsset).toHaveBeenCalledWith("TSLA");
     expect(turn.response.holdingValuation?.total).toBeCloseTo(49_799.75, 8);
     expect(turn.response.text).toContain("49,799.75");
-    expect(turn.response.text).toContain("מקור: yahoo finance");
-    expect(turn.response.text).toContain("2026-09-21T07:00:00Z");
+    expect(turn.response.text).not.toMatch(/מקור|עדכניות|חותמת זמן|Source:/);
+    expect(turn.response.dataSources).toContain("yahoo_finance");
   });
 
   it("refuses to value holdings from simulated fallback data", async () => {
@@ -168,7 +168,8 @@ describe("Copilot profile privacy", () => {
     expect(turn.response.purchasePower?.wholeShares).toBe(612);
     expect(turn.response.text).toContain("מניות שלמות");
     expect(turn.response.text).toContain("עמלות מסחר");
-    expect(turn.response.text).toContain("מקור מט");
+    expect(turn.response.text).not.toMatch(/מקור|עדכניות|חותמת זמן|Source:/);
+    expect(turn.response.dataSources).toContain("yahoo_finance");
   });
 
 });

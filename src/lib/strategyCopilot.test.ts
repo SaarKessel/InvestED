@@ -96,7 +96,7 @@ describe("Phase 6 Copilot strategy routing", () => {
     const withMarket = await processAIMessage(session, "Show me market examples and prices for index investing", "en", deps);
     expect(withMarket.response.strategies).toEqual(["long-term-index"]);
     expect(withMarket.response.assets.length).toBeGreaterThan(0);
-    expect(withMarket.response.text).toContain("Source: yahoo finance");
+    expect(withMarket.response.text).not.toMatch(/Source:|מקור:/);
     expect(withMarket.response.dataSources).toContain("yahoo_finance");
   });
 

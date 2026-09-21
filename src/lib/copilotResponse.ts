@@ -2,7 +2,8 @@ import type { AnalysisResult, AssetAnalysis, MarketDataFreshness, MarketDataSour
 import type { ClarificationRequest, ConversationIntent, ConversationLanguage, TurnResolution } from "./conversationContext";
 import type { AssetResearch } from "./research/assetResearchEngine";
 import type { StrategyComparisonResult, StrategyExplanation, StrategyMarketExample } from "./strategy/strategyEngine";
-import { explainFinancialConcept, parseHoldingRequest, valueHolding, type HoldingValuation, type PurchasePowerResult } from "./financialEducation";
+import { explainFinancialConcepts, type HoldingValuation, type PurchasePowerResult } from "./financialEducation";
+import type { QAOutcome } from "./financialQA";
 
 export type CopilotDataDependency = "market" | "financial_engine" | "investor_profile" | "strategy_engine";
 
@@ -43,15 +44,6 @@ function money(value: number, currency: string): string {
   return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value) + ` ${currency}`;
 }
 
-function marketProvenance(asset: AssetAnalysis, language: ConversationLanguage): string {
-  const source = asset.dataSource === "mock" ? "simulated" : asset.dataSource.replace("_", " ");
-  const freshness = asset.freshness ?? (asset.isMock ? "simulated" : "unavailable");
-  const when = asset.timestamp ? `, ${asset.timestamp}` : "";
-  return language === "en"
-    ? `Source: ${source}; freshness: ${freshness}${when}.`
-    : `מקור: ${source}; עדכניות: ${freshness}${when}.`;
-}
-
 function educationalFallback(message: string, language: ConversationLanguage): string {
   const he = language !== "en";
   if (/\betf\b/i.test(message)) return he
@@ -81,11 +73,10 @@ function strategyMarketText(examples: StrategyMarketExample[], language: Convers
         ? `${example.symbol}: market data unavailable right now (no value invented).`
         : `${example.symbol}: נתוני השוק אינם זמינים כרגע (לא הומצא ערך).`;
     }
-    const source = (example.dataSource ?? "unknown").replace("_", " ");
-    const freshness = example.freshness ?? "unavailable";
+    const simulated = example.isMock || example.freshness === "simulated";
     return en
-      ? `${example.symbol}: latest available ${example.price?.toFixed(2)} (${(example.changePercent ?? 0).toFixed(2)}%). Source: ${source}; freshness: ${freshness}.`
-      : `${example.symbol}: ערך זמין אחרון ${example.price?.toFixed(2)} (${(example.changePercent ?? 0).toFixed(2)}%). מקור: ${source}; עדכניות: ${freshness}.`;
+      ? `${example.symbol}: ${simulated ? "simulated value" : "latest available"} ${example.price?.toFixed(2)} (${(example.changePercent ?? 0).toFixed(2)}%).`
+      : `${example.symbol}: ${simulated ? "ערך מדומה" : "ערך זמין אחרון"} ${example.price?.toFixed(2)} (${(example.changePercent ?? 0).toFixed(2)}%).`;
   });
   const header = en ? "Market examples (educational): " : "דוגמאות מהשוק (ללמידה): ";
   return header + parts.join(" ");
@@ -151,7 +142,7 @@ export function buildCopilotResponse(
   assets: AssetAnalysis[],
   enhancedText?: string | null,
   strategyOutput?: StrategyCopilotPayload | null,
-  purchasePower: PurchasePowerResult | null = null
+  qaOutcome: QAOutcome | null = null
 ): CopilotResponse {
   const marketNeeded = assets.length > 0 || resolution.currentAsset !== null || resolution.comparisonSet.length > 0;
   const financialNeeded = resolution.scenario !== null;
@@ -164,49 +155,27 @@ export function buildCopilotResponse(
   const dataSources = [...new Set(assets.map((asset) => asset.dataSource))];
   const dataFreshness = [...new Set(assets.map((asset) => asset.freshness ?? (asset.isMock ? "simulated" : "unavailable")))];
 
-  const holdingRequest = parseHoldingRequest(message);
-  const holdingValuation = holdingRequest ? valueHolding(holdingRequest, assets[0]) : null;
-  const conceptExplanation = explainFinancialConcept(message, resolution.language);
-  const en = resolution.language === "en";
+  const holdingValuation = qaOutcome?.holdingValuation ?? null;
+  const conceptExplanation = explainFinancialConcepts(message, resolution.language);
 
   let text = enhancedText ?? "";
-  if (resolution.status === "needs_clarification") text = resolution.clarification?.question ?? "";
-  else if (purchasePower?.available) {
-    const a = purchasePower.asset!;
-    const fx = purchasePower.fx;
-    const source = a.dataSource.replace("_", " ");
-    const fxSource = fx?.dataSource.replace("_", " ");
-    text = en
-      ? `With ${purchasePower.amount.toLocaleString("en-US")} ${purchasePower.sourceCurrency}: ${purchasePower.amount.toLocaleString("en-US")} ÷ ${purchasePower.fxRate?.toFixed(4)} = ${purchasePower.convertedBudget?.toLocaleString("en-US", { maximumFractionDigits: 2 })} ${purchasePower.assetCurrency}; then ÷ ${purchasePower.assetPrice?.toFixed(2)} per ${purchasePower.symbol} share. You can buy ${purchasePower.wholeShares?.toLocaleString("en-US")} whole shares, leaving about ${purchasePower.residualAssetCurrency?.toFixed(2)} ${purchasePower.assetCurrency} (${purchasePower.residualSourceCurrency?.toFixed(2)} ${purchasePower.sourceCurrency}). This excludes brokerage fees, FX spread, taxes, and fractional shares. Asset source: ${source}; freshness: ${a.freshness}; timestamp: ${a.timestamp ?? "unavailable"}.${fx ? ` FX source: ${fxSource}; freshness: ${fx.freshness}; timestamp: ${fx.timestamp ?? "unavailable"}.` : ""} Educational calculation, not investment advice.`
-      : `עם ${purchasePower.amount.toLocaleString("he-IL")} ${purchasePower.sourceCurrency}: ${purchasePower.amount.toLocaleString("he-IL")} ÷ ${purchasePower.fxRate?.toFixed(4)} = ${purchasePower.convertedBudget?.toLocaleString("he-IL", { maximumFractionDigits: 2 })} ${purchasePower.assetCurrency}; לאחר מכן מחלקים ב-${purchasePower.assetPrice?.toFixed(2)} למניית ${purchasePower.symbol}. ניתן לקנות ${purchasePower.wholeShares?.toLocaleString("he-IL")} מניות שלמות, ויישארו בערך ${purchasePower.residualAssetCurrency?.toFixed(2)} ${purchasePower.assetCurrency} (${purchasePower.residualSourceCurrency?.toFixed(2)} ${purchasePower.sourceCurrency}). החישוב אינו כולל עמלות מסחר, מרווח המרה, מסים או מניות חלקיות. מקור הנכס: ${source}; עדכניות: ${a.freshness}; חותמת זמן: ${a.timestamp ?? "לא זמינה"}.${fx ? ` מקור מט"ח: ${fxSource}; עדכניות: ${fx.freshness}; חותמת זמן: ${fx.timestamp ?? "לא זמינה"}.` : ""} זהו חישוב לימודי, לא ייעוץ השקעות.`;
-  } else if (purchasePower) {
-    text = en ? "I cannot calculate reliable buying power right now because current asset-price or FX data is unavailable. I will not substitute simulated values. Fees, FX spread, taxes, and fractional-share support also depend on the broker." : "אי אפשר לחשב כרגע כוח קנייה מהימן כי מחיר הנכס או שער המטבע העדכני אינם זמינים. לא אחליף אותם בנתונים מדומים. עמלות, מרווח המרה, מסים ותמיכה במניות חלקיות תלויים גם בברוקר.";
-  } else if (holdingValuation?.available) {
-    const currency = holdingValuation.currency ?? "";
-    const source = holdingValuation.dataSource.replace("_", " ");
-    const timestamp = holdingValuation.timestamp ?? (en ? "provider timestamp unavailable" : "חותמת זמן של הספק אינה זמינה");
-    text = en
-      ? `${holdingValuation.quantity.toLocaleString("en-US")} ${holdingValuation.symbol} shares × ${holdingValuation.price.toFixed(2)} ${currency} = ${holdingValuation.total.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}. This is a point-in-time market valuation before fees and taxes, not investment advice. Source: ${source}; freshness: ${holdingValuation.freshness ?? "unavailable"}; timestamp: ${timestamp}.`
-      : `${holdingValuation.quantity.toLocaleString("he-IL")} מניות ${holdingValuation.symbol} × ${holdingValuation.price.toFixed(2)} ${currency} = ${holdingValuation.total.toLocaleString("he-IL", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}. זהו שווי שוק נקודתי לפני עמלות ומסים, ולא ייעוץ השקעות. מקור: ${source}; עדכניות: ${holdingValuation.freshness ?? "לא זמינה"}; חותמת זמן: ${timestamp}.`;
-  } else if (holdingValuation) {
-    text = en
-      ? `I cannot calculate a trustworthy current value for ${holdingValuation.quantity.toLocaleString("en-US")} ${holdingValuation.symbol || "shares"} because real market data is unavailable right now. I will not use simulated data for a holdings valuation. Please try again later.`
-      : `אי אפשר לחשב כרגע שווי נוכחי מהימן עבור ${holdingValuation.quantity.toLocaleString("he-IL")} מניות ${holdingValuation.symbol}, כי נתוני שוק אמיתיים אינם זמינים. לא אשתמש בנתונים מדומים לחישוב שווי תיק. כדאי לנסות שוב מאוחר יותר.`;
-  } else if (conceptExplanation && !strategyOutput) text = conceptExplanation;
+  if (qaOutcome) text = qaOutcome.text;
+  else if (resolution.status === "needs_clarification") text = resolution.clarification?.question ?? "";
+  else if (conceptExplanation && !strategyOutput && assets.length === 0) text = conceptExplanation;
   else if (!text && marketNeeded && assets.length === 0) text = resolution.language === "en"
     ? "Market data is unavailable right now, so I won't invent a price or indicator. I can still explain the concept without current market values."
     : "נתוני השוק אינם זמינים כרגע, ולכן לא אמציא מחיר או מדד. אפשר עדיין להסביר את המושג בלי ערכי שוק עדכניים.";
   else if (!text && resolution.intent === "comparison" && assets.length >= 2) {
     const mostVolatile = [...assets].sort((a, b) => b.volatilityPct - a.volatilityPct)[0];
     text = resolution.language === "en"
-      ? `${assets.map(a => `${a.symbol}: ${a.changePercent.toFixed(2)}% recent change, ${a.volatilityPct.toFixed(2)}% volatility`).join("; ")}. ${mostVolatile.symbol} is more volatile in the supplied history. ${assets.map(a => marketProvenance(a, resolution.language)).join(" ")}`
-      : `${assets.map(a => `${a.symbol}: שינוי אחרון ${a.changePercent.toFixed(2)}%, תנודתיות ${a.volatilityPct.toFixed(2)}%`).join("; ")}. ${mostVolatile.symbol} תנודתי יותר בהיסטוריה שסופקה. ${assets.map(a => marketProvenance(a, resolution.language)).join(" ")}`;
+      ? `${assets.map(a => `${a.symbol}: ${a.changePercent.toFixed(2)}% recent change, ${a.volatilityPct.toFixed(2)}% volatility`).join("; ")}. ${mostVolatile.symbol} is more volatile in the supplied history. Based on the latest market data available from the provider.`
+      : `${assets.map(a => `${a.symbol}: שינוי אחרון ${a.changePercent.toFixed(2)}%, תנודתיות ${a.volatilityPct.toFixed(2)}%`).join("; ")}. ${mostVolatile.symbol} תנודתי יותר בהיסטוריה שסופקה. לפי נתוני השוק האחרונים הזמינים מהספק.`;
   } else if (!text && assets.length > 0) {
     const asset = assets[0];
     const simulated = asset.isMock || asset.freshness === "simulated";
     text = resolution.language === "en"
-      ? `${asset.symbol}: ${simulated ? "simulated value" : "latest available price"} ${asset.price.toFixed(2)} ${asset.currency ?? ""}, change ${asset.changePercent.toFixed(2)}%, RSI ${asset.rsi?.toFixed(1) ?? "unavailable"}, volatility ${asset.volatilityPct.toFixed(2)}%. ${marketProvenance(asset, resolution.language)}`
-      : `${asset.symbol}: ${simulated ? "ערך מדומה" : "מחיר זמין אחרון"} ${asset.price.toFixed(2)} ${asset.currency ?? ""}, שינוי ${asset.changePercent.toFixed(2)}%, RSI ${asset.rsi?.toFixed(1) ?? "לא זמין"}, תנודתיות ${asset.volatilityPct.toFixed(2)}%. ${marketProvenance(asset, resolution.language)}`;
+      ? `${asset.symbol}: ${simulated ? "simulated value" : "latest available price"} ${asset.price.toFixed(2)} ${asset.currency ?? ""}, change ${asset.changePercent.toFixed(2)}%, RSI ${asset.rsi?.toFixed(1) ?? "unavailable"}, volatility ${asset.volatilityPct.toFixed(2)}%.`
+      : `${asset.symbol}: ${simulated ? "ערך מדומה" : "מחיר זמין אחרון"} ${asset.price.toFixed(2)} ${asset.currency ?? ""}, שינוי ${asset.changePercent.toFixed(2)}%, RSI ${asset.rsi?.toFixed(1) ?? "לא זמין"}, תנודתיות ${asset.volatilityPct.toFixed(2)}%.`;
   } else if (!text && financialNeeded && result) text = resolution.language === "en"
     ? `Using the financial engine: projected final balance ${money(result.projection.finalBalance, result.projection.currency)} after ${result.scenario?.years} years, from ${money(result.projection.totalContributed, result.projection.currency)} contributed. This is an educational projection based on the stated return assumption.`
     : `לפי המנוע הפיננסי: יתרה חזויה של ${money(result.projection.finalBalance, result.projection.currency)} אחרי ${result.scenario?.years} שנים, מתוך הפקדות של ${money(result.projection.totalContributed, result.projection.currency)}. זו תחזית לימודית המבוססת על הנחת התשואה שנמסרה.`;
@@ -237,6 +206,6 @@ export function buildCopilotResponse(
     dataFreshness,
     clarification: resolution.clarification,
     holdingValuation,
-    purchasePower,
+    purchasePower: qaOutcome?.purchasePower ?? null,
   };
 }

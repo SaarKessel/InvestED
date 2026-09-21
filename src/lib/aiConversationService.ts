@@ -10,7 +10,7 @@ import { calculateRsi, calculateVolatility } from "./market/indicators";
 import { researchAsset, type AssetResearch } from "./research/assetResearchEngine";
 import { createOrchestrationPlan, type OrchestrationPlan } from "./intelligence/orchestrator";
 import { buildCopilotResponse, type CopilotResponse, type StrategyCopilotPayload } from "./copilotResponse";
-import { calculatePurchasePower, fxSymbolFor, parsePurchasePowerRequest, type PurchasePowerResult } from "./financialEducation";
+import { planFinancialQA, createQAMemory, type AssetLoader, type QAMemory } from "./financialQA";
 import {
   compareStrategies,
   evaluateEducationalFit,
@@ -48,6 +48,20 @@ const defaultDependencies: AIConversationDependencies = {
   fetchAsset: (symbol) => fetchMarketAssetBySymbol(symbol),
   enhance: tryEnhanceWithOllama,
 };
+
+// Per-session follow-up memory for the deterministic financial Q&A engine
+// ("ועם 500 אלף?" reuses the previous buying-power question). In-memory
+// only, keyed by the session object, so sessions stay isolated.
+const qaMemories = new WeakMap<ConversationSession, QAMemory>();
+
+function qaMemoryFor(session: ConversationSession): QAMemory {
+  let memory = qaMemories.get(session);
+  if (!memory) {
+    memory = createQAMemory();
+    qaMemories.set(session, memory);
+  }
+  return memory;
+}
 
 const STRATEGY_MARKET_EXAMPLE_REQUEST =
   /\b(example|examples|market|price|prices|today|now)\b|דוגמ|שוק|מחיר|היום/i;
@@ -191,6 +205,30 @@ export async function processAIMessage(
   dependencies: AIConversationDependencies = defaultDependencies
 ): Promise<AIConversationTurn> {
   const resolution = session.processTurn(message);
+
+  // Deterministic financial Q&A: calculations, conversions, holdings value
+  // and buying power are answered directly by the financial-QA engine. It
+  // keeps its own per-session follow-up memory, so it can also resolve
+  // follow-ups the conversation layer would otherwise clarify.
+  const effectiveQALanguage = resolution.language === "mixed"
+    ? (applicationLanguage === "he" ? "he" : "en")
+    : resolution.language;
+  const qaPlan = planFinancialQA(message, effectiveQALanguage, qaMemoryFor(session));
+  if (qaPlan) {
+    const loadOne: AssetLoader = async (symbol) =>
+      (await loadAssetsForSymbols([symbol], dependencies.fetchAsset))[0] ?? null;
+    const qaOutcome = await qaPlan.execute(loadOne);
+    return {
+      resolution,
+      result: null,
+      clarification: qaOutcome.clarifying ? qaOutcome.text : null,
+      assetAnalyses: qaOutcome.assets,
+      assetResearch: [],
+      orchestrationPlan: createOrchestrationPlan(resolution),
+      response: buildCopilotResponse(message, resolution, null, qaOutcome.assets, null, null, qaOutcome),
+    };
+  }
+
   if (resolution.status === "needs_clarification") {
     return {
       resolution,
@@ -217,16 +255,6 @@ export async function processAIMessage(
   const assetAnalyses = strategyTurn
     ? strategyTurn.assets
     : analysesFromResearch(assetResearch);
-  const purchaseRequest = parsePurchasePowerRequest(message);
-  let purchasePower: PurchasePowerResult | null = null;
-  if (purchaseRequest) {
-    const asset = assetAnalyses.find((item) => item.symbol === purchaseRequest.symbol);
-    const targetCurrency = asset?.currency ?? null;
-    const pair = targetCurrency ? fxSymbolFor(purchaseRequest.sourceCurrency, targetCurrency) : null;
-    const fxAssets = pair?.symbol ? await loadAssetsForSymbols([pair.symbol], dependencies.fetchAsset) : [];
-    purchasePower = calculatePurchasePower(purchaseRequest, asset, fxAssets[0]);
-  }
-
   const result = buildRuleBasedAnalysis(
     message,
     resolution.language === "mixed" ? applicationLanguage : resolution.language,
@@ -257,8 +285,7 @@ export async function processAIMessage(
       finalResult,
       assetAnalyses,
       enhanced?.conversationSummary ?? null,
-      strategyTurn?.payload ?? null,
-      purchasePower
+      strategyTurn?.payload ?? null
     ),
   };
 }

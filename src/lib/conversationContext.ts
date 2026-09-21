@@ -160,7 +160,7 @@ export function detectConversationLanguage(text: string): ConversationLanguage {
 // Words that look like tickers but are not assets.
 
 const NON_ASSET_TOKENS = new Set([
-  "RSI", "MACD", "EPS", "ETF", "AI",
+  "RSI", "MACD", "EPS", "ETF", "AI", "REIT", "NAV", "IPO", "DCA", "DRIP", "CAGR", "CD", "PE",
   "ILS", "USD", "EUR", "GBP", "JPY",
   "AND", "OR", "THE", "FOR", "NOT", "ALL", "NEW", "NOW",
   "HOW", "WHY", "WHO", "WHAT", "VS",
