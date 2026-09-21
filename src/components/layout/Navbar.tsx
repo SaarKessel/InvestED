@@ -16,6 +16,7 @@ export function Navbar() {
     { to: "/", label: t("nav_home") },
     { to: "/calculator", label: t("nav_calculator") },
     { to: "/strategy-lab", label: t("nav_strategy_lab") },
+    { to: "/research", label: t("nav_research") },
     { to: "/about", label: t("nav_about") },
     { to: "/faq", label: t("nav_faq") },
     { to: "/contact", label: t("nav_contact") },

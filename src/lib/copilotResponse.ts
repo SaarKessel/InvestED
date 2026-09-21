@@ -1,5 +1,6 @@
 import type { AnalysisResult, AssetAnalysis, MarketDataFreshness, MarketDataSource, StrategyFitAssessment, StrategyId } from "@/types";
 import type { ClarificationRequest, ConversationIntent, ConversationLanguage, TurnResolution } from "./conversationContext";
+import type { AssetResearch } from "./research/assetResearchEngine";
 import type { StrategyComparisonResult, StrategyExplanation, StrategyMarketExample } from "./strategy/strategyEngine";
 
 export type CopilotDataDependency = "market" | "financial_engine" | "investor_profile" | "strategy_engine";
@@ -22,6 +23,8 @@ export interface CopilotResponse {
   language: ConversationLanguage;
   intent: ConversationIntent;
   assets: AssetAnalysis[];
+  /** Structured validated research is attached by the orchestrator when available. */
+  assetResearch?: AssetResearch[];
   calculation: AnalysisResult["projection"] | null;
   comparison: AssetAnalysis[] | null;
   strategies: StrategyId[];

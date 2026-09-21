@@ -16,6 +16,7 @@ import { ContactPage } from "@/pages/ContactPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 
 const StrategyLabPage = lazy(() => import("@/pages/StrategyLabPage"));
+const AssetResearchPage = lazy(() => import("@/pages/AssetResearchPage"));
 
 export default function App() {
   return (
@@ -29,6 +30,7 @@ export default function App() {
               <Route path="/start" element={<InputPage />} />
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/calculator" element={<CalculatorPage />} />
+              <Route path="/research" element={<Suspense fallback={null}><AssetResearchPage /></Suspense>} />
               <Route
                 path="/strategy-lab"
                 element={

@@ -7,6 +7,7 @@ import {
 import { buildRuleBasedAnalysis, tryEnhanceWithOllama } from "./analysisService";
 import { fetchMarketAssetBySymbol } from "./marketData";
 import { calculateRsi, calculateVolatility } from "./market/indicators";
+import { researchAsset, type AssetResearch } from "./research/assetResearchEngine";
 import { buildCopilotResponse, type CopilotResponse, type StrategyCopilotPayload } from "./copilotResponse";
 import {
   compareStrategies,
@@ -27,6 +28,7 @@ export interface AIConversationTurn {
   result: AnalysisResult | null;
   clarification: string | null;
   assetAnalyses: AssetAnalysis[];
+  assetResearch: AssetResearch[];
   response: CopilotResponse;
 }
 
@@ -147,17 +149,29 @@ async function buildStrategyPayload(
   };
 }
 
-async function loadAssets(
+async function loadResearch(
   resolution: TurnResolution,
   fetchAsset: AIConversationDependencies["fetchAsset"]
-): Promise<AssetAnalysis[]> {
+): Promise<AssetResearch[]> {
   const symbols = resolution.intent === "comparison"
     ? resolution.comparisonSet
-    : resolution.currentAsset
-      ? [resolution.currentAsset]
-      : [];
-  return loadAssetsForSymbols(symbols, fetchAsset);
+    : resolution.currentAsset ? [resolution.currentAsset] : [];
+  const results = await Promise.all(symbols.map((symbol) =>
+    researchAsset(symbol, { fetchAsset }, resolution.investorProfileContext)
+  ));
+  return results.filter((item): item is AssetResearch => item !== null);
 }
+
+function analysesFromResearch(research: AssetResearch[]): AssetAnalysis[] {
+  return research.map((item) => ({
+    symbol: item.symbol, price: item.quote.price, changePercent: item.quote.changePercent,
+    volatilityPct: item.indicators.volatilityPct.value ?? 0, rsi: item.indicators.rsi14.value,
+    dataSource: item.provenance.source, isMock: item.provenance.isMock,
+    timestamp: item.provenance.timestamp, freshness: item.provenance.freshness,
+    currency: item.quote.currency, marketStatus: item.quote.marketStatus as AssetAnalysis["marketStatus"],
+  }));
+}
+
 
 export function investorProfileFromResult(result: AnalysisResult): InvestorProfileContext {
   return {
@@ -180,6 +194,7 @@ export async function processAIMessage(
       result: null,
       clarification: resolution.clarification?.question ?? null,
       assetAnalyses: [],
+      assetResearch: [],
       response: buildCopilotResponse(message, resolution, null, []),
     };
   }
@@ -192,9 +207,12 @@ export async function processAIMessage(
       ? await buildStrategyPayload(message, resolution, dependencies.fetchAsset)
       : null;
 
+  const assetResearch = strategyTurn
+    ? []
+    : await loadResearch(resolution, dependencies.fetchAsset);
   const assetAnalyses = strategyTurn
     ? strategyTurn.assets
-    : await loadAssets(resolution, dependencies.fetchAsset);
+    : analysesFromResearch(assetResearch);
   const result = buildRuleBasedAnalysis(
     message,
     resolution.language === "mixed" ? applicationLanguage : resolution.language,
@@ -217,6 +235,7 @@ export async function processAIMessage(
     result: finalResult,
     clarification: null,
     assetAnalyses,
+    assetResearch,
     response: buildCopilotResponse(
       message,
       resolution,
