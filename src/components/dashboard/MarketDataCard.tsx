@@ -213,7 +213,7 @@ export function MarketDataCard({
 
                 <span className="text-xs font-bold uppercase tracking-wide">
 
-                  {t("market_data_title", "גרפים ונתוני שוק")}
+                  {t("market_data_title", "Market Charts and Data")}
 
                 </span>
 
@@ -223,7 +223,7 @@ export function MarketDataCard({
 
               <CardTitle className="mt-1 text-xl">
 
-                {t("market_data_subtitle", "נכסים לפי תחומי העניין שלך")}
+                {t("market_data_subtitle", "Assets based on your interests")}
 
               </CardTitle>
 
@@ -266,11 +266,11 @@ export function MarketDataCard({
 
                   ?
 
-                  t("market_data_live", "נתונים חיים")
+                  t("market_data_live", "Live data")
 
                   :
 
-                  t("market_data_mock", "נתונים מדומים")
+                  t("market_data_mock", "Mock data")
 
                 }
 
@@ -658,7 +658,7 @@ export function MarketDataCard({
 
                   <p className="mt-2 text-[11px] text-muted-foreground">
 
-                    {t("market_data_disclaimer", "לצורכי לימוד בלבד — לא המלצה לקנות או למכור נכס.")}
+                    {t("market_data_disclaimer", "For educational purposes only — not a recommendation to buy or sell any asset.")}
 
                   </p>
 

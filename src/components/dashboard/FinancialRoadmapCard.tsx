@@ -17,7 +17,7 @@ export function FinancialRoadmapCard({ stages }: Props) {
     <div className="rounded-2xl bg-white p-6 shadow">
 
       <h2 className="mb-6 text-xl font-bold">
-        {t("roadmap_title", "🛣️ המסלול שלך לעצמאות כלכלית")}
+        {t("roadmap_title", "🛣️ Your Path to Financial Independence")}
       </h2>
 
 

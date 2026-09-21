@@ -71,7 +71,7 @@ export function StockSimulator() {
       if (!scenario.symbol) {
 
         throw new Error(
-          t("stock_simulator_no_symbol", "לא זוהה סימול מניה")
+          t("stock_simulator_no_symbol", "No stock symbol detected")
         );
 
       }
@@ -90,7 +90,7 @@ export function StockSimulator() {
         if (!market) {
 
           throw new Error(
-            t("stock_simulator_no_data", "לא נמצאו נתוני מניה")
+            t("stock_simulator_no_data", "No stock data found")
           );
 
         }
@@ -150,7 +150,7 @@ export function StockSimulator() {
       setError(
         err instanceof Error
           ? err.message
-          : t("stock_simulator_error", "שגיאה בחישוב")
+          : t("stock_simulator_error", "Calculation error")
       );
 
 
@@ -176,7 +176,7 @@ export function StockSimulator() {
           <TrendingUp className="h-5 w-5 text-primary"/>
 
           <h2 className="font-bold text-lg">
-            {t("stock_simulator_title", "סימולטור השקעות מניות")}
+            {t("stock_simulator_title", "Stock Investment Simulator")}
           </h2>
 
         </div>
@@ -191,7 +191,7 @@ export function StockSimulator() {
             setQuery(e.target.value)
           }
 
-          placeholder={t("stock_simulator_placeholder", "לדוגמה: אם הייתי משקיע 100 אלף שקל ב-VOO לפני 10 שנים")}
+          placeholder={t("stock_simulator_placeholder", "e.g.: if I had invested 100,000 ILS in VOO 10 years ago")}
 
           rows={3}
 
@@ -220,8 +220,8 @@ export function StockSimulator() {
           <Calculator className="h-4 w-4"/>
 
           {loading
-            ? t("stock_simulator_btn_loading", "מחשב...")
-            : t("stock_simulator_btn", "חשב סימולציה")
+            ? t("stock_simulator_btn_loading", "Calculating...")
+            : t("stock_simulator_btn", "Run Simulation")
           }
 
         </Button>
@@ -274,7 +274,7 @@ export function StockSimulator() {
               ">
 
                 <p className="text-xs text-muted-foreground">
-                  {t("stock_simulator_investment", "השקעה")}
+                  {t("stock_simulator_investment", "Investment")}
                 </p>
 
 
@@ -299,7 +299,7 @@ export function StockSimulator() {
               ">
 
                 <p className="text-xs text-muted-foreground">
-                  {t("stock_simulator_final", "שווי סופי")}
+                  {t("stock_simulator_final", "Final Value")}
                 </p>
 
 

@@ -1,9 +1,14 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   analyzeFinancialScenarioWithProjection,
   computeProjection,
   ASSET_CLASSES
 } from "@/lib/calculatorEngine";
+import { analyzeFinancialGoal } from "@/lib/goalEngine";
+import {
+  createConversationSession,
+  type ConversationSession,
+} from "@/lib/conversationContext";
 import type { UnifiedFinancialAnalysis } from "@/lib/calculatorEngine";
 import { generateAIInsight } from "@/lib/aiExplanationEngine";
 import { AIInsightCard } from "@/components/AIInsightCard";
@@ -21,32 +26,85 @@ export default function CalculatorPage() {
   const [input, setInput] = useState("");
   const [analysis, setAnalysis] = useState<UnifiedFinancialAnalysis | null>(null);
   const [currency, setCurrency] = useState<string>(DEFAULT_CURRENCY);
+  const [clarification, setClarification] = useState<string | null>(null);
 
+  // Phase 3C: per-page (per-session) conversation context.
+  // In-memory only; lives and dies with this page instance.
+  const sessionRef = useRef<ConversationSession | null>(null);
+  if (!sessionRef.current) {
+    sessionRef.current = createConversationSession();
+  }
 
   function calculate() {
     if (!input.trim()) return;
 
+    const session = sessionRef.current ?? createConversationSession();
+    sessionRef.current = session;
+
+    // The UI currency is only a fallback: explicit current-turn
+    // currency and inherited conversation currency win over it.
+    const resolution = session.processTurn(input, { fallbackCurrency: currency });
+
+    // Missing context: ask for clarification instead of
+    // guessing or silently dropping the question.
+    if (resolution.status === "needs_clarification") {
+      setClarification(resolution.clarification?.question ?? null);
+      return;
+    }
+    setClarification(null);
+
     const result = analyzeFinancialScenarioWithProjection(input, language);
 
+    // Context-resolved scenario (follow-ups inherit unchanged
+    // parameters; explicit current-turn values always win). When the
+    // turn is not financial, the UI selection still outranks the
+    // engine's safe default.
+    const mergedScenario = resolution.scenario ?? { ...result.scenario, currency };
+
+    // Single resolved currency for the whole result:
+    // explicit current-turn > inherited context > UI selection >
+    // engine safe default. The UI state never overwrites it.
+    const resolvedCurrency = mergedScenario.currency ?? currency;
+
     if (
-      !Number.isFinite(result.scenario.initialInvestment) ||
-      !Number.isFinite(result.scenario.monthlyContribution) ||
-      !Number.isFinite(result.scenario.years) ||
-      !Number.isFinite(result.scenario.annualReturnPct)
+      !Number.isFinite(mergedScenario.initialInvestment) ||
+      !Number.isFinite(mergedScenario.monthlyContribution) ||
+      !Number.isFinite(mergedScenario.years) ||
+      !Number.isFinite(mergedScenario.annualReturnPct)
     ) {
       return;
     }
 
+    const projection = computeProjection(
+      mergedScenario.initialInvestment,
+      mergedScenario.monthlyContribution,
+      mergedScenario.years,
+      mergedScenario.annualReturnPct,
+      undefined,
+      resolvedCurrency
+    );
+
+    const goalPlan = (mergedScenario.targetAmount ?? 0) > 0
+      ? analyzeFinancialGoal(
+          mergedScenario.initialInvestment,
+          mergedScenario.targetAmount ?? 0,
+          mergedScenario.years,
+          mergedScenario.annualReturnPct,
+          mergedScenario.monthlyContribution
+        )
+      : undefined;
+
     setAnalysis({
       ...result,
       scenario: {
-        ...result.scenario,
-        currency,
+        ...mergedScenario,
+        currency: resolvedCurrency,
       },
       projection: {
-        ...result.projection,
-        currency,
+        ...projection,
+        currency: resolvedCurrency,
       },
+      goalPlan,
     });
   }
 
@@ -207,6 +265,16 @@ export default function CalculatorPage() {
             </button>
           </div>
         </div>
+
+        {/* Clarification (Phase 3C): shown when a follow-up lacks context */}
+        {clarification && (
+          <div
+            role="status"
+            className="mb-8 rounded-3xl border border-amber-300 bg-amber-50 p-5 text-sm font-medium leading-6 text-amber-900 md:p-6"
+          >
+            {clarification}
+          </div>
+        )}
 
         {/* Empty State */}
         {!scenario && (

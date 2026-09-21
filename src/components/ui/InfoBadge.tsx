@@ -22,7 +22,7 @@ export function InfoBadge({ title, description }: { title?: string; description:
         type="button"
         onClick={() => setOpen((o) => !o)}
         onMouseEnter={() => setOpen(true)}
-        aria-label={t("info_badge_label", "מה הפיצ'ר הזה עושה?")}
+        aria-label={t("info_badge_label", "What does this feature do?")}
         className={cn(
           "flex h-5 w-5 items-center justify-center rounded-full border transition-colors",
           open ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:bg-accent"

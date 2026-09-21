@@ -11,17 +11,17 @@ export function AIInsightCard({ insight }: Props) {
   return (
     <div className="rounded-3xl border border-border bg-card p-6 shadow-soft">
       <h2 className="mb-5 text-2xl font-bold text-foreground">
-        {t("ai_insight_emoji_thinking", "🧠 ניתוח AI של InvestED")}
+        {t("ai_insight_emoji_thinking", "🧠 InvestED AI Analysis")}
       </h2>
 
       <div className="space-y-4">
         <div>
-          <p className="text-sm text-muted-foreground">{t("ai_insight_scenario_label", "תרחיש")}</p>
+          <p className="text-sm text-muted-foreground">{t("ai_insight_scenario_label", "Scenario")}</p>
           <p className="font-bold text-foreground">{insight.headline}</p>
         </div>
 
         <div>
-          <p className="text-sm text-muted-foreground">{t("ai_insight_risk_level_label", "רמת סיכון")}</p>
+          <p className="text-sm text-muted-foreground">{t("ai_insight_risk_level_label", "Risk Level")}</p>
           <p className="text-xl font-bold text-foreground">
             {insight.riskEmoji} {insight.riskLevel}
           </p>

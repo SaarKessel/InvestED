@@ -51,12 +51,12 @@ export function ScenarioHistoryCard({
             >
 
               <p className="font-bold">
-                {t("scenario_history_title", "תרחיש השקעה")}
+                {t("scenario_history_title", "Investment Scenario")}
               </p>
 
 
               <p>
-                {t("scenario_history_investment", "השקעה:")}
+                {t("scenario_history_investment", "Investment:")}
                 ₪
                 {(
                   scenario.data?.scenario?.initialInvestment ??
@@ -67,7 +67,7 @@ export function ScenarioHistoryCard({
 
 
               <p>
-                {t("scenario_history_created", "נוצר:")}
+                {t("scenario_history_created", "Created:")}
                 {new Date(
                   scenario.createdAt
                 ).toLocaleDateString()}
@@ -82,7 +82,7 @@ export function ScenarioHistoryCard({
                   }
                   className="rounded-lg bg-blue-600 px-4 py-2 text-white"
                 >
-                  {t("scenario_history_open", "פתיחה")}
+                  {t("scenario_history_open", "Open")}
                 </button>
 
 
@@ -94,7 +94,7 @@ export function ScenarioHistoryCard({
                     }
                     className="rounded-lg border px-4 py-2 text-red-600"
                   >
-                    {t("scenario_history_delete", "מחיקה")}
+                    {t("scenario_history_delete", "Delete")}
                   </button>
 
                 )}

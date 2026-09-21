@@ -44,11 +44,11 @@ export function InvestmentComparison({
   return (
     <div className="mt-8">
       <h3 className="text-xl font-bold">
-        {t("comparison_title", "השוואת מסלולי השקעה")}
+        {t("comparison_title", "Investment Path Comparison")}
       </h3>
 
       <p className="mt-2 text-sm text-muted-foreground">
-        {t("comparison_subtitle", "אותה השקעה, מסלולים שונים — המחשה של השפעת הנחת התשואה על השווי העתידי.")}
+        {t("comparison_subtitle", "Same investment, different paths — illustrating the impact of return assumptions on future value.")}
       </p>
 
       <div className="mt-5 space-y-3">
@@ -70,20 +70,20 @@ export function InvestmentComparison({
                   </p>
 
                   <p className="text-xs text-muted-foreground">
-                    {t("comparison_annual", "תשואה שנתית משוערת:")}{" "}
+                    {t("comparison_annual", "Estimated annual return:")}{" "}
                     {item.asset.expectedReturnPct}%
                   </p>
                 </div>
 
                 {isBest && (
                   <span className="rounded-full bg-primary px-3 py-1 text-xs text-primary-foreground">
-                    {t("comparison_higher", "שווי עתידי גבוה יותר")}
+                    {t("comparison_higher", "Higher future value")}
                   </span>
                 )}
               </div>
 
               <div className="mt-3 flex justify-between text-sm">
-                <span>{t("comparison_value", "שווי עתידי")}</span>
+                <span>{t("comparison_value", "Future Value")}</span>
 
                 <b>
                   ₪
@@ -92,7 +92,7 @@ export function InvestmentComparison({
               </div>
 
               <div className="mt-1 flex justify-between text-sm">
-                <span>{t("comparison_profit", "רווח")}</span>
+                <span>{t("comparison_profit", "Profit")}</span>
 
                 <b>
                   ₪

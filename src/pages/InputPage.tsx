@@ -9,7 +9,7 @@ import { useLanguage } from "@/context/languageContext";
 
 export function InputPage() {
   const [text, setText] = useState("");
-  const { analyze, isAnalyzing } = useAnalysis();
+  const { analyze, isAnalyzing, clarification } = useAnalysis();
   const { t } = useLanguage();
 
   const navigate = useNavigate();
@@ -63,8 +63,8 @@ export function InputPage() {
     if (!text.trim() || isAnalyzing) return;
 
     try {
-      await analyze(text.trim());
-      navigate("/dashboard");
+      const resolved = await analyze(text.trim());
+      if (resolved) navigate("/dashboard");
     } catch (error) {
       console.error("Analysis error:", error);
     }
@@ -127,6 +127,12 @@ export function InputPage() {
                   </div>
                 ))}
               </div>
+
+              {clarification && (
+                <p role="alert" className="mt-4 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+                  {clarification}
+                </p>
+              )}
 
               <div className="mt-6 flex flex-col items-stretch gap-3 border-t border-border pt-5 sm:flex-row sm:items-center sm:justify-between">
                 <span className="text-xs text-muted-foreground">

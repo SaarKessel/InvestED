@@ -1,5 +1,6 @@
 ﻿import React, {
   createContext,
+  useRef,
   useState
 } from "react";
 
@@ -7,10 +8,8 @@ import type {
   AnalysisResult
 } from "@/types";
 
-import {
-  buildRuleBasedAnalysis,
-  tryEnhanceWithOllama,
-} from "@/lib/analysisService";
+import { createConversationSession, type ConversationSession, type TurnResolution } from "@/lib/conversationContext";
+import { processAIMessage } from "@/lib/aiConversationService";
 
 import { useLanguage } from "@/context/languageContext";
 
@@ -27,9 +26,13 @@ export interface AnalysisContextValue {
 
   analyze: (
     data: string
-  ) => Promise<void>;
+  ) => Promise<boolean>;
 
   reset: () => void;
+
+  clarification: string | null;
+
+  lastResolution: TurnResolution | null;
 
   isAnalyzing: boolean;
 
@@ -64,95 +67,27 @@ export function AnalysisProvider({
 
 
 
-  const [isAnalyzing,setIsAnalyzing] =
-    useState(false);
+  const [isAnalyzing,setIsAnalyzing] = useState(false);
+  const [clarification,setClarification] = useState<string | null>(null);
+  const [lastResolution,setLastResolution] = useState<TurnResolution | null>(null);
+  const sessionRef = useRef<ConversationSession | null>(null);
+  if (!sessionRef.current) sessionRef.current = createConversationSession();
 
-
-
-
-  const analyze = async (
-    data:string
-  ) => {
-
-
+  const analyze = async (data:string) => {
     setIsAnalyzing(true);
-
-
     try {
-
-
-      const ruleResult =
-        buildRuleBasedAnalysis(
-          data,
-          language
-        );
-
-
-
-      let finalResult =
-        ruleResult;
-
-
-
-
-      try {
-
-
-        const aiResult =
-          await tryEnhanceWithOllama(
-            ruleResult
-          );
-
-
-
-        if(aiResult){
-
-
-          finalResult = {
-
-            ...ruleResult,
-
-            aiNarration:
-              aiResult
-
-          };
-
-
-        }
-
-      } catch(error) {
-
-
-
+      const turn = await processAIMessage(sessionRef.current!, data, language);
+      setLastResolution(turn.resolution);
+      setClarification(turn.clarification);
+      if (turn.result) {
+        setProfile(turn.result);
+        setResult(turn.result);
       }
-
-
-
-
-      setProfile(
-        finalResult
-      );
-
-
-      setResult(
-        finalResult
-      );
-
-
-
-    }
-    finally {
-
-
+      return turn.result !== null;
+    } finally {
       setIsAnalyzing(false);
-
-
     }
-
-
   };
-
-
 
 
 
@@ -162,6 +97,9 @@ export function AnalysisProvider({
     setProfile(null);
 
     setResult(null);
+    setClarification(null);
+    setLastResolution(null);
+    sessionRef.current?.reset();
 
 
   };
@@ -185,6 +123,10 @@ export function AnalysisProvider({
         analyze,
 
         reset,
+
+        clarification,
+
+        lastResolution,
 
         isAnalyzing,
 

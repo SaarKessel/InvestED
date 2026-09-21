@@ -281,7 +281,7 @@ export function ProjectionChartCard({
                 text-xl
               "
             >
-              {t("projection_chart_title", "תחזית צמיחת ההשקעה")}
+              {t("projection_chart_title", "Investment Growth Projection")}
             </CardTitle>
 
 
@@ -304,7 +304,7 @@ export function ProjectionChartCard({
               text-muted-foreground
             "
           >
-            {t("projection_chart_subtitle", "כיצד ההון עשוי להתפתח לאורך זמן לפי ההנחות שהוזנו למערכת.")}
+            {t("projection_chart_subtitle", "How your capital may evolve over time based on the assumptions entered.")}
           </p>
 
         </CardHeader>
@@ -355,7 +355,7 @@ export function ProjectionChartCard({
                   "
                 />
 
-                {t("projection_chart_final", "שווי סופי")}
+                {t("projection_chart_final", "Final Value")}
 
               </div>
 
@@ -401,7 +401,7 @@ export function ProjectionChartCard({
                   "
                 />
 
-                {t("projection_chart_growth", "צמיחה")}
+                {t("projection_chart_growth", "Growth")}
 
               </div>
 
@@ -426,7 +426,7 @@ export function ProjectionChartCard({
                   text-muted-foreground
                 "
               >
-                {t("projection_chart_growth_pct", "{growth}% מהשווי הסופי",).replace("{growth}", String(growthPercentage))}
+                {t("projection_chart_growth_pct", "{growth}% of the final value",).replace("{growth}", String(growthPercentage))}
               </p>
 
             </div>
@@ -458,7 +458,7 @@ export function ProjectionChartCard({
                   "
                 />
 
-                {t("projection_chart_horizon", "אופק")}
+                {t("projection_chart_horizon", "Horizon")}
 
               </div>
 
@@ -470,7 +470,7 @@ export function ProjectionChartCard({
                   font-black
                 "
               >
-                {t("projection_chart_horizon_years", "{years} שנים").replace("{years}", String(lastYear))}
+                {t("projection_chart_horizon_years", "{years} years").replace("{years}", String(lastYear))}
               </p>
 
             </div>
@@ -588,15 +588,15 @@ export function ProjectionChartCard({
                     ),
 
                     name === "balance"
-                      ? t("projection_chart_balance", "שווי תיק")
-                      : t("projection_chart_contributed", "הון שהופקד"),
+                      ? t("projection_chart_balance", "Portfolio Value")
+                      : t("projection_chart_contributed", "Capital Deposited"),
 
                   ]}
 
                   labelFormatter={(
                     label
                   ) =>
-                    `${t("investment_chart_label_year", "שנה")} ${label}`
+                    `${t("investment_chart_label_year", "Year")} ${label}`
                   }
 
                 />
@@ -689,7 +689,7 @@ export function ProjectionChartCard({
                 "
               />
 
-              {t("projection_chart_contributed", "הון שהופקד")}
+              {t("projection_chart_contributed", "Capital Deposited")}
 
             </div>
 
@@ -710,7 +710,7 @@ export function ProjectionChartCard({
                 "
               />
 
-              {t("projection_chart_balance", "שווי תיק")}
+              {t("projection_chart_balance", "Portfolio Value")}
 
             </div>
 
@@ -741,7 +741,7 @@ export function ProjectionChartCard({
                 />
               }
 
-              title={t("projection_total_contributions_label", "סה״כ הפקדות")}
+              title={t("projection_total_contributions_label", "Total Contributions")}
 
               value={
                 formatMoney(
@@ -763,7 +763,7 @@ export function ProjectionChartCard({
                 />
               }
 
-              title={t("projection_growth_label", "צמיחה")}
+              title={t("projection_growth_label", "Growth")}
 
               value={
                 formatMoney(
@@ -785,7 +785,7 @@ export function ProjectionChartCard({
                 />
               }
 
-              title={t("projection_real_value_label", "ערך ריאלי")}
+              title={t("projection_real_value_label", "Real Value")}
 
               value={
                 formatMoney(
@@ -851,7 +851,7 @@ export function ProjectionChartCard({
                     font-semibold
                   "
                 >
-                  {t("projection_chart_explain_title", "מה אנחנו רואים בגרף?")}
+                  {t("projection_chart_explain_title", "What do we see in the chart?")}
                 </p>
 
 
@@ -863,7 +863,7 @@ export function ProjectionChartCard({
                     text-muted-foreground
                   "
                 >
-                  {t("projection_chart_explain_text", "הקו המקווקו מציג את ההון שהופקד לאורך התקופה, בעוד שהקו הרציף מציג את השווי המשור של התיק בהתאם להנחות הסימולציה. הפער ביניהם ממחיש את השפעת הצמיחה ההיפותטית לאורך זמן.")}
+                  {t("projection_chart_explain_text", "The stepped line shows the capital contributed over time, while the smooth line shows the projected portfolio value according to the simulation assumptions. The gap between them illustrates the impact of hypothetical growth over time.")}
                 </p>
 
               </div>
@@ -900,7 +900,7 @@ export function ProjectionChartCard({
             />
 
             <span>
-              {t("projection_chart_disclaimer", "⚠️ התחזית היא סימולציה חינוכית בלבד. התשואה המוצגת מבוססת על ההנחות שהוזנו למערכת ואינה תחזית מובטחת. תשואות בפועל עשויות להיות שונות משמעותית.")}
+              {t("projection_chart_disclaimer", "⚠️ The projection is for educational purposes only. The returns shown are based on the assumptions entered into the system and are not guaranteed. Actual returns may differ significantly.")}
             </span>
 
           </div>

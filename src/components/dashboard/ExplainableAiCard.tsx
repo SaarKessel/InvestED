@@ -307,6 +307,7 @@ export function ExplainableAiCard({
               "
             >
               {
+                result.aiNarration.conversationSummary ??
                 result.aiNarration.profileSummary ??
                 result.explainability.summary ??
                 t("xai_summary_default", "The system completed an investor profile analysis.")

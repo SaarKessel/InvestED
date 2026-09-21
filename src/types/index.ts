@@ -320,6 +320,13 @@ export interface AiNarration {
 
   portfolioSummary: string;
 
+  /**
+   * Narration for a multi-turn AI conversation turn. Kept separate
+   * from the profile/portfolio summaries so one conversation
+   * response is never duplicated under two different meanings.
+   */
+  conversationSummary?: string;
+
 }
 
 
@@ -330,6 +337,15 @@ export interface AiNarration {
 export interface AnalysisResult {
 
   profileText: string;
+
+  conversation?: {
+    intent: "financial_projection" | "asset_analysis" | "investor_profile_fit" | "comparison" | "general";
+    language: "he" | "en" | "mixed";
+    currentAsset: string | null;
+    comparisonSet: string[];
+    inheritedFromContext: string[];
+    assetAnalyses: { symbol: string; price: number; changePercent: number; volatilityPct: number; rsi: number | null }[];
+  };
 
   flags: ProfileFlags;
 
@@ -424,6 +440,15 @@ export interface CandleDatum {
 }
 
 
+/**
+ * Machine-readable origin of market data. "yahoo_finance" means the
+ * values came from the live Yahoo Finance proxy (/api/market-quote);
+ * "mock" means they are simulated fallback values.
+ */
+export type MarketDataSource =
+  | "yahoo_finance"
+  | "mock";
+
 export interface MarketAsset {
 
   symbol: string;
@@ -435,6 +460,32 @@ export interface MarketAsset {
   changePercent: number;
 
   history: CandleDatum[];
+
+  /** Origin of this asset's data; absent only in legacy fixtures. */
+  dataSource?: MarketDataSource;
+
+}
+
+/**
+ * Per-asset technical summary shared by the AI conversation
+ * orchestrator, the analysis service and the Ollama client.
+ * Lives here (shared types) so those modules never import
+ * each other for it.
+ */
+export interface AssetAnalysis {
+
+  symbol: string;
+
+  price: number;
+
+  changePercent: number;
+
+  volatilityPct: number;
+
+  rsi: number | null;
+
+  /** Always known for real orchestration assets. */
+  dataSource: MarketDataSource;
 
 }
 
@@ -451,17 +502,42 @@ export interface Strategy {
     | "growth"
     | "value";
 
-  name: string;
+  name:
+    | string
+    | {
+        he: string;
+        en: string;
+      };
 
   riskLevel: number;
 
-  whatItIs: string;
+  whatItIs:
+    | string
+    | {
+        he: string;
+        en: string;
+      };
 
-  suitableFor: string;
+  suitableFor:
+    | string
+    | {
+        he: string;
+        en: string;
+      };
 
-  pros: string[];
+  pros:
+    | string[]
+    | {
+        he: string[];
+        en: string[];
+      };
 
-  cons: string[];
+  cons:
+    | string[]
+    | {
+        he: string[];
+        en: string[];
+      };
 
   stocks: string[];
 
@@ -474,30 +550,70 @@ export interface Strategy {
 
 export interface FinanceConcept {
 
-  term: string;
+  term:
+    | string
+    | {
+        he: string;
+        en: string;
+      };
 
-  definition: string;
+  definition:
+    | string
+    | {
+        he: string;
+        en: string;
+      };
 
 }
 
 
 export interface Mistake {
 
-  title: string;
+  title:
+    | string
+    | {
+        he: string;
+        en: string;
+      };
 
-  detail: string;
+  detail:
+    | string
+    | {
+        he: string;
+        en: string;
+      };
 
 }
 
 
 export interface RoadmapStage {
 
-  stage: string;
+  stage:
+    | string
+    | {
+        he: string;
+        en: string;
+      };
 
-  title: string;
+  title:
+    | string
+    | {
+        he: string;
+        en: string;
+      };
 
-  description?: string;
+  description?:
+    | string
+    | {
+        he: string;
+        en: string;
+      };
 
-  topics: string[];
+  topics:
+    | string[]
+    | {
+        he: string[];
+        en: string[];
+      };
 
 }

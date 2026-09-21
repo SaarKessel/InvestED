@@ -16,16 +16,27 @@ const OLLAMA_HOST = "http://localhost:11434";
 const DEFAULT_MODEL = "llama3.1";
 const REQUEST_TIMEOUT_MS = 12000;
 
-const SYSTEM_PROMPT = [
-  "אתה מורה פיננסי סבלני ומעודד, המוטמע בפלטפורמה חינוכית להשקעות בשם InvestED.",
-  "אתה לעולם לא נותן ייעוץ השקעות אישי, ולעולם לא אומר למשתמש לקנות או למכור נכס ספציפי.",
-  "אתה מסביר מושגים בשפה פשוטה וברורה, ב-2-4 משפטים קצרים, תמיד בעברית.",
-  "הטון שלך חינוכי, לא מנחה ולא מכתיב.",
-].join(" ");
+function getSystemPrompt(language: "he" | "en" = "he"): string {
+  if (language === "en") {
+    return [
+      "You are a patient and encouraging financial teacher embedded in an educational investment platform called InvestED.",
+      "You never give personal investment advice, and you never tell the user to buy or sell a specific asset.",
+      "You explain concepts in simple and clear language, in 2-4 short sentences, always in English.",
+      "Your tone is educational, not directive or prescriptive.",
+    ].join(" ");
+  }
+  return [
+    "אתה מורה פיננסי סבלני ומעודד, המוטמע בפלטפורמה חינוכית להשקעות בשם InvestED.",
+    "אתה לעולם לא נותן ייעוץ השקעות אישי, ולעולם לא אומר למשתמש לקנות או למכור נכס ספציפי.",
+    "אתה מסביר מושגים בשפה פשוטה וברורה, ב-2-4 משפטים קצרים, תמיד בעברית.",
+    "הטון שלך חינוכי, לא מנחה ולא מכתיב.",
+  ].join(" ");
+}
 
 async function callOllama(
   prompt: string,
-  model: string = DEFAULT_MODEL
+  model: string = DEFAULT_MODEL,
+  language: "he" | "en" = "he"
 ): Promise<string | null> {
   const controller = new AbortController();
   const timeout = setTimeout(
@@ -41,7 +52,7 @@ async function callOllama(
       },
       body: JSON.stringify({
         model,
-        prompt: `${SYSTEM_PROMPT}\n\n${prompt}`,
+        prompt: `${getSystemPrompt(language)}\n\n${prompt}`,
         stream: false,
         options: {
           temperature: 0.6,
@@ -130,4 +141,51 @@ export async function explainPortfolio(
   const result = await callOllama(prompt);
 
   return result ?? fallback;
+}
+import type { AnalysisResult, AssetAnalysis } from "@/types";
+import type { TurnResolution } from "./conversationContext";
+
+export async function explainConversationTurn(
+  result: AnalysisResult,
+  resolution: TurnResolution,
+  assets: AssetAnalysis[]
+): Promise<AnalysisResult["aiNarration"] | null> {
+  const languageInstruction = resolution.language === "he"
+    ? "ענה בעברית."
+    : resolution.language === "en"
+      ? "Answer in English."
+      : "Answer in the same mixed Hebrew/English style as the user.";
+  const mockAssets = assets.filter((asset) => asset.dataSource === "mock");
+  const mockWarning = mockAssets.length > 0
+    ? `WARNING: the market data for ${mockAssets.map((asset) => asset.symbol).join(", ")} is SIMULATED (mock) because the live market-data provider was unavailable. Never present these prices, RSI, or volatility values as current real market data; state clearly that they are simulated values.`
+    : null;
+
+  const prompt = [
+    languageInstruction,
+    `Intent: ${resolution.intent}.`,
+    `Resolved financial scenario: ${JSON.stringify(resolution.scenario)}.`,
+    `Active asset: ${resolution.currentAsset ?? "none"}.`,
+    `Comparison set: ${JSON.stringify(resolution.comparisonSet)}.`,
+    `Investor profile supplied by the application: ${JSON.stringify(resolution.investorProfileContext)}.`,
+    `Market analysis supplied by the market-data layer: ${JSON.stringify(assets)}.`,
+    mockWarning,
+    `Rule-based result: ${JSON.stringify({ investor: result.investor, riskScore: result.riskScore, projection: result.projection })}.`,
+    "Explain only the supplied facts. Never invent market data or an investor profile.",
+  ].filter((line): line is string => line !== null).join("\n");
+  const text = await callOllama(
+    prompt,
+    DEFAULT_MODEL,
+    resolution.language === "en" ? "en" : "he"
+  );
+  if (!text) return null;
+  // One conversation response, one meaning: the narration goes to
+  // conversationSummary. The profile/portfolio summaries keep their
+  // original rule-based content instead of duplicating the same
+  // conversation text under two different semantics.
+  return {
+    source: "ollama",
+    conversationSummary: text,
+    profileSummary: result.aiNarration.profileSummary,
+    portfolioSummary: result.aiNarration.portfolioSummary,
+  };
 }

@@ -20,6 +20,14 @@ function computeAnnualCost(
 
 export function FeeDragCalculator() {
   const { t, language } = useLanguage();
+
+  function localized(
+    value: string | { he: string; en: string },
+    lang: string
+  ): string {
+    if (typeof value === "string") return value;
+    return lang === "he" ? value.he : value.en;
+  }
   const [monthlyAmount, setMonthlyAmount] = useState(2000);
   const [tradesPerMonth, setTradesPerMonth] = useState(1);
 
@@ -79,8 +87,8 @@ export function FeeDragCalculator() {
 
       <div className="mt-5 space-y-2">
         {ranked.map(({ broker, annualCost }, idx) => (
-          <div key={broker.name} className="flex items-center gap-3">
-            <span className="w-32 shrink-0 truncate text-xs font-semibold">{broker.name}</span>
+          <div key={localized(broker.name, language)} className="flex items-center gap-3">
+            <span className="w-32 shrink-0 truncate text-xs font-semibold">{localized(broker.name, language)}</span>
             <div className="h-2.5 flex-1 overflow-hidden rounded-full bg-muted">
               <div
                 className={cn("h-full rounded-full transition-all duration-500", idx === 0 ? "bg-success" : "bg-primary/60")}
@@ -95,9 +103,9 @@ export function FeeDragCalculator() {
       <div className="mt-4 flex items-start gap-2 rounded-lg bg-success/10 p-3 text-xs text-success">
         <Trophy className="mt-0.5 h-3.5 w-3.5 shrink-0" />
         <p>
-          <b>{cheapest.broker.name}</b>{" "}
+          <b>{localized(cheapest.broker.name, language)}</b>{" "}
           {t("fee_calc_summary", "{broker} is the most cost-effective for this usage profile — approximately {cost} in estimated annual fees. These differences are educational estimates and depend on the broker's exact terms.")
-            .replace("{broker}", cheapest.broker.name)
+            .replace("{broker}", localized(cheapest.broker.name, language))
             .replace("{cost}", formatCurrency(Math.round(cheapest.annualCost), "ILS", language))}
         </p>
       </div>

@@ -42,7 +42,7 @@ export function AIChatCard({ result }: Props) {
 
 
     setAnswer(
-      t("ai_chat_default_a", "בהתבסס על הנתונים שלך, המפתח המרכזי הוא התמדה, פיזור השקעות וניצול זמן.")
+      t("ai_chat_default_a", "Based on your data, the key factors are consistency, portfolio diversification, and time in the market.")
     );
 
   }
@@ -60,7 +60,7 @@ export function AIChatCard({ result }: Props) {
       <input
         value={question}
         onChange={(e)=>setQuestion(e.target.value)}
-        placeholder={t("ai_chat_input_placeholder", "שאל אותי על תוכנית ההשקעה שלך...")}
+        placeholder={t("ai_chat_input_placeholder", "Ask me about your investment plan...")}
         className="w-full rounded-xl border p-3"
       />
 
@@ -73,7 +73,7 @@ export function AIChatCard({ result }: Props) {
 
       >
 
-        {t("ai_chat_button", "שאל AI")}
+        {t("ai_chat_button", "Ask AI")}
 
       </button>
 

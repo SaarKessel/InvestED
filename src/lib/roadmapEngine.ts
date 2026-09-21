@@ -5,47 +5,42 @@ interface RoadmapInput {
 }
 
 export function generateRoadmap(
-  result: RoadmapInput
+  result: RoadmapInput,
+  language: "he" | "en" = "he"
 ): RoadmapStage[] {
 
   const years =
     result.horizon === "ארוך"
-      ? "10-15 שנים"
-      : "5 שנים";
+      ? language === "he" ? "10-15 שנים" : "10-15 years"
+      : language === "he" ? "5 שנים" : "5 years";
 
 
   return [
 
     {
-      year: "שלב 1",
-      title: "בניית בסיס פיננסי",
-      actions: [
-        "הגדרת מטרות השקעה",
-        "בניית תיק מפוזר",
-        "השקעה עקבית"
-      ]
+      year: language === "he" ? "שלב 1" : "Stage 1",
+      title: language === "he" ? "בניית בסיס פיננסי" : "Financial Basics",
+      actions: language === "he"
+        ? ["הגדרת מטרות השקעה", "בניית תיק מפוזר", "השקעה עקבית"]
+        : ["Define investment goals", "Build a diversified portfolio", "Consistent investing"]
     },
 
 
     {
-      year: "שלב 2",
-      title: "צמיחה ארוכת טווח",
-      actions: [
-        "הגדלת הפקדות",
-        "ניצול ריבית דריבית",
-        "מעקב תקופתי"
-      ]
+      year: language === "he" ? "שלב 2" : "Stage 2",
+      title: language === "he" ? "צמיחה ארוכת טווח" : "Long-Term Growth",
+      actions: language === "he"
+        ? ["הגדלת הפקדות", "ניצול ריבית דריבית", "מעקב תקופתי"]
+        : ["Increase contributions", "Leverage compound interest", "Periodic review"]
     },
 
 
     {
       year: years,
-      title: "ניהול עצמאות כלכלית",
-      actions: [
-        "איזון סיכונים",
-        "שימור הון",
-        "תכנון עתידי"
-      ]
+      title: language === "he" ? "ניהול עצמאות כלכלית" : "Managing Financial Independence",
+      actions: language === "he"
+        ? ["איזון סיכונים", "שימור הון", "תכנון עתידי"]
+        : ["Risk balancing", "Capital preservation", "Future planning"]
     }
 
   ];

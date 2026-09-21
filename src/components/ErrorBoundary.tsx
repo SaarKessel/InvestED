@@ -18,15 +18,15 @@ function ErrorBoundaryFallback({ handleReset }: { handleReset: () => void }) {
       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-danger/10 text-danger">
         <AlertTriangle className="h-7 w-7" />
       </div>
-      <h1 className="font-display text-xl font-bold">{t("error_title", "משהו השתבש")}</h1>
+      <h1 className="font-display text-xl font-bold">{t("error_title", "Something went wrong")}</h1>
       <p className="max-w-sm text-sm text-muted-foreground">
-        {t("error_desc", "אירעה שגיאה בלתי צפויה בטעינת הדף. ניתן לנסות שוב או לחזור לדף הבית.")}
+        {t("error_desc", "An unexpected error occurred while loading the page. You can try again or return to the home page.")}
       </p>
       <button
         onClick={handleReset}
         className="mt-2 rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:opacity-90"
       >
-        {t("error_home", "חזרה לדף הבית")}
+        {t("error_home", "Back to Home")}
       </button>
     </div>
   );

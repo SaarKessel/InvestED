@@ -74,7 +74,7 @@ transition={{
 
 <CardTitle className="text-xl">
 
-  {t("financial_insight_title", "התובנות המרכזיות שלך")}
+  {t("financial_insight_title", "Your Key Insights")}
 
 </CardTitle>
 
