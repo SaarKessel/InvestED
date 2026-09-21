@@ -926,5 +926,12 @@
   "hub_watchlist": "Watchlist",
   "hub_news": "News",
   "hub_alerts": "Alerts",
-  "hub_not_configured": "Not configured yet. No placeholder data is shown."
+  "hub_not_configured": "Not configured yet. No placeholder data is shown.",
+  "data_controls_title": "Data & memory controls",
+  "data_controls_desc": "Inspect, export or delete durable data stored for this local profile. Conversation session context remains separate.",
+  "data_export": "Export my data",
+  "data_delete": "Delete durable data",
+  "data_exported": "Export prepared.",
+  "data_deleted": "Durable local data deleted.",
+  "data_local_boundary": "Current account mode is local-only. No remote authentication service or cloud sync is configured."
 }
