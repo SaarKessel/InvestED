@@ -14,8 +14,8 @@ import type {
 // ---------------------------------------------------------------------------
 
 const COLORS = {
-  us: "#22b17d",
-  intl: "#3ecfff",
+  us: "#14b8a6",
+  intl: "#38bdf8",
   dividend: "#f9c74f",
   bonds: "#f97066",
   cash: "#9c8cf7",

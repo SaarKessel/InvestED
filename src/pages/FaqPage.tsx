@@ -14,6 +14,8 @@ export function FaqPage() {
     { id: "6", q: t("faq_q_6"), a: t("faq_a_6") },
     { id: "7", q: t("faq_q_7"), a: t("faq_a_7") },
     { id: "8", q: t("faq_q_8"), a: t("faq_a_8") },
+    { id: "9", q: t("faq_q_9"), a: t("faq_a_9") },
+    { id: "10", q: t("faq_q_10"), a: t("faq_a_10") },
   ];
 
   return (

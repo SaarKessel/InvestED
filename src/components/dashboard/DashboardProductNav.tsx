@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { Calculator, FlaskConical, Microscope, MessageSquare, UserRound, GraduationCap } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
 const items = [
- { href:"#copilot", key:"hub_copilot", icon:MessageSquare }, { href:"/research", key:"hub_research", icon:Microscope },
+ { href:"/chat", key:"hub_copilot", icon:MessageSquare }, { href:"/research", key:"hub_research", icon:Microscope },
  { href:"/strategy-lab", key:"hub_strategies", icon:FlaskConical }, { href:"/calculator", key:"hub_calculator", icon:Calculator },
  { href:"#profile", key:"hub_profile", icon:UserRound }, { href:"#learning", key:"hub_learning", icon:GraduationCap },
 ];

@@ -27,6 +27,11 @@ export function TermsPage() {
           </div>
 
           <div>
+            <h2 className="mb-2 font-display text-lg font-bold text-foreground">{t("terms_h2_data")}</h2>
+            <p>{t("terms_p_data")}</p>
+          </div>
+
+          <div>
             <h2 className="mb-2 font-display text-lg font-bold text-foreground">{t("terms_h2_4_full")}</h2>
             <p>{t("terms_p_4_full")}</p>
           </div>

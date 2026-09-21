@@ -263,6 +263,51 @@ export function LandingPage() {
       </section>
 
       {/* =========================================================
+          AI CHAT
+      ========================================================= */}
+
+      <section className="border-t border-border/60 bg-muted/30 py-24">
+        <div className="container">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.5 }}
+          >
+            <Card className="relative mx-auto max-w-3xl overflow-hidden">
+              <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-primary/5" />
+              <CardContent className="relative p-10 text-center sm:p-12">
+                <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                  <Bot className="h-7 w-7" />
+                </div>
+
+                <span className="mb-3 inline-block rounded-full border border-primary/15 bg-primary/5 px-3 py-1.5 text-xs font-bold text-primary">
+                  {t("chat_card_tag")}
+                </span>
+
+                <h2 className="font-display text-3xl font-bold text-foreground md:text-4xl">
+                  {t("chat_card_title")}
+                </h2>
+
+                <p className="mx-auto mt-4 max-w-xl leading-relaxed text-muted-foreground">
+                  {t("chat_card_desc")}
+                </p>
+
+                <Link to="/chat" className="mt-8 inline-block">
+                  <Button size="lg" className="group gap-2 rounded-xl px-7">
+                    {t("chat_card_cta")}
+                    <ArrowIcon
+                      className={`h-4 w-4 transition-transform duration-200 ${arrowHoverClass}`}
+                    />
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* =========================================================
           HOW IT WORKS
       ========================================================= */}
 

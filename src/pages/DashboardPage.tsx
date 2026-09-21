@@ -32,7 +32,6 @@ import { ComparisonCard } from "@/components/dashboard/ComparisonCard";
 import { ConceptsCard, MistakesCard, RoadmapCard } from "@/components/dashboard/LearningCards";
 import { QuizCard } from "@/components/dashboard/QuizCard";
 import { GoalPlannerCard } from "@/components/GoalPlannerCard";
-import { AIChatCard } from "@/components/dashboard/AIChatCard";
 import { DashboardProductNav, DashboardUnavailableModules } from "@/components/dashboard/DashboardProductNav";
 
 export function DashboardPage() {
@@ -228,10 +227,6 @@ export function DashboardPage() {
 
             <div className="lg:col-span-2">
               <StrategiesCard />
-            </div>
-
-            <div id="copilot" className="scroll-mt-24 lg:col-span-2">
-              <AIChatCard />
             </div>
 
             <div className="lg:col-span-2">

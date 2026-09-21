@@ -633,7 +633,7 @@ export function MarketDataCard({
 
                             dataKey="price"
 
-                            stroke="#22b17d"
+                            stroke="#14b8a6"
 
                             strokeWidth={2.5}
 

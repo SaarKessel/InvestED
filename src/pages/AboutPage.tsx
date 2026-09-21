@@ -12,6 +12,7 @@ import {
   Paintbrush,
   BarChart3,
   Briefcase,
+  Bot,
 } from "lucide-react";
 import { Layout } from "@/components/layout/Layout";
 import { Card, CardContent } from "@/components/ui/primitives";
@@ -58,6 +59,12 @@ export function AboutPage() {
       title: t("about_stack_market_title"),
       items: t("about_stack_market_items").split(", "),
       desc: t("about_stack_market_desc"),
+    },
+    {
+      icon: Bot,
+      title: t("about_section_product_title"),
+      items: t("about_section_product_items").split(", "),
+      desc: t("about_section_product_desc"),
     },
   ];
 

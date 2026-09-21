@@ -369,9 +369,9 @@ export function StockSimulator() {
                           : "projectedValue"
                       }
 
-                      stroke="#22b17d"
+                      stroke="#14b8a6"
 
-                      fill="#22b17d"
+                      fill="#14b8a6"
 
                     />
 

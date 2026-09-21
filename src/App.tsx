@@ -17,6 +17,7 @@ import { NotFoundPage } from "@/pages/NotFoundPage";
 
 const StrategyLabPage = lazy(() => import("@/pages/StrategyLabPage"));
 const AssetResearchPage = lazy(() => import("@/pages/AssetResearchPage"));
+const AICopilotPage = lazy(() => import("@/pages/AICopilotPage"));
 const DataControlsPage = lazy(() => import("@/pages/DataControlsPage"));
 
 export default function App() {
@@ -32,6 +33,7 @@ export default function App() {
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/calculator" element={<CalculatorPage />} />
               <Route path="/research" element={<Suspense fallback={null}><AssetResearchPage /></Suspense>} />
+              <Route path="/chat" element={<Suspense fallback={null}><AICopilotPage /></Suspense>} />
               <Route
                 path="/strategy-lab"
                 element={

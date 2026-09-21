@@ -32,6 +32,11 @@ export function PrivacyPage() {
           </div>
 
           <div>
+            <h2 className="mb-2 font-display text-lg font-bold text-foreground">{t("privacy_h2_controls")}</h2>
+            <p>{t("privacy_p_controls")}</p>
+          </div>
+
+          <div>
             <h2 className="mb-2 font-display text-lg font-bold text-foreground">{t("privacy_h2_contact_full")}</h2>
             <p>{t("privacy_p_contact_full")}</p>
           </div>
