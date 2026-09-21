@@ -8,6 +8,7 @@ import { buildRuleBasedAnalysis, tryEnhanceWithOllama } from "./analysisService"
 import { fetchMarketAssetBySymbol } from "./marketData";
 import { calculateRsi, calculateVolatility } from "./market/indicators";
 import { researchAsset, type AssetResearch } from "./research/assetResearchEngine";
+import { createOrchestrationPlan, type OrchestrationPlan } from "./intelligence/orchestrator";
 import { buildCopilotResponse, type CopilotResponse, type StrategyCopilotPayload } from "./copilotResponse";
 import {
   compareStrategies,
@@ -29,6 +30,7 @@ export interface AIConversationTurn {
   clarification: string | null;
   assetAnalyses: AssetAnalysis[];
   assetResearch: AssetResearch[];
+  orchestrationPlan: OrchestrationPlan;
   response: CopilotResponse;
 }
 
@@ -195,6 +197,7 @@ export async function processAIMessage(
       clarification: resolution.clarification?.question ?? null,
       assetAnalyses: [],
       assetResearch: [],
+      orchestrationPlan: createOrchestrationPlan(resolution),
       response: buildCopilotResponse(message, resolution, null, []),
     };
   }
@@ -236,6 +239,7 @@ export async function processAIMessage(
     clarification: null,
     assetAnalyses,
     assetResearch,
+    orchestrationPlan: createOrchestrationPlan(resolution),
     response: buildCopilotResponse(
       message,
       resolution,
