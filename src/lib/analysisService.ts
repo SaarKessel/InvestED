@@ -3,6 +3,7 @@ import type {
   AnalysisSignal,
   AiNarration,
   AllocationItem,
+  AssetAnalysis,
   ProfileFlags,
   InvestorClassification,
   Projection,
@@ -55,7 +56,10 @@ import {
   isOllamaAvailable,
   explainInvestorProfile,
   explainPortfolio,
+  explainConversationTurn,
 } from "./ollamaClient";
+
+import type { TurnResolution } from "./conversationContext";
 
 
 // =====================================================
@@ -445,7 +449,9 @@ function buildEngineSignals(
 
 export function buildRuleBasedAnalysis(
   profileText: string,
-  language: string = "en"
+  language: string = "en",
+  resolution?: TurnResolution,
+  assetAnalyses: AssetAnalysis[] = []
 ): AnalysisResult {
 
   // =====================================================
@@ -532,9 +538,9 @@ export function buildRuleBasedAnalysis(
   // =====================================================
 
   const scenario =
-    analyzeFinancialScenario(
-      profileText
-    );
+    resolution?.intent === "financial_projection" && resolution.scenario
+      ? resolution.scenario
+      : analyzeFinancialScenario(profileText);
 
 
   // =====================================================
@@ -752,6 +758,15 @@ export function buildRuleBasedAnalysis(
 
     profileText,
 
+    conversation: resolution ? {
+      intent: resolution.intent,
+      language: resolution.language,
+      currentAsset: resolution.currentAsset,
+      comparisonSet: [...resolution.comparisonSet],
+      inheritedFromContext: [...resolution.inheritedFromContext],
+      assetAnalyses,
+    } : undefined,
+
     flags,
 
     scenario,
@@ -811,7 +826,9 @@ export function buildRuleBasedAnalysis(
 
 export async function tryEnhanceWithOllama(
 
-  result: AnalysisResult
+  result: AnalysisResult,
+  resolution?: TurnResolution,
+  assetAnalyses: AssetAnalysis[] = []
 
 ): Promise<
   AnalysisResult["aiNarration"] | null
@@ -861,6 +878,11 @@ Largest position: ${portfolioMetrics.largestPosition} (${portfolioMetrics.larges
 
       : result.aiNarration.portfolioSummary;
 
+
+  if (resolution) {
+    const contextual = await explainConversationTurn(result, resolution, assetAnalyses);
+    if (contextual) return contextual;
+  }
 
   // =====================================================
   // Parallel AI Requests

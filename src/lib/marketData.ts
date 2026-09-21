@@ -119,6 +119,7 @@ function buildMockAsset(item: { symbol: string; name: string; basePrice: number 
     price: last,
     changePercent: Math.round(changePercent * 100) / 100,
     history,
+    dataSource: "mock",
   };
 }
 
@@ -148,13 +149,19 @@ export async function fetchMarketAssets(interests: InterestArea[] = []): Promise
       throw new Error("empty response from market-quote");
     }
 
-    const assets: MarketAsset[] = data.assets.map((a: MarketAsset, idx: number) => ({
-      symbol: a.symbol || plan[idx]?.symbol,
-      name: a.name || plan[idx]?.name,
-      price: a.price,
-      changePercent: a.changePercent,
-      history: Array.isArray(a.history) && a.history.length > 1 ? a.history : generateMockHistory(a.price || 100, idx),
-    }));
+    const assets: MarketAsset[] = data.assets.map((a: MarketAsset, idx: number) => {
+      const hasRealHistory = Array.isArray(a.history) && a.history.length > 1;
+      return {
+        symbol: a.symbol || plan[idx]?.symbol,
+        name: a.name || plan[idx]?.name,
+        price: a.price,
+        changePercent: a.changePercent,
+        history: hasRealHistory ? a.history : generateMockHistory(a.price || 100, idx),
+        // When the history had to be simulated, derived indicators are
+        // mock even though the last price came from the provider.
+        dataSource: hasRealHistory ? "yahoo_finance" as const : "mock" as const,
+      };
+    });
 
     return { assets, isLive: true };
   } catch {
@@ -168,14 +175,28 @@ export async function fetchMarketAssetBySymbol(
   _period?: string,
   _interval?: string
 ) {
-  const result = await fetchMarketAssets();
+  const normalized = symbol.trim().toUpperCase();
+  if (!/^[A-Z]{1,5}$/.test(normalized)) return null;
 
-  const normalized = symbol.toUpperCase();
-
-  const asset = result.assets.find(
-    (item) =>
-      item.symbol.toUpperCase() === normalized
-  );
-
-  return asset ?? null;
+  try {
+    const response = await fetch(`/api/market-quote?symbols=${encodeURIComponent(normalized)}`);
+    if (!response.ok) throw new Error(`market-quote responded ${response.status}`);
+    const data = await response.json();
+    const candidate = Array.isArray(data?.assets) ? data.assets[0] as MarketAsset | undefined : undefined;
+    if (!candidate || !Number.isFinite(candidate.price)) throw new Error("empty response");
+    const hasRealHistory = Array.isArray(candidate.history) && candidate.history.length > 1;
+    return {
+      ...candidate,
+      symbol: normalized,
+      name: candidate.name || normalized,
+      history: hasRealHistory
+        ? candidate.history
+        : generateMockHistory(candidate.price, seedFromSymbol(normalized)),
+      // Simulated history means simulated RSI/volatility downstream,
+      // so the asset is labeled mock unless the history is real.
+      dataSource: hasRealHistory ? "yahoo_finance" as const : "mock" as const,
+    };
+  } catch {
+    return buildMockAsset({ symbol: normalized, name: normalized, basePrice: 100 });
+  }
 }
