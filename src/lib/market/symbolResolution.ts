@@ -11,7 +11,7 @@
 import { SP500_STOCKS } from "../sp500Stocks.js";
 import { listKnownAssets } from "./knownAssets.js";
 
-const TICKER_PATTERN = /^[A-Za-z]{1,5}$/;
+const TICKER_PATTERN = /^(?:[A-Za-z]{1,5}|[A-Za-z]{3,6}=X)$/;
 
 export interface SymbolResolution {
   symbol: string;

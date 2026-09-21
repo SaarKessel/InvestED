@@ -2,6 +2,7 @@ import type { AnalysisResult, AssetAnalysis, MarketDataFreshness, MarketDataSour
 import type { ClarificationRequest, ConversationIntent, ConversationLanguage, TurnResolution } from "./conversationContext";
 import type { AssetResearch } from "./research/assetResearchEngine";
 import type { StrategyComparisonResult, StrategyExplanation, StrategyMarketExample } from "./strategy/strategyEngine";
+import { explainFinancialConcept, parseHoldingRequest, valueHolding, type HoldingValuation, type PurchasePowerResult } from "./financialEducation";
 
 export type CopilotDataDependency = "market" | "financial_engine" | "investor_profile" | "strategy_engine";
 
@@ -34,6 +35,8 @@ export interface CopilotResponse {
   dataSources: MarketDataSource[];
   dataFreshness: MarketDataFreshness[];
   clarification: ClarificationRequest | null;
+  holdingValuation: HoldingValuation | null;
+  purchasePower: PurchasePowerResult | null;
 }
 
 function money(value: number, currency: string): string {
@@ -147,7 +150,8 @@ export function buildCopilotResponse(
   result: AnalysisResult | null,
   assets: AssetAnalysis[],
   enhancedText?: string | null,
-  strategyOutput?: StrategyCopilotPayload | null
+  strategyOutput?: StrategyCopilotPayload | null,
+  purchasePower: PurchasePowerResult | null = null
 ): CopilotResponse {
   const marketNeeded = assets.length > 0 || resolution.currentAsset !== null || resolution.comparisonSet.length > 0;
   const financialNeeded = resolution.scenario !== null;
@@ -160,8 +164,35 @@ export function buildCopilotResponse(
   const dataSources = [...new Set(assets.map((asset) => asset.dataSource))];
   const dataFreshness = [...new Set(assets.map((asset) => asset.freshness ?? (asset.isMock ? "simulated" : "unavailable")))];
 
+  const holdingRequest = parseHoldingRequest(message);
+  const holdingValuation = holdingRequest ? valueHolding(holdingRequest, assets[0]) : null;
+  const conceptExplanation = explainFinancialConcept(message, resolution.language);
+  const en = resolution.language === "en";
+
   let text = enhancedText ?? "";
   if (resolution.status === "needs_clarification") text = resolution.clarification?.question ?? "";
+  else if (purchasePower?.available) {
+    const a = purchasePower.asset!;
+    const fx = purchasePower.fx;
+    const source = a.dataSource.replace("_", " ");
+    const fxSource = fx?.dataSource.replace("_", " ");
+    text = en
+      ? `With ${purchasePower.amount.toLocaleString("en-US")} ${purchasePower.sourceCurrency}: ${purchasePower.amount.toLocaleString("en-US")} ÷ ${purchasePower.fxRate?.toFixed(4)} = ${purchasePower.convertedBudget?.toLocaleString("en-US", { maximumFractionDigits: 2 })} ${purchasePower.assetCurrency}; then ÷ ${purchasePower.assetPrice?.toFixed(2)} per ${purchasePower.symbol} share. You can buy ${purchasePower.wholeShares?.toLocaleString("en-US")} whole shares, leaving about ${purchasePower.residualAssetCurrency?.toFixed(2)} ${purchasePower.assetCurrency} (${purchasePower.residualSourceCurrency?.toFixed(2)} ${purchasePower.sourceCurrency}). This excludes brokerage fees, FX spread, taxes, and fractional shares. Asset source: ${source}; freshness: ${a.freshness}; timestamp: ${a.timestamp ?? "unavailable"}.${fx ? ` FX source: ${fxSource}; freshness: ${fx.freshness}; timestamp: ${fx.timestamp ?? "unavailable"}.` : ""} Educational calculation, not investment advice.`
+      : `עם ${purchasePower.amount.toLocaleString("he-IL")} ${purchasePower.sourceCurrency}: ${purchasePower.amount.toLocaleString("he-IL")} ÷ ${purchasePower.fxRate?.toFixed(4)} = ${purchasePower.convertedBudget?.toLocaleString("he-IL", { maximumFractionDigits: 2 })} ${purchasePower.assetCurrency}; לאחר מכן מחלקים ב-${purchasePower.assetPrice?.toFixed(2)} למניית ${purchasePower.symbol}. ניתן לקנות ${purchasePower.wholeShares?.toLocaleString("he-IL")} מניות שלמות, ויישארו בערך ${purchasePower.residualAssetCurrency?.toFixed(2)} ${purchasePower.assetCurrency} (${purchasePower.residualSourceCurrency?.toFixed(2)} ${purchasePower.sourceCurrency}). החישוב אינו כולל עמלות מסחר, מרווח המרה, מסים או מניות חלקיות. מקור הנכס: ${source}; עדכניות: ${a.freshness}; חותמת זמן: ${a.timestamp ?? "לא זמינה"}.${fx ? ` מקור מט"ח: ${fxSource}; עדכניות: ${fx.freshness}; חותמת זמן: ${fx.timestamp ?? "לא זמינה"}.` : ""} זהו חישוב לימודי, לא ייעוץ השקעות.`;
+  } else if (purchasePower) {
+    text = en ? "I cannot calculate reliable buying power right now because current asset-price or FX data is unavailable. I will not substitute simulated values. Fees, FX spread, taxes, and fractional-share support also depend on the broker." : "אי אפשר לחשב כרגע כוח קנייה מהימן כי מחיר הנכס או שער המטבע העדכני אינם זמינים. לא אחליף אותם בנתונים מדומים. עמלות, מרווח המרה, מסים ותמיכה במניות חלקיות תלויים גם בברוקר.";
+  } else if (holdingValuation?.available) {
+    const currency = holdingValuation.currency ?? "";
+    const source = holdingValuation.dataSource.replace("_", " ");
+    const timestamp = holdingValuation.timestamp ?? (en ? "provider timestamp unavailable" : "חותמת זמן של הספק אינה זמינה");
+    text = en
+      ? `${holdingValuation.quantity.toLocaleString("en-US")} ${holdingValuation.symbol} shares × ${holdingValuation.price.toFixed(2)} ${currency} = ${holdingValuation.total.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}. This is a point-in-time market valuation before fees and taxes, not investment advice. Source: ${source}; freshness: ${holdingValuation.freshness ?? "unavailable"}; timestamp: ${timestamp}.`
+      : `${holdingValuation.quantity.toLocaleString("he-IL")} מניות ${holdingValuation.symbol} × ${holdingValuation.price.toFixed(2)} ${currency} = ${holdingValuation.total.toLocaleString("he-IL", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}. זהו שווי שוק נקודתי לפני עמלות ומסים, ולא ייעוץ השקעות. מקור: ${source}; עדכניות: ${holdingValuation.freshness ?? "לא זמינה"}; חותמת זמן: ${timestamp}.`;
+  } else if (holdingValuation) {
+    text = en
+      ? `I cannot calculate a trustworthy current value for ${holdingValuation.quantity.toLocaleString("en-US")} ${holdingValuation.symbol || "shares"} because real market data is unavailable right now. I will not use simulated data for a holdings valuation. Please try again later.`
+      : `אי אפשר לחשב כרגע שווי נוכחי מהימן עבור ${holdingValuation.quantity.toLocaleString("he-IL")} מניות ${holdingValuation.symbol}, כי נתוני שוק אמיתיים אינם זמינים. לא אשתמש בנתונים מדומים לחישוב שווי תיק. כדאי לנסות שוב מאוחר יותר.`;
+  } else if (conceptExplanation && !strategyOutput) text = conceptExplanation;
   else if (!text && marketNeeded && assets.length === 0) text = resolution.language === "en"
     ? "Market data is unavailable right now, so I won't invent a price or indicator. I can still explain the concept without current market values."
     : "נתוני השוק אינם זמינים כרגע, ולכן לא אמציא מחיר או מדד. אפשר עדיין להסביר את המושג בלי ערכי שוק עדכניים.";
@@ -205,5 +236,7 @@ export function buildCopilotResponse(
     dataSources,
     dataFreshness,
     clarification: resolution.clarification,
+    holdingValuation,
+    purchasePower,
   };
 }

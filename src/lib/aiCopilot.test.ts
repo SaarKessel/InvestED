@@ -132,4 +132,43 @@ describe("Copilot profile privacy", () => {
     expect(body.prompt).not.toContain("private profile summary");
     fetchSpy.mockRestore();
   });
+  it("answers broad Hebrew concept questions without depending on an LLM", async () => {
+    const { deps, fetchAsset } = setup();
+    const turn = await processAIMessage(createConversationSession(), "מה זה קרן נאמנות?", "he", deps);
+    expect(turn.response.text).toContain("כלי השקעה");
+    expect(turn.response.text).toContain("דמי ניהול");
+    expect(fetchAsset).not.toHaveBeenCalled();
+  });
+
+  it("calculates a Hebrew holdings valuation from current sourced market data", async () => {
+    const { deps, fetchAsset } = setup({ TSLA: { ...fixture("TSLA"), price: 250.25 } });
+    const turn = await processAIMessage(createConversationSession(), "אם יש לי 199 מניות של TSLA מה השווי של זה?", "he", deps);
+    expect(fetchAsset).toHaveBeenCalledWith("TSLA");
+    expect(turn.response.holdingValuation?.total).toBeCloseTo(49_799.75, 8);
+    expect(turn.response.text).toContain("49,799.75");
+    expect(turn.response.text).toContain("מקור: yahoo finance");
+    expect(turn.response.text).toContain("2026-09-21T07:00:00Z");
+  });
+
+  it("refuses to value holdings from simulated fallback data", async () => {
+    const { deps } = setup({ TSLA: fixture("TSLA", "mock") });
+    const turn = await processAIMessage(createConversationSession(), "I own 199 shares of TSLA. What are they worth?", "en", deps);
+    expect(turn.response.holdingValuation?.available).toBe(false);
+    expect(turn.response.text).toContain("real market data is unavailable");
+    expect(turn.response.text).not.toContain("= ");
+  });
+
+  it("calculates cross-currency buying power with asset and FX provenance", async () => {
+    const vym = { ...fixture("VYM"), price: 140, currency: "USD" };
+    const fx = { ...fixture("USDILS=X"), price: 3.5, currency: "ILS" };
+    const { deps, fetchAsset } = setup({ VYM: vym, "USDILS=X": fx });
+    const turn = await processAIMessage(createConversationSession(), "יש לי 300 אלף שקל, לפי שער עדכני כמה מניות של VYM אוכל לקנות?", "he", deps);
+    expect(fetchAsset).toHaveBeenCalledWith("VYM");
+    expect(fetchAsset).toHaveBeenCalledWith("USDILS=X");
+    expect(turn.response.purchasePower?.wholeShares).toBe(612);
+    expect(turn.response.text).toContain("מניות שלמות");
+    expect(turn.response.text).toContain("עמלות מסחר");
+    expect(turn.response.text).toContain("מקור מט");
+  });
+
 });

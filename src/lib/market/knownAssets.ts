@@ -22,6 +22,8 @@ export const CORE_SYMBOLS: KnownAsset[] = [
   { symbol: "VTI", name: "Vanguard Total Stock Market ETF", assetType: "etf", basePrice: 268 },
   { symbol: "VXUS", name: "Vanguard Total International Stock ETF", assetType: "etf", basePrice: 63 },
   { symbol: "BND", name: "Vanguard Total Bond Market ETF", assetType: "fund", basePrice: 73 },
+  { symbol: "VYM", name: "Vanguard High Dividend Yield ETF", assetType: "etf", basePrice: 130, aliases: ["Vanguard High Dividend Yield"] },
+  { symbol: "USDILS=X", name: "USD/ILS exchange rate", assetType: "unknown", basePrice: 3.4, aliases: ["USD ILS", "dollar shekel rate"] },
 ];
 
 export const INTEREST_SYMBOLS: Record<InterestArea, KnownAsset[]> = {

@@ -10,6 +10,7 @@ import { calculateRsi, calculateVolatility } from "./market/indicators";
 import { researchAsset, type AssetResearch } from "./research/assetResearchEngine";
 import { createOrchestrationPlan, type OrchestrationPlan } from "./intelligence/orchestrator";
 import { buildCopilotResponse, type CopilotResponse, type StrategyCopilotPayload } from "./copilotResponse";
+import { calculatePurchasePower, fxSymbolFor, parsePurchasePowerRequest, type PurchasePowerResult } from "./financialEducation";
 import {
   compareStrategies,
   evaluateEducationalFit,
@@ -216,6 +217,16 @@ export async function processAIMessage(
   const assetAnalyses = strategyTurn
     ? strategyTurn.assets
     : analysesFromResearch(assetResearch);
+  const purchaseRequest = parsePurchasePowerRequest(message);
+  let purchasePower: PurchasePowerResult | null = null;
+  if (purchaseRequest) {
+    const asset = assetAnalyses.find((item) => item.symbol === purchaseRequest.symbol);
+    const targetCurrency = asset?.currency ?? null;
+    const pair = targetCurrency ? fxSymbolFor(purchaseRequest.sourceCurrency, targetCurrency) : null;
+    const fxAssets = pair?.symbol ? await loadAssetsForSymbols([pair.symbol], dependencies.fetchAsset) : [];
+    purchasePower = calculatePurchasePower(purchaseRequest, asset, fxAssets[0]);
+  }
+
   const result = buildRuleBasedAnalysis(
     message,
     resolution.language === "mixed" ? applicationLanguage : resolution.language,
@@ -246,7 +257,8 @@ export async function processAIMessage(
       finalResult,
       assetAnalyses,
       enhanced?.conversationSummary ?? null,
-      strategyTurn?.payload ?? null
+      strategyTurn?.payload ?? null,
+      purchasePower
     ),
   };
 }
