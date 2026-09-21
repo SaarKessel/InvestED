@@ -914,5 +914,17 @@
   "research_ai": "Educational AI explanation",
   "research_ai_boundary": "The Copilot explains validated research only. It does not add facts or recommend a trade.",
   "research_ask": "Ask Copilot",
-  "research_compare": "Compare another asset"
+  "research_compare": "Compare another asset",
+  "hub_nav_label": "Dashboard sections",
+  "hub_copilot": "AI Copilot",
+  "hub_research": "Asset Research",
+  "hub_strategies": "Strategy Lab",
+  "hub_calculator": "Calculator",
+  "hub_profile": "Investor Profile",
+  "hub_learning": "Financial Education",
+  "hub_future_modules": "Unavailable dashboard modules",
+  "hub_watchlist": "Watchlist",
+  "hub_news": "News",
+  "hub_alerts": "Alerts",
+  "hub_not_configured": "Not configured yet. No placeholder data is shown."
 }

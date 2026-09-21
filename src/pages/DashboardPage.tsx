@@ -33,6 +33,7 @@ import { ConceptsCard, MistakesCard, RoadmapCard } from "@/components/dashboard/
 import { QuizCard } from "@/components/dashboard/QuizCard";
 import { GoalPlannerCard } from "@/components/GoalPlannerCard";
 import { AIChatCard } from "@/components/dashboard/AIChatCard";
+import { DashboardProductNav, DashboardUnavailableModules } from "@/components/dashboard/DashboardProductNav";
 
 export function DashboardPage() {
   const { result, reset } = useAnalysis();
@@ -91,10 +92,12 @@ export function DashboardPage() {
             </div>
           </motion.div>
 
+          <DashboardProductNav />
+
           <DisclaimerBanner className="mb-8" />
 
           {/* AI PROFILE INTELLIGENCE SUMMARY */}
-          <motion.div
+          <motion.div id="profile"
             initial={{ opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.05 }}
@@ -227,7 +230,7 @@ export function DashboardPage() {
               <StrategiesCard />
             </div>
 
-            <div className="lg:col-span-2">
+            <div id="copilot" className="scroll-mt-24 lg:col-span-2">
               <AIChatCard />
             </div>
 
@@ -239,7 +242,7 @@ export function DashboardPage() {
               <ComparisonCard />
             </div>
 
-            <div className="lg:col-span-2">
+            <div id="learning" className="scroll-mt-24 lg:col-span-2">
               <div className="mb-5 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
@@ -270,6 +273,8 @@ export function DashboardPage() {
               <QuizCard />
             </div>
           </motion.div>
+
+          <div className="mt-8"><DashboardUnavailableModules /></div>
 
           <div className="mt-10 text-center">
             <p className="mx-auto max-w-2xl text-xs leading-relaxed text-muted-foreground">

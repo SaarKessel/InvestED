@@ -914,5 +914,17 @@
   "research_ai": "הסבר AI לימודי",
   "research_ai_boundary": "ה-Copilot מסביר רק תוצאות מחקר מאומתות. הוא אינו מוסיף עובדות או ממליץ על פעולה.",
   "research_ask": "שאל את ה-Copilot",
-  "research_compare": "השווה נכס נוסף"
+  "research_compare": "השווה נכס נוסף",
+  "hub_nav_label": "אזורי הדשבורד",
+  "hub_copilot": "AI Copilot",
+  "hub_research": "מחקר נכסים",
+  "hub_strategies": "מעבדת אסטרטגיות",
+  "hub_calculator": "מחשבון",
+  "hub_profile": "פרופיל משקיע",
+  "hub_learning": "חינוך פיננסי",
+  "hub_future_modules": "מודולי דשבורד שאינם זמינים",
+  "hub_watchlist": "רשימת מעקב",
+  "hub_news": "חדשות",
+  "hub_alerts": "התראות",
+  "hub_not_configured": "עדיין לא הוגדר. לא מוצגים נתוני דמה."
 }
