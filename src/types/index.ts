@@ -628,6 +628,103 @@ export interface Strategy {
 
 
 // =====================================================
+// Strategy Engine (Phase 6)
+// =====================================================
+
+export interface LocalizedText {
+  he: string;
+  en: string;
+}
+
+export type StrategyId =
+  | "long-term-index"
+  | "buy-and-hold"
+  | "dollar-cost-averaging"
+  | "value"
+  | "growth"
+  | "dividend"
+  | "momentum"
+  | "trend-following"
+  | "risk-based-allocation"
+  | "diversification";
+
+export type StrategyTimeHorizon = "short" | "medium" | "long";
+
+export type StrategyAssetType =
+  | "index_funds"
+  | "etfs"
+  | "stocks"
+  | "bonds"
+  | "cash_equivalents"
+  | "mixed";
+
+export type StrategyDataRequirement =
+  | "none"
+  | "price_history"
+  | "fundamentals"
+  | "dividend_history"
+  | "market_breadth";
+
+export interface StrategyMetric {
+  key: string;
+  name: LocalizedText;
+  description: LocalizedText;
+}
+
+/**
+ * Structured investment-strategy model used by the Strategy
+ * Engine. All user-facing content is bilingual; business logic
+ * lives in src/lib/strategy/strategyEngine.ts, never in UI.
+ */
+export interface InvestmentStrategy {
+  id: StrategyId;
+  name: LocalizedText;
+  description: LocalizedText;
+  philosophy: LocalizedText;
+  suitableFor: LocalizedText;
+  riskProfile: {
+    /** Educational 1-10 risk indication, not a promise of outcomes. */
+    level: number;
+    label: LocalizedText;
+  };
+  /** Horizons the strategy is commonly taught for, primary first. */
+  timeHorizon: StrategyTimeHorizon[];
+  assetTypes: StrategyAssetType[];
+  rules: LocalizedText[];
+  metrics: StrategyMetric[];
+  /** Durable, well-documented history only; no invented figures. */
+  historicalContext: LocalizedText;
+  strengths: LocalizedText[];
+  limitations: LocalizedText[];
+  educationalNotes: LocalizedText;
+  dataRequirements: StrategyDataRequirement[];
+  /** Example tickers for market-context examples (learning only). */
+  exampleAssets: string[];
+  /** Extra search/detection terms beyond the name. */
+  keywordsList: {
+    he: string[];
+    en: string[];
+  };
+}
+
+export type StrategyFitLevel = "high" | "moderate" | "low";
+
+export interface StrategyFitAssessment {
+  status: "needs_profile" | "assessed";
+  strategyId: StrategyId;
+  fit: StrategyFitLevel | null;
+  reasons: string[];
+  /** Always present: this is education, never personalized advice. */
+  disclaimer: string;
+}
+
+export interface StrategyComparisonRow {
+  dimension: string;
+  label: LocalizedText;
+  values: string[];
+}
+
+// =====================================================
 // Education
 // =====================================================
 

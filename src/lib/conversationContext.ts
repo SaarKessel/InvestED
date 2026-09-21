@@ -30,6 +30,8 @@
 // =====================================================
 
 import { analyzeFinancialScenario } from "./calculatorEngine";
+import { detectStrategyMentions } from "./strategy/strategyEngine";
+import type { StrategyId } from "@/types";
 import { extractProfileFlags } from "./riskEngine";
 import { SP500_STOCKS } from "./sp500Stocks";
 
@@ -67,6 +69,9 @@ export interface ConversationContext {
   currentLanguage: ConversationLanguage | null;
   currentAsset: string | null;
   comparisonSet: string[];
+  /** Phase 6: active strategy focus and strategy comparison set. */
+  currentStrategy: StrategyId | null;
+  strategyComparisonSet: StrategyId[];
   financialParameters: FinancialParameters;
   investorProfileContext: InvestorProfileContext | null;
   lastRelevantTurn: number | null;
@@ -87,6 +92,10 @@ export interface TurnResolution {
   /** Resolved current asset for this turn (null when none / comparison). */
   currentAsset: string | null;
   comparisonSet: string[];
+  /** Phase 6: strategies resolved for this turn (empty for non-strategy turns). */
+  strategyIds: StrategyId[];
+  /** True when the turn asks how a strategy fits the investor's profile. */
+  strategyFitRequested: boolean;
   /** Merged financial parameters after precedence rules. */
   financialParameters: FinancialParameters;
   /**
@@ -394,19 +403,34 @@ const FINANCIAL_KEYWORDS =
 function detectExplicitIntent(
   text: string,
   assets: string[],
-  explicit: ExplicitFinancial
+  explicit: ExplicitFinancial,
+  strategies: StrategyId[] = []
 ): ConversationIntent | null {
-  if (COMPARISON_KEYWORDS.test(text)) return "comparison";
-  if (hasComparativeMarker(text)) return "comparison";
-  if (assets.length >= 2) return "comparison";
-  if (PROFILE_KEYWORDS.test(text)) return "investor_profile_fit";
-  if (ANALYSIS_KEYWORDS.test(text) && assets.length > 0) return "asset_analysis";
-
   const hasExplicitFinancial =
     explicit.monthlyContribution !== null ||
     explicit.years !== null ||
     explicit.annualReturnPct !== null ||
     explicit.initialInvestment !== null;
+
+  // Phase 6: explicit strategy entities route to the Strategy Engine.
+  // A turn that also carries explicit financial parameters stays a
+  // financial projection ("invest 100k in the S&P 500 index for 20
+  // years" describes a calculation, not a strategy question).
+  if (strategies.length > 0 && !hasExplicitFinancial) {
+    if (PROFILE_KEYWORDS.test(text)) return "strategy_question";
+    if (strategies.length >= 2 && (COMPARISON_KEYWORDS.test(text) || hasComparativeMarker(text))) {
+      return "strategy_question";
+    }
+    if (STRATEGY_KEYWORDS.test(text) || EDUCATIONAL_KEYWORDS.test(text) || assets.length === 0) {
+      return "strategy_question";
+    }
+  }
+
+  if (COMPARISON_KEYWORDS.test(text)) return "comparison";
+  if (hasComparativeMarker(text)) return "comparison";
+  if (assets.length >= 2) return "comparison";
+  if (PROFILE_KEYWORDS.test(text)) return "investor_profile_fit";
+  if (ANALYSIS_KEYWORDS.test(text) && assets.length > 0) return "asset_analysis";
 
   if (FINANCIAL_KEYWORDS.test(text) || hasExplicitFinancial) {
     return "financial_projection";
@@ -440,6 +464,10 @@ const CLARIFICATION_TEXT: Record<
     he: "עדיין אין לי את פרופיל המשקיע שלך. השלם קודם את ניתוח הפרופיל כדי שאוכל לבדוק התאמה.",
     en: "I don't have your investor profile yet. Complete the profile analysis first so I can check the fit.",
   },
+  strategy_selection: {
+    he: "איזו אסטרטגיה מעניינת אותך? למשל: השקעת מדדים, מיצוע עלויות, ערך, צמיחה, דיבידנד, מומנטום או פיזור.",
+    en: "Which strategy are you interested in? For example: index investing, dollar-cost averaging, value, growth, dividend, momentum, or diversification.",
+  },
 };
 
 function buildClarification(
@@ -463,6 +491,8 @@ interface SessionState {
   currentLanguage: ConversationLanguage | null;
   currentAsset: string | null;
   comparisonSet: string[];
+  currentStrategy: StrategyId | null;
+  strategyComparisonSet: StrategyId[];
   financialParameters: FinancialParameters;
   investorProfileContext: InvestorProfileContext | null;
   lastRelevantTurn: number | null;
@@ -485,6 +515,8 @@ function freshState(
     currentLanguage: null,
     currentAsset: null,
     comparisonSet: [],
+    currentStrategy: null,
+    strategyComparisonSet: [],
     financialParameters: { ...EMPTY_FINANCIAL },
     investorProfileContext: investorProfile,
     lastRelevantTurn: null,
@@ -505,6 +537,8 @@ export function createConversationSession(options?: {
       currentLanguage: state.currentLanguage,
       currentAsset: state.currentAsset,
       comparisonSet: [...state.comparisonSet],
+      currentStrategy: state.currentStrategy,
+      strategyComparisonSet: [...state.strategyComparisonSet],
       financialParameters: { ...state.financialParameters },
       investorProfileContext: state.investorProfileContext
         ? { ...state.investorProfileContext }
@@ -519,7 +553,8 @@ export function createConversationSession(options?: {
     const language = detectConversationLanguage(text);
     const assets = extractAssets(text);
     const explicit = detectExplicitFinancial(text);
-    const explicitIntent = detectExplicitIntent(text, assets, explicit);
+    const strategyMentions = detectStrategyMentions(text);
+    const explicitIntent = detectExplicitIntent(text, assets, explicit, strategyMentions);
 
     const hasContext = state.lastRelevantTurn !== null;
     const followUpMarker = hasFollowUpMarker(text);
@@ -596,6 +631,26 @@ export function createConversationSession(options?: {
     const inheritedFromContext: string[] = [];
 
     // -------------------------------------------------
+    // Phase 6: resolve strategy entities for this turn.
+    // Explicit mentions win; a strategy follow-up inherits
+    // the session's strategy focus / comparison set.
+    // -------------------------------------------------
+    const strategyFitRequested =
+      intent === "strategy_question" &&
+      (PROFILE_KEYWORDS.test(text) || (isFollowUp && state.currentIntent === "strategy_question" && state.currentStrategy !== null && PROFILE_KEYWORDS.test(text)));
+
+    const resolvedStrategyIds: StrategyId[] =
+      intent !== "strategy_question"
+        ? []
+        : strategyMentions.length > 0
+          ? strategyMentions
+          : isFollowUp && state.currentStrategy
+            ? state.strategyComparisonSet.length >= 2
+              ? [...state.strategyComparisonSet]
+              : [state.currentStrategy]
+            : [];
+
+    // -------------------------------------------------
     // Missing context → clarification (never guess)
     // -------------------------------------------------
     let clarification: ClarificationRequest | null = null;
@@ -620,6 +675,17 @@ export function createConversationSession(options?: {
       // A fit question without any genuine profile (neither in
       // context nor described in this turn) must never invent one.
       clarification = buildClarification(["investor_profile"], language);
+    } else if (intent === "strategy_question" && resolvedStrategyIds.length === 0) {
+      clarification = buildClarification(["strategy_selection"], language);
+    } else if (
+      intent === "strategy_question" &&
+      strategyFitRequested &&
+      !state.investorProfileContext &&
+      !turnHasProfileContent
+    ) {
+      // A strategy-fit question needs the same genuine profile;
+      // without one the engine clarifies instead of inventing it.
+      clarification = buildClarification(["investor_profile"], language);
     }
 
     state.turnCount += 1;
@@ -631,6 +697,8 @@ export function createConversationSession(options?: {
         language,
         currentAsset: explicitAsset,
         comparisonSet: resolvedComparisonSet,
+        strategyIds: resolvedStrategyIds,
+        strategyFitRequested,
         financialParameters: { ...state.financialParameters },
         scenario: null,
         investorProfileContext: state.investorProfileContext
@@ -734,6 +802,19 @@ export function createConversationSession(options?: {
       state.comparisonSet = resolvedComparisonSet;
     }
 
+    // Phase 6: commit strategy context with the same precedence
+    // rules as assets — explicit mentions replace, follow-ups carry.
+    if (intent === "strategy_question" && strategyMentions.length > 0) {
+      state.currentStrategy = strategyMentions[0];
+      if (strategyMentions.length >= 2) {
+        state.strategyComparisonSet = [...strategyMentions];
+      } else if (explicitIntent !== null) {
+        // A new explicit single-strategy focus ends any previous
+        // strategy comparison context — stale context must not leak.
+        state.strategyComparisonSet = [];
+      }
+    }
+
     if (intent === "financial_projection") {
       state.financialParameters = mergedFinancial;
     }
@@ -746,6 +827,8 @@ export function createConversationSession(options?: {
       language,
       currentAsset,
       comparisonSet: resolvedComparisonSet,
+      strategyIds: resolvedStrategyIds,
+      strategyFitRequested,
       financialParameters:
         intent === "financial_projection"
           ? { ...mergedFinancial }

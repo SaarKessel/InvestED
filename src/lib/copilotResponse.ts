@@ -1,7 +1,21 @@
-import type { AnalysisResult, AssetAnalysis, MarketDataFreshness, MarketDataSource } from "@/types";
+import type { AnalysisResult, AssetAnalysis, MarketDataFreshness, MarketDataSource, StrategyFitAssessment, StrategyId } from "@/types";
 import type { ClarificationRequest, ConversationIntent, ConversationLanguage, TurnResolution } from "./conversationContext";
+import type { StrategyComparisonResult, StrategyExplanation, StrategyMarketExample } from "./strategy/strategyEngine";
 
-export type CopilotDataDependency = "market" | "financial_engine" | "investor_profile";
+export type CopilotDataDependency = "market" | "financial_engine" | "investor_profile" | "strategy_engine";
+
+/**
+ * Phase 6: validated Strategy Engine output handed to the
+ * response builder. Ollama may rephrase this content, never
+ * extend it with new facts.
+ */
+export interface StrategyCopilotPayload {
+  kind: "explain" | "compare";
+  explanation: StrategyExplanation | null;
+  comparison: StrategyComparisonResult | null;
+  fit: StrategyFitAssessment | null;
+  marketExamples: StrategyMarketExample[];
+}
 
 export interface CopilotResponse {
   text: string;
@@ -10,6 +24,8 @@ export interface CopilotResponse {
   assets: AssetAnalysis[];
   calculation: AnalysisResult["projection"] | null;
   comparison: AssetAnalysis[] | null;
+  strategies: StrategyId[];
+  strategyFit: StrategyFitAssessment | null;
   profileContextUsed: boolean;
   dataDependencies: CopilotDataDependency[];
   dataSources: MarketDataSource[];
@@ -50,12 +66,85 @@ function educationalFallback(message: string, language: ConversationLanguage): s
   return he ? "אסביר את הנושא במונחים פיננסיים פשוטים ובהקשר חינוכי, בלי להמציא נתונים או לתת הוראת קנייה או מכירה." : "I can explain this in clear financial terms for education, without inventing data or giving a buy/sell instruction.";
 }
 
+function strategyMarketText(examples: StrategyMarketExample[], language: ConversationLanguage): string {
+  if (examples.length === 0) return "";
+  const en = language === "en";
+  const parts = examples.map((example) => {
+    if (!example.available) {
+      return en
+        ? `${example.symbol}: market data unavailable right now (no value invented).`
+        : `${example.symbol}: נתוני השוק אינם זמינים כרגע (לא הומצא ערך).`;
+    }
+    const source = (example.dataSource ?? "unknown").replace("_", " ");
+    const freshness = example.freshness ?? "unavailable";
+    return en
+      ? `${example.symbol}: latest available ${example.price?.toFixed(2)} (${(example.changePercent ?? 0).toFixed(2)}%). Source: ${source}; freshness: ${freshness}.`
+      : `${example.symbol}: ערך זמין אחרון ${example.price?.toFixed(2)} (${(example.changePercent ?? 0).toFixed(2)}%). מקור: ${source}; עדכניות: ${freshness}.`;
+  });
+  const header = en ? "Market examples (educational): " : "דוגמאות מהשוק (ללמידה): ";
+  return header + parts.join(" ");
+}
+
+function strategyCopilotText(payload: StrategyCopilotPayload, language: ConversationLanguage): string {
+  const en = language === "en";
+  const segments: string[] = [];
+
+  if (payload.kind === "compare" && payload.comparison) {
+    const comparison = payload.comparison;
+    segments.push(comparison.summary);
+    const riskRow = comparison.rows.find((row) => row.dimension === "risk");
+    if (riskRow) {
+      const pairs = comparison.strategies.map((strategy, index) => `${strategy.name}: ${riskRow.values[index]}`);
+      segments.push(`${riskRow.label}: ${pairs.join("; ")}.`);
+    }
+    const horizonRow = comparison.rows.find((row) => row.dimension === "timeHorizon");
+    if (horizonRow) {
+      const pairs = comparison.strategies.map((strategy, index) => `${strategy.name}: ${horizonRow.values[index]}`);
+      segments.push(`${horizonRow.label}: ${pairs.join("; ")}.`);
+    }
+    segments.push(comparison.disclaimer);
+  } else if (payload.explanation) {
+    const explanation = payload.explanation;
+    segments.push(`${explanation.name} (${explanation.riskLabel}, ${en ? "risk" : "סיכון"} ${explanation.riskLevel}/10).`);
+    segments.push(explanation.description);
+    segments.push(explanation.philosophy);
+    segments.push((en ? "Suitable for: " : "למי זה מתאים: ") + explanation.suitableFor);
+    if (explanation.strengths.length > 0) {
+      segments.push((en ? "Strengths: " : "חוזקות: ") + explanation.strengths.join("; ") + ".");
+    }
+    if (explanation.limitations.length > 0) {
+      segments.push((en ? "Limitations: " : "מגבלות: ") + explanation.limitations.join("; ") + ".");
+    }
+    segments.push(explanation.historicalContext);
+    segments.push(explanation.disclaimer);
+  }
+
+  if (payload.fit) {
+    if (payload.fit.status === "assessed" && payload.fit.fit) {
+      const fitLabel = en
+        ? { high: "high", moderate: "partial", low: "low" }[payload.fit.fit]
+        : { high: "גבוהה", moderate: "חלקית", low: "נמוכה" }[payload.fit.fit];
+      segments.push(
+        (en ? `Educational fit with your profile: ${fitLabel}. ` : `התאמה לימודית לפרופיל שלך: ${fitLabel}. `) +
+        payload.fit.reasons.join(" ")
+      );
+    }
+    segments.push(payload.fit.disclaimer);
+  }
+
+  const marketText = strategyMarketText(payload.marketExamples, language);
+  if (marketText) segments.push(marketText);
+
+  return segments.join(" ").trim();
+}
+
 export function buildCopilotResponse(
   message: string,
   resolution: TurnResolution,
   result: AnalysisResult | null,
   assets: AssetAnalysis[],
-  enhancedText?: string | null
+  enhancedText?: string | null,
+  strategyOutput?: StrategyCopilotPayload | null
 ): CopilotResponse {
   const marketNeeded = assets.length > 0 || resolution.currentAsset !== null || resolution.comparisonSet.length > 0;
   const financialNeeded = resolution.scenario !== null;
@@ -64,6 +153,7 @@ export function buildCopilotResponse(
   if (marketNeeded) dataDependencies.push("market");
   if (financialNeeded) dataDependencies.push("financial_engine");
   if (profileUsed) dataDependencies.push("investor_profile");
+  if (strategyOutput) dataDependencies.push("strategy_engine");
   const dataSources = [...new Set(assets.map((asset) => asset.dataSource))];
   const dataFreshness = [...new Set(assets.map((asset) => asset.freshness ?? (asset.isMock ? "simulated" : "unavailable")))];
 
@@ -89,6 +179,7 @@ export function buildCopilotResponse(
   else if (!text && resolution.intent === "investor_profile_fit" && profileUsed) text = resolution.language === "en"
     ? `The fit assessment uses your saved in-session investor profile (${resolution.investorProfileContext?.classification ?? "profile available"}). It is educational and does not create or infer missing profile details.`
     : `בדיקת ההתאמה משתמשת בפרופיל המשקיע הקיים בסשן (${resolution.investorProfileContext?.classification ?? "פרופיל קיים"}). היא לימודית ואינה ממציאה פרטי פרופיל חסרים.`;
+  else if (!text && strategyOutput) text = strategyCopilotText(strategyOutput, resolution.language);
   else if (!text) text = educationalFallback(message, resolution.language);
 
   return {
@@ -98,6 +189,14 @@ export function buildCopilotResponse(
     assets,
     calculation: financialNeeded && result ? result.projection : null,
     comparison: resolution.intent === "comparison" ? assets : null,
+    strategies: strategyOutput
+      ? (strategyOutput.kind === "compare" && strategyOutput.comparison
+          ? strategyOutput.comparison.strategies.map((item) => item.strategy.id)
+          : strategyOutput.explanation
+            ? [strategyOutput.explanation.strategy.id]
+            : [])
+      : [],
+    strategyFit: strategyOutput?.fit ?? null,
     profileContextUsed: profileUsed,
     dataDependencies,
     dataSources,

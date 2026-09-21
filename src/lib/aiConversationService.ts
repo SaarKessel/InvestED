@@ -7,7 +7,15 @@ import {
 import { buildRuleBasedAnalysis, tryEnhanceWithOllama } from "./analysisService";
 import { fetchMarketAssetBySymbol } from "./marketData";
 import { calculateRsi, calculateVolatility } from "./market/indicators";
-import { buildCopilotResponse, type CopilotResponse } from "./copilotResponse";
+import { buildCopilotResponse, type CopilotResponse, type StrategyCopilotPayload } from "./copilotResponse";
+import {
+  compareStrategies,
+  evaluateEducationalFit,
+  explainStrategy,
+  getStrategy,
+  type EngineLanguage,
+  type StrategyMarketExample,
+} from "./strategy/strategyEngine";
 
 // The shared AssetAnalysis type lives in @/types so analysisService
 // and ollamaClient no longer import it from this module (which
@@ -36,19 +44,16 @@ const defaultDependencies: AIConversationDependencies = {
   enhance: tryEnhanceWithOllama,
 };
 
-async function loadAssets(
-  resolution: TurnResolution,
+const STRATEGY_MARKET_EXAMPLE_REQUEST =
+  /\b(example|examples|market|price|prices|today|now)\b|דוגמ|שוק|מחיר|היום/i;
+
+async function loadAssetsForSymbols(
+  symbols: string[],
   fetchAsset: AIConversationDependencies["fetchAsset"]
 ): Promise<AssetAnalysis[]> {
-  const symbols = resolution.intent === "comparison"
-    ? resolution.comparisonSet
-    : resolution.currentAsset
-      ? [resolution.currentAsset]
-      : [];
   const loaded = await Promise.all(symbols.map(async (symbol): Promise<AssetAnalysis | null> => {
     const asset = await fetchAsset(symbol);
     if (!asset) return null;
-    // Unknown provenance is never presented as live data.
     const dataSource = asset.dataSource ?? "mock";
     return {
       symbol,
@@ -65,6 +70,93 @@ async function loadAssets(
     };
   }));
   return loaded.filter((asset): asset is AssetAnalysis => asset !== null);
+}
+
+/**
+ * Build the Strategy Engine payload for a strategy turn:
+ * explain / compare / profile-fit, plus provenance-carrying
+ * market examples through the existing market-data path when
+ * the turn asks for them. Educational only — never advice.
+ */
+async function buildStrategyPayload(
+  message: string,
+  resolution: TurnResolution,
+  fetchAsset: AIConversationDependencies["fetchAsset"]
+): Promise<{ payload: StrategyCopilotPayload; assets: AssetAnalysis[] }> {
+  const language: EngineLanguage = resolution.language === "en" ? "en" : "he";
+  const ids = resolution.strategyIds;
+  const primaryId = ids[0];
+
+  const comparison = ids.length >= 2 ? compareStrategies(ids, language) : null;
+  const explanation = comparison ? null : primaryId ? explainStrategy(primaryId, language) : null;
+  const fit = resolution.strategyFitRequested && primaryId
+    ? evaluateEducationalFit(primaryId, resolution.investorProfileContext, language)
+    : null;
+
+  // Market examples only when the turn actually asks for them
+  // and the strategy declares a price-history data requirement.
+  let assets: AssetAnalysis[] = [];
+  if (primaryId && STRATEGY_MARKET_EXAMPLE_REQUEST.test(message)) {
+    const strategy = getStrategy(primaryId);
+    if (strategy && strategy.dataRequirements.includes("price_history") && strategy.exampleAssets.length > 0) {
+      assets = await loadAssetsForSymbols(strategy.exampleAssets.slice(0, 3), fetchAsset);
+    }
+  }
+
+  const marketExamples: StrategyMarketExample[] = assets.map((asset) => ({
+    symbol: asset.symbol,
+    available: true,
+    price: asset.price,
+    changePercent: asset.changePercent,
+    dataSource: asset.dataSource,
+    freshness: asset.freshness ?? (asset.isMock ? "simulated" : "unavailable"),
+    timestamp: asset.timestamp ?? null,
+    isMock: asset.isMock ?? false,
+  }));
+
+  // Symbols the user asked about but the market layer could not
+  // serve are surfaced as unavailable — never invented.
+  if (primaryId && STRATEGY_MARKET_EXAMPLE_REQUEST.test(message)) {
+    const strategy = getStrategy(primaryId);
+    const wanted = strategy?.exampleAssets.slice(0, 3) ?? [];
+    for (const symbol of wanted) {
+      if (strategy?.dataRequirements.includes("price_history") && !assets.some((asset) => asset.symbol === symbol)) {
+        marketExamples.push({
+          symbol,
+          available: false,
+          price: null,
+          changePercent: null,
+          dataSource: null,
+          freshness: null,
+          timestamp: null,
+          isMock: false,
+        });
+      }
+    }
+  }
+
+  return {
+    payload: {
+      kind: comparison ? "compare" : "explain",
+      explanation,
+      comparison,
+      fit,
+      marketExamples,
+    },
+    assets,
+  };
+}
+
+async function loadAssets(
+  resolution: TurnResolution,
+  fetchAsset: AIConversationDependencies["fetchAsset"]
+): Promise<AssetAnalysis[]> {
+  const symbols = resolution.intent === "comparison"
+    ? resolution.comparisonSet
+    : resolution.currentAsset
+      ? [resolution.currentAsset]
+      : [];
+  return loadAssetsForSymbols(symbols, fetchAsset);
 }
 
 export function investorProfileFromResult(result: AnalysisResult): InvestorProfileContext {
@@ -92,7 +184,17 @@ export async function processAIMessage(
     };
   }
 
-  const assetAnalyses = await loadAssets(resolution, dependencies.fetchAsset);
+  // Phase 6: strategy turns are answered by the Strategy Engine
+  // (explain / compare / genuine-profile fit); market examples,
+  // when requested, come through the same injected market path.
+  const strategyTurn =
+    resolution.intent === "strategy_question" && resolution.strategyIds.length > 0
+      ? await buildStrategyPayload(message, resolution, dependencies.fetchAsset)
+      : null;
+
+  const assetAnalyses = strategyTurn
+    ? strategyTurn.assets
+    : await loadAssets(resolution, dependencies.fetchAsset);
   const result = buildRuleBasedAnalysis(
     message,
     resolution.language === "mixed" ? applicationLanguage : resolution.language,
@@ -120,7 +222,8 @@ export async function processAIMessage(
       resolution,
       finalResult,
       assetAnalyses,
-      enhanced?.conversationSummary ?? null
+      enhanced?.conversationSummary ?? null,
+      strategyTurn?.payload ?? null
     ),
   };
 }

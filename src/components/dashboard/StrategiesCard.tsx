@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { Layers, Check, X } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Layers, Check, X, ArrowRight } from "lucide-react";
 
 import {
   Card,
@@ -169,6 +170,16 @@ export function StrategiesCard() {
                 </div>
               );
             })}
+          </div>
+
+          <div className="mt-6 border-t border-border pt-4">
+            <Link
+              to="/strategy-lab"
+              className="inline-flex items-center gap-2 text-sm font-bold text-primary transition-colors hover:text-primary/80"
+            >
+              {t("strategies_open_lab", "Explore the full Strategy Lab")}
+              <ArrowRight className="h-4 w-4 rtl:-scale-x-100" />
+            </Link>
           </div>
         </CardContent>
       </Card>

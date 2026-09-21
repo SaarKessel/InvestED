@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { LanguageProvider } from "@/context/languageContext";
@@ -14,6 +15,8 @@ import { TermsPage } from "@/pages/TermsPage";
 import { ContactPage } from "@/pages/ContactPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 
+const StrategyLabPage = lazy(() => import("@/pages/StrategyLabPage"));
+
 export default function App() {
   return (
     <ErrorBoundary>
@@ -26,6 +29,14 @@ export default function App() {
               <Route path="/start" element={<InputPage />} />
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/calculator" element={<CalculatorPage />} />
+              <Route
+                path="/strategy-lab"
+                element={
+                  <Suspense fallback={null}>
+                    <StrategyLabPage />
+                  </Suspense>
+                }
+              />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/faq" element={<FaqPage />} />
               <Route path="/privacy" element={<PrivacyPage />} />

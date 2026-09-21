@@ -144,6 +144,7 @@ export async function explainPortfolio(
 }
 import type { AnalysisResult, AssetAnalysis } from "@/types";
 import type { TurnResolution } from "./conversationContext";
+import { explainStrategy } from "./strategy/strategyEngine";
 
 export async function explainConversationTurn(
   result: AnalysisResult,
@@ -165,6 +166,23 @@ export async function explainConversationTurn(
   const profileForPrompt = resolution.intent === "investor_profile_fit"
     ? resolution.investorProfileContext
     : null;
+  // Phase 6: for strategy turns, Ollama receives only the validated
+  // Strategy Engine output and may rephrase it — never extend it.
+  const strategyForPrompt =
+    resolution.intent === "strategy_question" && resolution.strategyIds.length > 0
+      ? resolution.strategyIds.map((id) => {
+          const explanation = explainStrategy(id, resolution.language === "en" ? "en" : "he");
+          return explanation
+            ? {
+                name: explanation.name,
+                description: explanation.description,
+                riskLevel: explanation.riskLevel,
+                suitableFor: explanation.suitableFor,
+                disclaimer: explanation.disclaimer,
+              }
+            : null;
+        }).filter((entry) => entry !== null)
+      : null;
 
   const prompt = [
     languageInstruction,
@@ -177,6 +195,7 @@ export async function explainConversationTurn(
     mockWarning,
     provenanceInstruction,
     `Rule-based result: ${JSON.stringify({ investor: result.investor, riskScore: result.riskScore, projection: result.projection })}.`,
+    strategyForPrompt ? `Validated Strategy Engine output (educational; you may rephrase but never add facts, guarantees, or buy/sell instructions): ${JSON.stringify(strategyForPrompt)}.` : null,
     "Explain only the supplied facts. Never invent market data or an investor profile.",
   ].filter((line): line is string => line !== null).join("\n");
   const text = await callOllama(
