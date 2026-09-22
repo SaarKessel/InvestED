@@ -164,6 +164,8 @@ describe("chat benchmark — regression and adversarial routing", () => {
     expect(turn.resolution.intent).toBe("financial_projection");
     expect(turn.response.text).not.toMatch(/Which asset/);
     expect(turn.response.calculation).not.toBeNull();
+    expect(turn.response.calculation?.totalContributed).toBe(10_000);
+    expect(turn.response.calculation?.finalBalance).toBeGreaterThan(38_000);
   });
 
   it.each([

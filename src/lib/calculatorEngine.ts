@@ -402,7 +402,7 @@ function detectInitialAmount(text: string): number {
 
     // Explicit lump sum with a horizon. The horizon/upfront lookahead keeps
     // monthly "invest X per month" phrases in the monthly parser.
-    /(?:if\s+i\s+|i\s+)?invest\s+(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪|usd|dollars?)?\s*(?=for\s+\d+\s*years?|over\s+\d+\s*years?|initially\b|upfront\b)/i,
+    /(?:if\s+i\s+|i\s+)?invest\s+\$?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪|usd|dollars?|\$)?\s*(?:at\s+\d+(?:\.\d+)?%\s*)?(?=for\s+\d+\s*years?|over\s+\d+\s*years?|initially\b|upfront\b)/i,
 
     /(?:want to|planning to|going to|would like to)\s+invest\s+(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?\s*(?:initially|upfront|as a start)?\b/i,
 
@@ -509,7 +509,7 @@ function detectInitialAmount(text: string): number {
 
     // Explicit lump sum with a horizon. The horizon/upfront lookahead keeps
     // monthly "invest X per month" phrases in the monthly parser.
-    /(?:if\s+i\s+|i\s+)?invest\s+(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪|usd|dollars?)?\s*(?=for\s+\d+\s*years?|over\s+\d+\s*years?|initially\b|upfront\b)/i,
+    /(?:if\s+i\s+|i\s+)?invest\s+\$?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪|usd|dollars?|\$)?\s*(?:at\s+\d+(?:\.\d+)?%\s*)?(?=for\s+\d+\s*years?|over\s+\d+\s*years?|initially\b|upfront\b)/i,
 
     /(?:want to|planning to|going to|would like to)\s+invest\s+(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?\s*(?:initially|upfront|as a start)?\b/i,
 
