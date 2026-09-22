@@ -178,5 +178,7 @@ describe("chat benchmark — regression and adversarial routing", () => {
     const turn = await processAIMessage(session, message, "en", deps);
     expect(turn.response.text).toMatch(/no such thing|אין דבר כזה/);
     expect(turn.response.text).not.toMatch(/Which asset|לאיזה נכס/);
+    expect(turn.response.assets).toEqual([]);
+    expect(turn.response.dataSources).toEqual([]);
   });
 });
