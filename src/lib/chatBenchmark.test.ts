@@ -231,3 +231,30 @@ describe("chat benchmark — Hebrew parity regressions", () => {
     expect(turn.response.toolResult?.assumptions.join(" ")).not.toContain("provider rate");
   });
 });
+
+describe("chat benchmark — Hebrew QA coverage regressions", () => {
+  it("answers the rule-of-72 doubling question in Hebrew", async () => {
+    const turn = await processAIMessage(createConversationSession(), "בכמה שנים הכסף שלי יוכפל בתשואה של 7%?", "he", setup());
+    expect(turn.response.text).toContain("מוכפל");
+    expect(turn.response.text).toContain("10.2");
+  });
+
+  it("answers a dividend question about a symbol honestly when no dividend data exists", async () => {
+    const turn = await processAIMessage(createConversationSession(), "מהי תשואת הדיבידנד של VYM?", "he", setup());
+    expect(turn.response.text).toContain("דיבידנד");
+    expect(turn.response.text).toContain("לא כולל");
+    expect(turn.response.text).not.toMatch(/\d+\.\d+%.*תשואת דיבידנד של/);
+  });
+
+  it("guides an open allocation question instead of answering with an unrelated concept", async () => {
+    const turn = await processAIMessage(createConversationSession(), "יש לי 100,000 שקל. איך לחלק אותם בין מניות לאג״ח?", "he", setup());
+    expect(turn.response.text).toContain("מעבדת האסטרטגיות");
+    expect(turn.response.text).not.toContain("איגרת חוב היא הלוואה");
+  });
+
+  it("does not repeat the budget or show a same-currency residual in buying power", async () => {
+    const turn = await processAIMessage(createConversationSession(), "how many VOO shares can I buy with 20,000 dollars?", "en", setup());
+    expect(turn.response.text).not.toContain("(18 USD)");
+    expect(turn.response.text).not.toContain("20,000 USD: 20,000 USD");
+  });
+});

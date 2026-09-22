@@ -261,14 +261,20 @@ function purchasePlan(request: PurchasePowerRequest, lang: QALanguage): QAPlan {
       }
       const stale = assets.some((item) => item.freshness === "stale");
       const needsFx = result.fx !== null;
+      const sameCurrency = result.sourceCurrency === result.assetCurrency;
+      // The first step only adds information when an FX conversion happened;
+      // otherwise it just repeats the budget.
       const firstStep = needsFx
-        ? lang === "he"
-          ? `${fmt(result.amount, lang)} ${result.sourceCurrency} ÷ ${fmt(result.fxRate ?? 1, lang, 4)} = ${fmt(result.convertedBudget ?? 0, lang)} ${result.assetCurrency}`
-          : `${fmt(result.amount, lang)} ${result.sourceCurrency} ÷ ${fmt(result.fxRate ?? 1, lang, 4)} = ${fmt(result.convertedBudget ?? 0, lang)} ${result.assetCurrency}`
-        : `${fmt(result.amount, lang)} ${result.sourceCurrency}`;
+        ? `${fmt(result.amount, lang)} ${result.sourceCurrency} ÷ ${fmt(result.fxRate ?? 1, lang, 4)} = ${fmt(result.convertedBudget ?? 0, lang)} ${result.assetCurrency}; `
+        : "";
+      // The residual in source currency only adds information when it differs
+      // from the asset currency.
+      const residualSource = sameCurrency
+        ? ""
+        : ` (${fmt(result.residualSourceCurrency ?? 0, lang)} ${result.sourceCurrency})`;
       const text = lang === "he"
-        ? `עם ${fmt(result.amount, lang)} ${result.sourceCurrency}: ${firstStep}; מחלקים במחיר מניה ${fmt(result.assetPrice ?? 0, lang)} ${result.assetCurrency}. ניתן לקנות ${fmt(result.wholeShares ?? 0, lang, 0)} מניות שלמות של ${result.symbol}, ויישארו בערך ${fmt(result.residualAssetCurrency ?? 0, lang)} ${result.assetCurrency} (${fmt(result.residualSourceCurrency ?? 0, lang)} ${result.sourceCurrency}). החישוב אינו כולל עמלות מסחר, מרווח המרה, מסים או מניות חלקיות. ${marketNote(lang, stale)} ${EDU.he}`
-        : `With ${fmt(result.amount, lang)} ${result.sourceCurrency}: ${firstStep}; divided by the ${result.symbol} share price of ${fmt(result.assetPrice ?? 0, lang)} ${result.assetCurrency}. You can buy ${fmt(result.wholeShares ?? 0, lang, 0)} whole shares, leaving about ${fmt(result.residualAssetCurrency ?? 0, lang)} ${result.assetCurrency} (${fmt(result.residualSourceCurrency ?? 0, lang)} ${result.sourceCurrency}). This excludes brokerage fees, FX spread, taxes, and fractional shares. ${marketNote(lang, stale)} ${EDU.en}`;
+        ? `עם ${fmt(result.amount, lang)} ${result.sourceCurrency}: ${firstStep}מחלקים במחיר מניה ${fmt(result.assetPrice ?? 0, lang)} ${result.assetCurrency}. ניתן לקנות ${fmt(result.wholeShares ?? 0, lang, 0)} מניות שלמות של ${result.symbol}, ויישארו בערך ${fmt(result.residualAssetCurrency ?? 0, lang)} ${result.assetCurrency}${residualSource}. החישוב אינו כולל עמלות מסחר, מרווח המרה, מסים או מניות חלקיות. ${marketNote(lang, stale)} ${EDU.he}`
+        : `With ${fmt(result.amount, lang)} ${result.sourceCurrency}: ${firstStep}divided by the ${result.symbol} share price of ${fmt(result.assetPrice ?? 0, lang)} ${result.assetCurrency}. You can buy ${fmt(result.wholeShares ?? 0, lang, 0)} whole shares, leaving about ${fmt(result.residualAssetCurrency ?? 0, lang)} ${result.assetCurrency}${residualSource}. This excludes brokerage fees, FX spread, taxes, and fractional shares. ${marketNote(lang, stale)} ${EDU.en}`;
       return outcome("purchase_power", text, { purchasePower: result, assets });
     },
   };
@@ -534,7 +540,7 @@ function cagrCalc(message: string, lang: QALanguage): QAPlan | null {
 }
 
 function rule72Calc(message: string, lang: QALanguage): QAPlan | null {
-  if (!/הכפיל|הכפלה|מוכפל|להכפיל|double|doubling/i.test(message)) return null;
+  if (!/הכפיל|הכפלה|מוכפל|להכפיל|יוכפל|יכפיל|double|doubling/i.test(message)) return null;
   const m = message.match(new RegExp(PCT, "i"));
   if (!m) return null;
   const rate = parseNum(m[1]);
@@ -570,10 +576,19 @@ function dividendYieldCalc(message: string, lang: QALanguage): QAPlan | null {
   if (!/דיבידנד|dividend/i.test(message)) return null;
   const divM = message.match(new RegExp(`(?:דיבידנד\\s+(?:שנתי\\s+)?(?:של\\s+)?|dividend\\s+of\\s+)${NUM}`, "i"));
   const priceM = message.match(new RegExp(`(?:מחיר\\s+(?:של\\s+)?|price\\s+of\\s+|at\\s+)${NUM}`, "i"));
-  if (!divM || !priceM) return null;
-  const dividend = parseNum(divM[1]);
-  const price = parseNum(priceM[1]);
-  if (!dividend || !price) return null;
+  const dividend = divM ? parseNum(divM[1]) : null;
+  const price = priceM ? parseNum(priceM[1]) : null;
+  if (!dividend || !price) {
+    // A dividend question about a symbol, without figures: the market-data
+    // feed carries no dividend field, so say so instead of ignoring the
+    // dividend part of the question.
+    if (extractAssets(message).length > 0) {
+      return textPlan("dividend_yield", lang === "he"
+        ? `פיד נתוני השוק לא כולל כרגע נתון דיבידנד, ולכן לא אציג תשואת דיבידנד מספרית בלי מקור. אפשר לחשב אותה כך: תשואת דיבידנד = דיבידנד שנתי חלקי מחיר מניה. אם תזין את שני המספרים, אחשב מיד. ${EDU.he}`
+        : `The market-data feed does not include a dividend figure right now, so I will not show a numeric dividend yield without a source. You can compute it as: dividend yield = annual dividend ÷ share price. Send both numbers and I will calculate it. ${EDU.en}`);
+    }
+    return null;
+  }
   const yieldPct = (dividend / price) * 100;
   return textPlan("dividend_yield", lang === "he"
     ? `דיבידנד שנתי של ${fmt(dividend, lang)} על מחיר ${fmt(price, lang)} = תשואת דיבידנד של ${fmt(yieldPct, lang)}%. התשואה משתנה עם המחיר, והדיבידנד אינו מובטח. ${EDU.he}`
@@ -683,6 +698,18 @@ function allocationCalc(message: string, lang: QALanguage): QAPlan | null {
       ? `חלוקה של ${fmt(amount, lang)}${suffix}: ${lines.join(", ")}.${note} ההקצאה צריכה להתאים לאופק ולסיבולת הסיכון שלך. ${EDU.he}`
       : `Splitting ${fmt(amount, lang)}${suffix}: ${lines.join(", ")}.${note} The allocation should match your horizon and risk tolerance. ${EDU.en}`);
   }
+  const ratioPlan = allocationCalcRatio(message, lang, amount, suffix);
+  if (ratioPlan) return ratioPlan;
+
+  // An allocation question with an amount but no explicit split: give
+  // educational guidance and point to the profile and Strategy Lab instead
+  // of silently routing elsewhere. Never invent a personal split.
+  return textPlan("allocation", lang === "he"
+    ? `חלוקה של ${fmt(amount, lang)}${suffix} בין מניות לאג״ח תלויה באופק ההשקעה ובסיבולת הסיכון שלך, ואין חלוקה אחת שמתאימה לכולם. אפשר לבנות כאן פרופיל משקיע ולבחון הקצאות לימודיות במעבדת האסטרטגיות. אם תציין אחוזים (למשל 60% מניות ו-40% אג״ח), אחשב את הסכומים מיד. ${EDU.he}`
+    : `Splitting ${fmt(amount, lang)}${suffix} between stocks and bonds depends on your horizon and risk tolerance; there is no single right split. You can build an investor profile here and test educational allocations in the Strategy Lab. Give me percentages (for example 60% stocks and 40% bonds) and I will compute the amounts. ${EDU.en}`);
+}
+
+function allocationCalcRatio(message: string, lang: QALanguage, amount: number, suffix: string): QAPlan | null {
   const ratio = message.match(/(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)/);
   if (ratio) {
     const a = Number(ratio[1]);
