@@ -214,6 +214,25 @@ describe("chat benchmark — Hebrew parity regressions", () => {
     expect(turn.response.text).toContain("71,739.5");
   });
 
+  it("converts a Hebrew projection result to shekels on a short follow-up", async () => {
+    const session = createConversationSession();
+    const deps = setup({ "USDILS=X": { ...fixture("USDILS=X"), price: 3.5 } });
+    const first = await processAIMessage(session, "כמה זה 10,000 דולר ב-7% ל-20 שנה?", "he", deps);
+    expect(first.response.text).toContain("40,387");
+    const turn = await processAIMessage(session, "וכמה זה יוצא בשקלים?", "he", deps);
+    expect(turn.response.toolResult?.tool).toBe("fx_convert");
+    expect(turn.response.text).toContain("ILS");
+  });
+
+  it("converts an English projection result on a short follow-up", async () => {
+    const session = createConversationSession();
+    const deps = setup({ "USDILS=X": { ...fixture("USDILS=X"), price: 3.5 } });
+    await processAIMessage(session, "what is 10,000 dollars at 7% for 20 years?", "en", deps);
+    const turn = await processAIMessage(session, "and how much is that in shekels?", "en", deps);
+    expect(turn.response.toolResult?.tool).toBe("fx_convert");
+    expect(turn.response.text).toContain("ILS");
+  });
+
   it("localizes the verified-calculation card in Hebrew", async () => {
     const turn = await processAIMessage(createConversationSession(), "כמה שוות 199 מניות של TSLA?", "he", setup());
     expect(turn.response.toolResult?.tool).toBe("holding_value");

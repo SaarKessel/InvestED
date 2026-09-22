@@ -2,6 +2,7 @@ export interface Currency {
   code: string;
   symbol: string;
   name: string;
+  nameHe: string;
   locale: string;
   currency: string;
 }
@@ -11,6 +12,7 @@ export const CURRENCIES: Currency[] = [
     code: "ILS",
     symbol: "₪",
     name: "Israeli Shekel",
+    nameHe: "שקל ישראלי",
     locale: "he-IL",
     currency: "ILS",
   },
@@ -18,6 +20,7 @@ export const CURRENCIES: Currency[] = [
     code: "USD",
     symbol: "$",
     name: "US Dollar",
+    nameHe: "דולר אמריקאי",
     locale: "en-US",
     currency: "USD",
   },
@@ -25,6 +28,7 @@ export const CURRENCIES: Currency[] = [
     code: "EUR",
     symbol: "€",
     name: "Euro",
+    nameHe: "יורו",
     locale: "en-IE",
     currency: "EUR",
   },
@@ -32,6 +36,7 @@ export const CURRENCIES: Currency[] = [
     code: "GBP",
     symbol: "£",
     name: "British Pound",
+    nameHe: "לירה שטרלינג",
     locale: "en-GB",
     currency: "GBP",
   },
@@ -39,6 +44,7 @@ export const CURRENCIES: Currency[] = [
     code: "CAD",
     symbol: "CA$",
     name: "Canadian Dollar",
+    nameHe: "דולר קנדי",
     locale: "en-CA",
     currency: "CAD",
   },
@@ -46,6 +52,7 @@ export const CURRENCIES: Currency[] = [
     code: "AUD",
     symbol: "A$",
     name: "Australian Dollar",
+    nameHe: "דולר אוסטרלי",
     locale: "en-AU",
     currency: "AUD",
   },
@@ -53,6 +60,7 @@ export const CURRENCIES: Currency[] = [
     code: "CHF",
     symbol: "CHF",
     name: "Swiss Franc",
+    nameHe: "פרנק שוויצרי",
     locale: "de-CH",
     currency: "CHF",
   },
@@ -60,6 +68,7 @@ export const CURRENCIES: Currency[] = [
     code: "JPY",
     symbol: "¥",
     name: "Japanese Yen",
+    nameHe: "ין יפני",
     locale: "ja-JP",
     currency: "JPY",
   },

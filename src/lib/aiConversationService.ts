@@ -276,6 +276,18 @@ export async function processAIMessage(
     session.setInvestorProfile(investorProfileFromResult(finalResult));
   }
 
+  // A successful projection is a monetary result too, so a short
+  // "וכמה זה יוצא בשקלים?" / "and in shekels?" follow-up can convert it
+  // through the deterministic FX path instead of falling back.
+  const proj = finalResult.projection;
+  if (
+    proj &&
+    proj.finalBalance > 0 &&
+    (proj.currency === "ILS" || proj.currency === "USD" || proj.currency === "EUR" || proj.currency === "GBP")
+  ) {
+    qaMemory.lastMonetaryResult = { amount: proj.finalBalance, currency: proj.currency };
+  }
+
   return {
     resolution,
     result: finalResult,

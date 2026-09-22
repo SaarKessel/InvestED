@@ -239,7 +239,7 @@ export default function CalculatorPage() {
             >
               {CURRENCIES.map(c => (
                 <option key={c.code} value={c.code}>
-                  {c.code} — {c.symbol} {c.name}
+                  {c.code} — {c.symbol} {language === "he" ? c.nameHe : c.name}
                 </option>
               ))}
             </select>
