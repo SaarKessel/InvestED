@@ -1223,5 +1223,15 @@
   "learn_feedback_scope": "המשוב משתמש בפעילות שנשמרה במכשיר הזה. זו הכוונה לימודית מבוססת כללים, לא טענה שמודל AI מכיר אתכם או חוזה את השוק.",
   "learn_cycle_complete_title": "השלמתם את הלולאה",
   "learn_cycle_complete_text": "התקדמות פירושה שאפשר להסביר את ההיגיון, לא שכל תשובה או תשואת סימולציה היו חיוביות.",
-  "learn_new_cycle": "התחלת מחזור נוסף"
+  "learn_new_cycle": "התחלת מחזור נוסף",
+  "copilot_clear": "שיחה חדשה",
+  "copilot_verified_calculation": "חישוב מאומת",
+  "copilot_assumptions": "הנחות",
+  "copilot_copy": "העתקה",
+  "copilot_copied": "הועתק",
+  "copilot_working": "בודק את הבקשה ואת הנתונים המאומתים...",
+  "copilot_enter_hint": "Enter לשליחה · Shift+Enter לשורה חדשה",
+  "news_generated_note": "תבנית לימודית שנוצרה על ידי InvestED, לא סיכום של הכתבה.",
+  "news_cache_note": "פיד Yahoo Finance · נשמר במטמון עד 15 דקות; רענון בודק את הפיד האחרון שזמין במטמון.",
+  "news_source_article": "פתיחת כתבת המקור"
 }

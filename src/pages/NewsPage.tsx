@@ -49,6 +49,7 @@ export default function NewsPage() {
                 {new Date(result.fetchedAt).toLocaleString(language === "he" ? "he-IL" : "en-US", {
                   hour: "2-digit",
                   minute: "2-digit",
+                  timeZone: "Asia/Jerusalem",
                 })}
               </span>
             )}
@@ -73,7 +74,8 @@ export default function NewsPage() {
           </div>
         )}
 
-        <p className="mt-8 text-xs leading-5 text-muted-foreground">{t("news_educational_note")}</p>
+        <p className="mt-8 text-xs leading-5 text-muted-foreground">{t("news_cache_note")}</p>
+        <p className="mt-2 text-xs leading-5 text-muted-foreground">{t("news_educational_note")}</p>
         <DisclaimerBanner className="mt-6" />
       </section>
     </Layout>

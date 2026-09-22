@@ -1,4 +1,4 @@
-﻿import type {
+import type {
   ProfileFlags,
   RiskDescription,
   InvestorClassification,
@@ -409,14 +409,17 @@ export function computeRiskScore(
 
 
 export function riskScoreDescription(
-  score:number
+  score:number,
+  language: "he" | "en" = "en"
 ):RiskDescription {
+
+  const he = language === "he";
 
   if(score <= 3){
     return {
       band:"low",
       volatility:"low",
-      psychology:"Preference for stability and capital preservation."
+      psychology: he ? "העדפה ליציבות ולשמירה על ההון." : "Preference for stability and capital preservation."
     };
   }
 
@@ -424,14 +427,14 @@ export function riskScoreDescription(
     return {
       band:"medium",
       volatility:"medium",
-      psychology:"Balance between growth and risk management."
+      psychology: he ? "איזון בין צמיחה לניהול סיכונים." : "Balance between growth and risk management."
     };
   }
 
   return {
     band:"high",
     volatility:"high",
-    psychology:"Willingness to cope with volatility for growth potential."
+    psychology: he ? "נכונות להתמודד עם תנודתיות תמורת פוטנציאל צמיחה." : "Willingness to cope with volatility for growth potential."
   };
 
 }
@@ -443,8 +446,11 @@ export function riskScoreDescription(
 
 
 export function classifyInvestor(
-  score:number
+  score:number,
+  language: "he" | "en" = "en"
 ): InvestorClassification {
+
+  const he = language === "he";
 
 
   if(score <= 3){
@@ -454,7 +460,7 @@ export function classifyInvestor(
         "conservative" as InvestorType,
 
       reason:
-        "Low risk and preference for stability and capital preservation."
+        he ? "סיכון נמוך והעדפה ליציבות ולשמירה על ההון." : "Low risk and preference for stability and capital preservation."
     };
 
   }
@@ -468,7 +474,7 @@ export function classifyInvestor(
         "balanced" as InvestorType,
 
       reason:
-        "Balance between growth and risk management."
+        he ? "איזון בין צמיחה לניהול סיכונים." : "Balance between growth and risk management."
     };
 
   }
@@ -481,7 +487,7 @@ export function classifyInvestor(
       "growth" as InvestorType,
 
     reason:
-      "Willingness to cope with volatility for growth potential."
+      he ? "נכונות להתמודד עם תנודתיות תמורת פוטנציאל צמיחה." : "Willingness to cope with volatility for growth potential."
 
   };
 
@@ -751,18 +757,21 @@ export function horizonBucket(
 
 
 export function horizonExplanation(
-  horizon: ProfileFlags["horizon"]
+  horizon: ProfileFlags["horizon"],
+  language: "he" | "en" = "en"
 ): string {
 
+  const he = language === "he";
+
   if (horizon === "long") {
-    return "Long investment horizon allows higher exposure to growth assets and focus on the long term.";
+    return he ? "אופק השקעה ארוך מאפשר חשיפה גבוהה יותר לנכסי צמיחה והתמקדות בטווח הארוך." : "Long investment horizon allows higher exposure to growth assets and focus on the long term.";
   }
 
   if (horizon === "short") {
-    return "Short investment horizon requires emphasis on liquidity, stability, and reducing volatility.";
+    return he ? "אופק השקעה קצר דורש דגש על נזילות, יציבות והפחתת תנודתיות." : "Short investment horizon requires emphasis on liquidity, stability, and reducing volatility.";
   }
 
-  return "Medium investment horizon allows combining growth potential with risk management.";
+  return he ? "אופק השקעה בינוני מאפשר לשלב פוטנציאל צמיחה עם ניהול סיכונים." : "Medium investment horizon allows combining growth potential with risk management.";
 }
 
 

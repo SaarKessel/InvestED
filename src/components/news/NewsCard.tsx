@@ -13,6 +13,7 @@ export function NewsCard({ item, compact = false }: { item: NewsItem; compact?: 
     day: "numeric",
     hour: "2-digit",
     minute: "2-digit",
+    timeZone: "Asia/Jerusalem",
   });
 
   return (
@@ -65,6 +66,7 @@ export function NewsCard({ item, compact = false }: { item: NewsItem; compact?: 
         {!compact && (
           <div className="mt-4 rounded-xl border border-border/60 bg-muted/30 p-3.5">
             <p className="text-xs font-bold text-foreground">{t("news_implications_title")}</p>
+            <p className="mt-1 text-[11px] leading-4 text-muted-foreground">{t("news_generated_note")}</p>
             {implications.length === 0 ? (
               <p className="mt-1.5 text-xs leading-5 text-muted-foreground">{t("news_no_implications")}</p>
             ) : (
@@ -90,7 +92,7 @@ export function NewsCard({ item, compact = false }: { item: NewsItem; compact?: 
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
           >
             <Newspaper className="h-3.5 w-3.5" />
-            {t("news_read_original")}
+            {t("news_source_article")}
           </a>
         </div>
       </CardContent>

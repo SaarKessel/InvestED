@@ -3,7 +3,7 @@ import type { ClarificationRequest, ConversationIntent, ConversationLanguage, Tu
 import type { AssetResearch } from "./research/assetResearchEngine";
 import type { StrategyComparisonResult, StrategyExplanation, StrategyMarketExample } from "./strategy/strategyEngine";
 import { explainFinancialConcepts, isGuaranteeQuestion, isPredictionQuestion, type HoldingValuation, type PurchasePowerResult } from "./financialEducation";
-import type { QAOutcome } from "./financialQA";
+import type { QAOutcome, QAToolResult } from "./financialQA";
 
 export type CopilotDataDependency = "market" | "financial_engine" | "investor_profile" | "strategy_engine";
 
@@ -38,6 +38,7 @@ export interface CopilotResponse {
   clarification: ClarificationRequest | null;
   holdingValuation: HoldingValuation | null;
   purchasePower: PurchasePowerResult | null;
+  toolResult: QAToolResult | null;
 }
 
 function money(value: number, currency: string): string {
@@ -170,13 +171,11 @@ export function buildCopilotResponse(
     resolution.financialParameters.annualReturnPct === null;
 
   let text = enhancedText ?? "";
-  if (qaOutcome) text = qaOutcome.text;
-  else if (resolution.status === "needs_clarification") text = resolution.clarification?.question ?? "";
-  else if (isGuaranteeQuestion(message)) {
+  if (isGuaranteeQuestion(message)) {
     text = resolution.language === "en"
       ? "There is no such thing as a guaranteed high-return investment — a promise like that is a classic fraud red flag. Higher expected return always comes with higher risk. I can explain the risk/return trade-off or walk you through lower-risk options like deposits and bonds."
       : "אין דבר כזה השקעה בטוחה עם תשואה גבוהה מובטחת — הבטחה כזו היא סימן אזהרה קלאסי להונאה. תשואה צפויה גבוהה יותר מגיעה תמיד עם סיכון גבוה יותר. אני יכולה להסביר את היחס בין סיכון לתשואה או להציג אפשרויות בסיכון נמוך כמו פיקדונות ואג״ח.";
-  } else if (isPredictionQuestion(message)) {
+  } else if (isPredictionQuestion(message) && resolution.intent !== "financial_projection") {
     const base = resolution.language === "en"
       ? "I can't predict where prices will go — nobody reliably can, and anyone who claims otherwise is guessing."
       : "אני לא יכולה לנבא לאן המחירים ילכו — אף אחד לא יכול באופן מהימן, ומי שטוען אחרת מנחש.";
@@ -190,6 +189,10 @@ export function buildCopilotResponse(
         ? `${base} I can explain the concepts that actually drive long-term outcomes (diversification, horizon, costs) or run an educational scenario with explicit assumptions.`
         : `${base} אני כן יכולה להסביר את המושגים שבאמת מניעים תוצאות ארוכות טווח (פיזור, אופק, עלויות) או להריץ תרחיש לימודי עם הנחות מפורשות.`;
     }
+  } else if (qaOutcome) {
+    text = qaOutcome.text;
+  } else if (resolution.status === "needs_clarification") {
+    text = resolution.clarification?.question ?? "";
   } else if (noFinancialInputs) {
     text = resolution.language === "en"
       ? "To run that calculation I need the real inputs: how much (one-time and/or monthly), for how many years, and what annual return assumption. For example: '500 ILS a month for 10 years at 7%'."
@@ -240,5 +243,6 @@ export function buildCopilotResponse(
     clarification: resolution.clarification,
     holdingValuation,
     purchasePower: qaOutcome?.purchasePower ?? null,
+    toolResult: qaOutcome?.toolResult ?? null,
   };
 }

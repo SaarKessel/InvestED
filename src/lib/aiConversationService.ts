@@ -7,6 +7,7 @@ import {
 import { buildRuleBasedAnalysis, tryEnhanceWithOllama } from "./analysisService";
 import { fetchMarketAssetBySymbol } from "./marketData";
 import { calculateRsi, calculateVolatility } from "./market/indicators";
+import { isGuaranteeQuestion, isPredictionQuestion } from "./financialEducation";
 import { researchAsset, type AssetResearch } from "./research/assetResearchEngine";
 import { createOrchestrationPlan, type OrchestrationPlan } from "./intelligence/orchestrator";
 import { buildCopilotResponse, type CopilotResponse, type StrategyCopilotPayload } from "./copilotResponse";
@@ -213,11 +214,14 @@ export async function processAIMessage(
   const effectiveQALanguage = resolution.language === "mixed"
     ? (applicationLanguage === "he" ? "he" : "en")
     : resolution.language;
-  const qaPlan = planFinancialQA(message, effectiveQALanguage, qaMemoryFor(session));
+  const qaMemory = qaMemoryFor(session);
+  const safetyCritical = isGuaranteeQuestion(message) || (isPredictionQuestion(message) && resolution.intent !== "financial_projection");
+  const qaPlan = safetyCritical ? null : planFinancialQA(message, effectiveQALanguage, qaMemory);
   if (qaPlan) {
     const loadOne: AssetLoader = async (symbol) =>
       (await loadAssetsForSymbols([symbol], dependencies.fetchAsset))[0] ?? null;
     const qaOutcome = await qaPlan.execute(loadOne);
+    if (qaOutcome.monetaryResult) qaMemory.lastMonetaryResult = qaOutcome.monetaryResult;
     return {
       resolution,
       result: null,
@@ -257,7 +261,7 @@ export async function processAIMessage(
     : analysesFromResearch(assetResearch);
   const result = buildRuleBasedAnalysis(
     message,
-    resolution.language === "mixed" ? applicationLanguage : resolution.language,
+    applicationLanguage === "he" ? "he" : "en",
     resolution,
     assetAnalyses
   );

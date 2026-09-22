@@ -588,7 +588,7 @@ export function isPredictionQuestion(message: string): boolean {
 }
 
 const GUARANTEE_RE =
-  /\bguarantee(?:d|s)?\b|\brisk[ -]?free\b|safe.{0,20}high.{0,10}return|מובטח|בטוח.{0,20}תשואה|תשואה.{0,20}מובטחת|בלי\s+סיכון|ללא\s+סיכון/i;
+  /\bguarantee(?:d|s)?\b|\brisk[ -]?free\b|safe.{0,20}high.{0,10}return|מובטח|בטוח.{0,20}תשואה|תשואה.{0,20}מובטחת|תבטיח(?:י)?|הבטח(?:י)?|בלי\s+סיכון|ללא\s+סיכון/i;
 
 export function isGuaranteeQuestion(message: string): boolean {
   return GUARANTEE_RE.test(message);
@@ -596,7 +596,7 @@ export function isGuaranteeQuestion(message: string): boolean {
 
 const HOLDING_PATTERNS = [
   /(?:^|[\s,(])([\d,.]+)\s+([A-Z][A-Z0-9.-]{0,9})\s+(?:shares?|units?|מניות|יחידות)\b/i,
-  /(?:יש\s+לי|מחזיק(?:ה)?(?:\s+ב)?)\s*([\d,.]+)\s*(?:מניות|יחידות)(?:\s*(?:של|ב)[-\s]*([A-Z][A-Z0-9.-]{0,9}))?/i,
+  /(?:יש\s+לי|מחזיק(?:ה)?(?:\s+ב)?)\s*([\d,.]+)\s*(?:מניות|יחידות)(?:\s*(?:(?:של|ב)[-\s]*)?([A-Z][A-Z0-9.-]{0,9}))?/i,
   /([\d,.]+)\s*(?:מניות|יחידות)\s*(?:של|ב)?\s*([A-Z][A-Z0-9.-]{0,9})/i,
   /(?:i\s+(?:have|own|hold)|my)\s*([\d,.]+)\s*(?:shares?|units?)\s*(?:of|in)?\s*([A-Z][A-Z0-9.-]{0,9})?/i,
   /([\d,.]+)\s*(?:shares?|units?)\s*(?:of|in)?\s*([A-Z][A-Z0-9.-]{0,9})/i,

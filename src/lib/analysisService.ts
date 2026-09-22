@@ -103,6 +103,14 @@ type InsightType =
   | "growth"
   | "confidence";
 
+function investorTypeText(type: InvestorClassification["type"], language: string): string {
+  if (language !== "he") return type;
+  return ({
+    conservative: "שמרני", balanced: "מאוזן", growth: "צמיחה",
+    dividend: "דיבידנד", passive: "פסיבי", value: "ערך",
+  } as Record<string, string>)[type] ?? type;
+}
+
 
 // =====================================================
 // Signal Factory
@@ -154,7 +162,7 @@ function generateAIInsights(
 
     insights.push(
       createSignal(
-        "Risk Insight",
+        isHebrew ? "תובנת סיכון" : "Risk Insight",
         isHebrew
           ? "המערכת זיהתה פרופיל עם יכולת להתמודד עם תנודתיות גבוהה והתמקדות בצמיחה ארוכת טווח."
           : "The system identified a profile that can handle high volatility with a focus on long-term growth.",
@@ -168,7 +176,7 @@ function generateAIInsights(
 
     insights.push(
       createSignal(
-        "Risk Insight",
+        isHebrew ? "תובנת סיכון" : "Risk Insight",
         isHebrew
           ? "המערכת זיהתה העדפה ליציבות ושמירה על הון עם רמת סיכון נמוכה יותר."
           : "The system identified a preference for stability and capital preservation with a lower risk level.",
@@ -182,7 +190,7 @@ function generateAIInsights(
 
     insights.push(
       createSignal(
-        "Risk Insight",
+        isHebrew ? "תובנת סיכון" : "Risk Insight",
         isHebrew
           ? "המערכת זיהתה איזון בין רצון לצמיחה לבין ניהול סיכונים."
           : "The system identified a balance between the desire for growth and risk management.",
@@ -201,7 +209,7 @@ function generateAIInsights(
 
     insights.push(
       createSignal(
-        "Horizon Insight",
+        isHebrew ? "תובנת אופק השקעה" : "Horizon Insight",
         isHebrew
           ? "אופק השקעה ארוך מאפשר להתמקד בתהליך השקעה הדרגתי ולהתמודד טוב יותר עם תנודתיות לאורך זמן."
           : "Long investment horizon allows focusing on a gradual investment process and better coping with volatility over time.",
@@ -215,7 +223,7 @@ function generateAIInsights(
 
     insights.push(
       createSignal(
-        "Horizon Insight",
+        isHebrew ? "תובנת אופק השקעה" : "Horizon Insight",
         isHebrew
           ? "אופק השקעה קצר דורש דגש גבוה יותר על נזילות, תנודתיות והתאמה למועד שבו הכסף צפוי להידרש."
           : "Short investment horizon requires greater emphasis on liquidity, volatility, and alignment with the expected time the money will be needed.",
@@ -229,7 +237,7 @@ function generateAIInsights(
 
     insights.push(
       createSignal(
-        "Horizon Insight",
+        isHebrew ? "תובנת אופק השקעה" : "Horizon Insight",
         isHebrew
           ? "אופק השקעה בינוני מאפשר לשלב בין פוטנציאל צמיחה לבין בחינה של רמת הסיכון והיעד הפיננסי."
           : "Medium investment horizon allows combining growth potential with consideration of risk level and financial goal.",
@@ -255,9 +263,9 @@ function generateAIInsights(
 
   insights.push(
     createSignal(
-      "Portfolio Insight",
+      isHebrew ? "תובנת תיק" : "Portfolio Insight",
       isHebrew
-        ? `מבנה התיק החינוכי הותאם לסגנון "${investor.type}". הקצאת הנכסים הנוכחית: ${allocationText}.`
+        ? `מבנה התיק החינוכי הותאם לסגנון "${investorTypeText(investor.type, language)}". הקצאת הנכסים הנוכחית: ${allocationText}.`
         : `The educational portfolio structure is adapted to the "${investor.type}" profile. Current asset allocation: ${allocationText}.`,
       "portfolio"
     )
@@ -272,7 +280,7 @@ function generateAIInsights(
 
     insights.push(
       createSignal(
-        "Goal Insight",
+        isHebrew ? "תובנת מטרה" : "Goal Insight",
         isHebrew
           ? "המטרה הפיננסית שזוהתה שולבה כחלק מתהליך הניתוח והתכנון."
           : "The identified financial goal was integrated as part of the analysis and planning process.",
@@ -343,7 +351,7 @@ function generateAiNarration(
     profileSummary:
       isHebrew
         ? `${ageText}.
-      סגנון השקעה שזוהה: ${investor.type}.
+      סגנון השקעה שזוהה: ${investorTypeText(investor.type, language)}.
       ציון סיכון: ${riskScore}/10.
       המערכת התאימה את הניתוח לפי אופק ההשקעה, פרופיל הסיכון והעדפות המשתמש.`
         : `${ageText}.
@@ -377,17 +385,20 @@ function generateAiNarration(
 
 function buildEngineSignals(
 
-  insight: ReturnType<typeof generateAIInsight>
+  insight: ReturnType<typeof generateAIInsight>,
+  language: "he" | "en" = "en"
 
 ): AnalysisSignal[] {
+
+  const he = language === "he";
 
   const signals: AnalysisSignal[] = [];
 
 
   signals.push(
     createSignal(
-      "AI Risk Analysis",
-      `${insight.riskEmoji} The educational risk level of the scenario: ${insight.riskLevel}.`,
+      he ? "ניתוח סיכון" : "AI Risk Analysis",
+      he ? `${insight.riskEmoji} רמת הסיכון החינוכית של התרחיש: ${insight.riskLevel}.` : `${insight.riskEmoji} The educational risk level of the scenario: ${insight.riskLevel}.`,
       "risk"
     )
   );
@@ -395,7 +406,7 @@ function buildEngineSignals(
 
   signals.push(
     createSignal(
-      "AI Horizon Analysis",
+      he ? "ניתוח אופק השקעה" : "AI Horizon Analysis",
       insight.horizonInsight,
       "horizon"
     )
@@ -404,7 +415,7 @@ function buildEngineSignals(
 
   signals.push(
     createSignal(
-      "AI Growth Analysis",
+      he ? "ניתוח צמיחה" : "AI Growth Analysis",
       insight.growthInsight,
       "growth"
     )
@@ -413,7 +424,7 @@ function buildEngineSignals(
 
   signals.push(
     createSignal(
-      "AI Diversification Analysis",
+      he ? "ניתוח פיזור" : "AI Diversification Analysis",
       insight.diversificationInsight,
       "portfolio"
     )
@@ -422,7 +433,7 @@ function buildEngineSignals(
 
   signals.push(
     createSignal(
-      "AI Educational Guidance",
+      he ? "הכוונה לימודית" : "AI Educational Guidance",
       insight.recommendation,
       "goal"
     )
@@ -431,8 +442,8 @@ function buildEngineSignals(
 
   signals.push(
     createSignal(
-      "AI Confidence",
-      `Analysis engine confidence in the scenario: ${insight.confidence}%.`,
+      he ? "רמת ביטחון" : "AI Confidence",
+      he ? `רמת הביטחון של מנוע הניתוח בתרחיש: ${insight.confidence}%.` : `Analysis engine confidence in the scenario: ${insight.confidence}%.`,
       "confidence"
     )
   );
@@ -476,7 +487,8 @@ export function buildRuleBasedAnalysis(
 
   const riskDescription =
     riskScoreDescription(
-      riskScore
+      riskScore,
+      language === "he" ? "he" : "en"
     );
 
 
@@ -498,7 +510,8 @@ export function buildRuleBasedAnalysis(
 
   const hExplanation =
     horizonExplanation(
-      flags.horizon ?? "medium"
+      flags.horizon ?? "medium",
+      language === "he" ? "he" : "en"
     );
 
 
@@ -508,7 +521,8 @@ export function buildRuleBasedAnalysis(
 
   const investor =
     classifyInvestor(
-      riskScore
+      riskScore,
+      language === "he" ? "he" : "en"
     );
 
 
@@ -519,7 +533,8 @@ export function buildRuleBasedAnalysis(
   const allocation =
     buildAllocation(
       investor.type,
-      flags
+      flags,
+      language === "he" ? "he" : "en"
     );
 
 
@@ -572,7 +587,8 @@ export function buildRuleBasedAnalysis(
   const aiInsight =
     generateAIInsight(
       scenario,
-      projection
+      projection,
+      language === "he" ? "he" : "en"
     );
 
 
@@ -609,7 +625,8 @@ export function buildRuleBasedAnalysis(
 
   const engineSignals =
     buildEngineSignals(
-      aiInsight
+      aiInsight,
+      language === "he" ? "he" : "en"
     );
 
 
@@ -715,7 +732,9 @@ export function buildRuleBasedAnalysis(
 
       investor.type,
 
-      allocation
+      allocation,
+
+      language === "he" ? "he" : "en"
 
     );
 

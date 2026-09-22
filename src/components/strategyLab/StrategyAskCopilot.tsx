@@ -1,4 +1,4 @@
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { Loader2, Send, Sparkles } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
 import { useAnalysis } from "@/context/useAnalysis";
@@ -19,6 +19,8 @@ export function StrategyAskCopilot({ strategyName }: { strategyName: string }) {
   const { askCopilot, isAnalyzing } = useAnalysis();
   const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
+  const mountedRef = useRef(true);
+  useEffect(() => () => { mountedRef.current = false; }, []);
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -28,6 +30,7 @@ export function StrategyAskCopilot({ strategyName }: { strategyName: string }) {
     setMessages((current) => [...current, { role: "user", text }]);
     try {
       const turn = await askCopilot(text);
+      if (!mountedRef.current) return;
       const response = turn.response;
       const showsProvenance = /(?:Source:|מקור:)/i.test(response.text);
       const provenance = response.dataSources.length && !showsProvenance
@@ -35,6 +38,7 @@ export function StrategyAskCopilot({ strategyName }: { strategyName: string }) {
         : undefined;
       setMessages((current) => [...current, { role: "copilot", text: response.text, meta: provenance }]);
     } catch {
+      if (!mountedRef.current) return;
       setMessages((current) => [...current, { role: "copilot", text: t("slab_ask_error") }]);
     }
   }

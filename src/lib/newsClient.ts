@@ -14,6 +14,8 @@ export interface NewsItem {
   summary?: string;
   symbols: string[];
   eventType: string;
+  classificationSource: "deterministic_headline_rules";
+  implicationsSource: "invested_educational_template" | "none";
   eventLabel: { he: string; en: string };
   keyFacts: { he: NewsKeyFact[]; en: NewsKeyFact[] };
   implications: { he: NewsImplication[]; en: NewsImplication[] };
@@ -21,6 +23,9 @@ export interface NewsItem {
 
 export interface NewsResult {
   available: boolean;
+  feedProvider?: "yahoo_finance_search";
+  cacheTtlSeconds?: number;
+  staleWhileRevalidateSeconds?: number;
   items: NewsItem[];
   fetchedAt: string;
 }

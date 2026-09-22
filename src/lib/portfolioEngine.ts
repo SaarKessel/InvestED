@@ -24,6 +24,25 @@ const COLORS = {
 
 type RawAllocation = Record<string, number>;
 
+const ALLOCATION_LABELS_HE: Record<string, string> = {
+  "US Stocks (ETF)": "מניות ארה״ב (ETF)",
+  "International Stocks (ETF)": "מניות בינלאומיות (ETF)",
+  "Dividend (ETF)": "דיבידנד (ETF)",
+  "Bonds (ETF)": "אג״ח (ETF)",
+  "Cash": "מזומן",
+};
+
+function allocationLabel(name: string, language: "he" | "en"): string {
+  if (language === "en") return name;
+  if (name.startsWith("Sector funds (")) {
+    const sectors = name.slice("Sector funds (".length, -1)
+      .replace("technology", "טכנולוגיה")
+      .replace("healthcare", "בריאות");
+    return `קרנות סקטוריאליות (${sectors})`;
+  }
+  return ALLOCATION_LABELS_HE[name] ?? name;
+}
+
 // ---------------------------------------------------------------------------
 // Base Portfolio Templates
 // ---------------------------------------------------------------------------
@@ -313,7 +332,8 @@ function adjustByProfile(
 
 export function buildAllocation(
   investorType: InvestorType,
-  flags: ProfileFlags
+  flags: ProfileFlags,
+  language: "he" | "en" = "en"
 ): AllocationItem[] {
 
   let allocation: RawAllocation = {
@@ -455,7 +475,7 @@ export function buildAllocation(
   ).map(
     ([name, value]) => ({
 
-      name,
+      name: allocationLabel(name, language),
 
       value,
 
@@ -473,17 +493,19 @@ export function buildAllocation(
 
 export function portfolioNarrative(
   investorType: InvestorType,
-  allocation: AllocationItem[]
+  allocation: AllocationItem[],
+  language: "he" | "en" = "en"
 ): string {
+
+  const he = language === "he";
 
   if (
     !allocation.length
   ) {
 
-    return (
-      "No asset allocation to display. " +
-      "The system was unable to build an educational portfolio from the provided data."
-    );
+    return he
+      ? "אין הקצאת נכסים להצגה. המערכת לא הצליחה לבנות תיק לימודי מהנתונים שסופקו."
+      : "No asset allocation to display. The system was unable to build an educational portfolio from the provided data.";
 
   }
 
@@ -499,17 +521,15 @@ export function portfolioNarrative(
 
   if (!top) {
 
-    return (
-      "Insufficient allocation to generate an explanation."
-    );
+    return he ? "אין די נתוני הקצאה ליצירת הסבר." : "Insufficient allocation to generate an explanation.";
 
   }
 
   const parts: string[] = [
 
-    `The example allocation reflects a "${investorType}" profile.`,
+    he ? `הקצאת הדוגמה משקפת פרופיל "${investorType}".` : `The example allocation reflects a "${investorType}" profile.`,
 
-    `The largest component is ${top.name} (${Math.round(
+    he ? `הרכיב הגדול ביותר הוא ${top.name} (${Math.round(top.value)}%), ולכן יש לו השפעה רבה על מאפייני הסיכון והתשואה של התיק.` : `The largest component is ${top.name} (${Math.round(
       top.value
     )}%), so it significantly influences the risk and return characteristics of the portfolio.`,
 
@@ -522,7 +542,7 @@ export function portfolioNarrative(
   const bonds =
     allocation.find(
       item =>
-        item.name.includes("Bonds")
+        item.name.includes("Bonds") || item.name.includes("אג״ח")
     );
 
   if (
@@ -531,7 +551,7 @@ export function portfolioNarrative(
   ) {
 
     parts.push(
-      "The bonds component forms a significant part of the portfolio and gives it a more defensive character."
+      he ? "רכיב האג״ח מהווה חלק משמעותי מהתיק ומעניק לו אופי הגנתי יותר." : "The bonds component forms a significant part of the portfolio and gives it a more defensive character."
     );
 
   }
@@ -543,7 +563,7 @@ export function portfolioNarrative(
   const international =
     allocation.find(
       item =>
-        item.name.includes("International")
+        item.name.includes("International") || item.name.includes("בינלאומיות")
     );
 
   if (
@@ -552,7 +572,7 @@ export function portfolioNarrative(
   ) {
 
     parts.push(
-      "The international component adds geographic diversification and reduces dependence on a single market."
+      he ? "הרכיב הבינלאומי מוסיף פיזור גיאוגרפי ומפחית תלות בשוק יחיד." : "The international component adds geographic diversification and reduces dependence on a single market."
     );
 
   }
@@ -564,7 +584,7 @@ export function portfolioNarrative(
   const sector =
     allocation.find(
       item =>
-        item.name.includes("Sector")
+        item.name.includes("Sector") || item.name.includes("סקטוריאליות")
     );
 
   if (
@@ -573,7 +593,7 @@ export function portfolioNarrative(
   ) {
 
     parts.push(
-      "There is also sector exposure, which can increase concentration in specific industries."
+      he ? "יש גם חשיפה סקטוריאלית, שעלולה להגדיל ריכוז בענפים מסוימים." : "There is also sector exposure, which can increase concentration in specific industries."
     );
 
   }
@@ -583,7 +603,7 @@ export function portfolioNarrative(
   // -------------------------------------------------------------------------
 
   parts.push(
-    "This is an educational illustration only and does not constitute an investment recommendation."
+    he ? "זוהי המחשה לימודית בלבד ואינה מהווה המלצת השקעה." : "This is an educational illustration only and does not constitute an investment recommendation."
   );
 
   return parts.join(" ");

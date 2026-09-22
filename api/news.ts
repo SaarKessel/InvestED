@@ -45,6 +45,9 @@ export interface EnrichedNewsItem extends NewsEvent {
 
 interface NewsPayload {
   available: boolean;
+  feedProvider: "yahoo_finance_search";
+  cacheTtlSeconds: number;
+  staleWhileRevalidateSeconds: number;
   items: EnrichedNewsItem[];
   fetchedAt: string;
 }
@@ -131,6 +134,9 @@ export default async function handler(_req: NewsRequest, res: NewsResponse) {
     const events = normalizeNewsFeed(raw, knownSymbols).slice(0, SERVED_COUNT);
     payload = {
       available: events.length > 0,
+      feedProvider: "yahoo_finance_search",
+      cacheTtlSeconds: CACHE_TTL_MS / 1000,
+      staleWhileRevalidateSeconds: 1800,
       items: events.map((event) => ({
         ...event,
         eventLabel: { he: eventTypeLabel(event.eventType, "he"), en: eventTypeLabel(event.eventType, "en") },
@@ -140,7 +146,7 @@ export default async function handler(_req: NewsRequest, res: NewsResponse) {
       fetchedAt: new Date().toISOString(),
     };
   } catch {
-    payload = { available: false, items: [], fetchedAt: new Date().toISOString() };
+    payload = { available: false, feedProvider: "yahoo_finance_search", cacheTtlSeconds: CACHE_TTL_MS / 1000, staleWhileRevalidateSeconds: 1800, items: [], fetchedAt: new Date().toISOString() };
   }
 
   cache.set("news", payload);

@@ -1223,5 +1223,15 @@
   "learn_feedback_scope": "This feedback uses activity stored on this device. It is rule-based learning guidance, not a claim that an AI model knows you or predicts markets.",
   "learn_cycle_complete_title": "You completed the loop",
   "learn_cycle_complete_text": "Progress means you can explain the reasoning, not that every answer or simulation return was positive.",
-  "learn_new_cycle": "Start another cycle"
+  "learn_new_cycle": "Start another cycle",
+  "copilot_clear": "New conversation",
+  "copilot_verified_calculation": "Verified calculation",
+  "copilot_assumptions": "Assumptions",
+  "copilot_copy": "Copy",
+  "copilot_copied": "Copied",
+  "copilot_working": "Checking the request and verified data...",
+  "copilot_enter_hint": "Enter to send · Shift+Enter for a new line",
+  "news_generated_note": "InvestED-generated educational template, not a summary of the article.",
+  "news_cache_note": "Yahoo Finance feed · Cached for up to 15 minutes; refresh checks the latest available cached feed.",
+  "news_source_article": "Open source article"
 }

@@ -585,6 +585,7 @@ export function createConversationSession(options?: {
     // Precedence 1-2: current-turn information and entities
     // -------------------------------------------------
     const ambiguousComparisonAsset =
+      explicitIntent !== "financial_projection" &&
       assets.length === 0 &&
       state.comparisonSet.length > 1 &&
       !comparativeMarker &&

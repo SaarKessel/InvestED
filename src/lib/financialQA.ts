@@ -27,6 +27,14 @@ export type QALanguage = "he" | "en";
 
 export type AssetLoader = (symbol: string) => Promise<AssetAnalysis | null>;
 
+export interface QAToolResult {
+  tool: string;
+  values: Record<string, string | number | boolean | null>;
+  formula?: string;
+  assumptions: string[];
+  provenanceSymbols: string[];
+}
+
 export interface QAOutcome {
   kind: string;
   text: string;
@@ -35,6 +43,8 @@ export interface QAOutcome {
   assets: AssetAnalysis[];
   holdingValuation: HoldingValuation | null;
   purchasePower: PurchasePowerResult | null;
+  toolResult: QAToolResult | null;
+  monetaryResult: { amount: number; currency: QACurrency } | null;
 }
 
 export interface QAPlan {
@@ -47,10 +57,11 @@ export interface QAMemory {
   purchase: PurchasePowerRequest | null;
   holding: HoldingRequest | null;
   fx: { amount: number; from: QACurrency; to: QACurrency } | null;
+  lastMonetaryResult: { amount: number; currency: QACurrency } | null;
 }
 
 export function createQAMemory(): QAMemory {
-  return { purchase: null, holding: null, fx: null };
+  return { purchase: null, holding: null, fx: null, lastMonetaryResult: null };
 }
 
 // ---------------------------------------------------------------------------
@@ -123,6 +134,8 @@ function outcome(kind: string, text: string, opts?: Partial<QAOutcome>): QAOutco
     assets: opts?.assets ?? [],
     holdingValuation: opts?.holdingValuation ?? null,
     purchasePower: opts?.purchasePower ?? null,
+    toolResult: opts?.toolResult ?? null,
+    monetaryResult: opts?.monetaryResult ?? null,
   };
 }
 
@@ -182,7 +195,18 @@ function holdingPlan(request: HoldingRequest, lang: QALanguage): QAPlan {
       const text = lang === "he"
         ? `${fmt(valuation.quantity, lang)} מניות ${valuation.symbol} × ${fmt(valuation.price, lang)} ${ccy} = ${fmt(valuation.total, lang)} ${ccy}. זהו שווי שוק נקודתי לפני עמלות ומסים. ${marketNote(lang, stale)} ${EDU.he}`
         : `${fmt(valuation.quantity, lang)} ${valuation.symbol} shares × ${fmt(valuation.price, lang)} ${ccy} = ${fmt(valuation.total, lang)} ${ccy}. This is a point-in-time market valuation before fees and taxes. ${marketNote(lang, stale)} ${EDU.en}`;
-      return outcome("holding_valuation", text, { holdingValuation: valuation, assets: asset ? [asset] : [] });
+      return outcome("holding_valuation", text, {
+        holdingValuation: valuation,
+        assets: asset ? [asset] : [],
+        monetaryResult: { amount: valuation.total, currency: (valuation.currency ?? "USD") as QACurrency },
+        toolResult: {
+          tool: "holding_value",
+          values: { quantity: valuation.quantity, symbol: valuation.symbol, price: valuation.price, total: valuation.total, currency: valuation.currency },
+          formula: "quantity × market price",
+          assumptions: ["before fees and taxes"],
+          provenanceSymbols: asset ? [asset.symbol] : [],
+        },
+      });
     },
   };
 }
@@ -269,6 +293,15 @@ function planFx(message: string, memory: QAMemory): { amount: number; from: QACu
     const to = currencyOf(m[4]);
     if (amount && from && to && from !== to) return { amount, from, to };
   }
+  if (memory.lastMonetaryResult && isShortFollowUp(message)) {
+    const targetOnly = message.match(/(?:ב|ל|to|into|in)(?:כמה\s+|\s+is\s+that\s+in\s+)?[-\s]*(שקלים|שקל|ש["״']?ח|₪|ILS|NIS|דולרים|דולר|\$|USD|dollars?|יורו|€|EUR|euros?|פאונד|£|GBP|pounds?)/i);
+    const directCurrency = message.match(/(Israeli\s+shekels?|shekels?|שקלים|שקל|ש["״']?ח|₪|ILS|NIS|dollars?|דולרים|דולר|USD|euros?|יורו|EUR|pounds?|פאונד|GBP)/i);
+    const normalizedTarget = /Israeli\s+shekels?|shekels?/i.test(directCurrency?.[1] ?? "") ? "ILS" : directCurrency?.[1];
+    const to = currencyOf(targetOnly?.[1] ?? normalizedTarget);
+    if (to && to !== memory.lastMonetaryResult.currency) {
+      return { amount: memory.lastMonetaryResult.amount, from: memory.lastMonetaryResult.currency, to };
+    }
+  }
   if (memory.fx && isShortFollowUp(message)) {
     // "וביורו?" keep amount and source, change target.
     const toM = message.match(new RegExp(`(?:ב|ל|to|into|in)-?\\s*${CCY_WORD}\\s*\\??$`, "i"));
@@ -326,7 +359,17 @@ function fxPlan(request: { amount: number; from: QACurrency; to: QACurrency }, l
       const text = lang === "he"
         ? `${fmt(request.amount, lang)} ${request.from} הם בערך ${fmt(converted, lang)} ${request.to} לפי שער ${fmt(result.rate, lang, 4)}. המרה בפועל בבנק או בברוקר כוללת בדרך כלל מרווח ועמלה. ${marketNote(lang, stale)}`
         : `${fmt(request.amount, lang)} ${request.from} is about ${fmt(converted, lang)} ${request.to} at a rate of ${fmt(result.rate, lang, 4)}. An actual bank or broker conversion usually adds a spread and fee. ${marketNote(lang, stale)}`;
-      return outcome("fx_convert", text, { assets: result.assets });
+      return outcome("fx_convert", text, {
+        assets: result.assets,
+        monetaryResult: { amount: converted, currency: request.to },
+        toolResult: {
+          tool: "fx_convert",
+          values: { amount: request.amount, from: request.from, to: request.to, rate: result.rate, converted },
+          formula: "amount × verified FX rate",
+          assumptions: ["provider rate; bank or broker spread excluded"],
+          provenanceSymbols: result.assets.map((asset) => asset.symbol),
+        },
+      });
     },
   };
 }

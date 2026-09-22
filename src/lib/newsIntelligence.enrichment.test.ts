@@ -82,3 +82,24 @@ describe("news enrichment", () => {
     expect(result).toEqual([]);
   });
 });
+
+describe("news provenance and conservative classification", () => {
+  it("marks educational implications as InvestED templates, never source facts", () => {
+    const event = normalizeNewsFeed([RAW[0]], ["AAPL"])[0];
+    expect(event.classificationSource).toBe("deterministic_headline_rules");
+    expect(event.implicationsSource).toBe("invested_educational_template");
+  });
+
+  it("does not let provider summaries upgrade an unrelated headline classification", () => {
+    const [event] = normalizeNewsFeed([{
+      title: "Four mutual funds to consider",
+      summary: "Markets rose as volatility continued",
+      url: "https://example.com/funds",
+      source: "ExampleWire",
+      publishedAt: "2026-09-22T12:00:00Z",
+    }], []);
+    expect(event.eventType).toBe("unknown");
+    expect(event.implicationsSource).toBe("none");
+    expect(buildImplications(event, "en")).toEqual([]);
+  });
+});
