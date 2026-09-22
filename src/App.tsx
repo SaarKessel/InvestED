@@ -4,6 +4,7 @@ import { ThemeProvider } from "@/hooks/useTheme";
 import { LanguageProvider } from "@/context/languageContext";
 import { AnalysisProvider } from "@/context/AnalysisContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { Layout } from "@/components/layout/Layout";
 import { LandingPage } from "@/pages/LandingPage";
 import { InputPage } from "@/pages/InputPage";
 import { DashboardPage } from "@/pages/DashboardPage";
@@ -24,6 +25,17 @@ const SimulationPage = lazy(() => import("@/pages/SimulationPage"));
 const LearnPage = lazy(() => import("@/pages/LearnPage"));
 const DataControlsPage = lazy(() => import("@/pages/DataControlsPage"));
 
+function PageLoading() {
+  return (
+    <Layout>
+      <main className="container py-20" role="status" aria-live="polite">
+        <div className="mx-auto h-8 w-48 animate-pulse rounded-lg bg-muted" />
+        <span className="sr-only">Loading page</span>
+      </main>
+    </Layout>
+  );
+}
+
 export default function App() {
   return (
     <ErrorBoundary>
@@ -36,21 +48,21 @@ export default function App() {
               <Route path="/start" element={<InputPage />} />
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/calculator" element={<CalculatorPage />} />
-              <Route path="/research" element={<Suspense fallback={null}><AssetResearchPage /></Suspense>} />
-              <Route path="/chat" element={<Suspense fallback={null}><AICopilotPage /></Suspense>} />
-              <Route path="/trivia" element={<Suspense fallback={null}><TriviaPage /></Suspense>} />
-              <Route path="/news" element={<Suspense fallback={null}><NewsPage /></Suspense>} />
-              <Route path="/simulation" element={<Suspense fallback={null}><SimulationPage /></Suspense>} />
-              <Route path="/learn" element={<Suspense fallback={null}><LearnPage /></Suspense>} />
+              <Route path="/research" element={<Suspense fallback={<PageLoading />}><AssetResearchPage /></Suspense>} />
+              <Route path="/chat" element={<Suspense fallback={<PageLoading />}><AICopilotPage /></Suspense>} />
+              <Route path="/trivia" element={<Suspense fallback={<PageLoading />}><TriviaPage /></Suspense>} />
+              <Route path="/news" element={<Suspense fallback={<PageLoading />}><NewsPage /></Suspense>} />
+              <Route path="/simulation" element={<Suspense fallback={<PageLoading />}><SimulationPage /></Suspense>} />
+              <Route path="/learn" element={<Suspense fallback={<PageLoading />}><LearnPage /></Suspense>} />
               <Route
                 path="/strategy-lab"
                 element={
-                  <Suspense fallback={null}>
+                  <Suspense fallback={<PageLoading />}>
                     <StrategyLabPage />
                   </Suspense>
                 }
               />
-              <Route path="/data-controls" element={<Suspense fallback={null}><DataControlsPage /></Suspense>} />
+              <Route path="/data-controls" element={<Suspense fallback={<PageLoading />}><DataControlsPage /></Suspense>} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/faq" element={<FaqPage />} />
               <Route path="/privacy" element={<PrivacyPage />} />

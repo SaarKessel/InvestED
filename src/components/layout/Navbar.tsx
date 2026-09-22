@@ -42,7 +42,7 @@ export function Navbar() {
 
         {/* Desktop Navigation */}
         <nav
-          className="hidden items-center gap-1 rounded-2xl border border-border/50 bg-card/50 p-1 md:flex"
+          className="hidden items-center gap-1 rounded-2xl border border-border/50 bg-card/50 p-1 2xl:flex"
           aria-label={t("nav_main")}
         >
           {navLinks.map((link) => (
@@ -114,7 +114,7 @@ export function Navbar() {
           <Button
             variant="ghost"
             size="icon"
-            className="rounded-xl md:hidden"
+            className="rounded-xl 2xl:hidden"
             onClick={() => setMobileOpen((open) => !open)}
             aria-label={mobileOpen ? t("nav_mobile_close") : t("nav_mobile_open")}
             aria-expanded={mobileOpen}
@@ -130,7 +130,7 @@ export function Navbar() {
 
       {/* Mobile Navigation */}
       {mobileOpen && (
-        <div className="border-t border-border/50 bg-background/95 backdrop-blur-xl md:hidden">
+        <div className="border-t border-border/50 bg-background/95 backdrop-blur-xl 2xl:hidden">
           <nav
             className="container flex flex-col gap-1 py-4"
             aria-label={t("nav_mobile")}

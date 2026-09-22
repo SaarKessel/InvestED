@@ -1,192 +1,88 @@
 # InvestED
 
-**מערכת לימודית אינטראקטיבית לעולם ההשקעות באמצעות AI.**
+A bilingual, education-only financial learning platform built by [Saar Kessel](https://www.linkedin.com/in/saarkessel). InvestED connects an explainable investor-profile flow, deterministic financial calculators, a context-aware educational copilot, personalized learning paths, strategy exploration, market and asset research, portfolio simulation, quizzes and sourced financial news.
 
-> ⚠️ InvestED היא פלטפורמה **חינוכית בלבד**. היא אינה מייעצת בהשקעות, אינה
-> ממליצה על נכסים ואינה מחליפה יועץ השקעות מוסמך.
+- Live product: https://investeducationai.vercel.app/
+- Languages: Hebrew (RTL) and English (LTR)
+- Stack: React 18, TypeScript, Vite, Tailwind CSS, React Router, Recharts, Framer Motion and Vercel serverless functions
 
-פותח על ידי **סער קסל** — בוגר MBA ו-BA במנהל עסקים ·
-[LinkedIn](https://www.linkedin.com/in/saarkessel)
+> InvestED is for financial education only. It does not provide investment advice, recommendations, suitability decisions or guaranteed outcomes.
 
----
+## Product surface
 
-## ✨ מה יש באפליקציה
+| Area | What it does | Data / AI boundary |
+|---|---|---|
+| Learning Hub | Builds a local personalized learning path and tracks reversible progress | Browser-local state only |
+| Investor profile | Converts free text into an explainable educational profile and sample allocation | Deterministic engines; not a suitability assessment |
+| AI Copilot | Handles educational concepts, calculations, follow-ups and market questions | Deterministic knowledge and calculation layer; optional local Ollama can rephrase responses |
+| Calculator | Parses plain-language scenarios and explains compound-growth calculations | User assumptions, never a forecast |
+| Strategy Lab | Explores and compares educational strategy models | Educational comparison, not a recommendation |
+| Asset Research | Resolves supported symbols, retrieves price history and computes indicators | Every result carries source, timestamp and freshness; unavailable data stays unavailable |
+| Portfolio Simulation | Runs educational historical or structural scenarios | Simulated/historical results are labeled and are not predictions |
+| News | Shows sourced market-news items and deterministic educational context | Links to original sources; no hidden sentiment model |
+| Trivia | Bilingual quizzes with explanations and local progress | Local-only progress |
+| Data controls | Exports or deletes InvestED's browser-local user memory | No remote account or cloud sync |
 
-- **Landing Page** — הצגת המוצר, איך זה עובד, למי זה מתאים
-- **זרימת קלט חופשי** — המשתמש מתאר את עצמו בשפה חופשית (גיל, מטרות, סיכון, ידע
-  פיננסי, תחומי עניין), עם כפתורי הוספה מהירה מקובצים לפי נושא
-- **מנוע ניתוח מבוסס כללים** (`src/lib/riskEngine.ts`, `portfolioEngine.ts`) — שקוף וניתן
-  להסבר, לא "קופסה שחורה". התוצאה מוצגת **מיידית**, בלי לחכות לרשת
-- **שכבת AI אופציונלית** דרך **Ollama** מקומי, לניסוח חם יותר מעל התוצאות — משודרגת
-  **ברקע** אחרי שהדשבורד כבר מוצג, עם נפילה חזרה (fallback) אוטומטית אם אין שרת מקומי
-- **נתוני שוק אמיתיים מ-Yahoo Finance** דרך פונקציית Vercel Serverless
-  (`api/market-quote.js`), עם בחירת סמלים אוטומטית לפי תחומי העניין שזוהו בפרופיל,
-  ונפילה חזרה חלקה לנתונים מדומים אם השירות לא זמין
-- **גרף נרות (Candlestick)** במראה טרמינל מסחר אמיתי, לצד תצוגת קו — ניתן להחליף
-- **Explainable AI** — כרטיס ייעודי שמסביר בדיוק אילו סימנים בטקסט הובילו למסקנות
-- **מסלול למידה אישי דינמי** — מותאם לרמת הידע הפיננסי שצוינה (מתחיל/יש בסיס/מנוסה)
-- **בוחן ידע אינטראקטיבי (Quiz)** — 5 שאלות אקראיות עם הסברים, לבדיקת הבנה מהירה
-- **טבלת השוואת בתי השקעות** — עמלות, דמי ניהול וקישור ישיר להרשמה, בתוך כרטיס
-  "תיק לימודי לדוגמה"
-- **ErrorBoundary** גלובלי — כל שגיאת זמן-ריצה מוצגת כהודעה ידידותית ולא כדף לבן ריק
-- **RTL מלא, עברית מלאה**, מצב בהיר/כהה, Micro-animations (Framer Motion),
-  Skeleton loading, Tooltips, Accordion
-- עמודי **About / FAQ / Privacy / Terms / Contact / 404**
+## Architecture and truthful boundaries
 
----
+### Browser application
 
-## 🛠️ טכנולוגיות
+The React application owns routing, localization, presentation and deterministic education logic. User profile, quiz, learning and simulation state use versioned browser storage modules. There is no remote user account or cloud persistence in the current release.
 
-| שכבה | טכנולוגיה |
-|---|---|
-| Frontend | React 18 + TypeScript + Vite |
-| עיצוב | Tailwind CSS (Design System מותאם, בסגנון shadcn/ui) |
-| גרפים | Recharts (כולל גרף נרות מותאם אישית) |
-| אייקונים | lucide-react |
-| אנימציות | Framer Motion |
-| ניתוב | React Router |
-| AI | Ollama (מודל שפה מקומי, ללא תלות בענן) |
-| נתוני שוק | Yahoo Finance, דרך Vercel Serverless Function |
-| Deployment | Vercel |
+### Market data
 
-> **הערה ארכיטקטונית:** כל הלוגיקה העסקית (ניתוח פרופיל, הקצאת תיק) רצה
-> בצד הלקוח (client-side) — אין צורך בשרת נפרד להרצה בסיסית
-> (`npm run dev`). **חריג יחיד:** תיקיית `api/` מכילה פונקציית Vercel
-> Serverless אחת (`market-quote.js`) שמשמשת כ-proxy מול Yahoo Finance,
-> כי קריאה ישירה מהדפדפן ל-Yahoo נחסמת על ידי CORS. הפונקציה הזו
-> פועלת אוטומטית כשהאתר רץ ב-Vercel; בהרצה מקומית רגילה עם `npm run dev`
-> (Vite בלבד, בלי Vercel) היא לא זמינה, והאפליקציה נופלת אוטומטית
-> לנתוני שוק מדומים כדי שהדשבורד תמיד יעבוד (ראו `src/lib/marketData.ts`).
-> הקריאות ל-Ollama מתבצעות ישירות מהדפדפן אל `http://localhost:11434`.
+The browser calls `api/market-quote.ts`, `api/market-movers.ts` and `api/news.ts`. Provider calls happen server-side. Market quote routing prefers Alpha Vantage only when `ALPHA_VANTAGE_API_KEY` is configured, then falls back to Yahoo Finance on provider availability failures. Responses preserve provider, timestamp and freshness. The production endpoint never silently manufactures a quote. Development-only fallback values are explicitly labeled as simulated.
 
----
+### AI and calculations
 
-## 🚀 התקנה והרצה
+Core educational answers, scenario calculations and conversation context are deterministic and tested. An optional local Ollama service can rephrase approved content, but it is not required for production functionality and is not presented as a cloud model. The product refuses to invent current market values and keeps education-only guardrails in generated responses.
 
-### דרישות מוקדמות
-- **Node.js 18+** מותקן ([הורדה](https://nodejs.org))
-- (אופציונלי) **Ollama** להרצת AI מקומי ([הורדה](https://ollama.com))
+### Privacy
 
-### שלבים
+The released product has no authentication, billing, cloud profile database or external notification delivery. Local data controls are available at `/data-controls`. Read the in-product Privacy and Terms pages before using the product.
+
+## Routes
+
+`/`, `/start`, `/dashboard`, `/learn`, `/calculator`, `/strategy-lab`, `/research`, `/chat`, `/trivia`, `/news`, `/simulation`, `/data-controls`, `/about`, `/faq`, `/contact`, `/privacy`, `/terms`, plus a dedicated not-found page.
+
+## Run locally
+
+Requirements: Node.js 18+ and npm.
 
 ```bash
-# 1. כניסה לתיקיית הפרויקט
-cd InvestED
-
-# 2. התקנת חבילות
-npm install
-
-# 3. הרצה במצב פיתוח
+npm ci
 npm run dev
 ```
 
-הדפדפן ייפתח אוטומטית בכתובת `http://localhost:5173`.
+The Vite development server does not run Vercel functions. Use `vercel dev` when testing serverless market/news endpoints locally. Ollama is optional and only used if a visitor intentionally runs a compatible local service.
 
-> **לגבי נתוני השוק:** בהרצה עם `npm run dev` הרגיל, פונקציית ה-API
-> (`api/market-quote.js`) **לא** רצה — Vite לא מריץ Serverless Functions.
-> לכן בפיתוח מקומי תראו את התג "נתונים מדומים". זה תקין. כדי לבדוק את
-> החיבור האמיתי ל-Yahoo Finance כבר בשלב הפיתוח, אפשר להריץ:
-> ```bash
-> npm install -g vercel   # פעם אחת בלבד
-> vercel dev
-> ```
-> זה מריץ גם את פונקציית ה-API מקומית. בפריסה בפועל ל-Vercel (`vercel --prod`)
-> זה קורה אוטומטית, בלי הגדרה נוספת.
-
-### (אופציונלי) הפעלת AI מקומי עם Ollama
+## Quality gates
 
 ```bash
-ollama pull llama3.1
-OLLAMA_ORIGINS=* ollama serve
-```
-
-> `OLLAMA_ORIGINS=*` חשוב כדי לאפשר לדפדפן (שרץ על `localhost:5173`) לתקשר
-> עם שרת ה-Ollama (שרץ על `localhost:11434`) — אחרת הבקשה עלולה להיחסם
-> ע"י מדיניות CORS. אם Ollama לא רץ, האפליקציה עדיין עובדת במלואה עם
-> ניסוח מבוסס-כללים.
-
-### בנייה לפרודקשן
-
-```bash
+npm test
+npm run typecheck
+npm run lint
 npm run build
-npm run preview   # לבדיקה מקומית של גרסת הפרודקשן
 ```
 
-הפלט ייכתב לתיקיית `dist/`.
+The test suite covers core calculators and edge cases, conversation context, bilingual content, market-provider routing and provenance, research indicators, strategies, simulation, portfolio intelligence, storage, learning progress, production guardrails and selected rendered UI states.
 
----
+## Repository map
 
-## 📁 מבנה הפרויקט
-
-```
-InvestED/
-├── api/
-│   └── market-quote.js      # Vercel Serverless Function — proxy ל-Yahoo Finance
-├── src/
-│   ├── components/
-│   │   ├── ui/               # קומפוננטות בסיס (Button, Card, Accordion...)
-│   │   ├── layout/            # Navbar, Footer, Logo, Layout
-│   │   ├── landing/
-│   │   ├── ErrorBoundary.tsx  # תופס שגיאות זמן-ריצה, מונע דף לבן ריק
-│   │   └── dashboard/         # כרטיסי הדשבורד + BrokerComparisonTable, CandlestickChart, QuizCard
-│   ├── pages/                  # Landing, Input, Dashboard, About, FAQ...
-│   ├── lib/                     # riskEngine, portfolioEngine, ollamaClient, marketData,
-│   │                             #   educationContent, strategies, brokers, quizBank, analysisService
-│   ├── context/                  # AnalysisContext (state גלובלי לניתוח, לא חוסם)
-│   ├── hooks/                     # useTheme
-│   ├── types/                      # טיפוסי TypeScript משותפים
-│   ├── App.tsx                      # ניתוב + ErrorBoundary + Providers
-│   ├── main.tsx                      # נקודת כניסה
-│   └── index.css                     # Design tokens, RTL, Tailwind
-├── public/
-│   └── favicon.svg
-├── index.html
-├── tailwind.config.ts
-├── vite.config.ts
-├── package.json
-└── .env.example
+```text
+api/                 Vercel serverless market and news endpoints
+src/components/      Shared UI and feature views
+src/context/         Language, theme and analysis providers
+src/lib/             Deterministic domain engines, data services and storage boundaries
+src/locales/         Complete Hebrew and English dictionaries
+src/pages/           Route-level product pages
+public/              Brand and social-preview assets
 ```
 
----
+## Release constraints
 
-## 🌐 פריסה (Deployment)
+Before commercial or regulated use, the product still needs jurisdiction-specific legal review, provider licensing/redistribution review, production identity and consented server storage if accounts are added, operational monitoring and a formal accessibility audit. Current legal pages are product disclosures, not a substitute for professional legal review.
 
-### Vercel
+## License
 
-1. דחוף את הפרויקט ל-GitHub (או השתמש ב-`npx vercel` ישירות מהתיקייה).
-2. ב-[vercel.com](https://vercel.com) → **New Project** → ייבוא הריפו (או דרך ה-CLI).
-3. Vercel מזהה אוטומטית פרויקט Vite (Build command: `npm run build`,
-   Output directory: `dist`) **וגם** את `api/market-quote.js` כפונקציית
-   Serverless — בלי הגדרה נוספת.
-4. Deploy. נתוני השוק האמיתיים מ-Yahoo Finance יעבדו אוטומטית ב-production,
-   ללא צורך במפתח API או במשתני סביבה.
-
-> שים לב: Ollama רץ מקומית על מחשב **המבקר** באתר בלבד. בסביבת Production
-> (Vercel), שכבת ה-AI המקומית לרוב לא תהיה זמינה למבקרים (אלא אם הם
-> מריצים Ollama על המחשב שלהם) — האפליקציה תיפול באופן חלק לניסוח
-> מבוסס-כללים, בדיוק כמו כשאין Ollama מותקן.
-
----
-
-## ⚠️ הבהרה חינוכית
-
-כל תוכן במערכת — ציוני סיכון, סיווגי משקיע, תיקים לדוגמה, אסטרטגיות,
-השוואות **וטבלת בתי ההשקעות** — מוצג **לצורכי לימוד בלבד** ואינו מהווה
-ייעוץ השקעות, ייעוץ פיננסי או המלצה לפעולה. עמלות ודמי ניהול משתנים
-לעיתים קרובות — יש לבדוק תנאים מעודכנים באתר הרשמי של כל בית השקעות.
-יש להתייעץ עם בעל רישיון מוסמך לפני קבלת החלטות השקעה.
-
----
-
-## 🗺️ Roadmap עתידי
-
-- [ ] שמירת היסטוריית ניתוחים (עם הסכמת משתמש)
-- [ ] תמיכה ב-i18n (אנגלית בנוסף לעברית)
-- [ ] Onboarding מודרך לכרטיסי הדשבורד
-- [ ] מעבר לספק נתוני שוק רשמי (עם מפתח API) כגיבוי ל-Yahoo Finance
-- [ ] הרחבת מאגר השאלות בבוחן הידע
-- [ ] שמירת תוצאות הבוחן והתקדמות במסלול הלמידה (localStorage)
-
-## רישיון
-
-הוסף רישיון (למשל MIT) לפי הצורך.
+No open-source license has been granted. The source is publicly viewable, but reuse, modification and redistribution are not permitted unless Saar Kessel grants permission in writing.
