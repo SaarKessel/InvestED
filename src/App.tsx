@@ -38,8 +38,8 @@ function PageLoading() {
 
 export default function App() {
   return (
-    <ErrorBoundary>
-      <LanguageProvider>
+    <LanguageProvider>
+      <ErrorBoundary>
         <ThemeProvider>
           <AnalysisProvider>
           <BrowserRouter>
@@ -73,7 +73,7 @@ export default function App() {
           </BrowserRouter>
         </AnalysisProvider>
       </ThemeProvider>
+      </ErrorBoundary>
     </LanguageProvider>
-  </ErrorBoundary>
 );
 }
