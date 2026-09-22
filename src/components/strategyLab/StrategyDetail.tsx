@@ -219,7 +219,7 @@ export function StrategyDetail({ strategyId }: { strategyId: StrategyId }) {
                       <>
                         <span>{example.price?.toFixed(2)} ({(example.changePercent ?? 0).toFixed(2)}%)</span>
                         <span className="block text-[10px] text-muted-foreground">
-                          {example.dataSource?.replace("_", " ")} · {example.freshness}
+                          {example.dataSource?.replace("_", " ")} · {t(`copilot_freshness_${example.freshness ?? "unavailable"}`, example.freshness ?? "unavailable")}
                         </span>
                       </>
                     ) : (
