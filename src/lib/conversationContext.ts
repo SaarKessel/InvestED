@@ -323,7 +323,9 @@ function detectExplicitFinancial(text: string): ExplicitFinancial {
   }
 
   let annualReturnPct: number | null = null;
-  const returnMatch = text.match(RETURN_PCT_PATTERN);
+  // A Hebrew prefix dash ("ב-7%") is a preposition, not a minus sign.
+  // Detach it before reading signed percentages so the rate stays positive.
+  const returnMatch = text.replace(/([\u0590-\u05FF])-(\d)/g, "$1 $2").match(RETURN_PCT_PATTERN);
   if (returnMatch) {
     const value = Number(returnMatch[1]);
     if (Number.isFinite(value) && value >= -100 && value <= 100) {

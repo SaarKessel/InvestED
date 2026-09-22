@@ -110,7 +110,7 @@ const EDU: Record<QALanguage, string> = {
   en: "This is an educational calculation, not investment advice.",
 };
 
-const FOLLOW_UP_START = /^(?:ומה|מה|ועם|אז|טוב|and|what|how|so|ok)/i;
+const FOLLOW_UP_START = /^(?:ומה|מה|ועם|וכמה|כמה|אז|טוב|and|what|how|so|ok)/i;
 
 function isShortFollowUp(message: string): boolean {
   const trimmed = message.trim();
@@ -202,8 +202,8 @@ function holdingPlan(request: HoldingRequest, lang: QALanguage): QAPlan {
         toolResult: {
           tool: "holding_value",
           values: { quantity: valuation.quantity, symbol: valuation.symbol, price: valuation.price, total: valuation.total, currency: valuation.currency },
-          formula: "quantity × market price",
-          assumptions: ["before fees and taxes"],
+          formula: lang === "he" ? "כמות × מחיר שוק" : "quantity × market price",
+          assumptions: lang === "he" ? ["לפני עמלות ומסים"] : ["before fees and taxes"],
           provenanceSymbols: asset ? [asset.symbol] : [],
         },
       });
@@ -365,8 +365,8 @@ function fxPlan(request: { amount: number; from: QACurrency; to: QACurrency }, l
         toolResult: {
           tool: "fx_convert",
           values: { amount: request.amount, from: request.from, to: request.to, rate: result.rate, converted },
-          formula: "amount × verified FX rate",
-          assumptions: ["provider rate; bank or broker spread excluded"],
+          formula: lang === "he" ? "סכום × שער מט״ח מאומת" : "amount × verified FX rate",
+          assumptions: lang === "he" ? ["שער הספק; לא כולל מרווח בנק או ברוקר"] : ["provider rate; bank or broker spread excluded"],
           provenanceSymbols: result.assets.map((asset) => asset.symbol),
         },
       });

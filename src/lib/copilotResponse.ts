@@ -164,11 +164,16 @@ export function buildCopilotResponse(
   // Zero-input financial questions ("give me a guaranteed investment")
   // must never render as a projection of zeros — ask for real inputs.
   const noFinancialInputs =
-    resolution.scenario !== null &&
-    resolution.financialParameters.initialInvestment === null &&
-    resolution.financialParameters.monthlyContribution === null &&
-    resolution.financialParameters.years === null &&
-    resolution.financialParameters.annualReturnPct === null;
+    (resolution.scenario !== null &&
+      resolution.financialParameters.initialInvestment === null &&
+      resolution.financialParameters.monthlyContribution === null &&
+      resolution.financialParameters.years === null &&
+      resolution.financialParameters.annualReturnPct === null) ||
+    // A scenario that parsed nothing investable must never render a
+    // projection of zeros, even when a horizon alone was detected.
+    (resolution.intent === "financial_projection" &&
+      result?.projection !== undefined &&
+      result.projection.totalContributed === 0);
 
   let text = enhancedText ?? "";
   if (isGuaranteeQuestion(message)) {

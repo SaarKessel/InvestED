@@ -392,10 +392,7 @@ function detectAmount(text: string): number {
 // Initial Investment Detection
 // ---------------------------------------------------------------------------
 
-function detectInitialAmount(text: string): number {
-  const normalized = normalizeText(text);
-
-  const initialPatterns = [
+const INITIAL_AMOUNT_PATTERNS: RegExp[] = [
     /(?:יש לי|יש ברשותי|ברשותי|קיים לי|מחזיק|השקעתי)\s*(?:היום|כיום|כרגע)?\s*(?:הון של|הון בסך|סכום של|סכום)?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון|thousand|million)?/i,
 
     /(?:initial investment|starting capital|initial capital)\s*(?:of|is|:)?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?/i,
@@ -415,7 +412,19 @@ function detectInitialAmount(text: string): number {
     /half\s+(?:a\s+)?million/i,
 
     /quarter\s+(?:of\s+)?a\s+million/i,
+    // Hebrew lump sum anchored to an explicit currency with an investment
+    // horizon ahead: "10,000 דולר ב-7% ל-20 שנה", "10000 דולר בעוד 20 שנה".
+    // The negative lookahead keeps monthly/yearly contribution phrases in
+    // the monthly parser.
+    /(\d[\d,.]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון|thousand|million)?\s*(?:דולר(?:ים)?|שקל(?:ים)?|ש["״']?ח|₪|usd|dollars?|ils)(?!\s*(?:בחודש|לחודש|כל חודש|בשנה|לשנה|per month|a month|monthly))(?=[\s\S]{0,80}(?:שנה|שנים|years?))/i,
+
   ];
+
+function detectInitialAmount(text: string): number {
+  const normalized = normalizeText(text);
+
+  const initialPatterns = INITIAL_AMOUNT_PATTERNS;
+
 
   for (const pattern of initialPatterns) {
     const match = normalized.match(pattern);
@@ -502,27 +511,7 @@ function detectInitialAmount(text: string): number {
 ): boolean {
   const normalized = normalizeText(text);
 
-  const initialPatterns = [
-    /(?:יש לי|יש ברשותי|ברשותי|קיים לי|מחזיק|השקעתי)\s*(?:היום|כיום|כרגע)?\s*(?:הון של|הון בסך|סכום של|סכום)?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון|thousand|million)?/i,
-
-    /(?:initial investment|starting capital|initial capital)\s*(?:of|is)?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?/i,
-
-    // Explicit lump sum with a horizon. The horizon/upfront lookahead keeps
-    // monthly "invest X per month" phrases in the monthly parser.
-    /(?:if\s+i\s+|i\s+)?invest\s+\$?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪|usd|dollars?|\$)?\s*(?:at\s+\d+(?:\.\d+)?%\s*)?(?=for\s+\d+\s*years?|over\s+\d+\s*years?|initially\b|upfront\b)/i,
-
-    /(?:want to|planning to|going to|would like to)\s+invest\s+(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?\s*(?:initially|upfront|as a start)?\b/i,
-
-    /(?:have|got)\s+(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?\s*(?:to invest|to start|available)?\b/i,
-
-    /(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?\s*(?:to invest|to start|initially|upfront)\b/i,
-
-    /(?:starting|beginning|starting off)\s+with\s+(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?/i,
-
-    /half\s+(?:a\s+)?million/i,
-
-    /quarter\s+(?:of\s+)?a\s+million/i,
-  ];
+  const initialPatterns = INITIAL_AMOUNT_PATTERNS;
 
   for (const pattern of initialPatterns) {
     const match = normalized.match(pattern);
@@ -1314,10 +1303,16 @@ function detectExplicitAnnualReturnPct(
     .trim();
 
   const patterns = [
-    /(?:תשואה|תשואה שנתית)\s*(?:של|שנתית של)?\s*(\d+(?:\.\d+)?)\s*%/i,
-    /(?:ב|עם|לפי|על)\s*(?:תשואה|תשואה שנתית)\s*(?:של)?\s*(\d+(?:\.\d+)?)\s*%/i,
+    /(?:תשואה|תשואה שנתית)\s*(?:של|שנתית של)?\s*(\d+(?:\.\d+)?)\s*(?:%|אחוזים?)/i,
+    /(?:ב|עם|לפי|על)\s*(?:תשואה|תשואה שנתית)\s*(?:של)?\s*(\d+(?:\.\d+)?)\s*(?:%|אחוזים?)/i,
     /(?:annual\s+return|expected\s+return|return)\s*(?:of|at|is)?\s*(\d+(?:\.\d+)?)\s*%/i,
-    /(\d+(?:\.\d+)?)\s*%\s*(?:תשואה|תשואה שנתית|return|annual return)/i
+    /(\d+(?:\.\d+)?)\s*%\s*(?:תשואה|תשואה שנתית|return|annual return)/i,
+
+    // Hebrew: "7 אחוז תשואה" / "7 אחוז ריבית"
+    /(\d+(?:\.\d+)?)\s*אחוזים?\s*(?:תשואה|ריבית)/i,
+
+    // Hebrew bare rate tied to a horizon: "ב-7% ל-20 שנה", "ב-7% למשך 20 שנה"
+    /ב-?(\d+(?:\.\d+)?)\s*%\s*(?=ל?-?\s*\d+\s*(?:שנה|שנים)|למשך|במשך|בעוד)/i
   ];
 
   for (const pattern of patterns) {
