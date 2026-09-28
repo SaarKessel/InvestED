@@ -24,10 +24,16 @@ describe("calculator projection range controls", () => {
     act(() => five!.click());
     expect(five!.getAttribute("aria-pressed")).toBe("true");
     expect(container.querySelector('[role="img"]')?.getAttribute("aria-label")).toContain("15–20");
+    const tableToggle = [...container.querySelectorAll("button")].find(button => button.textContent?.includes("הצג נתונים בטבלה"));
+    expect(tableToggle).toBeTruthy();
+    act(() => tableToggle!.click());
+    expect(tableToggle!.getAttribute("aria-expanded")).toBe("true");
+    expect(container.querySelectorAll("#projection-data-table tbody tr")).toHaveLength(6);
+    expect(container.querySelector("#projection-data-table tbody tr")?.textContent).toContain("15");
   });
   it("does not offer impossible windows for a short simulation", () => {
     render(4);
-    expect(container.querySelectorAll("button")).toHaveLength(0);
+    expect(container.querySelectorAll('[role="group"] button')).toHaveLength(0);
     expect(container.querySelector('[role="img"]')?.getAttribute("aria-label")).toContain("0–4");
   });
 });

@@ -30,6 +30,7 @@ interface Props {
 export function InvestmentGrowthChart({ data, currency = "ILS" }: Props) {
   const { t, language } = useLanguage();
   const [windowYears, setWindowYears] = useState<number | "all">("all");
+  const [showDataTable, setShowDataTable] = useState(false);
   const lastYear = data.at(-1)?.year ?? 0;
   const visibleData = useMemo(() => windowYears === "all" ? data : data.filter(point => point.year >= lastYear - windowYears), [data, lastYear, windowYears]);
   const windows = [5, 10].filter(years => lastYear > years);
@@ -106,6 +107,9 @@ export function InvestmentGrowthChart({ data, currency = "ILS" }: Props) {
             <button type="button" aria-pressed={windowYears === "all"} onClick={() => setWindowYears("all")} className={`rounded-lg px-3 py-1 text-xs font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${windowYears === "all" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>{language === "he" ? "הכול" : "All"}</button>
           </div>}
         </div>
+        <button type="button" aria-expanded={showDataTable} aria-controls="projection-data-table" onClick={() => setShowDataTable(current => !current)} className="mt-4 rounded-lg border border-primary/30 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+          {showDataTable ? (language === "he" ? "הסתר נתונים" : "Hide data") : (language === "he" ? "הצג נתונים בטבלה" : "View data as table")}
+        </button>
       </div>
 
       <div className="h-[320px] w-full min-w-0 sm:h-[350px]" role="img" aria-label={`${t("investment_chart_aria", "Investment growth chart")}. ${language === "he" ? "שנים" : "Years"} ${visibleData[0]?.year ?? 0}–${visibleData.at(-1)?.year ?? 0}.`}>
@@ -200,6 +204,14 @@ export function InvestmentGrowthChart({ data, currency = "ILS" }: Props) {
           </LineChart>
         </ResponsiveContainer>
       </div>
+
+      {showDataTable && <div id="projection-data-table" className="mt-4 max-h-80 overflow-auto rounded-xl border border-border" tabIndex={0}>
+        <table className="w-full min-w-[340px] border-collapse text-sm tabular-nums">
+          <caption className="sr-only">{language === "he" ? "ערכי הסימולציה לפי שנה, בהתאם לטווח הנבחר" : "Simulated annual values for the selected range"}</caption>
+          <thead className="sticky top-0 bg-card"><tr className="border-b border-border text-start"><th scope="col" className="p-3 text-start">{t("investment_chart_label_year", "Year")}</th><th scope="col" className="p-3 text-end">{t("investment_chart_balance_label", "Portfolio Value")}</th><th scope="col" className="p-3 text-end">{t("investment_chart_contributed_label", "Total Contributions")}</th></tr></thead>
+          <tbody>{visibleData.map(point => <tr key={point.year} className="border-b border-border/50 last:border-0"><th scope="row" className="p-3 text-start font-semibold">{point.year}</th><td className="p-3 text-end" dir="ltr">{formatCurrency(point.balance)}</td><td className="p-3 text-end" dir="ltr">{formatCurrency(point.contributed)}</td></tr>)}</tbody>
+        </table>
+      </div>}
 
       <div className="mt-4 grid gap-3 sm:grid-cols-2">
         <div className="rounded-2xl border border-border bg-muted/30 p-4">
