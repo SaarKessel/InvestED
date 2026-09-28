@@ -49,8 +49,9 @@ export function DashboardPage() {
 
   return (
     <Layout>
-      <section className="relative overflow-hidden">
+      <section className="dashboard-stage relative overflow-hidden">
         <div className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[420px] bg-gradient-to-b from-primary/8 via-transparent to-transparent" />
+        <div className="dashboard-grid pointer-events-none absolute inset-x-0 top-0 -z-10 h-[760px]" aria-hidden="true" />
 
         <div className="container max-w-6xl py-8 md:py-12">
           {/* DASHBOARD HEADER */}

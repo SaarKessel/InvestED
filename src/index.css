@@ -351,3 +351,14 @@
 .projection-surface {
   background: linear-gradient(145deg, hsl(var(--card)), hsl(var(--primary) / 0.045));
 }
+
+/* Phase 2 dashboard command surface: illustration and navigation, not account data. */
+.dashboard-grid {
+  background-image: linear-gradient(hsl(var(--primary) / 0.07) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--primary) / 0.07) 1px, transparent 1px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(to bottom, black, transparent);
+}
+.dashboard-command-tile {
+  background: linear-gradient(145deg, hsl(var(--card)), hsl(var(--primary) / 0.055));
+}
+.dashboard-command-tile:hover { box-shadow: 0 12px 32px -16px hsl(var(--primary) / 0.5); }
