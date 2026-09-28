@@ -340,3 +340,9 @@
     white-space: normal;
   }
 }
+
+/* Phase 2 learning-path illustration: editorial grid and glass surface. */
+.learning-constellation {
+  background: linear-gradient(135deg, hsl(var(--card) / 0.94), hsl(var(--background) / 0.88));
+  backdrop-filter: blur(14px);
+}

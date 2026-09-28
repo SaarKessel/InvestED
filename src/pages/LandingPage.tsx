@@ -16,6 +16,7 @@ import {
 
 import { Layout } from "@/components/layout/Layout";
 import { TickerTape } from "@/components/TickerTape";
+import { LearningConstellation } from "@/components/landing/LearningConstellation";
 import { AINewsSection } from "@/components/news/AINewsSection";
 import { FlaskConical } from "lucide-react";
 import { Button, Card, CardContent } from "@/components/ui/primitives";
@@ -101,7 +102,8 @@ export function LandingPage() {
       <section className="relative isolate overflow-hidden bg-background">
         {/* Background glow */}
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          <div className="absolute left-1/2 top-[-12rem] h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
+          <div className="absolute left-1/2 top-[-12rem] h-[32rem] w-[32rem] -translate-x-1/2 rounded-full bg-primary/15 blur-3xl" />
+          <div className="absolute inset-0 opacity-35 [background-image:linear-gradient(hsl(var(--primary)/0.08)_1px,transparent_1px),linear-gradient(90deg,hsl(var(--primary)/0.08)_1px,transparent_1px)] [background-size:48px_48px] [mask-image:linear-gradient(to_bottom,black,transparent_85%)]" />
           <div className="absolute right-[-10rem] top-20 h-72 w-72 rounded-full bg-primary/5 blur-3xl" />
           <div className="absolute bottom-0 left-[-10rem] h-72 w-72 rounded-full bg-primary/5 blur-3xl" />
         </div>
@@ -109,7 +111,7 @@ export function LandingPage() {
         {/* Subtle overlay */}
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-background/20 via-background/60 to-background" />
 
-        <div className="container relative flex flex-col items-center px-4 py-24 text-center sm:px-6 md:py-32 lg:py-36">
+        <div className="container relative flex flex-col items-center px-4 py-20 text-center sm:px-6 md:py-24 lg:py-28">
           {/* Product Badge */}
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -213,6 +215,7 @@ export function LandingPage() {
               {t("hero_signal_edu", "Financial Education")}
             </span>
           </motion.div>
+          <LearningConstellation />
         </div>
       </section>
 
