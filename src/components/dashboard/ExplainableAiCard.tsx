@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
 
+import { diversificationLabel } from "@/lib/diversificationLabel";
 import {
   BrainCircuit,
   ShieldCheck,
@@ -1067,7 +1068,7 @@ export function ExplainableAiCard({
                         font-bold
                       "
                     >
-                      {metrics.diversification}
+                      {diversificationLabel(metrics.diversification, t)}
                     </p>
 
                   </div>

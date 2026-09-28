@@ -42,6 +42,7 @@ import { PortfolioGrowthComposition } from "./PortfolioGrowthComposition";
 
 import { useLanguage } from "@/context/languageContext";
 import { formatCurrency } from "@/lib/format";
+import { diversificationLabel } from "@/lib/diversificationLabel";
 
 // =====================================================
 // Portfolio Card
@@ -206,7 +207,7 @@ export function PortfolioCard({
                   <ShieldCheck className="h-4 w-4" />
                 }
                 title={t("portfolio_metric_diversification", "Portfolio Diversification")}
-                value={`${metrics.diversification}%`}
+                value={diversificationLabel(metrics.diversification, t)}
               />
 
               <MetricCard
