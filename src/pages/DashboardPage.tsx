@@ -16,7 +16,7 @@ import { Layout, DisclaimerBanner } from "@/components/layout/Layout";
 import { Button, Card, CardContent } from "@/components/ui/primitives";
 import { useAnalysis } from "@/context/useAnalysis";
 import { useLanguage } from "@/context/languageContext";
-import { confidenceLabel, dashboardGoalLabel } from "@/lib/format";
+import { confidenceLabel, dashboardGoalLabel, investorTypeLabel } from "@/lib/format";
 import {
   WelcomeCard,
   InvestorTypeCard,
@@ -136,7 +136,7 @@ export function DashboardPage() {
                     </div>
                     <p className="text-xs text-muted-foreground">{t("dashboard_metric_style")}</p>
                     <p className="mt-1.5 truncate font-bold">
-                      {result.investor?.type ?? t("dashboard_metric_default_style")}
+                      {result.investor?.type ? investorTypeLabel(result.investor.type, t) : t("dashboard_metric_default_style")}
                     </p>
                   </div>
 

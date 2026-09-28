@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   formatCurrency,
   formatCompactCurrency,
+  investorTypeLabel,
 } from "@/lib/format";
 import {
   getCurrencyByCode,
@@ -83,5 +84,12 @@ describe("currency definitions", () => {
     const usd = getCurrencyByCode("USD");
     expect(usd.code).toBe("USD");
     expect(usd.symbol).toBe("$");
+  });
+});
+
+describe("investor type label", () => {
+  it("translates the dashboard profile classification into Hebrew", () => {
+    const t = (key: string) => ({ investor_type_growth: "משקיע צמיחה" } as Record<string, string>)[key] ?? key;
+    expect(investorTypeLabel("growth", t)).toBe("משקיע צמיחה");
   });
 });
