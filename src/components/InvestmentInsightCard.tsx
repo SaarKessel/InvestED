@@ -32,6 +32,11 @@ export function InvestmentInsightCard({
   const contributionShare =
     finalBalance > 0 ? Math.round((totalContributed / finalBalance) * 100) : 0;
 
+  // A positive-only split describes the final value. Losses are not a slice of it.
+  const showPositiveBreakdown = finalBalance > 0 && totalContributed >= 0 &&
+    growth >= 0 && Math.abs(totalContributed + growth - finalBalance) <= 1;
+  const contributionWidth = showPositiveBreakdown ? (totalContributed / finalBalance) * 100 : 0;
+
   let insight = "";
   let icon = "";
 
@@ -124,7 +129,25 @@ export function InvestmentInsightCard({
           {t("ai_insight_growth_title", "💰 Where does the final value come from?")}
         </h3>
 
-        <div className="grid gap-4 md:grid-cols-2">
+        {showPositiveBreakdown && (
+          <div className="mb-4 rounded-2xl border border-primary/20 bg-primary/5 p-4 sm:p-5">
+            <div role="img" aria-label={`${t("ai_insight_deposits")}: ${formatCurrency(totalContributed, currency, language)}; ${t("ai_insight_growth_share")}: ${formatCurrency(growth, currency, language)}`}
+              className="flex h-5 w-full overflow-hidden rounded-full border border-border bg-muted" dir="ltr">
+              <span className="h-full bg-secondary" style={{ width: `${contributionWidth}%` }} />
+              <span className="h-full flex-1 bg-primary" />
+            </div>
+            <div className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
+              <div className="flex items-center gap-2"><span className="h-2.5 w-2.5 shrink-0 rounded-sm bg-secondary" aria-hidden="true" />{t("ai_insight_deposits")}: <b dir="ltr">{formatCurrency(totalContributed, currency, language)}</b></div>
+              <div className="flex items-center gap-2"><span className="h-2.5 w-2.5 shrink-0 rounded-sm bg-primary" aria-hidden="true" />{t("ai_insight_growth_share")}: <b dir="ltr">{formatCurrency(growth, currency, language)}</b></div>
+            </div>
+          </div>
+        )}
+        {!showPositiveBreakdown && (
+          <p className="text-sm leading-7 text-muted-foreground">
+            {language === "he" ? "כשהתוצאה אינה צמיחה חיובית, אין חלוקה חיובית של השווי הסופי להפקדות ולצמיחה. בדקו את סכומי התרחיש וההנחות." : "When the result is not positive growth, a positive split between contributions and growth would be misleading. Review the scenario amounts and assumptions."}
+          </p>
+        )}
+        {showPositiveBreakdown && <div className="grid gap-4 md:grid-cols-2">
           <div className="rounded-2xl border border-border bg-muted/20 p-5">
             <p className="mb-2 text-sm text-muted-foreground">
               {t("ai_insight_growth_share", "📈 Investment Growth")}
@@ -142,11 +165,11 @@ export function InvestmentInsightCard({
               {contributionShare}%
             </p>
           </div>
-        </div>
+        </div>}
 
-        <p className="mt-4 text-sm leading-7 text-muted-foreground">
+        {showPositiveBreakdown && <p className="mt-4 text-sm leading-7 text-muted-foreground">
           {t("ai_insight_growth_summary", "Approximately {growth}% of the final value comes from investment growth, and approximately {deposits}% comes from the funds deposited.").replace("{growth}", String(growthShare)).replace("{deposits}", String(contributionShare))}
-        </p>
+        </p>}
       </div>
 
       {/* Monthly Contribution */}
