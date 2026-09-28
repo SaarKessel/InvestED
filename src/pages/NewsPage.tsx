@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Newspaper, RefreshCw } from "lucide-react";
 import { Layout, DisclaimerBanner } from "@/components/layout/Layout";
 import { NewsCard } from "@/components/news/NewsCard";
 import { useLanguage } from "@/context/languageContext";
 import { fetchNews, type NewsResult } from "@/lib/newsClient";
+import { shouldRefreshNews } from "@/lib/newsRefresh";
 
 export default function NewsPage() {
   const { t, language } = useLanguage();
@@ -11,18 +12,36 @@ export default function NewsPage() {
   const [failed, setFailed] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  function load() {
+  const resultRef = useRef<NewsResult | null>(null);
+  const loadingRef = useRef(false);
+
+  const load = useCallback(() => {
+    if (loadingRef.current || document.visibilityState === "hidden") return;
+    loadingRef.current = true;
     setRefreshing(true);
     fetchNews()
       .then((payload) => {
+        resultRef.current = payload;
         setResult(payload);
         setFailed(false);
       })
       .catch(() => setFailed(true))
-      .finally(() => setRefreshing(false));
-  }
+      .finally(() => {
+        loadingRef.current = false;
+        setRefreshing(false);
+      });
+  }, []);
 
-  useEffect(load, []);
+  useEffect(() => {
+    load();
+    const onVisible = () => {
+      if (document.visibilityState !== "visible") return;
+      const current = resultRef.current;
+      if (shouldRefreshNews(current?.fetchedAt ?? null, Date.now(), current?.cacheTtlSeconds ?? 900)) load();
+    };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => document.removeEventListener("visibilitychange", onVisible);
+  }, [load]);
 
   return (
     <Layout>

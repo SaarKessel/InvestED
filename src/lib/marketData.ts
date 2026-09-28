@@ -129,19 +129,24 @@ function isRealProviderSource(value: unknown): value is Exclude<MarketDataSource
 }
 
 const FRESHNESS_VALUES = ["current", "recent", "stale", "simulated", "unavailable"];
+export function allowSimulatedFallback(isDevelopment: boolean): boolean {
+  return isDevelopment;
+}
+
+const allowDevelopmentSimulation = allowSimulatedFallback(import.meta.env.DEV);
 
 function mapApiAsset(api: ApiMarketAsset, fallback: KnownAsset | undefined, seedIndex: number): MarketAsset | null {
   // An asset the server could not serve (price=null, freshness
   // "unavailable") is dropped here — never replaced with silent mock.
   if (!api || typeof api.price !== "number" || !Number.isFinite(api.price)) return null;
+  // Unknown/missing provenance is unavailable, never silently assigned Yahoo.
+  if (!isRealProviderSource(api.dataSource)) return null;
 
   const symbol = api.symbol || fallback?.symbol || "UNKNOWN";
   const hasRealHistory = Array.isArray(api.history) && api.history.length > 1;
 
   if (hasRealHistory) {
-    const dataSource: MarketDataSource = isRealProviderSource(api.dataSource)
-      ? api.dataSource
-      : "yahoo_finance";
+    const dataSource: MarketDataSource = api.dataSource;
     return {
       symbol,
       name: api.name || fallback?.name || symbol,
@@ -167,6 +172,7 @@ function mapApiAsset(api: ApiMarketAsset, fallback: KnownAsset | undefined, seed
   // The last price may be real, but a simulated history makes every
   // derived indicator (RSI, volatility) simulated — so the whole asset
   // is labeled mock. This rule is a Phase 3C truthfulness guarantee.
+  if (!allowDevelopmentSimulation) return null;
   const known = findKnownAsset(symbol);
   const history = generateMockHistory(api.price || 100, seedFromSymbol(symbol) + seedIndex);
   return {
@@ -235,7 +241,7 @@ export async function fetchMarketAssets(interests: InterestArea[] = []): Promise
   } catch {
     // נופלים בחזרה לנתונים מדומים — בפיתוח מקומי (npm run dev), או אם
     // שכבת ה-providers לא זמינה. תמיד מסומן mock/simulated.
-    return { assets: buildMockAssets(interests), isLive: false };
+    return { assets: allowDevelopmentSimulation ? buildMockAssets(interests) : [], isLive: false };
   }
 }
 
@@ -254,6 +260,6 @@ export async function fetchMarketAssetBySymbol(
     return assets[0] ?? null;
   } catch {
     // API unreachable (local dev, provider outage): labeled mock fallback.
-    return buildMockAsset({ symbol: normalized, name: normalized, assetType: "unknown", basePrice: 100 });
+    return allowDevelopmentSimulation ? buildMockAsset({ symbol: normalized, name: normalized, assetType: "unknown", basePrice: 100 }) : null;
   }
 }

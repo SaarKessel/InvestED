@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { fetchMarketAssetBySymbol } from "./marketData";
+import { allowSimulatedFallback, fetchMarketAssetBySymbol } from "./marketData";
 import { explainConversationTurn } from "./ollamaClient";
 import { buildRuleBasedAnalysis } from "./analysisService";
 import { createConversationSession } from "./conversationContext";
@@ -31,15 +31,31 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+describe("production market fallback", () => {
+  it("cannot generate simulated values in production", () => {
+    expect(allowSimulatedFallback(false)).toBe(false);
+    expect(allowSimulatedFallback(true)).toBe(true);
+  });
+});
+
 describe("market data source metadata", () => {
   it("marks a successful live response with the real provider", async () => {
     stubMarketFetch(() => ({
-      json: { assets: [{ symbol: "NVDA", name: "NVIDIA", price: 123.4, changePercent: 1.2, history: realHistory() }] },
+      json: { assets: [{ symbol: "NVDA", name: "NVIDIA", price: 123.4, changePercent: 1.2, history: realHistory(), dataSource: "yahoo_finance", timestamp: "2026-09-28T16:00:00Z" }] },
     }));
 
     const asset = await fetchMarketAssetBySymbol("NVDA");
     expect(asset?.price).toBe(123.4);
     expect(asset?.dataSource).toBe("yahoo_finance");
+  });
+
+  it("does not assign a provider to an asset missing source metadata", async () => {
+    stubMarketFetch(() => ({
+      json: { assets: [{ symbol: "NVDA", name: "NVIDIA", price: 123.4, history: realHistory() }] },
+    }));
+    const asset = await fetchMarketAssetBySymbol("NVDA");
+    if (import.meta.env.DEV) expect(asset?.dataSource).toBe("mock");
+    else expect(asset).toBeNull();
   });
 
   it("marks the asset as mock when the API fails and the fallback is used", async () => {
