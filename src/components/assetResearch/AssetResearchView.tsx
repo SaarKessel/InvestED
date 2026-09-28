@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { Search, RefreshCw, GitCompareArrows, Bot, Database } from "lucide-react";
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip } from "recharts";
 import { useLanguage } from "@/context/languageContext";
 import { fetchMarketAssetBySymbol } from "@/lib/marketData";
 import { researchAsset, type AssetResearch } from "@/lib/research/assetResearchEngine";
 import { useAnalysis } from "@/context/useAnalysis";
 import { indicatorLabel, researchCodeLabel } from "@/lib/research/researchLabels";
+import { ResearchHistoryChart } from "./ResearchHistoryChart";
 
 const unavailable = (language: string) => language === "he" ? "הנתונים אינם זמינים" : "Data unavailable";
 const formattedTimestamp = (timestamp: string | null, language: string) => {
@@ -34,7 +34,7 @@ export function AssetResearchView() {
         <dl className="mt-6 grid grid-cols-2 gap-3 md:grid-cols-4">{[[t("research_previous"),research.quote.previousClose],[t("research_volume"),research.quote.volume?.toLocaleString(language === "he" ? "he-IL" : "en-US")],[t("research_status"),researchCodeLabel("status", research.quote.marketStatus as "open" | "closed" | "pre_market" | "after_hours" | "unknown", language)],[t("research_freshness"),t(`copilot_freshness_${research.provenance.freshness ?? "unavailable"}`, research.provenance.freshness)]].map(([label,value])=><div className="rounded-xl bg-muted/50 p-3" key={String(label)}><dt className="text-xs text-muted-foreground">{label}</dt><dd className="mt-1 font-bold" dir={typeof value === "number" ? "ltr" : undefined}>{value ?? unavailable(language)}</dd></div>)}</dl>
       </section>
       <section className="grid gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <div className="rounded-2xl border border-border bg-card p-5"><h3 className="mb-4 text-lg font-bold">{t("research_history")}</h3>{research.history.length ? <div className="h-72" aria-label={t("research_history_chart")}><ResponsiveContainer width="100%" height="100%"><LineChart data={research.history}><XAxis dataKey="date" hide/><YAxis domain={["auto","auto"]} width={55}/><Tooltip/><Line type="monotone" dataKey="close" stroke="hsl(var(--primary))" dot={false} strokeWidth={2}/></LineChart></ResponsiveContainer></div> : <p>{unavailable(language)}</p>}</div>
+        <div className="rounded-2xl border border-border bg-card p-5"><h3 className="mb-4 text-lg font-bold">{t("research_history")}</h3><ResearchHistoryChart history={research.history} currency={research.quote.currency}/></div>
         <div className="rounded-2xl border border-border bg-card p-5"><h3 className="mb-4 text-lg font-bold">{t("research_indicators")}</h3><dl className="space-y-3">{Object.entries(research.indicators).map(([key,item])=><div key={key} className="flex items-center justify-between border-b border-border pb-2"><dt className="uppercase text-xs font-bold">{indicatorLabel(key, language)}</dt><dd dir="ltr">{item.status === "available" ? typeof item.value === "object" ? (item.value as { macd: number }).macd : item.value : unavailable(language)}</dd></div>)}</dl></div>
       </section>
       <section className="grid gap-4 md:grid-cols-2"><div className="rounded-2xl border border-border bg-card p-5"><h3 className="font-bold">{t("research_fundamentals")}</h3><p className="mt-2 text-sm text-muted-foreground">{unavailable(language)}. {t("research_no_fundamentals_provider")}</p></div><div className="rounded-2xl border border-border bg-card p-5"><h3 className="font-bold">{t("research_news")}</h3><p className="mt-2 text-sm text-muted-foreground">{unavailable(language)}. {t("research_no_news_provider")}</p></div></section>
