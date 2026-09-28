@@ -2,6 +2,7 @@
 // InvestED — Investment Growth Chart
 // Portfolio Growth Visualization
 // ---------------------------------------------------------------------------
+import { useMemo, useState } from "react";
 import {
   LineChart,
   Line,
@@ -28,6 +29,11 @@ interface Props {
 
 export function InvestmentGrowthChart({ data, currency = "ILS" }: Props) {
   const { t, language } = useLanguage();
+  const [windowYears, setWindowYears] = useState<number | "all">("all");
+  const lastYear = data.at(-1)?.year ?? 0;
+  const visibleData = useMemo(() => windowYears === "all" ? data : data.filter(point => point.year >= lastYear - windowYears), [data, lastYear, windowYears]);
+  const windows = [5, 10].filter(years => lastYear > years);
+
   const locale = language === "he" ? "he-IL" : "en-US";
 
   const currencyInfo = getCurrencyByCode(currency);
@@ -83,15 +89,7 @@ export function InvestmentGrowthChart({ data, currency = "ILS" }: Props) {
     <section
       dir={language === "he" ? "rtl" : "ltr"}
       aria-label={t("investment_chart_aria", "Investment growth chart")}
-      className="
-        mt-8
-        rounded-3xl
-        border
-        border-border
-        bg-card
-        p-6
-        shadow-soft
-      "
+      className="projection-surface mt-8 rounded-3xl border border-primary/20 bg-card p-4 shadow-soft sm:p-6"
     >
       <div className="mb-6">
         <h2 className="text-2xl font-bold">
@@ -101,12 +99,19 @@ export function InvestmentGrowthChart({ data, currency = "ILS" }: Props) {
         <p className="mt-2 text-sm text-muted-foreground">
           {t("investment_chart_subtitle", "Comparison between the money contributed and the value accumulated from the investment over the years.")}
         </p>
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <p className="text-xs text-muted-foreground">{language === "he" ? "סימולציה לפי ההנחות שהוזנו, לא תשואה מובטחת" : "Simulation from entered assumptions, not guaranteed returns"}</p>
+          {windows.length > 0 && <div role="group" aria-label={language === "he" ? "טווח שנות הסימולציה" : "Simulation year range"} className="inline-flex rounded-xl border border-border bg-background/80 p-1">
+            {windows.map(years => <button type="button" key={years} aria-pressed={windowYears === years} onClick={() => setWindowYears(years)} className={`rounded-lg px-3 py-1 text-xs font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${windowYears === years ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>{years} {language === "he" ? "שנים" : "years"}</button>)}
+            <button type="button" aria-pressed={windowYears === "all"} onClick={() => setWindowYears("all")} className={`rounded-lg px-3 py-1 text-xs font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${windowYears === "all" ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>{language === "he" ? "הכול" : "All"}</button>
+          </div>}
+        </div>
       </div>
 
-      <div className="h-[350px] w-full">
+      <div className="h-[320px] w-full min-w-0 sm:h-[350px]" role="img" aria-label={`${t("investment_chart_aria", "Investment growth chart")}. ${language === "he" ? "שנים" : "Years"} ${visibleData[0]?.year ?? 0}–${visibleData.at(-1)?.year ?? 0}.`}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
-            data={data}
+            data={visibleData}
             margin={{
               top: 10,
               right: 10,
@@ -152,6 +157,7 @@ export function InvestmentGrowthChart({ data, currency = "ILS" }: Props) {
                 borderRadius: "12px",
                 border: "1px solid hsl(var(--border))",
                 backgroundColor: "hsl(var(--card))",
+                color: "hsl(var(--foreground))",
               }}
               labelStyle={{
                 fontWeight: 600,
@@ -177,6 +183,7 @@ export function InvestmentGrowthChart({ data, currency = "ILS" }: Props) {
               strokeWidth={3}
               dot={false}
               activeDot={{ r: 5 }}
+              isAnimationActive={false}
             />
 
             <Line
@@ -188,6 +195,7 @@ export function InvestmentGrowthChart({ data, currency = "ILS" }: Props) {
               strokeDasharray="6 4"
               dot={false}
               activeDot={{ r: 4 }}
+              isAnimationActive={false}
             />
           </LineChart>
         </ResponsiveContainer>
