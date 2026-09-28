@@ -22,7 +22,7 @@ export function ResearchHistoryChart({ history, currency }: { history: NonNullab
     <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
       <p className="text-xs text-muted-foreground">{language === "he" ? "מחירי סגירה היסטוריים בלבד, לא תחזית" : "Historical closing prices only, not a forecast"} · <span dir="ltr">{range}</span></p>
       <div className="inline-flex rounded-xl border border-border bg-background/70 p-1" role="group" aria-label={language === "he" ? "טווח תצפיות" : "Observation range"}>
-        {windows.map(({ size, label }) => <button key={size} type="button" aria-pressed={windowSize === size} onClick={() => setWindowSize(size)} className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${windowSize === size ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>{label}</button>)}
+        {windows.filter(({ size }) => size === "all" || history.length > size).map(({ size, label }) => <button key={size} type="button" aria-pressed={windowSize === size} onClick={() => setWindowSize(size)} className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${windowSize === size ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>{label}</button>)}
       </div>
     </div>
     <div className="h-72 w-full" role="img" aria-label={`${t("research_history_chart")}. ${points.length} ${language === "he" ? "תצפיות" : "observations"}. ${range}.`}>
