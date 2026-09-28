@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/primitives";
 
 import { BrokerComparisonTable } from "./BrokerComparisonTable";
+import { PortfolioGrowthComposition } from "./PortfolioGrowthComposition";
 
 import { useLanguage } from "@/context/languageContext";
 import { formatCurrency } from "@/lib/format";
@@ -60,16 +61,6 @@ export function PortfolioCard({
   const metrics = calculatePortfolioMetrics(allocation);
 
   const currency = result.scenario?.currency ?? result.currency ?? "ILS";
-
-  const growthPercentage =
-    projection && projection.finalBalance > 0
-      ? Math.min(
-          100,
-          Math.round(
-            (projection.growth / projection.finalBalance) * 100
-          )
-        )
-      : 0;
 
   const riskLevelKey =
     metrics.riskLevel === "high"
@@ -188,40 +179,7 @@ export function PortfolioCard({
           GROWTH BAR
           ===================================================== */}
 
-          {projection && (
-            <section className="rounded-2xl border border-primary/10 bg-primary/5 p-4">
-              <div className="mb-3 flex items-center justify-between gap-4">
-                <div>
-                  <p className="text-sm font-semibold">
-                    {t("portfolio_growth_contribution_title", "Contribution to Final Value")}
-                  </p>
-
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {t("portfolio_growth_contribution_subtitle", "The relative share of growth from the final value.")}
-                  </p>
-                </div>
-
-                <span className="shrink-0 text-sm font-bold text-primary">
-                  {growthPercentage}%
-                </span>
-              </div>
-
-              <div className="h-3 overflow-hidden rounded-full bg-muted">
-                <motion.div
-                  initial={{
-                    width: 0,
-                  }}
-                  animate={{
-                    width: `${growthPercentage}%`,
-                  }}
-                  transition={{
-                    duration: 0.8,
-                  }}
-                  className="h-full rounded-full gradient-brand"
-                />
-              </div>
-            </section>
-          )}
+          {projection && <PortfolioGrowthComposition projection={projection} currency={currency} />}
 
           {/* =====================================================
           PORTFOLIO HEALTH METRICS
