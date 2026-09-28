@@ -138,31 +138,31 @@ export default function CalculatorPage() {
   const aiInsight = scenario && projection ? generateAIInsight(scenario, projection, language) : null;
 
   return (
-    <div dir={language === "he" ? "rtl" : "ltr"} className="min-h-screen bg-background text-foreground p-4 md:p-6">
-      <div className="mx-auto max-w-6xl">
+    <div dir={language === "he" ? "rtl" : "ltr"} className="calculator-stage relative min-h-screen overflow-hidden bg-background p-4 text-foreground md:p-6">
+      <div className="calculator-grid pointer-events-none absolute inset-x-0 top-0 h-[760px]" aria-hidden="true" />
+      <div className="relative mx-auto max-w-6xl">
         {/* Hero */}
-        <div className="relative mb-10 overflow-hidden text-center">
+        <div className="relative mb-10 overflow-hidden rounded-[2rem] border border-primary/15 bg-card/55 px-4 py-10 text-center shadow-[0_24px_80px_-50px_hsl(var(--primary)/0.35)] sm:px-8 md:py-14">
           <div className="pointer-events-none absolute left-1/2 top-0 h-40 w-80 -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
           <div className="relative mb-5 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 text-sm font-medium text-primary">
             <span aria-hidden="true">✨</span>
             {t("calc_hero_badge")}
           </div>
-          <h1 className="relative mb-5 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
-            {t("calc_hero_title")}{" "}
-            <span className="gradient-text">InvestED</span>
+          <h1 className="relative mx-auto mb-5 max-w-4xl text-balance font-display text-3xl font-extrabold tracking-tight sm:text-4xl md:text-5xl lg:text-6xl">
+            {t("calc_hero_title")}
           </h1>
           <p className="relative mx-auto max-w-2xl text-base leading-7 text-muted-foreground md:text-lg md:leading-8">
             {t("calc_hero_desc")}
           </p>
-          <div className="relative mt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-muted-foreground">
-            <span>{t("calc_hero_sim_full")}</span>
-            <span>{t("calc_hero_growth_full")}</span>
-            <span>{t("calc_hero_xai_full")}</span>
+          <div className="relative mt-6 flex flex-wrap items-center justify-center gap-2 text-xs font-medium text-muted-foreground sm:text-sm">
+            <span className="rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5">{t("calc_hero_sim_full")}</span>
+            <span className="rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5">{t("calc_hero_growth_full")}</span>
+            <span className="rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5">{t("calc_hero_xai_full")}</span>
           </div>
         </div>
 
         {/* Scenario Input */}
-        <div className="relative mb-8 overflow-hidden rounded-3xl border border-border bg-card p-5 shadow-soft md:p-7">
+        <div className="projection-surface relative mb-8 overflow-hidden rounded-3xl border border-primary/20 bg-card p-5 shadow-soft md:p-7">
           <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-primary/70 to-transparent" />
           <div className="mb-5 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
@@ -185,9 +185,9 @@ export default function CalculatorPage() {
               onChange={e => setInput(e.target.value)}
               placeholder={t("calc_box_placeholder")}
               aria-label={t("calc_aria_scenario")}
-              className="min-h-36 w-full resize-none rounded-2xl bg-transparent p-5 text-base leading-7 text-foreground placeholder:text-muted-foreground/60 outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="min-h-40 w-full resize-none rounded-2xl bg-transparent p-5 pb-11 text-base leading-7 text-foreground placeholder:text-muted-foreground/60 outline-none focus-visible:ring-2 focus-visible:ring-primary"
             />
-            <div className="pointer-events-none absolute bottom-3 left-4 text-xs text-muted-foreground">
+            <div className="pointer-events-none absolute bottom-3 start-4 text-xs text-muted-foreground">
               {t("calc_hint_natural")}
             </div>
           </div>
@@ -229,10 +229,11 @@ export default function CalculatorPage() {
 
           {/* Currency selector */}
           <div className="mt-5">
-            <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+            <label htmlFor="calculator-currency" className="mb-1.5 block text-xs font-medium text-muted-foreground">
               {t("calc_currency_label", "Currency")}
             </label>
             <select
+              id="calculator-currency"
               value={currency}
               onChange={e => setCurrency(e.target.value)}
               className="h-10 rounded-xl border border-border bg-background px-3 py-2 text-sm font-medium text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary"
