@@ -787,6 +787,8 @@
   "comparison_main_advantage_label": "Main Advantage",
   "comparison_main_disadvantage_label": "Main Disadvantage",
   "comparison_strategies_tag": "Strategy Comparison",
+  "comparison_select_label": "Choose up to three educational strategies",
+  "comparison_table_label": "Educational strategy comparison table",
   "comparison_which_approach_title": "Which approach suits me better?",
   "comparison_feature_column": "Feature",
   "financial_insights_tag": "Financial Insights",

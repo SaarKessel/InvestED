@@ -137,12 +137,16 @@ export function ComparisonCard() {
         </CardHeader>
 
         <CardContent>
-          <div className="mb-5 flex flex-wrap gap-2">
+          <div role="group" aria-label={t("comparison_select_label", "Choose up to three educational strategies")} className="mb-5 flex flex-wrap gap-2">
             {STRATEGIES.map((strategy) => (
               <button
                 key={strategy.id}
+                type="button"
+                aria-pressed={selected.includes(strategy.id)}
+                disabled={!selected.includes(strategy.id) && selected.length >= 3}
                 onClick={() => toggle(strategy.id)}
                 className={cn(
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50",
                   "rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors",
                   selected.includes(strategy.id)
                     ? "border-primary bg-primary/10 text-primary"
@@ -154,18 +158,20 @@ export function ComparisonCard() {
             ))}
           </div>
 
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto rounded-xl border border-border/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary" tabIndex={0} role="region" aria-label={t("comparison_table_label", "Educational strategy comparison table")}>
             <table className="w-full min-w-[500px] border-collapse text-sm">
+              <caption className="sr-only">{t("comparison_table_label", "Educational strategy comparison table")}</caption>
               <thead>
                 <tr>
-                  <th className="w-32 border-b border-border py-2 text-right text-xs font-semibold text-muted-foreground">
+                  <th scope="col" className="w-32 border-b border-border py-2 text-start text-xs font-semibold text-muted-foreground">
                     {t("comparison_feature_column", "Feature")}
                   </th>
 
                   {selectedStrategies.map((strategy) => (
                     <th
                       key={strategy.id}
-                      className="border-b border-border py-2 text-right font-display font-bold"
+                      scope="col"
+                      className="border-b border-border py-2 text-start font-display font-bold"
                     >
                       {localized(strategy.name, language)}
                     </th>
@@ -179,14 +185,14 @@ export function ComparisonCard() {
                     key={row.label}
                     className="border-b border-border/60 last:border-0"
                   >
-                    <td className="py-3 pl-2 text-xs font-semibold text-muted-foreground">
+                    <th scope="row" className="py-3 ps-2 text-start text-xs font-semibold text-muted-foreground">
                       {row.label}
-                    </td>
+                    </th>
 
                     {selectedStrategies.map((strategy) => (
                       <td
                         key={strategy.id}
-                        className="py-3 pl-4 leading-relaxed"
+                        className="py-3 ps-4 leading-relaxed"
                       >
                         {row.render(strategy, language)}
                       </td>
