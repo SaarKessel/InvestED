@@ -9,6 +9,7 @@ type WindowSize = 22 | 66 | "all";
 export function ResearchHistoryChart({ history, currency }: { history: NonNullable<MarketAsset["history"]>; currency: string | null }) {
   const { language, t } = useLanguage();
   const [windowSize, setWindowSize] = useState<WindowSize>("all");
+  const [showDataTable, setShowDataTable] = useState(false);
   const points = useMemo(() => windowSize === "all" ? history : history.slice(-windowSize), [history, windowSize]);
   const range = points.length ? `${points[0].date} – ${points[points.length - 1].date}` : "";
   const windows: { size: WindowSize; label: string }[] = [
@@ -25,6 +26,9 @@ export function ResearchHistoryChart({ history, currency }: { history: NonNullab
         {windows.filter(({ size }) => size === "all" || history.length > size).map(({ size, label }) => <button key={size} type="button" aria-pressed={windowSize === size} onClick={() => setWindowSize(size)} className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary ${windowSize === size ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}>{label}</button>)}
       </div>
     </div>
+    <button type="button" aria-expanded={showDataTable} aria-controls="research-history-data-table" onClick={() => setShowDataTable(current => !current)} className="mb-3 rounded-lg border border-primary/30 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary">
+      {showDataTable ? (language === "he" ? "הסתר נתונים" : "Hide data") : (language === "he" ? "הצג נתונים בטבלה" : "View data as table")}
+    </button>
     <div className="h-72 w-full" role="img" aria-label={`${t("research_history_chart")}. ${points.length} ${language === "he" ? "תצפיות" : "observations"}. ${range}.`}>
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={points} margin={{ top: 12, right: 12, left: 4, bottom: 0 }}>
@@ -37,5 +41,12 @@ export function ResearchHistoryChart({ history, currency }: { history: NonNullab
         </AreaChart>
       </ResponsiveContainer>
     </div>
+    {showDataTable && <div id="research-history-data-table" className="mt-4 max-h-80 overflow-auto rounded-xl border border-border" tabIndex={0}>
+      <table className="w-full min-w-[260px] border-collapse text-sm tabular-nums">
+        <caption className="sr-only">{language === "he" ? "מחירי סגירה היסטוריים בטווח הנבחר" : "Historical closing prices for the selected range"}</caption>
+        <thead className="sticky top-0 bg-card"><tr className="border-b border-border"><th scope="col" className="p-2 text-start">{language === "he" ? "תאריך" : "Date"}</th><th scope="col" className="p-2 text-end">{language === "he" ? "מחיר סגירה" : "Close"}</th></tr></thead>
+        <tbody>{points.map((point, index) => <tr key={`${point.date}-${index}`} className="border-b border-border/50 last:border-0"><th scope="row" className="p-2 text-start font-medium" dir="ltr">{point.date}</th><td className="p-2 text-end" dir="ltr">{point.close.toLocaleString(language === "he" ? "he-IL" : "en-US", { maximumFractionDigits: 2 })} {currency ?? ""}</td></tr>)}</tbody>
+      </table>
+    </div>}
   </div>;
 }

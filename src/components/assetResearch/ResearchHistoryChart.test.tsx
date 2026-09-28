@@ -29,6 +29,11 @@ describe("research chart observation ranges", () => {
     expect(first!.getAttribute("aria-pressed")).toBe("true");
     expect(container.querySelector('[role="img"]')?.getAttribute("aria-label")).toContain("22 תצפיות");
     expect(history).toHaveLength(90);
+    const tableToggle = [...container.querySelectorAll("button")].find(button => button.textContent?.includes("הצג נתונים בטבלה"));
+    expect(tableToggle).toBeTruthy();
+    act(() => tableToggle!.click());
+    expect(tableToggle!.getAttribute("aria-expanded")).toBe("true");
+    expect(container.querySelectorAll("#research-history-data-table tbody tr")).toHaveLength(22);
     expect([...container.querySelectorAll("button")].some(button => button.textContent?.includes("66"))).toBe(true);
   });
   it("does not offer a range longer than the available history", () => {
