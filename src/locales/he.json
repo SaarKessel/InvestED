@@ -514,6 +514,8 @@
   "calc_comparison_annual": "תשואה שנתית:",
   "calc_comparison_profit": "רווח:",
   "calc_comparison_leader": "🏆 מוביל",
+  "calc_comparison_value_scale": "השוואת שווי סופי מדומה",
+  "calc_comparison_assumptions_note": "לכל מסלול הנחת תשואה שנתית להמחשה בלבד. הפסים משווים תוצאות של תרחיש, לא ביצועי שוק או המלצה על נכס.",
   "calc_comparison_selected": "התרחיש שבחרת",
   "calc_summary_title_full": "📊 סיכום השקעה",
   "calc_summary_total_contributed": "סה״כ הפקדה",

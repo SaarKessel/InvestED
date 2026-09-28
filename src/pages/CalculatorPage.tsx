@@ -131,9 +131,7 @@ export default function CalculatorPage() {
       })
     : [];
 
-  const bestAsset = comparison.length > 0
-    ? comparison.reduce((a, b) => a.result.finalBalance > b.result.finalBalance ? a : b)
-    : null;
+  const comparisonScale = Math.max(0, ...comparison.map(asset => asset.result.finalBalance));
 
   const aiInsight = scenario && projection ? generateAIInsight(scenario, projection, language) : null;
 
@@ -391,7 +389,7 @@ export default function CalculatorPage() {
                 {t("calc_comparison_title_full")}
               </h2>
               <p className="mb-6 text-base leading-7 text-muted-foreground">
-                {t("calc_comparison_subtitle_full")}
+                {t("calc_comparison_subtitle_full")} {t("calc_comparison_assumptions_note")}
               </p>
               <div className="grid gap-5 md:grid-cols-2">
                 {comparison.map(asset => (
@@ -400,9 +398,7 @@ export default function CalculatorPage() {
                     className={`rounded-2xl border p-5 transition-all ${
                       asset.key === scenario.assetClassKey
                         ? "border-primary bg-primary/10"
-                        : asset.key === bestAsset?.key
-                          ? "border-yellow-400 bg-yellow-400/10"
-                          : "border-border bg-background"
+                        : "border-border bg-background"
                     }`}
                   >
                      <h3 className="text-xl font-bold text-foreground">{t(asset.i18nKey, asset.label)}</h3>
@@ -413,6 +409,9 @@ export default function CalculatorPage() {
                     <p className="mt-4 text-3xl font-bold tracking-tight text-foreground">
                       {formatCurrency(asset.result.finalBalance, scenario.currency, language)}
                     </p>
+                    {comparisonScale > 0 && <div role="img" aria-label={`${t("calc_comparison_value_scale")}: ${t(asset.i18nKey, asset.label)} ${formatCurrency(asset.result.finalBalance, scenario.currency, language)}`} className="mt-4 h-3 overflow-hidden rounded-full bg-muted" dir="ltr">
+                      <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, Math.max(0, asset.result.finalBalance / comparisonScale * 100))}%` }} />
+                    </div>}
                     <p className="mt-3 text-base font-bold text-success">
                       {t("calc_comparison_profit")}{" "}
                       {formatCurrency(asset.result.growth, scenario.currency, language)}

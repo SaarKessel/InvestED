@@ -514,6 +514,8 @@
   "calc_comparison_annual": "Annual return:",
   "calc_comparison_profit": "Profit:",
   "calc_comparison_leader": "🏆 Leader",
+  "calc_comparison_value_scale": "Relative simulated final value",
+  "calc_comparison_assumptions_note": "Each path uses an illustrative annual return assumption. The bars compare scenario results, not market performance or a recommended asset.",
   "calc_comparison_selected": "Your selected scenario",
   "calc_summary_title_full": "📊 Investment Summary",
   "calc_summary_total_contributed": "Total Contributed",
