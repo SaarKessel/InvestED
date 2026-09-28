@@ -331,11 +331,8 @@ export function RiskScoreCard({
 }) {
   const { t } = useLanguage();
 
-  const score = result.riskScore ?? 0;
-  const percentage = Math.min(
-    100,
-    Math.max(0, score * 10)
-  );
+  const score = Number.isFinite(result.riskScore) ? result.riskScore : null;
+  const percentage = score === null ? 0 : Math.min(100, Math.max(0, score * 10));
 
   return (
     <Card className={cardStyle}>
@@ -383,16 +380,10 @@ export function RiskScoreCard({
           gap-1
         ">
           <CardTitle className="text-3xl">
-            {score}
+            {score ?? t("profile_unset", "Not set")}
           </CardTitle>
 
-          <span className="
-            mb-1
-            text-sm
-            text-muted-foreground
-          ">
-            /10
-          </span>
+          {score !== null && <span className="mb-1 text-sm text-muted-foreground">/10</span>}
         </div>
       </CardHeader>
 
@@ -403,7 +394,7 @@ export function RiskScoreCard({
           overflow-hidden
           rounded-full
           bg-muted
-        ">
+        " role="progressbar" aria-label={t("xai_risk_label", "Risk Score")} aria-valuemin={0} aria-valuemax={10} aria-valuenow={score === null ? undefined : Math.min(10, Math.max(0, score))} aria-valuetext={score === null ? t("profile_unset", "Not set") : `${score} / 10`}>
           <div
             className="
               h-full
@@ -411,6 +402,7 @@ export function RiskScoreCard({
               gradient-brand
               transition-all
               duration-700
+              motion-reduce:transition-none
             "
             style={{
               width: `${percentage}%`,
@@ -719,6 +711,7 @@ export function ConfidenceCard({
               gradient-brand
               transition-all
               duration-700
+              motion-reduce:transition-none
             "
             style={{
               width: `${Math.min(
