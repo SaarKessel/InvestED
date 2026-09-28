@@ -945,14 +945,7 @@ export function ExplainableAiCard({
                                 }
                               </Badge>
 
-                              <span
-                                className="
-                                  text-[10px]
-                                  text-muted-foreground
-                                "
-                              >
-                                {signalLabel(signal)}
-                              </span>
+
 
                             </div>
 
