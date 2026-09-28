@@ -373,16 +373,8 @@ export function RiskScoreCard({
           </div>
         </div>
 
-        <div className="
-          mt-4
-          flex
-          items-end
-          gap-1
-        ">
-          <CardTitle className="text-3xl">
-            {score ?? t("profile_unset", "Not set")}
-          </CardTitle>
-
+        <div className="mt-4 flex items-end gap-1" dir="ltr">
+          <CardTitle className="text-3xl">{score ?? t("profile_unset", "Not set")}</CardTitle>
           {score !== null && <span className="mb-1 text-sm text-muted-foreground">/10</span>}
         </div>
       </CardHeader>
