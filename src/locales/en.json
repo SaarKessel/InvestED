@@ -228,6 +228,8 @@
   "xai_signal_type_horizon": "Time Horizon",
   "xai_signal_type_portfolio": "Portfolio",
   "xai_signal_type_goal": "Goal",
+  "xai_signal_type_growth": "Growth Analysis",
+  "xai_signal_type_confidence": "Confidence",
   "xai_signal_type_rule": "Analysis",
   "xai_source_label": "Source:",
   "xai_year_value": "Year",

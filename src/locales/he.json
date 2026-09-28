@@ -228,6 +228,8 @@
   "xai_signal_type_horizon": "אופק השקעה",
   "xai_signal_type_portfolio": "תיק השקעות",
   "xai_signal_type_goal": "מטרה",
+  "xai_signal_type_growth": "ניתוח צמיחה",
+  "xai_signal_type_confidence": "רמת ביטחון",
   "xai_signal_type_rule": "ניתוח",
   "xai_source_label": "מקור:",
   "xai_year_value": "שנה",

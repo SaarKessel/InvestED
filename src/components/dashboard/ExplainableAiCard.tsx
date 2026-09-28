@@ -135,6 +135,12 @@ export function ExplainableAiCard({
       case "goal":
         return t("xai_signal_type_goal", "Goal");
 
+      case "growth":
+        return t("xai_signal_type_growth", "Growth Analysis");
+
+      case "confidence":
+        return t("xai_signal_type_confidence", "Confidence");
+
       case "rule":
         return t("xai_signal_type_rule", "Analysis");
 
@@ -945,7 +951,7 @@ export function ExplainableAiCard({
                                   text-muted-foreground
                                 "
                               >
-                                {signal.type ?? "analysis"}
+                                {signalLabel(signal)}
                               </span>
 
                             </div>
