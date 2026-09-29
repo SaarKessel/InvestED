@@ -470,6 +470,29 @@ describe("buildExplainability", () => {
     expect(result.some((line: string) => /[\u0590-\u05FF]/.test(line))).toBe(true);
   });
 
+  it("localizes machine values in Hebrew explanations without changing English values", () => {
+    const flags: Parameters<typeof buildExplainability>[0] = {
+      age: 27,
+      riskLevel: "moderate",
+      horizon: "long",
+      knowledgeLevel: "some",
+      interests: ["technology", "finance"],
+      preferences: [],
+      goal: null,
+      rawText: "",
+    };
+    const classification = classifyInvestor(8);
+    const he = buildExplainability(flags, classification, 8, "he");
+    const en = buildExplainability(flags, classification, 8, "en");
+    expect(he).toContain("סיווג משקיע: צמיחה");
+    expect(he).toContain("העדפת סיכון שזוהתה: בינוני");
+    expect(he).toContain("אופק השקעה שזוהה: ארוך");
+    expect(he).toContain("תחומי עניין: טכנולוגיה, פיננסים");
+    expect(en).toContain("Identified risk preference: moderate");
+    expect(en).toContain("Identified investment horizon: long");
+    expect(en).toContain("Interest areas: technology, finance");
+  });
+
   it("includes interest areas when present", () => {
     const flags: Parameters<typeof buildExplainability>[0] = {
       age: null,

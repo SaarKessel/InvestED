@@ -508,10 +508,24 @@ export function buildExplainability(
   const reasons: string[] = [];
 
   const isHebrew = language === "he";
+  const investorType = isHebrew
+    ? ({ conservative: "שמרני", balanced: "מאוזן", growth: "צמיחה", dividend: "דיבידנד", passive: "פסיבי", value: "ערך" } as Record<string, string>)[classification.type] ?? classification.type
+    : classification.type;
+  const riskLevel = flags.riskLevel && isHebrew
+    ? ({ very_low: "נמוך מאוד", low: "נמוך", moderate: "בינוני", high: "גבוה", very_high: "גבוה מאוד" } as Record<string, string>)[flags.riskLevel] ?? flags.riskLevel
+    : flags.riskLevel;
+  const horizon = flags.horizon && isHebrew
+    ? ({ short: "קצר", medium: "בינוני", long: "ארוך" } as Record<string, string>)[flags.horizon] ?? flags.horizon
+    : flags.horizon;
+  const interests = flags.interests.map((interest) =>
+    isHebrew
+      ? ({ technology: "טכנולוגיה", finance: "פיננסים", healthcare: "בריאות", energy: "אנרגיה", real_estate: "נדל״ן" } as Record<string, string>)[interest] ?? interest
+      : interest
+  );
 
   reasons.push(
     isHebrew
-      ? `סיווג משקיע: ${classification.type}`
+      ? `סיווג משקיע: ${investorType}`
       : `Investor classification: ${classification.type}`
   );
 
@@ -531,7 +545,7 @@ export function buildExplainability(
 
     reasons.push(
       isHebrew
-        ? `העדפת סיכון שזוהתה: ${flags.riskLevel}`
+        ? `העדפת סיכון שזוהתה: ${riskLevel}`
         : `Identified risk preference: ${flags.riskLevel}`
     );
 
@@ -541,7 +555,7 @@ export function buildExplainability(
 
     reasons.push(
       isHebrew
-        ? `אופק השקעה שזוהה: ${flags.horizon}`
+        ? `אופק השקעה שזוהה: ${horizon}`
         : `Identified investment horizon: ${flags.horizon}`
     );
 
@@ -564,7 +578,7 @@ export function buildExplainability(
 
     reasons.push(
       isHebrew
-        ? `תחומי עניין: ${flags.interests.join(", ")}`
+        ? `תחומי עניין: ${interests.join(", ")}`
         : `Interest areas: ${flags.interests.join(", ")}`
     );
 
