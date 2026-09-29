@@ -526,7 +526,7 @@ export function MarketDataCard({
                           aria-pressed={chartMode === "candle"}
                           className={cn(
 
-                            "px-2.5 py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                            "flex min-h-11 min-w-11 items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
 
                             chartMode==="candle"
 
@@ -562,7 +562,7 @@ export function MarketDataCard({
                           aria-pressed={chartMode === "line"}
                           className={cn(
 
-                            "px-2.5 py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
+                            "flex min-h-11 min-w-11 items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
 
                             chartMode==="line"
 
