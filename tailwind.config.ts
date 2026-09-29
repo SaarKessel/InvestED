@@ -46,7 +46,7 @@ export default {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
         },
-        success: "#22c55e",
+        success: "hsl(var(--success))",
         warning: "#f59e0b",
         danger: "#ef4444",
         navy: {
