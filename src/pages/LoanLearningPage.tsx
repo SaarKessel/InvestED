@@ -46,6 +46,8 @@ export default function LoanLearningPage() {
         <a href={BOI_RATES} target="_blank" rel="noopener noreferrer" className="inline-flex min-h-11 items-center gap-2 font-semibold text-primary underline underline-offset-4">{t('loan_boi_rates')}<ExternalLink className="h-4 w-4" aria-hidden="true" /></a>
       </div>
     </div>
+    <Link to="/insurance-reports" className="mt-6 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4">{language === 'he' ? 'נתוני ביטוח נט הרשמיים' : 'Official Insurance Net reports'}</Link>
+    <br />
     <Link to="/calculator" className="mt-6 inline-flex min-h-11 items-center font-semibold text-primary underline underline-offset-4">{t('loan_back')}</Link>
     <DisclaimerBanner className="mt-6" />
   </section></Layout>;

@@ -16,6 +16,7 @@ import { TermsPage } from "@/pages/TermsPage";
 import { ContactPage } from "@/pages/ContactPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 
+const InsuranceReportsPage = lazy(() => import("@/pages/InsuranceReportsPage"));
 const LoanLearningPage = lazy(() => import("@/pages/LoanLearningPage"));
 const StrategyLabPage = lazy(() => import("@/pages/StrategyLabPage"));
 const AssetResearchPage = lazy(() => import("@/pages/AssetResearchPage"));
@@ -49,6 +50,7 @@ export default function App() {
               <Route path="/start" element={<InputPage />} />
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/calculator" element={<CalculatorPage />} />
+              <Route path="/insurance-reports" element={<Suspense fallback={<PageLoading />}><InsuranceReportsPage /></Suspense>} />
               <Route path="/loans" element={<Suspense fallback={<PageLoading />}><LoanLearningPage /></Suspense>} />
               <Route path="/research" element={<Suspense fallback={<PageLoading />}><AssetResearchPage /></Suspense>} />
               <Route path="/chat" element={<Suspense fallback={<PageLoading />}><AICopilotPage /></Suspense>} />
