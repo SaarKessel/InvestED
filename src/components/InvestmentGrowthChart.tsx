@@ -148,6 +148,7 @@ export function InvestmentGrowthChart({ data, currency = "ILS" }: Props) {
             />
 
             <Tooltip
+              wrapperStyle={{ maxWidth: "min(200px, 65vw)" }}
               formatter={(value, name) => [
                 formatCurrency(Number(value)),
                 name === "balance"
@@ -160,6 +161,9 @@ export function InvestmentGrowthChart({ data, currency = "ILS" }: Props) {
                 border: "1px solid hsl(var(--border))",
                 backgroundColor: "hsl(var(--card))",
                 color: "hsl(var(--foreground))",
+                whiteSpace: "normal",
+                overflowWrap: "anywhere",
+                fontSize: "11px",
               }}
               labelStyle={{
                 fontWeight: 600,
