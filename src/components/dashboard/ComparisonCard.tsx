@@ -147,7 +147,7 @@ export function ComparisonCard() {
                 onClick={() => toggle(strategy.id)}
                 className={cn(
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50",
-                  "rounded-full border px-3.5 py-1.5 text-xs font-semibold transition-colors",
+                  "inline-flex min-h-11 items-center rounded-full border px-3.5 py-2 text-xs font-semibold transition-colors",
                   selected.includes(strategy.id)
                     ? "border-primary bg-primary/10 text-primary"
                     : "border-border text-muted-foreground hover:bg-accent"

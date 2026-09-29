@@ -17,6 +17,7 @@ describe("dashboard strategy comparison accessibility", () => {
   const choices = [...group!.querySelectorAll('button')];
   expect(choices.filter(b=>b.getAttribute('aria-pressed')==='true')).toHaveLength(3);
   expect(choices.filter(b=>b.disabled)).toHaveLength(1);
+  expect(choices.every(b=>b.classList.contains('min-h-11'))).toBe(true);
   act(() => choices[0].click());
   expect(choices[0].getAttribute('aria-pressed')).toBe('false');
   expect(choices.every(b=>!b.disabled)).toBe(true);
