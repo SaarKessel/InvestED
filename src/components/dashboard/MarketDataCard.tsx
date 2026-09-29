@@ -356,6 +356,8 @@ export function MarketDataCard({
 
 
                       key={asset.symbol}
+                      type="button"
+                      aria-pressed={activeSymbol === asset.symbol}
 
 
                       onClick={()=>
@@ -365,7 +367,7 @@ export function MarketDataCard({
 
                       className={cn(
 
-                        "rounded-lg border px-3.5 py-2 text-right text-xs font-semibold transition-colors",
+                        "min-h-11 rounded-lg border px-3.5 py-2 text-right text-xs font-semibold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
 
                         activeSymbol===asset.symbol
 
