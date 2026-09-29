@@ -22,7 +22,6 @@ export function InfoBadge({ title, description }: { title?: string; description:
       <button
         type="button"
         onClick={() => setOpen((o) => !o)}
-        onMouseEnter={() => setOpen(true)}
         onKeyDown={(event) => { if (event.key === "Escape") setOpen(false); }}
         aria-expanded={open}
         aria-controls={descriptionId}
