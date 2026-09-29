@@ -255,7 +255,7 @@ export function PortfolioCard({
               <div className="grid items-center gap-8 md:grid-cols-[minmax(280px,1fr)_minmax(260px,0.9fr)]">
                 {/* Chart */}
 
-                <div className="relative h-72 min-w-0">
+                <div className="relative h-72 min-w-0" aria-hidden="true">
                   <ResponsiveContainer
                     width="100%"
                     height="100%"
@@ -305,11 +305,12 @@ export function PortfolioCard({
 
                 {/* Allocation list */}
 
-                <div className="space-y-2.5">
+                <div className="space-y-2.5" role="list" aria-label={t("portfolio_allocation_title", "Recommended Portfolio Allocation 📊")}>
                   {allocation.map(
                     (item, index) => (
                       <motion.div
                         key={item.name}
+                        role="listitem"
                         initial={{
                           opacity: 0,
                           x: 10,
