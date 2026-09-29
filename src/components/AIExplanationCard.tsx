@@ -91,6 +91,7 @@ export function AIExplanationCard({
   const safeRiskProfile = riskProfile ?? "medium";
 
   const longTerm = years >= 10;
+  const displayedConfidence = Number.isFinite(confidence) ? Math.round(Math.min(100, Math.max(0, confidence))) : 0;
 
   const initialInvestmentText =
     initialInvestment > 0
@@ -170,17 +171,24 @@ export function AIExplanationCard({
           {t("ai_explanation_confidence_title", "🧠 Confidence in this analysis:")}
         </p>
 
-        <div className="mt-3 h-3 overflow-hidden rounded-full bg-muted">
+        <div
+          className="mt-3 h-3 overflow-hidden rounded-full bg-muted"
+          role="progressbar"
+          aria-label={t("ai_explanation_confidence_title", "Confidence in this analysis")}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={displayedConfidence}
+        >
           <div
             className="h-full rounded-full gradient-brand transition-all duration-500"
             style={{
-              width: `${Math.min(confidence, 100)}%`,
+              width: `${displayedConfidence}%`,
             }}
           />
         </div>
 
         <p className="mt-2 text-sm font-bold text-primary">
-          {t("ai_explanation_confidence_value", "{value}%").replace("{value}", String(confidence))}
+          {t("ai_explanation_confidence_value", "{value}%").replace("{value}", String(displayedConfidence))}
         </p>
       </div>
 
