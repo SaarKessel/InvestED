@@ -234,7 +234,7 @@ export default function CalculatorPage() {
               id="calculator-currency"
               value={currency}
               onChange={e => setCurrency(e.target.value)}
-              className="h-10 rounded-xl border border-border bg-background px-3 py-2 text-sm font-medium text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              className="min-h-11 rounded-xl border border-border bg-background px-3 py-2 text-sm font-medium text-foreground outline-none focus-visible:ring-2 focus-visible:ring-primary"
             >
               {CURRENCIES.map(c => (
                 <option key={c.code} value={c.code}>
