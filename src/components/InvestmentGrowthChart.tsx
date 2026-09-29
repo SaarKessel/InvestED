@@ -115,7 +115,7 @@ export function InvestmentGrowthChart({ data, currency = "ILS" }: Props) {
         <span className="inline-flex items-center gap-1.5"><span className="h-0 w-4 border-t-[3px] border-primary" />{t("investment_chart_balance_label", "Portfolio Value")}</span>
         <span className="inline-flex items-center gap-1.5"><span className="h-0 w-4 border-t-2 border-dashed border-secondary" />{t("investment_chart_contributed_label", "Total Contributions")}</span>
       </div>
-      <div className="h-[320px] w-full min-w-0 sm:h-[350px]" role="img" aria-label={`${t("investment_chart_aria", "Investment growth chart")}. ${language === "he" ? "שנים" : "Years"} ${visibleData[0]?.year ?? 0}–${visibleData.at(-1)?.year ?? 0}.`}>
+      <div className="h-[320px] w-full min-w-0 sm:h-[350px]" role="img" aria-label={`${t("investment_chart_aria", "Investment growth chart")}. ${language === "he" ? "שנים" : "Years"} ${visibleData[0]?.year ?? 0}–${visibleData.at(-1)?.year ?? 0}. ${t("investment_chart_end_balance", "Ending portfolio value")}: ${formatCurrency(visibleData.at(-1)?.balance ?? 0)}. ${t("investment_chart_end_contributed", "Ending total contributions")}: ${formatCurrency(visibleData.at(-1)?.contributed ?? 0)}.`}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
             data={visibleData}

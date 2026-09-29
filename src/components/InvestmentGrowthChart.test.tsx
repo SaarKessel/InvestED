@@ -19,6 +19,8 @@ describe("calculator projection range controls", () => {
     render(20);
     expect(container.textContent).toContain("סימולציה לפי ההנחות");
     expect(container.querySelector('[role="img"]')?.getAttribute("aria-label")).toContain("0–20");
+    expect(container.querySelector('[role="img"]')?.getAttribute("aria-label")).toContain("20,000");
+    expect(container.querySelector('[role="img"]')?.getAttribute("aria-label")).toContain("16,000");
     const five = [...container.querySelectorAll("button")].find(button => button.textContent?.includes("5 שנים"));
     expect(five).toBeTruthy();
     expect(five!.classList.contains("min-h-11")).toBe(true);

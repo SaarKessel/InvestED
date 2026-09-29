@@ -254,6 +254,8 @@
   "investment_chart_title": "📈 צמיחת ההשקעה לאורך זמן",
   "investment_chart_empty": "אין מספיק נתונים להצגת גרף הצמיחה.",
   "investment_chart_aria": "גרף צמיחת ההשקעה",
+  "investment_chart_end_balance": "שווי תיק בסוף הטווח",
+  "investment_chart_end_contributed": "סך הפקדות בסוף הטווח",
   "investment_chart_subtitle": "השוואה בין הכסף שהופקד לבין השווי שנצבר מההשקעה לאורך השנים.",
   "investment_chart_xaxis": "שנים",
   "investment_chart_tooltip_balance": "שווי תיק",

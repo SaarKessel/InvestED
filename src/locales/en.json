@@ -254,6 +254,8 @@
   "investment_chart_title": "📈 Investment Growth Over Time",
   "investment_chart_empty": "Not enough data to display the growth chart.",
   "investment_chart_aria": "Investment growth chart",
+  "investment_chart_end_balance": "Ending portfolio value",
+  "investment_chart_end_contributed": "Ending total contributions",
   "investment_chart_subtitle": "Comparison between the money contributed and the value accumulated from the investment over the years.",
   "investment_chart_xaxis": "Years",
   "investment_chart_tooltip_balance": "Portfolio Value",
