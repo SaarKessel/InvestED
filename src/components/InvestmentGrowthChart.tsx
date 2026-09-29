@@ -134,11 +134,6 @@ export function InvestmentGrowthChart({ data, currency = "ILS" }: Props) {
               axisLine={false}
               tickMargin={10}
               tickFormatter={(value) => `${value}`}
-              label={{
-                value: t("investment_chart_xaxis", "Years"),
-                position: "insideBottom",
-                offset: -5,
-              }}
             />
 
             <YAxis
