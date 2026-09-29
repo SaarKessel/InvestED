@@ -409,9 +409,24 @@ export default function CalculatorPage() {
                     <p className="mt-4 text-3xl font-bold tracking-tight text-foreground">
                       {formatCurrency(asset.result.finalBalance, scenario.currency, language)}
                     </p>
-                    {comparisonScale > 0 && <div role="img" aria-label={`${t("calc_comparison_value_scale")}: ${t(asset.i18nKey, asset.label)} ${formatCurrency(asset.result.finalBalance, scenario.currency, language)}`} className="mt-4 h-3 overflow-hidden rounded-full bg-muted" dir="ltr">
-                      <div className="h-full rounded-full bg-primary" style={{ width: `${Math.min(100, Math.max(0, asset.result.finalBalance / comparisonScale * 100))}%` }} />
-                    </div>}
+                    {comparisonScale > 0 && (() => {
+                      const relativePercent = Math.min(100, Math.max(0, asset.result.finalBalance / comparisonScale * 100));
+                      const relativeLabel = t("calc_comparison_relative_pct", "{percent}% of the highest simulated final value")
+                        .replace("{percent}", new Intl.NumberFormat(language === "he" ? "he-IL" : "en-US", { maximumFractionDigits: 1 }).format(relativePercent));
+                      return (
+                        <div className="mt-4">
+                          <div
+                            role="img"
+                            aria-label={`${t("calc_comparison_value_scale")}: ${t(asset.i18nKey, asset.label)} ${formatCurrency(asset.result.finalBalance, scenario.currency, language)}; ${relativeLabel}`}
+                            className="h-3 overflow-hidden rounded-full bg-muted"
+                            dir="ltr"
+                          >
+                            <div className="h-full rounded-full bg-primary" style={{ width: `${relativePercent}%` }} />
+                          </div>
+                          <p className="mt-1.5 text-xs text-muted-foreground" aria-hidden="true">{relativeLabel}</p>
+                        </div>
+                      );
+                    })()}
                     <p className="mt-3 text-base font-bold text-success">
                       {t("calc_comparison_profit")}{" "}
                       {formatCurrency(asset.result.growth, scenario.currency, language)}
