@@ -21,11 +21,13 @@ describe("calculator projection range controls", () => {
     expect(container.querySelector('[role="img"]')?.getAttribute("aria-label")).toContain("0–20");
     const five = [...container.querySelectorAll("button")].find(button => button.textContent?.includes("5 שנים"));
     expect(five).toBeTruthy();
+    expect(five!.classList.contains("min-h-11")).toBe(true);
     act(() => five!.click());
     expect(five!.getAttribute("aria-pressed")).toBe("true");
     expect(container.querySelector('[role="img"]')?.getAttribute("aria-label")).toContain("15–20");
     const tableToggle = [...container.querySelectorAll("button")].find(button => button.textContent?.includes("הצג נתונים בטבלה"));
     expect(tableToggle).toBeTruthy();
+    expect(tableToggle!.classList.contains("min-h-11")).toBe(true);
     act(() => tableToggle!.click());
     expect(tableToggle!.getAttribute("aria-expanded")).toBe("true");
     expect(container.querySelectorAll("#projection-data-table tbody tr")).toHaveLength(6);
