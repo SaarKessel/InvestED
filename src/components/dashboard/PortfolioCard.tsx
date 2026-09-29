@@ -265,6 +265,7 @@ export function PortfolioCard({
                         data={allocation}
                         dataKey="value"
                         nameKey="name"
+                        rootTabIndex={-1}
                         innerRadius={62}
                         outerRadius={100}
                         paddingAngle={3}
