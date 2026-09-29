@@ -256,6 +256,7 @@
   "investment_chart_aria": "גרף צמיחת ההשקעה",
   "investment_chart_end_balance": "שווי תיק בסוף הטווח",
   "investment_chart_end_contributed": "סך הפקדות בסוף הטווח",
+  "investment_chart_simulation_note": "סימולציה לפי ההנחות שהוזנו, לא תשואה מובטחת",
   "investment_chart_subtitle": "השוואה בין הכסף שהופקד לבין השווי שנצבר מההשקעה לאורך השנים.",
   "investment_chart_xaxis": "שנים",
   "investment_chart_tooltip_balance": "שווי תיק",
