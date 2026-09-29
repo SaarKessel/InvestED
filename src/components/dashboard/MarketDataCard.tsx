@@ -521,9 +521,12 @@ export function MarketDataCard({
                             setChartMode("candle")
                           }
 
+                          type="button"
+                          aria-label={t("market_data_candlestick_chart", "Candlestick chart")}
+                          aria-pressed={chartMode === "candle"}
                           className={cn(
 
-                            "px-2.5 py-1.5",
+                            "px-2.5 py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
 
                             chartMode==="candle"
 
@@ -554,9 +557,12 @@ export function MarketDataCard({
                             setChartMode("line")
                           }
 
+                          type="button"
+                          aria-label={t("market_data_line_chart", "Line chart")}
+                          aria-pressed={chartMode === "line"}
                           className={cn(
 
-                            "px-2.5 py-1.5",
+                            "px-2.5 py-1.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary",
 
                             chartMode==="line"
 
