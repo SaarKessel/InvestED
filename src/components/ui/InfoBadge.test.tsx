@@ -18,6 +18,7 @@ describe("dashboard info disclosure", () => {
     act(() => button.click());
     expect(button.getAttribute("aria-expanded")).toBe("true");
     expect(document.getElementById(button.getAttribute("aria-controls")!)?.textContent).toContain("Educational explanation");
+    expect(document.getElementById(button.getAttribute("aria-controls")!)?.classList.contains("end-0")).toBe(true);
     act(() => button.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true })));
     expect(button.getAttribute("aria-expanded")).toBe("false");
     expect(document.getElementById(button.getAttribute("aria-controls")!)).toBeNull();

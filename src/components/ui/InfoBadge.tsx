@@ -39,7 +39,7 @@ export function InfoBadge({ title, description }: { title?: string; description:
         <div
           id={descriptionId}
           onMouseLeave={() => setOpen(false)}
-          className="absolute top-full z-50 mt-2 w-64 rounded-xl border border-border bg-card p-3 text-right text-xs leading-relaxed shadow-lg animate-fade-in start-0"
+          className="absolute end-0 top-full z-50 mt-2 w-64 max-w-[calc(100vw-2rem)] rounded-xl border border-border bg-card p-3 text-start text-xs leading-relaxed shadow-lg animate-fade-in"
         >
           {title && <p className="mb-1 font-bold text-foreground">{title}</p>}
           <p className="text-muted-foreground">{description}</p>
