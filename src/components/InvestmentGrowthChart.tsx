@@ -11,7 +11,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from "recharts";
 import { useLanguage } from "@/context/languageContext";
 import { getCurrencyByCode } from "@/lib/currencies";
@@ -112,6 +111,10 @@ export function InvestmentGrowthChart({ data, currency = "ILS" }: Props) {
         </button>
       </div>
 
+      <div className="mb-3 flex flex-wrap justify-center gap-x-4 gap-y-1 text-xs font-medium text-foreground" aria-hidden="true">
+        <span className="inline-flex items-center gap-1.5"><span className="h-0 w-4 border-t-[3px] border-primary" />{t("investment_chart_balance_label", "Portfolio Value")}</span>
+        <span className="inline-flex items-center gap-1.5"><span className="h-0 w-4 border-t-2 border-dashed border-secondary" />{t("investment_chart_contributed_label", "Total Contributions")}</span>
+      </div>
       <div className="h-[320px] w-full min-w-0 sm:h-[350px]" role="img" aria-label={`${t("investment_chart_aria", "Investment growth chart")}. ${language === "he" ? "שנים" : "Years"} ${visibleData[0]?.year ?? 0}–${visibleData.at(-1)?.year ?? 0}.`}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart
@@ -161,17 +164,6 @@ export function InvestmentGrowthChart({ data, currency = "ILS" }: Props) {
               labelStyle={{
                 fontWeight: 600,
               }}
-            />
-
-            <Legend
-              verticalAlign="top"
-              align="right"
-              height={36}
-              formatter={(value) =>
-                value === "balance"
-                  ? t("investment_chart_balance_label", "Portfolio Value")
-                  : t("investment_chart_contributed_label", "Total Contributions")
-              }
             />
 
             <Line
