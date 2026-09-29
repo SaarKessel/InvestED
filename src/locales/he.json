@@ -305,6 +305,7 @@
   "market_data_empty": "לא נמצאו נתוני שוק להצגה כרגע.",
   "market_data_candlestick_chart": "גרף נרות",
   "market_data_line_chart": "גרף קווי",
+  "market_data_history_aria": "גרף היסטורי של {asset}, {count} תצפיות מ-{start} עד {end}.",
   "market_data_disclaimer": "לצורכי לימוד בלבד — לא המלצה לקנות או למכור נכס.",
   "portfolio_allocation_title": "הקצאת תיק מומלצת 📊",
   "portfolio_title": "הקצאת נכסים וניתוח תיק AI",

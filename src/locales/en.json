@@ -305,6 +305,7 @@
   "market_data_empty": "No market data available to display right now.",
   "market_data_candlestick_chart": "Candlestick chart",
   "market_data_line_chart": "Line chart",
+  "market_data_history_aria": "{asset} historical chart, {count} observations from {start} to {end}.",
   "market_data_disclaimer": "For educational purposes only — not a recommendation to buy or sell any asset.",
   "portfolio_allocation_title": "Recommended Portfolio Allocation 📊",
   "portfolio_title": "Asset Allocation & AI Portfolio Analysis",
