@@ -629,7 +629,19 @@ export function MarketDataCard({
 
 
 
-                          <RTooltip/>
+                          <RTooltip
+                            wrapperStyle={{ maxWidth: "min(180px, 55vw)" }}
+                            contentStyle={{
+                              borderRadius: "12px",
+                              border: "1px solid hsl(var(--border))",
+                              backgroundColor: "hsl(var(--card))",
+                              color: "hsl(var(--foreground))",
+                              fontSize: "12px",
+                              overflowWrap: "anywhere",
+                            }}
+                            labelStyle={{ color: "hsl(var(--foreground))" }}
+                            itemStyle={{ color: "hsl(var(--primary))" }}
+                          />
 
 
 
