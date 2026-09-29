@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Calculator, ExternalLink } from 'lucide-react';
 import { Layout, DisclaimerBanner } from '@/components/layout/Layout';
 import { useLanguage } from '@/context/languageContext';
 import { estimateFixedLoan } from '@/lib/loanEducation';
+import { BIS_RATE_METHODOLOGY, BIS_RATE_SERIES, BIS_RATE_TERMS } from '@/lib/bisPolicyRate';
+import { fetchBisRateHistory, type BisRateResult } from '@/lib/bisRateClient';
 
 const BOI_LOANS = 'https://boi.org.il/information/bank-paymnts/financial-education/campaigns/boi-equator/loans/';
 const BOI_RATES = 'https://www.boi.org.il/roles/statistics/boi-interest-rate-and-the-monetary-tools/boi-interest-rate-and-the-monetary-tools';
@@ -13,6 +15,8 @@ export default function LoanLearningPage() {
   const [principal, setPrincipal] = useState('10000');
   const [rate, setRate] = useState('6');
   const [months, setMonths] = useState('24');
+  const [bisHistory, setBisHistory] = useState<BisRateResult | null>(null);
+  useEffect(() => { let active = true; fetchBisRateHistory().then(data => { if (active) setBisHistory(data); }).catch(() => { if (active) setBisHistory({status:'unavailable', points:[], latestObservation:null, fetchedAt:null, source:BIS_RATE_SERIES}); }); return () => { active = false; }; }, []);
   const estimate = principal.trim() && rate.trim() && months.trim()
     ? estimateFixedLoan(Number(principal), Number(rate), Number(months))
     : null;
@@ -38,6 +42,21 @@ export default function LoanLearningPage() {
       </div>}
       <p className="mt-5 text-sm leading-6 text-muted-foreground">{t('loan_formula')}</p>
     </div>
+    <section className="mt-8 rounded-3xl border border-primary/20 bg-card p-5 shadow-soft md:p-7" aria-label={language === 'he' ? 'היסטוריית ריבית הבנק המרכזי' : 'Central bank policy rate history'}>
+      <h2 className="text-xl font-bold">{language === 'he' ? 'היסטוריית ריבית בנק ישראל לפי BIS' : 'BIS history: Bank of Israel policy rate'}</h2>
+      <p className="mt-2 text-sm leading-6 text-muted-foreground">{language === 'he' ? 'תיעוד היסטורי חודשי של ריבית המדיניות בסוף החודש, לא שיעור עדכני, לא הצעת הלוואה ולא ריבית לצרכן. אינו מוזן למחשבון שלמעלה.' : 'Historical month-end policy rates, not a current rate, loan offer or consumer borrowing rate. These figures do not feed the calculator above.'}</p>
+      {!bisHistory && <p role="status" className="mt-5 text-sm">{language === 'he' ? 'טוען היסטוריה...' : 'Loading history...'}</p>}
+      {bisHistory?.status === 'unavailable' && <p role="status" className="mt-5 text-sm">{language === 'he' ? 'היסטוריית BIS אינה זמינה כעת. לא מוצג שיעור חלופי.' : 'BIS history is unavailable. No substitute rate is shown.'}</p>}
+      {bisHistory && bisHistory.status !== 'unavailable' && bisHistory.points.length > 0 && <>
+        <p className="mt-5 text-sm font-bold text-primary">{language === 'he' ? 'תצפית אחרונה' : 'Last observation'}: <time dateTime={`${bisHistory.latestObservation}-01`}>{new Date(`${bisHistory.latestObservation}-01T00:00:00Z`).toLocaleDateString(language === 'he' ? 'he-IL' : 'en-US', {month:'long', year:'numeric', timeZone:'UTC'})}</time> · <span dir="ltr" className="inline-block tabular-nums">{bisHistory.points.at(-1)?.rate}%</span></p>
+        <p className="mt-1 text-xs text-muted-foreground">{bisHistory.status === 'cached' ? (language === 'he' ? 'עותק שמור' : 'Cached copy') : (language === 'he' ? 'נתוני BIS שנשלפו' : 'BIS data retrieved')}{bisHistory.fetchedAt ? ` · ${new Date(bisHistory.fetchedAt).toLocaleString(language === 'he' ? 'he-IL' : 'en-US', {timeZone:'Asia/Jerusalem'})}` : ''}</p>
+        <div className="mt-6 overflow-x-auto" dir="ltr"><div className="flex min-w-[360px] items-end gap-1.5 border-b border-border pb-2" role="img" aria-label={language === 'he' ? 'תרשים היסטורי של ריבית המדיניות לפי חודש' : 'Historical monthly policy rate chart'}>
+          {bisHistory.points.map(point => <div key={point.month} className="group flex min-w-0 flex-1 flex-col items-center gap-1" title={`${point.month}: ${point.rate}%`}><span className="text-[9px] tabular-nums text-muted-foreground group-hover:text-foreground">{point.rate}%</span><div className="w-full rounded-t bg-primary/65" style={{height: `${Math.max(8, Math.min(72, point.rate * 16))}px`}} /><span className="text-[9px] tabular-nums text-muted-foreground">{point.month.slice(5) === '01' || point.month === bisHistory.points[0].month ? point.month : point.month.slice(5)}</span></div>)}
+        </div></div>
+      </>}
+      <p className="mt-5 text-xs leading-6 text-muted-foreground">{language === 'he' ? 'מקור: BIS, סדרת ריביות מדיניות; מקור לאומי: בנק ישראל. התוויות בעברית אינן תרגום רשמי של BIS. אין חסות או המלצה מטעם BIS.' : 'Source: BIS central bank policy rates; national source: Bank of Israel. Any Hebrew labels are not an official BIS translation. No BIS endorsement or recommendation.'}</p>
+      <div className="mt-2 flex flex-wrap gap-4 text-xs font-semibold text-primary"><a href={BIS_RATE_SERIES} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">BIS data</a><a href={BIS_RATE_METHODOLOGY} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{language === 'he' ? 'מתודולוגיה' : 'Methodology'}</a><a href={BIS_RATE_TERMS} target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">{language === 'he' ? 'תנאי שימוש' : 'Use terms'}</a></div>
+    </section>
     <div className="mt-6 rounded-2xl border border-border bg-muted/40 p-5 text-sm leading-7">
       <h2 className="font-bold">{t('loan_sources')}</h2>
       <p className="mt-2 text-muted-foreground">{t('loan_sources_note')}</p>
