@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   analyzeFinancialScenarioWithProjection,
   computeProjection,
@@ -158,6 +159,8 @@ export default function CalculatorPage() {
             <span className="rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5">{t("calc_hero_xai_full")}</span>
           </div>
         </div>
+
+        <Link to="/loans" className="mb-8 flex min-h-11 items-center justify-center rounded-2xl border border-primary/30 bg-primary/5 px-5 text-center text-sm font-semibold text-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">{t("loan_calculator_link")}</Link>
 
         {/* Scenario Input */}
         <div className="projection-surface relative mb-8 overflow-hidden rounded-3xl border border-primary/20 bg-card p-5 shadow-soft md:p-7">
