@@ -27,7 +27,7 @@ export default function CareerLabPage() {
   function update(patch:Partial<ResearchCase>) { const next={...draft.current,...patch,updatedAt:new Date().toISOString()};draft.current=next;setRecord(next); }
   function persist(next:ResearchCase):boolean { try { saveCase(next,saved.current);saved.current=next;draft.current=next;setRecord(next);setError('');setConflicted(false);return true; } catch (cause) {const conflict=cause instanceof CaseConflictError;setConflicted(conflict);setError(t(conflict?'career_conflict':'career_storage_error'));return false;} }
   /** Recovery only reads: the newer snapshot is shown, and the next save is a fresh guarded write. */
-  function loadLatest() { const latest=readCase();saved.current=latest;draft.current=latest??newCase();setRecord(draft.current);setError('');setConflicted(false); }
+  function loadLatest() { const latest=readCase();saved.current=latest;draft.current=latest??newCase();setRecord(draft.current);setError('');setConflicted(false);if(latest?.stage==='complete'){try{setArchive(archiveCompletedCase(latest));}catch{/* the loaded case remains saved even if its archive copy fails */}} }
   async function loadEvidence() {
     const caseId=draft.current.id;
     const version=++requestVersion.current;

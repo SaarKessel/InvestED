@@ -54,4 +54,20 @@ for(const language of ['he','en'] as const){
   expect(container.querySelector('[role="alert"]')).toBeNull();
   expect(text()).toContain('A dated source is required for every price.');
  });
+ it(`${language}: loading a newer completed snapshot archives it without writing`,()=>{
+  localStorage.setItem('invested_language_preference',language);
+  const first=newCase(new Date('2026-09-29T12:00:00Z'));
+  saveCase(first,null);
+  act(()=>root.render(<MemoryRouter><LanguageProvider><CareerLabPage/></LanguageProvider></MemoryRouter>));
+  const done=completedCase('conflict-complete-'+language);
+  saveCase(done,first);
+  const save=[...container.querySelectorAll('button')].find(b=>b.textContent===(language==='he'?'שמירת טיוטה':'Save draft'))!;
+  act(()=>save.dispatchEvent(new MouseEvent('click',{bubbles:true})));
+  const recover=[...container.querySelectorAll('button')].find(b=>b.textContent===(language==='he'?'טעינת הגרסה החדשה שנשמרה. עריכות שלא נשמרו בטאב הזה יימחקו.':'Load the newer saved version. Unsaved edits in this tab are discarded.'))!;
+  const before=localStorage.getItem(CASE_KEY);
+  act(()=>recover.dispatchEvent(new MouseEvent('click',{bubbles:true})));
+  expect(localStorage.getItem(CASE_KEY)).toBe(before);
+  expect(JSON.parse(localStorage.getItem(CASE_ARCHIVE_KEY)??'[]').map((c:ResearchCase)=>c.id)).toEqual([done.id]);
+  expect(text()).toContain(done.id);
+ });
 }
