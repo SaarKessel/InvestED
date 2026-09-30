@@ -4,6 +4,7 @@ import {archivePracticeRun} from '@/lib/career/practiceRuns';
 import {CandleChart} from '@/components/career/CandleChart';
 import {fictionalCandles} from '@/lib/career/candles';
 import {SourceMarketPanel} from '@/components/career/SourceMarketPanel';
+import {PaperLedgerPanel} from '@/components/career/PaperLedgerPanel';
 import {ClientInbox} from '@/components/career/ClientInbox';
 import { useRef,useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -47,6 +48,7 @@ export default function PortfolioGamePage(){
     <p className="rounded-xl border border-amber-400/50 bg-amber-400/10 p-4 text-sm">{t('game_disclaimer')}</p>
     <div className="flex items-center gap-3 overflow-hidden rounded-lg border border-teal-500/40 bg-[#111d30] px-3 py-2 text-xs font-mono text-teal-200" aria-label={t('game_ticker')}><b className="shrink-0 rounded border border-teal-400 px-2 py-1">{t('game_ticker_fake')}</b><div className="flex min-w-0 flex-wrap gap-x-5 gap-y-1"><span dir="ltr">{instrument} {price.toFixed(2)} {priceChange>0?'▲':priceChange<0?'▼':'●'} {game.day+1}/{GAME_DAYS.length}</span><span dir="ltr">CASH {game.cash.toFixed(2)}</span><span dir="ltr">POSITION {position.shares}</span><span dir="ltr">NAV {value.toFixed(2)}</span></div></div>
     <SourceMarketPanel/>
+    <PaperLedgerPanel/>
     <PracticeHistory runs={game.runs}/>
     <CommitteeCases role="investment"/>
     <section className="rounded-xl border border-slate-700 bg-[#111d30] p-3 space-y-3"><div className="flex flex-wrap gap-2">{(['base','stress'] as const).map(scenario=><button key={scenario} type="button" disabled={!!game.settled||game.day>0||Object.values(game.clientPlans??{}).some(plans=>plans?.some(plan=>plan!=='none'))||game.trades.length>0||game.replies.some(reply=>reply!=='none')||Object.values(game.clientReplies??{}).some(replies=>replies?.some(reply=>reply!=='none'))} aria-pressed={(game.scenario??'base')===scenario} className="rounded border border-slate-500 px-3 py-2 text-sm disabled:opacity-50" onClick={()=>act({type:'scenario',scenario})}>{t(`game_scenario_${scenario}`)}</button>)}</div><p className="text-xs">{t('game_scenario_note')}</p><div className="grid grid-cols-3 gap-2">{INSTRUMENTS.map(id=><button key={id} type="button" aria-pressed={instrument===id} className={`rounded-lg border p-3 text-start ${instrument===id?'border-teal-300 bg-teal-300/10':'border-slate-600'}`} onClick={()=>setInstrument(id)}><b className="block font-mono text-xs" dir="ltr">{id} · {instrumentPrice(game,id).toFixed(2)}</b><span className="block mt-1 text-xs">{t(`game_instrument_${id}`)}</span><span className="block mt-1 text-xs">{t('game_shares')}: {holding(game,id).shares}</span></button>)}</div></section>
