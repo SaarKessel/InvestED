@@ -3,13 +3,14 @@ import { Link } from "react-router-dom";
 import { isCareerLaunchRequest } from "@/lib/career/chatRoute";
 import { Check, Clipboard, Loader2, RotateCcw, Send, Sparkles } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
+import { ChatAssetCards } from "./ChatAssetCards";
 import { useAnalysis } from "@/context/useAnalysis";
 import type { CopilotResponse } from "@/lib/copilotResponse";
 
 interface Message { role: "user" | "copilot"; text: string; response?: CopilotResponse; careerLaunch?: boolean; }
 
 export function AIChatCard() {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   const { askCopilot, isAnalyzing, reset } = useAnalysis();
   const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -53,7 +54,7 @@ export function AIChatCard() {
             <p className="whitespace-pre-wrap">{message.text}</p>
             {message.careerLaunch && <Link to="/career-lab" className="mt-3 inline-block rounded-lg border border-primary px-3 py-2 text-xs font-bold text-primary">{t("career_chat_open")}</Link>}
             {response?.toolResult && <div className="mt-3 rounded-lg border border-border/70 bg-background/70 p-2.5 text-xs"><p className="font-semibold">{t("copilot_verified_calculation")}</p>{response.toolResult.formula && <p className="mt-1 font-mono" dir="ltr">{response.toolResult.formula}</p>}{response.toolResult.assumptions.length > 0 && <p className="mt-1 text-muted-foreground">{t("copilot_assumptions")}: {response.toolResult.assumptions.join(" · ")}</p>}</div>}
-            {assets.length > 0 && <div className="mt-3 flex flex-wrap gap-1.5">{assets.map((asset) => <span key={asset.symbol} className="rounded-full border border-border bg-background px-2 py-0.5 text-[11px] text-muted-foreground" dir="ltr">{asset.symbol} · {asset.dataSource} · {t(`copilot_freshness_${asset.freshness ?? "unavailable"}`, asset.freshness ?? "unavailable")}{asset.timestamp ? ` · ${new Date(asset.timestamp).toLocaleString(language === "he" ? "he-IL" : "en-US", { timeZone: "Asia/Jerusalem", dateStyle: "short", timeStyle: "short" })}` : ""}</span>)}</div>}
+            <ChatAssetCards assets={assets} />
             {message.role === "copilot" && <button type="button" onClick={() => copyMessage(message.text, index)} className="mt-2 inline-flex items-center gap-1 text-[11px] text-muted-foreground opacity-70 hover:opacity-100" aria-label={t("copilot_copy")}>{copied === index ? <Check className="h-3 w-3" /> : <Clipboard className="h-3 w-3" />}{copied === index ? t("copilot_copied") : t("copilot_copy")}</button>}
           </div>;
         })}
