@@ -391,10 +391,10 @@
     radial-gradient(40rem 26rem at 15% 70%, rgba(45,212,191,.07), transparent 70%),
     radial-gradient(40rem 26rem at 88% 60%, rgba(99,102,241,.07), transparent 70%); }
 .welcome-emblem { position:relative; display:flex; align-items:center; justify-content:center; }
-.welcome-emblem::before { content:""; position:absolute; width:15rem; height:15rem; border-radius:9999px;
+.welcome-emblem::before { content:""; position:absolute; inset:0; margin:auto; width:15rem; height:15rem; border-radius:9999px;
   background:radial-gradient(circle, rgba(245,180,60,.42), rgba(245,180,60,.10) 45%, transparent 70%);
   filter:blur(18px); animation:welcome-glow 6s ease-in-out infinite; }
-.welcome-emblem::after { content:""; position:absolute; width:8.5rem; height:8.5rem; border-radius:2rem;
+.welcome-emblem::after { content:""; position:absolute; inset:0; margin:auto; width:8.5rem; height:8.5rem; border-radius:2rem;
   background:conic-gradient(from 0deg, rgba(245,180,60,.0), rgba(245,180,60,.55), rgba(45,212,191,.35), rgba(245,180,60,0));
   filter:blur(6px); animation:welcome-spin 14s linear infinite; }
 .welcome-emblem img { position:relative; z-index:1; animation:welcome-float 7s ease-in-out infinite; }
