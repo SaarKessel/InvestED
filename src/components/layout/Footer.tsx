@@ -16,7 +16,7 @@ export function Footer() {
         </div>
 
         <div>
-          <h4 className="mb-3 text-sm font-bold">{t("footer_nav")}</h4>
+          <h2 className="mb-3 text-sm font-bold">{t("footer_nav")}</h2>
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li><Link to="/" className="hover:text-foreground">{t("nav_home")}</Link></li>
             <li><Link to="/start" className="hover:text-foreground">{t("nav_start")}</Link></li>
@@ -27,7 +27,7 @@ export function Footer() {
         </div>
 
         <div>
-          <h4 className="mb-3 text-sm font-bold">{t("footer_legal")}</h4>
+          <h2 className="mb-3 text-sm font-bold">{t("footer_legal")}</h2>
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li><Link to="/privacy" className="hover:text-foreground">{t("privacy")}</Link></li>
             <li><Link to="/terms" className="hover:text-foreground">{t("terms")}</Link></li>
