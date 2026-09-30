@@ -53,7 +53,8 @@ export default function App() {
           <AnalysisProvider>
           <BrowserRouter>
             <Routes>
-              <Route path="/" element={<LandingPage />} />
+              <Route path="/" element={<Suspense fallback={<PageLoading />}><AICopilotPage /></Suspense>} />
+              <Route path="/overview" element={<LandingPage />} />
               <Route path="/start" element={<InputPage />} />
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/calculator" element={<CalculatorPage />} />

@@ -133,10 +133,12 @@ export function AIChatCard() {
   return (
     <div className={`mx-auto flex w-full max-w-3xl flex-col ${started ? "min-h-[calc(100vh-9rem)]" : "min-h-[calc(100vh-14rem)] justify-center"}`}>
       {!started && (
-        <div className="mb-8 flex flex-col items-center text-center">
-          <img src="/copilot-avatar.png" alt="" width="80" height="80" className="h-20 w-20 rounded-2xl object-cover shadow-lg shadow-amber-500/20 ring-1 ring-amber-400/30" />
-          <h1 className="mt-5 text-3xl font-extrabold sm:text-4xl">{t("copilot_home_title")}</h1>
-          <p className="mt-2 text-sm text-muted-foreground">{t("copilot_home_sub")}</p>
+        <div className="mb-9 flex flex-col items-center text-center">
+          <div className="welcome-emblem">
+            <img src="/copilot-avatar.png" alt="" width="112" height="112" className="h-28 w-28 rounded-[1.75rem] object-cover shadow-2xl shadow-amber-500/30 ring-1 ring-amber-300/40" />
+          </div>
+          <h1 className="welcome-title mt-7 text-4xl font-extrabold tracking-tight sm:text-5xl">{t("copilot_home_title")}</h1>
+          <p className="mt-3 max-w-md text-base text-muted-foreground">{t("copilot_home_sub")}</p>
         </div>
       )}
       {user && (
@@ -188,14 +190,14 @@ export function AIChatCard() {
       </div>
       {!user && !authLoading && <ChatAuthGate />}
       {user && <div className={started ? "sticky bottom-0 bg-background/90 pb-3 pt-2 backdrop-blur" : ""}>
-        <form onSubmit={submit} className="flex items-end gap-2 rounded-3xl border border-border bg-card p-2 shadow-lg shadow-primary/5 focus-within:border-primary">
+        <form onSubmit={submit} className="welcome-composer flex items-end gap-2 rounded-3xl border border-border bg-card/90 p-2 backdrop-blur">
           <textarea rows={1} aria-label={t("copilot_input")} value={question} onChange={(event) => setQuestion(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} placeholder={t("copilot_placeholder")} className="max-h-40 min-h-11 min-w-0 flex-1 resize-none bg-transparent px-3 py-2.5 text-sm outline-none" />
           {SpeechCtor && <button type="button" onClick={toggleVoice} aria-pressed={listening} aria-label={t(listening ? "voice_stop" : "voice_start")} title={t(listening ? "voice_stop" : "voice_start")} className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${listening ? "animate-pulse bg-primary text-primary-foreground" : "text-primary hover:bg-primary/10"}`}>{listening ? <Square className="h-4 w-4" /> : <Mic className="h-5 w-5" />}</button>}
           <button type="submit" disabled={!question.trim() || isAnalyzing} aria-label={t("copilot_send")} className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground disabled:opacity-40">{isAnalyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 rtl:-scale-x-100" />}</button>
         </form>
         {!started && (
           <ul className="mt-4 flex flex-wrap justify-center gap-2">
-            {["copilot_sugg_1","copilot_sugg_2","copilot_sugg_3","copilot_sugg_4"].map((key) => <li key={key}><button type="button" onClick={() => void send(t(key))} className="rounded-full border border-border bg-card px-3.5 py-2 text-xs font-semibold text-foreground hover:border-primary hover:text-primary">{t(key)}</button></li>)}
+            {["copilot_sugg_1","copilot_sugg_2","copilot_sugg_3","copilot_sugg_4"].map((key) => <li key={key}><button type="button" onClick={() => void send(t(key))} className="welcome-chip rounded-full border border-border bg-card/70 px-4 py-2 text-xs font-semibold text-foreground">{t(key)}</button></li>)}
           </ul>
         )}
         <p className="mt-3 text-center text-[11px] text-muted-foreground" aria-live="polite">{voiceError ? t("voice_error") : listening ? t("voice_listening") : t("copilot_disclaimer_short")}</p>

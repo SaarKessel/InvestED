@@ -383,3 +383,26 @@
     outline-color: Highlight;
   }
 }
+
+/* Welcome screen: premium but quiet. Motion is disabled under reduced-motion above. */
+.welcome-aurora { position:absolute; inset:0; pointer-events:none; overflow:hidden; z-index:0;
+  background:
+    radial-gradient(60rem 28rem at 50% 12%, rgba(245,180,60,.10), transparent 70%),
+    radial-gradient(40rem 26rem at 15% 70%, rgba(45,212,191,.07), transparent 70%),
+    radial-gradient(40rem 26rem at 88% 60%, rgba(99,102,241,.07), transparent 70%); }
+.welcome-emblem { position:relative; display:flex; align-items:center; justify-content:center; }
+.welcome-emblem::before { content:""; position:absolute; width:15rem; height:15rem; border-radius:9999px;
+  background:radial-gradient(circle, rgba(245,180,60,.42), rgba(245,180,60,.10) 45%, transparent 70%);
+  filter:blur(18px); animation:welcome-glow 6s ease-in-out infinite; }
+.welcome-emblem::after { content:""; position:absolute; width:8.5rem; height:8.5rem; border-radius:2rem;
+  background:conic-gradient(from 0deg, rgba(245,180,60,.0), rgba(245,180,60,.55), rgba(45,212,191,.35), rgba(245,180,60,0));
+  filter:blur(6px); animation:welcome-spin 14s linear infinite; }
+.welcome-emblem img { position:relative; z-index:1; animation:welcome-float 7s ease-in-out infinite; }
+.welcome-title { background:linear-gradient(180deg, hsl(var(--foreground)) 35%, rgba(245,190,90,.95)); -webkit-background-clip:text; background-clip:text; color:transparent; }
+.welcome-chip { backdrop-filter:blur(6px); transition:transform .2s ease, border-color .2s ease, background-color .2s ease; }
+.welcome-chip:hover { transform:translateY(-2px); border-color:rgba(245,180,60,.55); background-color:rgba(245,180,60,.08); }
+.welcome-composer { transition:box-shadow .25s ease, border-color .25s ease; box-shadow:0 10px 40px -12px rgba(245,180,60,.25); }
+.welcome-composer:focus-within { box-shadow:0 12px 50px -10px rgba(245,180,60,.4); border-color:rgba(245,180,60,.6); }
+@keyframes welcome-glow { 0%,100% { opacity:.75; transform:scale(1); } 50% { opacity:1; transform:scale(1.08); } }
+@keyframes welcome-spin { to { transform:rotate(360deg); } }
+@keyframes welcome-float { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-6px); } }

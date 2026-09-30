@@ -19,7 +19,7 @@ export function Navbar() {
     { to: "/calculator", label: t("nav_calculator") },
     { to: "/strategy-lab", label: t("nav_strategy_lab") },
     { to: "/research", label: t("nav_research") },
-    { to: "/chat", label: t("nav_chat") },
+    { to: "/overview", label: t("nav_overview") },
     { to: "/trivia", label: t("nav_trivia") },
     { to: "/news", label: t("nav_news") },
     { to: "/simulation", label: t("nav_simulation") },

@@ -4,9 +4,12 @@ import { AIChatCard } from "@/components/dashboard/AIChatCard";
 export default function AICopilotPage() {
   return (
     <Layout>
-      <section className="container py-6 md:py-10">
-        <AIChatCard />
-      </section>
+      <div className="relative">
+        <div className="welcome-aurora" aria-hidden="true" />
+        <section className="container relative z-10 py-6 md:py-10">
+          <AIChatCard />
+        </section>
+      </div>
     </Layout>
   );
 }
