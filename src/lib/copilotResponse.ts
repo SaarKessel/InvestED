@@ -31,6 +31,8 @@ export interface CopilotResponse {
   comparison: AssetAnalysis[] | null;
   strategies: StrategyId[];
   strategyFit: StrategyFitAssessment | null;
+  /** The strategy engine's validated explanation, when the turn explained one strategy. */
+  strategyExplanation: StrategyExplanation | null;
   profileContextUsed: boolean;
   dataDependencies: CopilotDataDependency[];
   dataSources: MarketDataSource[];
@@ -241,6 +243,7 @@ export function buildCopilotResponse(
             : [])
       : [],
     strategyFit: strategyOutput?.fit ?? null,
+    strategyExplanation: strategyOutput?.explanation ?? null,
     profileContextUsed: profileUsed,
     dataDependencies,
     dataSources: isGuaranteeQuestion(message) ? [] : dataSources,

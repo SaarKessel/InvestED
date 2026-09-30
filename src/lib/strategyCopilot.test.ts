@@ -30,6 +30,7 @@ describe("Phase 6 Copilot strategy routing", () => {
     const turn = await processAIMessage(createConversationSession(), "What is dividend investing?", "en", deps);
     expect(turn.resolution.intent).toBe("strategy_question");
     expect(turn.response.strategies).toEqual(["dividend"]);
+    expect(turn.response.strategyExplanation?.name).toBe("Dividend Investing");
     expect(turn.response.text).toContain("Dividend Investing");
     expect(turn.response.text).toContain("education only");
     expect(turn.response.dataDependencies).toContain("strategy_engine");
