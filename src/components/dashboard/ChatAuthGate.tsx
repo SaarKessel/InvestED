@@ -24,7 +24,7 @@ export function ChatAuthGate() {
   }
   const field = "w-full rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:border-primary";
   return (
-    <form onSubmit={submit} className="mx-auto w-full max-w-sm space-y-3 rounded-3xl border border-amber-300/20 bg-card/80 p-6 shadow-2xl shadow-amber-500/10 backdrop-blur">
+    <form onSubmit={submit} className="mx-auto w-full max-w-sm space-y-3 rounded-3xl border border-border/60 bg-muted/40 p-6">
       <p className="text-center text-sm font-semibold">{t(mode === "in" ? "auth_title_in" : "auth_title_up")}</p>
       <label className="block text-xs text-muted-foreground">{t("auth_email")}
         <input type="email" required autoComplete="email" dir="ltr" value={email} onChange={(e) => setEmail(e.target.value)} className={`${field} mt-1`} />

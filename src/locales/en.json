@@ -2013,7 +2013,7 @@
   "voice_stop": "Stop dictation",
   "voice_listening": "Listening... speak now, then review the text before sending.",
   "voice_error": "Voice input did not work. Check microphone permission and try again.",
-  "copilot_home_title": "What would you like to learn today?",
+  "copilot_home_title": "What can I help you with?",
   "copilot_home_sub": "Ask anything about markets, money and investing. Numbers come from InvestED+'s engines.",
   "nav_overview": "Overview",
   "copilot_sugg_1": "What is VOO price?",
