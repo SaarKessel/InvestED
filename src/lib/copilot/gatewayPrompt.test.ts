@@ -151,7 +151,8 @@ describe("geminiTransport", () => {
   });
 });
 
-describe("rephrasePreservesFacts", () => {
+describe("rephraseIntroducesNoNewFacts", () => {
+  const answer = "VOO trades at 706.07 USD, down 0.22% today. Educational data, not advice.";
   const facts = {
     intent: "asset_analysis",
     assets: [{ symbol: "VOO", price: 706.07, changePercent: -0.22, volatilityPct: 14.2, rsi: 51, isMock: false }],
@@ -162,33 +163,36 @@ describe("rephrasePreservesFacts", () => {
     clarification: null,
   } as never;
 
-  it("accepts a faithful English rephrase", async () => {
-    const { rephrasePreservesFacts } = await import("./gatewayPrompt");
+  it("accepts a faithful rephrase that omits facts", async () => {
+    const { rephraseIntroducesNoNewFacts } = await import("./gatewayPrompt");
     expect(
-      rephrasePreservesFacts(facts, "VOO is trading at 706.07 USD, down 0.22% today. Volatility 14.2, RSI 51.")
+      rephraseIntroducesNoNewFacts(answer, facts, "VOO is trading at 706.07 USD, which is down 0.22% for the day.")
     ).toBe(true);
   });
 
   it("rejects a rephrase that corrupts the symbol", async () => {
-    const { rephrasePreservesFacts } = await import("./gatewayPrompt");
+    const { rephraseIntroducesNoNewFacts } = await import("./gatewayPrompt");
     expect(
-      rephrasePreservesFacts(facts, "VVO trades at 706.07 USD, down 0.22%. Volatility 14.2, RSI 51.")
+      rephraseIntroducesNoNewFacts(answer, facts, "VVO trades at 706.07 USD, down 0.22% today.")
     ).toBe(false);
   });
 
-  it("rejects a rephrase that drops a number", async () => {
-    const { rephrasePreservesFacts } = await import("./gatewayPrompt");
-    expect(rephrasePreservesFacts(facts, "VOO trades at 706.07 USD.")).toBe(false);
+  it("rejects a rephrase that invents a number", async () => {
+    const { rephraseIntroducesNoNewFacts } = await import("./gatewayPrompt");
+    expect(
+      rephraseIntroducesNoNewFacts(answer, facts, "VOO trades at 706.07 USD, down 0.22%, up 5% this week.")
+    ).toBe(false);
   });
 
   it("tolerates commas, percent signs, and a minus turned into a word", async () => {
-    const { rephrasePreservesFacts } = await import("./gatewayPrompt");
-    const big = {
+    const { rephraseIntroducesNoNewFacts } = await import("./gatewayPrompt");
+    const bigAnswer = "VOO trades at 1234.5 USD, down 0.22% today.";
+    const bigFacts = {
       ...facts,
       assets: [{ symbol: "VOO", price: 1234.5, changePercent: -0.22, volatilityPct: 14.2, rsi: 51, isMock: false }],
     } as never;
     expect(
-      rephrasePreservesFacts(big, "VOO trades at 1,234.5 USD, a decline of 0.22% today, volatility 14.2, RSI 51.")
+      rephraseIntroducesNoNewFacts(bigAnswer, bigFacts, "VOO trades at 1,234.5 USD, a decline of 0.22% today.")
     ).toBe(true);
   });
 });

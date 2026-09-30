@@ -205,21 +205,21 @@ export function parseGeminiResponse(body: unknown): string | null {
 
 /**
  * Deterministic enforcement of the no-new-facts contract. The system prompt
- * ASKS the model to preserve every fact; this CHECKS it: every asset symbol
- * and every number in the validated fact set must survive the rephrase
- * verbatim (tolerating commas, percent signs, and a minus turned into a
- * word). Any drift and the caller falls back to the deterministic answer.
+ * ASKS the model to stick to the validated answer; this CHECKS it: every
+ * asset symbol and every number the rephrase mentions must already exist in
+ * the validated answer or the fact set (tolerating commas, percent signs,
+ * and a minus turned into a word). The model may omit facts - it may never
+ * introduce one. Any invented token and the caller falls back.
  */
-export function rephrasePreservesFacts(facts: GatewayFacts, text: string): boolean {
+export function rephraseIntroducesNoNewFacts(
+  answer: string,
+  facts: GatewayFacts,
+  text: string
+): boolean {
+  const allowed = `${answer} ${JSON.stringify(facts ?? {})}`.replace(/,/g, "");
   const haystack = text.replace(/,/g, "");
-  const tokens: string[] = [];
-  for (const asset of facts.assets ?? []) {
-    if (asset && typeof asset.symbol === "string" && asset.symbol) tokens.push(asset.symbol);
-  }
-  const numbers = JSON.stringify(facts ?? {}).match(/-?\d+(\.\d+)?/g) ?? [];
-  for (const raw of numbers) {
-    const abs = raw.replace(/^-/, "");
-    if (abs && abs !== "0") tokens.push(abs);
-  }
-  return tokens.every((token) => haystack.includes(token));
+  const symbols = haystack.match(/\b[A-Z]{2,6}\b/g) ?? [];
+  if (!symbols.every((symbol) => allowed.includes(symbol))) return false;
+  const numbers = haystack.match(/\d+(\.\d+)?/g) ?? [];
+  return numbers.every((num) => allowed.includes(num));
 }

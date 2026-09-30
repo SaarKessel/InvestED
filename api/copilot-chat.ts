@@ -26,7 +26,7 @@ import {
   GEMINI_API_BASE,
   normalizeGatewayPayload,
   parseGeminiResponse,
-  rephrasePreservesFacts,
+  rephraseIntroducesNoNewFacts,
   resolveGeminiConfig,
 } from "../src/lib/copilot/gatewayPrompt.js";
 
@@ -93,9 +93,9 @@ export default async function handler(req: CopilotChatRequest, res: CopilotChatR
     }
     const text = parseGeminiResponse(await response.json());
     if (!text) return res.status(200).json({ fallback: true, reason: "empty_completion" });
-    // The model ASKED to preserve facts is not enough: verify every symbol
-    // and number survived; any drift keeps the deterministic answer.
-    if (!rephrasePreservesFacts(payload.facts, text)) {
+    // The model ASKED to preserve facts is not enough: verify it introduced
+    // no symbol or number beyond the validated answer and fact set.
+    if (!rephraseIntroducesNoNewFacts(payload.answer, payload.facts, text)) {
       return res.status(200).json({ fallback: true, reason: "fact_mismatch" });
     }
     return res.status(200).json({ text });
