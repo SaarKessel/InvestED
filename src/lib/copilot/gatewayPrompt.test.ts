@@ -98,3 +98,14 @@ describe("gatewayPrompt", () => {
     expect(normalized!.language).toBe("mixed");
   });
 });
+
+describe("resolveGatewayToken", () => {
+  it("prefers the function request header, then API key, then build env", async () => {
+    const { resolveGatewayToken } = await import("./gatewayPrompt");
+    expect(resolveGatewayToken({ "x-vercel-oidc-token": "hdr" }, { AI_GATEWAY_API_KEY: "key" })).toBe("hdr");
+    expect(resolveGatewayToken({}, { AI_GATEWAY_API_KEY: "key", VERCEL_OIDC_TOKEN: "env" })).toBe("key");
+    expect(resolveGatewayToken({}, { VERCEL_OIDC_TOKEN: "env" })).toBe("env");
+    expect(resolveGatewayToken({ "x-vercel-oidc-token": ["a", "b"] }, {})).toBe("a");
+    expect(resolveGatewayToken({}, {})).toBe("");
+  });
+});

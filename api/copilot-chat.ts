@@ -11,8 +11,9 @@
 // response — returns { fallback: true } and the client keeps the
 // deterministic answer unchanged. The site works with the gateway off.
 //
-// Auth: AI_GATEWAY_API_KEY when set (local dev / explicit key), else the
-// deployment's VERCEL_OIDC_TOKEN. Model: AI_GATEWAY_MODEL; leave unset to
+// Auth: the x-vercel-oidc-token header Vercel sets on every Function
+// request (no keys to manage), else AI_GATEWAY_API_KEY (local dev), else
+// the build-time VERCEL_OIDC_TOKEN. Model: AI_GATEWAY_MODEL; unset ships dark.
 // ship dark until the free-tier model is confirmed in the dashboard.
 //
 // Rate limiting: Hobby plans get ONE WAF rate-limit rule (already used by
@@ -25,6 +26,7 @@ import {
   buildGatewayMessages,
   normalizeGatewayPayload,
   parseGatewayResponse,
+  resolveGatewayToken,
 } from "../src/lib/copilot/gatewayPrompt.js";
 
 interface CopilotChatRequest {
@@ -74,7 +76,7 @@ export default async function handler(req: CopilotChatRequest, res: CopilotChatR
   const payload = normalizeGatewayPayload(req.body);
   if (!payload) return res.status(400).json({ error: "invalid_payload" });
 
-  const token = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN || "";
+  const token = resolveGatewayToken(req.headers ?? {}, process.env);
   const model = process.env.AI_GATEWAY_MODEL || "";
   if (!model) return res.status(200).json({ fallback: true, reason: "model_not_configured" });
   if (!token) return res.status(200).json({ fallback: true, reason: "auth_not_configured" });

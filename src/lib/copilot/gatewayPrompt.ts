@@ -129,3 +129,17 @@ export function normalizeGatewayPayload(body: unknown): GatewayRequestPayload | 
   const facts = (raw.facts ?? {}) as GatewayFacts;
   return { question, answer, language, facts };
 }
+
+/**
+ * Auth token precedence: the x-vercel-oidc-token request header (how Vercel
+ * delivers OIDC to Functions), then an explicit API key, then the build-time
+ * OIDC env var. Never logs or returns the value.
+ */
+export function resolveGatewayToken(
+  headers: Record<string, string | string[] | undefined>,
+  env: Record<string, string | undefined>
+): string {
+  const header = headers["x-vercel-oidc-token"];
+  const headerValue = Array.isArray(header) ? header[0] : header;
+  return (headerValue ?? "").trim() || env.AI_GATEWAY_API_KEY || env.VERCEL_OIDC_TOKEN || "";
+}
