@@ -2,9 +2,9 @@
 // InvestED — AI Gateway prompt plumbing (facelift Phase 1)
 //
 // The deterministic engines stay the ONLY source of facts. These helpers
-// build a strict rephrase-only request for the Vercel AI Gateway and
-// validate what comes back. The model may rephrase the validated answer;
-// it must never add numbers, assets, or claims of its own.
+// build a strict rephrase-only request for the AI rephrase layer (Gemini)
+// and validate what comes back. The model may rephrase the validated
+// answer; it must never add numbers, assets, or claims of its own.
 // ---------------------------------------------------------------------------
 
 import type { ConversationLanguage, ConversationIntent } from "../conversationContext";
@@ -142,4 +142,63 @@ export function resolveGatewayToken(
   const header = headers["x-vercel-oidc-token"];
   const headerValue = Array.isArray(header) ? header[0] : header;
   return (headerValue ?? "").trim() || env.AI_GATEWAY_API_KEY || env.VERCEL_OIDC_TOKEN || "";
+}
+
+// ---------------------------------------------------------------------------
+// Direct Gemini transport (facelift Phase 1, direct-Gemini variant)
+//
+// The rephrase-only contract above is unchanged: buildGatewayMessages
+// produces the strict system prompt + validated-answer user message, and
+// these helpers adapt that pair to the Gemini generateContent API. Auth is
+// a Google AI Studio key in GEMINI_API_KEY (server-side only); the model id
+// comes from GEMINI_MODEL with a free-tier default. The key value is never
+// logged or returned.
+// ---------------------------------------------------------------------------
+
+export const DEFAULT_GEMINI_MODEL = "gemini-2.5-flash";
+export const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
+
+export interface GeminiConfig {
+  apiKey: string;
+  model: string;
+}
+
+/** Resolve the Gemini config from env; null = no key, endpoint stays dark. */
+export function resolveGeminiConfig(env: Record<string, string | undefined>): GeminiConfig | null {
+  const apiKey = (env.GEMINI_API_KEY || "").trim();
+  if (!apiKey) return null;
+  return { apiKey, model: (env.GEMINI_MODEL || "").trim() || DEFAULT_GEMINI_MODEL };
+}
+
+export interface GeminiRequestBody {
+  systemInstruction: { parts: { text: string }[] };
+  contents: { role: "user"; parts: { text: string }[] }[];
+}
+
+/** Adapt the rephrase-only message pair to the generateContent request shape. */
+export function buildGeminiRequest(payload: GatewayRequestPayload): GeminiRequestBody {
+  const [system, user] = buildGatewayMessages(payload);
+  return {
+    systemInstruction: { parts: [{ text: system.content }] },
+    contents: [{ role: "user", parts: [{ text: user.content }] }],
+  };
+}
+
+interface GeminiCandidate {
+  content?: { parts?: { text?: unknown }[] };
+}
+
+/** Pull the rephrased text out of a generateContent response; null = keep the deterministic answer. */
+export function parseGeminiResponse(body: unknown): string | null {
+  if (!body || typeof body !== "object") return null;
+  const candidates = (body as { candidates?: unknown }).candidates;
+  if (!Array.isArray(candidates) || candidates.length === 0) return null;
+  const parts = (candidates[0] as GeminiCandidate).content?.parts;
+  if (!Array.isArray(parts)) return null;
+  const text = parts
+    .map((part) => (typeof part.text === "string" ? part.text : ""))
+    .join("")
+    .trim();
+  if (!text || text.length > MAX_REPHRASED_LENGTH) return null;
+  return text;
 }

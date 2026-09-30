@@ -109,3 +109,44 @@ describe("resolveGatewayToken", () => {
     expect(resolveGatewayToken({}, {})).toBe("");
   });
 });
+
+describe("geminiTransport", () => {
+  const payload = normalizeGatewayPayload({
+    question: "What is VOO's price?",
+    language: "en",
+    answer: "VOO trades at 706.07 USD, down 0.22% today. Educational data, not advice.",
+    facts: { intent: "asset_analysis" },
+  })!;
+
+  it("resolveGeminiConfig stays dark without a key and defaults the model with one", async () => {
+    const { resolveGeminiConfig, DEFAULT_GEMINI_MODEL } = await import("./gatewayPrompt");
+    expect(resolveGeminiConfig({})).toBeNull();
+    expect(resolveGeminiConfig({ GEMINI_API_KEY: "  " })).toBeNull();
+    expect(resolveGeminiConfig({ GEMINI_API_KEY: "k" })).toEqual({ apiKey: "k", model: DEFAULT_GEMINI_MODEL });
+    expect(resolveGeminiConfig({ GEMINI_API_KEY: "k", GEMINI_MODEL: "gemini-2.5-flash-lite" }).model).toBe(
+      "gemini-2.5-flash-lite"
+    );
+  });
+
+  it("buildGeminiRequest maps the system prompt and validated answer into generateContent shape", async () => {
+    const { buildGeminiRequest } = await import("./gatewayPrompt");
+    const body = buildGeminiRequest(payload);
+    expect(body.systemInstruction.parts[0].text).toContain("Never add, remove, or alter any number");
+    expect(body.contents).toHaveLength(1);
+    expect(body.contents[0].role).toBe("user");
+    expect(body.contents[0].parts[0].text).toContain("VALIDATED ANSWER");
+    expect(body.contents[0].parts[0].text).toContain("706.07");
+  });
+
+  it("parseGeminiResponse extracts joined part text and rejects malformed bodies", async () => {
+    const { parseGeminiResponse } = await import("./gatewayPrompt");
+    expect(
+      parseGeminiResponse({ candidates: [{ content: { parts: [{ text: "VOO trades at " }, { text: "706.07 USD." }] } }] })
+    ).toBe("VOO trades at 706.07 USD.");
+    expect(parseGeminiResponse(null)).toBeNull();
+    expect(parseGeminiResponse({})).toBeNull();
+    expect(parseGeminiResponse({ candidates: [] })).toBeNull();
+    expect(parseGeminiResponse({ candidates: [{ content: { parts: [{ text: "   " }] } }] })).toBeNull();
+    expect(parseGeminiResponse({ candidates: [{ content: { parts: [{ text: "x".repeat(6001) }] } }] })).toBeNull();
+  });
+});

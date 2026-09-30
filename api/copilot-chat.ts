@@ -1,20 +1,19 @@
 // ---------------------------------------------------------------------------
 // InvestED — /api/copilot-chat (facelift Phase 1)
 //
-// Rephrase-only bridge to the Vercel AI Gateway. The browser sends the
+// Rephrase-only bridge to Gemini (generateContent). The browser sends the
 // deterministic engines' validated answer plus the exact fact set; this
-// endpoint asks the gateway model to rephrase it under a strict
-// no-new-facts system prompt and returns the rephrased text.
+// endpoint asks the model to rephrase it under a strict no-new-facts
+// system prompt and returns the rephrased text.
 //
 // The endpoint NEVER invents content: any failure — missing config,
-// gateway 403/429 (free-tier quota/rate limit), timeout, malformed
+// Gemini 403/429 (free-tier quota/rate limit), timeout, malformed
 // response — returns { fallback: true } and the client keeps the
-// deterministic answer unchanged. The site works with the gateway off.
+// deterministic answer unchanged. The site works with the AI layer off.
 //
-// Auth: the x-vercel-oidc-token header Vercel sets on every Function
-// request (no keys to manage), else AI_GATEWAY_API_KEY (local dev), else
-// the build-time VERCEL_OIDC_TOKEN. Model: AI_GATEWAY_MODEL; unset ships dark.
-// ship dark until the free-tier model is confirmed in the dashboard.
+// Auth: GEMINI_API_KEY (a Google AI Studio key, server-side env only,
+// never logged). Model: GEMINI_MODEL, defaulting to the free-tier
+// DEFAULT_GEMINI_MODEL. No key = ships dark (auth_not_configured).
 //
 // Rate limiting: Hobby plans get ONE WAF rate-limit rule (already used by
 // market-api-rate-limit), so this endpoint carries a best-effort
@@ -23,10 +22,11 @@
 // ---------------------------------------------------------------------------
 
 import {
-  buildGatewayMessages,
+  buildGeminiRequest,
+  GEMINI_API_BASE,
   normalizeGatewayPayload,
-  parseGatewayResponse,
-  resolveGatewayToken,
+  parseGeminiResponse,
+  resolveGeminiConfig,
 } from "../src/lib/copilot/gatewayPrompt.js";
 
 interface CopilotChatRequest {
@@ -40,7 +40,6 @@ interface CopilotChatResponse {
   status(code: number): { json(body: unknown): void };
 }
 
-const GATEWAY_URL = "https://ai-gateway.vercel.sh/v1/chat/completions";
 const GATEWAY_TIMEOUT_MS = 10_000;
 const RATE_LIMIT_WINDOW_MS = 60_000;
 const RATE_LIMIT_MAX = 20;
@@ -76,27 +75,25 @@ export default async function handler(req: CopilotChatRequest, res: CopilotChatR
   const payload = normalizeGatewayPayload(req.body);
   if (!payload) return res.status(400).json({ error: "invalid_payload" });
 
-  const token = resolveGatewayToken(req.headers ?? {}, process.env);
-  const model = process.env.AI_GATEWAY_MODEL || "";
-  if (!model) return res.status(200).json({ fallback: true, reason: "model_not_configured" });
-  if (!token) return res.status(200).json({ fallback: true, reason: "auth_not_configured" });
+  const config = resolveGeminiConfig(process.env);
+  if (!config) return res.status(200).json({ fallback: true, reason: "auth_not_configured" });
 
   try {
-    const response = await fetch(GATEWAY_URL, {
+    const response = await fetch(`${GEMINI_API_BASE}/${config.model}:generateContent`, {
       method: "POST",
-      headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ model, messages: buildGatewayMessages(payload) }),
+      headers: { "x-goog-api-key": config.apiKey, "Content-Type": "application/json" },
+      body: JSON.stringify(buildGeminiRequest(payload)),
       signal: AbortSignal.timeout(GATEWAY_TIMEOUT_MS),
     });
     if (!response.ok) {
-      // 403 = model outside the free tier, 429 = quota/rate limit. Both are
+      // 403 = key/quota problem, 429 = free-tier rate limit. Both are
       // expected operating states, not errors: the deterministic answer stands.
-      return res.status(200).json({ fallback: true, reason: `gateway_${response.status}` });
+      return res.status(200).json({ fallback: true, reason: `gemini_${response.status}` });
     }
-    const text = parseGatewayResponse(await response.json());
+    const text = parseGeminiResponse(await response.json());
     if (!text) return res.status(200).json({ fallback: true, reason: "empty_completion" });
     return res.status(200).json({ text });
   } catch {
-    return res.status(200).json({ fallback: true, reason: "gateway_unreachable" });
+    return res.status(200).json({ fallback: true, reason: "gemini_unreachable" });
   }
 }

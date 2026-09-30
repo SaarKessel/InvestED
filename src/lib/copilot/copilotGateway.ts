@@ -1,10 +1,10 @@
 // ---------------------------------------------------------------------------
 // InvestED — client bridge to /api/copilot-chat (facelift Phase 1)
 //
-// Best-effort rephrase of the deterministic copilot answer through the AI
-// Gateway. Returns null on ANY failure — network, timeout, fallback flag,
-// malformed body — so callers always keep the deterministic answer. The
-// gateway is an enhancement layer, never a dependency.
+// Best-effort rephrase of the deterministic copilot answer through the
+// server-side Gemini bridge. Returns null on ANY failure — network, timeout,
+// fallback flag, malformed body — so callers always keep the deterministic
+// answer. The AI layer is an enhancement, never a dependency.
 // ---------------------------------------------------------------------------
 
 import type { CopilotResponse } from "../copilotResponse";
