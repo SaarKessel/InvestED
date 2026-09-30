@@ -73,3 +73,11 @@ At the current checkpoint, all three original game completion journeys passed ag
 - Four shared career desks now use the existing Layout main landmark rather than nesting a second main. Eight bilingual tests render the real Layout and assert a single main, single h1 and correct RTL/LTR section.
 - Candle count controls have translated accessible names; the keyboard range inspector exposes its selected date and OHLC through aria-valuetext. Two bilingual chart tests cover value changes and callback indices.
 - Full suite 824 tests / 87 files; typecheck/build/lint pass with existing warnings. Local keyboard committee journeys and bilingual desktop/mobile captures inspected again after the semantic-only changes. One main landmark confirmed in live local DOM. No external requests.
+
+## Progression and experience-record contracts
+
+- Assessed the original Career Lab progression and experience-record contracts; findings recorded in docs/career-progression-contracts.md.
+- Analyst first-generation submitted records (no board choice, 40-character memo rule) are readable again; the validator applies the rule in force when a record was written. Second-generation records keep the 20-character memo plus board-choice rule. Six new validator tests including a storage round-trip.
+- Completed Career Lab cases are archived on completion and on first load of a previously completed case: device-local, deduplicated by case id, capped at 10, validated as complete records only. Starting a new case no longer destroys the completed experience record. Archive renders on the complete stage in both languages.
+- Career Lab stale-tab conflicts now offer explicit load-latest recovery matching the committee/operations contract: recovery reads without writing; the alert clears; the newer snapshot is shown. Covered by four bilingual page tests.
+- Full suite: 833 tests / 88 files. Typecheck, production build and lint pass with the existing six warnings and bundle-size warning.

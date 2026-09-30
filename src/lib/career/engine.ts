@@ -131,3 +131,24 @@ export function saveCase(record: ResearchCase, expected: ResearchCase | null): v
   if (JSON.stringify(actual)!==JSON.stringify(expected)) throw new CaseConflictError('Case changed in another tab');
   localStorage.setItem(CASE_KEY, JSON.stringify(record));
 }
+/** Bounded device-local archive of completed cases. Self-reported practice records, never verified credentials or employment. */
+export const CASE_ARCHIVE_KEY = 'invested_career_analyst_archive_v1';
+export const CASE_ARCHIVE_LIMIT = 10;
+const isCompleteCase = (value: unknown): value is ResearchCase => isResearchCase(value) && value.stage === 'complete';
+export function readCaseArchive(): ResearchCase[] {
+  try {
+    const raw=localStorage.getItem(CASE_ARCHIVE_KEY);
+    const value=raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(value) || value.length > CASE_ARCHIVE_LIMIT) return [];
+    if (!value.every(isCompleteCase)) return [];
+    if (new Set(value.map(item => item.id)).size !== value.length) return [];
+    return value;
+  } catch { return []; }
+}
+/** Idempotent by case id: archiving the same completed case again replaces its copy, never duplicates it. */
+export function archiveCompletedCase(record: ResearchCase): ResearchCase[] {
+  if (!isCompleteCase(record)) throw new Error('Only a completed case can be archived');
+  const next=[...readCaseArchive().filter(item => item.id !== record.id), record].slice(-CASE_ARCHIVE_LIMIT);
+  localStorage.setItem(CASE_ARCHIVE_KEY, JSON.stringify(next));
+  return next;
+}

@@ -33,9 +33,15 @@ export const isAnalystGame=(value:unknown):value is AnalystGame=>{
   if(!validPracticeRuns(v.runs,'analyst'))return false;
   return !!v.answers && typeof v.answers==='object' && ANALYST_METRICS.every(key=>v.answers[key]===undefined||typeof v.answers[key]==='string') &&
     Array.isArray(v.checked) && v.checked.every(key=>ANALYST_METRICS.includes(key)) && new Set(v.checked).size===v.checked.length &&
-    (v.boardChoice===undefined||['none','review','proceed'].includes(v.boardChoice)) && typeof v.memo==='string' && typeof v.submitted==='boolean' && (v.evidence===undefined||isEvidenceSelection('analyst',v.evidence)) && (!v.submitted || readyToSubmit(v));
+    (v.boardChoice===undefined||['none','review','proceed'].includes(v.boardChoice)) && typeof v.memo==='string' && typeof v.submitted==='boolean' && (v.evidence===undefined||isEvidenceSelection('analyst',v.evidence)) && (!v.submitted || submittedRecordValid(v));
 };
 export const readyToSubmit=(game:AnalystGame):boolean=>ANALYST_METRICS.every(key=>game.checked.includes(key)&&checkMetric(key,game.answers[key]??''))&&(game.boardChoice==='review'||game.boardChoice==='proceed')&&(game.evidence===undefined?game.memo.trim().length>=20:readyBoardEvidence('analyst',game.evidence));
+/** A submitted draft stays readable under the rule in force when it was written: the first local generation had no board choice and required a 40-character memo. */
+export const submittedRecordValid=(game:AnalystGame):boolean=>{
+  if(game.boardChoice===undefined&&game.evidence===undefined)
+    return ANALYST_METRICS.every(key=>game.checked.includes(key)&&checkMetric(key,game.answers[key]??''))&&game.memo.trim().length>=40;
+  return readyToSubmit(game);
+};
 export function readAnalystGame():AnalystGame|null{try{const raw=localStorage.getItem(ANALYST_KEY);const value=raw?JSON.parse(raw):null;return isAnalystGame(value)?value:null;}catch{return null;}}
 export class AnalystConflictError extends Error {}
 export function saveAnalystGame(next:AnalystGame,expected:AnalystGame|null):void{
