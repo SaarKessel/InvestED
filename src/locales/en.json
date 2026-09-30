@@ -1998,5 +1998,12 @@
   "voice_start": "Dictate a question",
   "voice_stop": "Stop dictation",
   "voice_listening": "Listening... speak now, then review the text before sending.",
-  "voice_error": "Voice input did not work. Check microphone permission and try again."
+  "voice_error": "Voice input did not work. Check microphone permission and try again.",
+  "copilot_home_title": "What would you like to learn today?",
+  "copilot_home_sub": "Ask anything about markets, money and investing. Numbers come from InvestED's engines.",
+  "copilot_sugg_1": "What is VOO price?",
+  "copilot_sugg_2": "Show top gainers and losers",
+  "copilot_sugg_3": "Explain RSI simply",
+  "copilot_sugg_4": "What can you do?",
+  "copilot_disclaimer_short": "For education only, not investment advice. InvestED can make mistakes; check important facts."
 }

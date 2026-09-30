@@ -45,9 +45,9 @@ export function AIChatCard() {
   }
   useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }); }, [messages, isAnalyzing]);
 
-  async function submit(event: FormEvent) {
-    event.preventDefault();
-    const text = question.trim();
+  function submit(event: FormEvent) { event.preventDefault(); void send(question); }
+  async function send(raw: string) {
+    const text = raw.trim();
     if (!text || isAnalyzing) return;
     setQuestion("");
     setMessages((current) => [...current, { role: "user", text }]);
@@ -83,18 +83,29 @@ export function AIChatCard() {
   function clearConversation() { reset(); setMessages([]); setQuestion(""); }
   async function copyMessage(text: string, index: number) { await navigator.clipboard.writeText(text); setCopied(index); window.setTimeout(() => setCopied(null), 1500); }
 
+  const started = messages.length > 0;
   return (
-    <div className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-6">
-      <div className="flex items-start justify-between gap-3">
-        <div className="flex items-start gap-3"><div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"><Sparkles className="h-5 w-5" /></div><div><h2 className="text-xl font-bold">{t("copilot_header")}</h2><p className="mt-1 text-sm text-muted-foreground">{t("copilot_subtitle")}</p></div></div>
-        {messages.length > 0 && <button type="button" onClick={clearConversation} className="inline-flex shrink-0 items-center gap-1 rounded-lg border border-border px-2.5 py-2 text-xs text-muted-foreground hover:text-foreground"><RotateCcw className="h-3.5 w-3.5" /><span className="hidden sm:inline">{t("copilot_clear")}</span></button>}
-      </div>
-      <div ref={scrollRef} aria-live="polite" aria-busy={isAnalyzing} className="mt-5 max-h-[32rem] space-y-3 overflow-y-auto pe-1">
-        {messages.length === 0 && <p className="rounded-xl bg-muted/50 p-4 text-sm text-muted-foreground">{t("copilot_empty")}</p>}
+    <div className={`mx-auto flex w-full max-w-3xl flex-col ${started ? "min-h-[calc(100vh-9rem)]" : "min-h-[calc(100vh-14rem)] justify-center"}`}>
+      {!started && (
+        <div className="mb-8 flex flex-col items-center text-center">
+          <img src="/logo-mark.png" alt="" width="64" height="64" className="h-16 w-16 rounded-2xl shadow-lg shadow-primary/20" />
+          <h1 className="mt-5 text-3xl font-extrabold sm:text-4xl">{t("copilot_home_title")}</h1>
+          <p className="mt-2 text-sm text-muted-foreground">{t("copilot_home_sub")}</p>
+        </div>
+      )}
+      {started && (
+        <div className="mb-2 flex justify-end">
+          <button type="button" onClick={clearConversation} className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"><RotateCcw className="h-3.5 w-3.5" aria-hidden="true" /><span>{t("copilot_clear")}</span></button>
+        </div>
+      )}
+      {started && <h1 className="sr-only">{t("chat_page_title")}</h1>}
+      <div ref={scrollRef} aria-live="polite" aria-busy={isAnalyzing} className={started ? "flex-1 space-y-6 pb-6" : ""}>
         {messages.map((message, index) => {
           const response = message.response;
           const assets = response?.assets ?? [];
-          return <div key={index} className={`group max-w-[92%] rounded-xl p-3 text-sm leading-6 sm:max-w-[86%] ${message.role === "user" ? "ms-auto bg-primary text-primary-foreground" : "bg-muted"}`}>
+          return <div key={index} className={message.role === "user" ? "ms-auto w-fit max-w-[85%] rounded-3xl bg-primary px-4 py-2.5 text-sm leading-6 text-primary-foreground" : "group flex gap-3 text-sm leading-7"}>
+            {message.role === "copilot" && <span className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"><Sparkles className="h-4 w-4" aria-hidden="true" /></span>}
+            <div className="min-w-0 flex-1">
             <p className="whitespace-pre-wrap">{message.text}</p>
             {message.desk && <ChatDataDesk data={message.desk} />}
             {message.siteCaps && <ChatSiteLaunch capabilities={message.siteCaps} />}
@@ -108,16 +119,24 @@ export function AIChatCard() {
               ? <ChatComparisonTable assets={response.comparison} />
               : <ChatAssetCards assets={assets} />}
             {message.role === "copilot" && <button type="button" onClick={() => copyMessage(message.text, index)} className="mt-2 inline-flex items-center gap-1 text-[11px] text-muted-foreground opacity-70 hover:opacity-100" aria-label={t("copilot_copy")}>{copied === index ? <Check className="h-3 w-3" /> : <Clipboard className="h-3 w-3" />}{copied === index ? t("copilot_copied") : t("copilot_copy")}</button>}
+            </div>
           </div>;
         })}
-        {isAnalyzing && <div className="flex max-w-[86%] items-center gap-2 rounded-xl bg-muted p-3 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />{t("copilot_working")}</div>}
+        {isAnalyzing && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />{t("copilot_working")}</div>}
       </div>
-      <form onSubmit={submit} className="mt-5 flex items-end gap-2">
-        <textarea rows={2} aria-label={t("copilot_input")} value={question} onChange={(event) => setQuestion(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} placeholder={t("copilot_placeholder")} className="min-h-12 min-w-0 flex-1 resize-none rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
-        {SpeechCtor && <button type="button" onClick={toggleVoice} aria-pressed={listening} aria-label={t(listening ? "voice_stop" : "voice_start")} title={t(listening ? "voice_stop" : "voice_start")} className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border ${listening ? "bg-primary text-primary-foreground animate-pulse" : "text-primary hover:border-primary"}`}>{listening ? <Square className="h-4 w-4" /> : <Mic className="h-5 w-5" />}</button>}
-        <button type="submit" disabled={!question.trim() || isAnalyzing} className="inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">{isAnalyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}<span className="hidden sm:inline">{t("copilot_send")}</span></button>
-      </form>
-      <p className="mt-2 text-[11px] text-muted-foreground" aria-live="polite">{voiceError ? t("voice_error") : listening ? t("voice_listening") : t("copilot_enter_hint")}</p>
+      <div className={started ? "sticky bottom-0 bg-background/90 pb-3 pt-2 backdrop-blur" : ""}>
+        <form onSubmit={submit} className="flex items-end gap-2 rounded-3xl border border-border bg-card p-2 shadow-lg shadow-primary/5 focus-within:border-primary">
+          <textarea rows={1} aria-label={t("copilot_input")} value={question} onChange={(event) => setQuestion(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} placeholder={t("copilot_placeholder")} className="max-h-40 min-h-11 min-w-0 flex-1 resize-none bg-transparent px-3 py-2.5 text-sm outline-none" />
+          {SpeechCtor && <button type="button" onClick={toggleVoice} aria-pressed={listening} aria-label={t(listening ? "voice_stop" : "voice_start")} title={t(listening ? "voice_stop" : "voice_start")} className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${listening ? "animate-pulse bg-primary text-primary-foreground" : "text-primary hover:bg-primary/10"}`}>{listening ? <Square className="h-4 w-4" /> : <Mic className="h-5 w-5" />}</button>}
+          <button type="submit" disabled={!question.trim() || isAnalyzing} aria-label={t("copilot_send")} className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground disabled:opacity-40">{isAnalyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 rtl:-scale-x-100" />}</button>
+        </form>
+        {!started && (
+          <ul className="mt-4 flex flex-wrap justify-center gap-2">
+            {["copilot_sugg_1","copilot_sugg_2","copilot_sugg_3","copilot_sugg_4"].map((key) => <li key={key}><button type="button" onClick={() => void send(t(key))} className="rounded-full border border-border bg-card px-3.5 py-2 text-xs font-semibold text-foreground hover:border-primary hover:text-primary">{t(key)}</button></li>)}
+          </ul>
+        )}
+        <p className="mt-3 text-center text-[11px] text-muted-foreground" aria-live="polite">{voiceError ? t("voice_error") : listening ? t("voice_listening") : t("copilot_disclaimer_short")}</p>
+      </div>
     </div>
   );
 }
