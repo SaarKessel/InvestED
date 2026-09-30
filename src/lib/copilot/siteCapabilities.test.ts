@@ -27,4 +27,13 @@ describe("site capabilities", () => {
       expect((en as Record<string, string>)[k]).toBeTruthy(); expect((he as Record<string, string>)[k]).toBeTruthy();
     }
   });
+
+  it("launches role and strategy pages from natural wishes", () => {
+    const id = (q: string) => { const r = resolveSiteIntent(q); return r && r.kind === "open" ? r.matches[0].id : null; };
+    expect(id("I want to try being an accountant")).toBe("accountant-game");
+    expect(id("Let me practice as an investment analyst")).toBe("analyst-game");
+    expect(id("I want to compare strategies")).toBe("strategy");
+    expect(id("רוצה לנסות להיות מנהל תיק")).toBe("portfolio-game");
+    expect(id("what is VOO price")).toBeNull();
+  });
 });

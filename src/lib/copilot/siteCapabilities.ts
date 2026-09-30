@@ -29,12 +29,28 @@ const OPEN_HE = /(פתח|תפתח|תפתחי|הראה|תראה|תראי|קח א�
 const OVERVIEW_EN = /\bwhat can you (?:do|help)|what do you do|what(?:'s| is) on (?:the )?site|site map|list (?:all )?(?:the )?(?:tools|features|pages)|what features\b/i;
 const OVERVIEW_HE = /מה (?:אתה|את|אפשר|אתם) (?:יכול|יכולה|יכולים|לעשות)|מה יש באתר|אילו כלים|אילו דפים|רשימת (?:הכלים|הדפים)/;
 
+// H5: "launch with context" - a wish to try a role or compare strategies opens the matching page.
+const TRY_EN = /\b(?:i (?:want|would like|'d like) to (?:try|play|practice|be|work as|become|see)|let me (?:try|play|practice)|can i (?:try|play|practice)|i(?:'d| would) like to (?:try|play)|try out|practice|compare)\b/i;
+const TRY_HE = /(?:רוצה|בא לי|אשמח|תן לי|תני לי|אפשר) (?:לנסות|לשחק|להתאמן|להיות|להשוות|לראות)|להתאמן|לנסות|להשוות/;
+const LAUNCH_TARGETS: Array<{ id: string; re: RegExp }> = [
+  { id: "analyst-game", re: /analyst|אנליסט/i },
+  { id: "accountant-game", re: /accountant|accounting|רואה חשבון|חשבונאות/i },
+  { id: "operations-game", re: /operations|back[- ]office|תפעול/i },
+  { id: "portfolio-game", re: /portfolio manager|fund manager|מנהל תיק|מנהלת תיק/i },
+  { id: "strategy", re: /strateg|אסטרטגי/i },
+];
+
 export type SiteIntent = { kind: "overview" } | { kind: "open"; matches: SiteCapability[] } | null;
 
 export function resolveSiteIntent(text: string): SiteIntent {
   const t = text.trim().toLowerCase();
   if (!t) return null;
   if (OVERVIEW_EN.test(t) || OVERVIEW_HE.test(t)) return { kind: "overview" };
+  if (TRY_EN.test(t) || TRY_HE.test(t)) {
+    const hit = LAUNCH_TARGETS.find((x) => x.re.test(t));
+    const cap = hit && SITE_CAPABILITIES.find((c) => c.id === hit.id);
+    if (cap) return { kind: "open", matches: [cap] };
+  }
   if (!OPEN_EN.test(t) && !OPEN_HE.test(t)) return null;
   const hits = SITE_CAPABILITIES.map((cap) => {
     const best = [...cap.en, ...cap.he].reduce((len, kw) => (t.includes(kw.toLowerCase()) ? Math.max(len, kw.length) : len), 0);
