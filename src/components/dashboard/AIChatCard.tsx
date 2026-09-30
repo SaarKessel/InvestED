@@ -14,6 +14,8 @@ import { ChatSiteLaunch } from "./ChatSiteLaunch";
 import { resolveSiteIntent, SITE_CAPABILITIES, type SiteCapability } from "@/lib/copilot/siteCapabilities";
 import { ChatDataDesk } from "./ChatDataDesk";
 import { ChatCalcCard } from "./ChatCalcCard";
+import { ChatLearnPath } from "./ChatLearnPath";
+import { looksLikeLearningPathRequest } from "@/lib/copilot/learnDesk";
 import { runCalcDesk, type CalcDeskResult } from "@/lib/copilot/calcDesk";
 import { loadDataDesk, resolveDataDesk, type DataDeskResult } from "@/lib/copilot/dataDesk";
 import { ChatStrategyCard } from "./ChatStrategyCard";
@@ -22,7 +24,7 @@ import { appendDictation, getSpeechRecognition, joinTranscript, speechLocale, ty
 import { useAnalysis } from "@/context/useAnalysis";
 import type { CopilotResponse } from "@/lib/copilotResponse";
 
-interface Message { role: "user" | "copilot"; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; }
+interface Message { role: "user" | "copilot"; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; learnPath?: boolean; }
 
 export function AIChatCard() {
   const { t, language } = useLanguage();
@@ -88,6 +90,10 @@ export function AIChatCard() {
     setMessages((current) => [...current, { role: "user", text }]);
     if (isCareerLaunchRequest(text)) {
       setMessages((current) => [...current, { role: "copilot", text: t("career_chat_launch"), careerLaunch: true }]);
+      return;
+    }
+    if (looksLikeLearningPathRequest(text)) {
+      setMessages((current) => [...current, { role: "copilot", text: t("learnpath_lead"), learnPath: true }]);
       return;
     }
     const site = resolveSiteIntent(text);
@@ -163,6 +169,7 @@ export function AIChatCard() {
             <p className="whitespace-pre-wrap">{message.text}</p>
             {message.desk && <ChatDataDesk data={message.desk} />}
             {message.calc && <ChatCalcCard data={message.calc} />}
+            {message.learnPath && <ChatLearnPath />}
             {message.siteCaps && <ChatSiteLaunch capabilities={message.siteCaps} />}
             {message.careerLaunch && <Link to="/career-lab" className="mt-3 inline-block rounded-lg border border-primary px-3 py-2 text-xs font-bold text-primary">{t("career_chat_open")}</Link>}
             {response?.toolResult && <div className="mt-3 rounded-lg border border-border/70 bg-background/70 p-2.5 text-xs"><p className="font-semibold">{t("copilot_verified_calculation")}</p>{response.toolResult.formula && <p className="mt-1 font-mono" dir="ltr">{response.toolResult.formula}</p>}{response.toolResult.assumptions.length > 0 && <p className="mt-1 text-muted-foreground">{t("copilot_assumptions")}: {response.toolResult.assumptions.join(" · ")}</p>}</div>}
