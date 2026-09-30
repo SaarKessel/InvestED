@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { isCareerLaunchRequest } from "@/lib/career/chatRoute";
-import { Check, Clipboard, Loader2, Mic, Square, RotateCcw, Send, Sparkles } from "lucide-react";
+import { Check, Clipboard, Loader2, Mic, Square, RotateCcw, Send } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
 import { ChatAssetCards } from "./ChatAssetCards";
 import { ChatCalculationCard } from "./ChatCalculationCard";
@@ -88,7 +88,7 @@ export function AIChatCard() {
     <div className={`mx-auto flex w-full max-w-3xl flex-col ${started ? "min-h-[calc(100vh-9rem)]" : "min-h-[calc(100vh-14rem)] justify-center"}`}>
       {!started && (
         <div className="mb-8 flex flex-col items-center text-center">
-          <img src="/logo-mark.png" alt="" width="64" height="64" className="h-16 w-16 rounded-2xl shadow-lg shadow-primary/20" />
+          <img src="/copilot-avatar.png" alt="" width="80" height="80" className="h-20 w-20 rounded-2xl object-cover shadow-lg shadow-amber-500/20 ring-1 ring-amber-400/30" />
           <h1 className="mt-5 text-3xl font-extrabold sm:text-4xl">{t("copilot_home_title")}</h1>
           <p className="mt-2 text-sm text-muted-foreground">{t("copilot_home_sub")}</p>
         </div>
@@ -104,7 +104,7 @@ export function AIChatCard() {
           const response = message.response;
           const assets = response?.assets ?? [];
           return <div key={index} className={message.role === "user" ? "ms-auto w-fit max-w-[85%] rounded-3xl bg-primary px-4 py-2.5 text-sm leading-6 text-primary-foreground" : "group flex gap-3 text-sm leading-7"}>
-            {message.role === "copilot" && <span className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary"><Sparkles className="h-4 w-4" aria-hidden="true" /></span>}
+            {message.role === "copilot" && <img src="/copilot-avatar.png" alt="" width="36" height="36" className="mt-0.5 h-9 w-9 shrink-0 rounded-xl object-cover ring-1 ring-amber-400/30" />}
             <div className="min-w-0 flex-1">
             <p className="whitespace-pre-wrap">{message.text}</p>
             {message.desk && <ChatDataDesk data={message.desk} />}
