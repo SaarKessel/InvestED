@@ -1877,5 +1877,9 @@
   "ops_support_combined": "The packet separately supports the missing custody unit and the 15-unit fee. Both original breaks remain visible above.",
   "ops_resolution_combined": "Resolved: corrected custody and the documented fee bridge are both recorded; original books remain unchanged.",
   "game_candle_window": "Visible candle count",
-  "game_client_plan_note_v1": "One commitment per client/day, separate from the reply. Cash-buffer plan: keep at least 25% cash at today’s close (+6 trust if met, -18 if broken). Monitoring alone adds no trust. No automatic trades or guaranteed protection."
+  "game_client_plan_note_v1": "One commitment per client/day, separate from the reply. Cash-buffer plan: keep at least 25% cash at today’s close (+6 trust if met, -18 if broken). Monitoring alone adds no trust. No automatic trades or guaranteed protection.",
+  "career_tracks": "Career tracks",
+  "career_track_locked": "In preparation",
+  "career_track_analyst_title": "Investment Analyst",
+  "career_track_credit_title": "Banking · Credit Analyst"
 }

@@ -8,32 +8,36 @@ import { FICTIONAL_MANDATES, simulatedAllocation, type AllocationScenario } from
 import { fictionalStress } from '@/lib/career/stress';
 import { checkProvenanceChoice } from '@/lib/career/lessonCheck';
 import type { MarketAsset } from '@/types';
-import { advance, archiveCompletedCase, canAdvance, CASE_SYMBOL, CaseConflictError, newCase, readCase, readCaseArchive, review, saveCase, skillEvidence, type AssistanceLevel, type EvidenceSnapshot, type ResearchCase } from '@/lib/career/engine';
+import { advance, archiveCompletedCase, canAdvance, CaseConflictError, newCase, readCase, readCaseArchive, review, saveCase, skillEvidence, type AssistanceLevel, type EvidenceSnapshot, type ResearchCase } from '@/lib/career/engine';
+import { CAREER_TRACKS, getTrack } from '@/lib/career/tracks';
 
 export default function CareerLabPage() {
   const {t,language}=useLanguage();
-  const saved=useRef<ResearchCase | null>(readCase());
-  const [record,setRecord]=useState<ResearchCase>(()=>saved.current??newCase());
+  const [trackId,setTrackId]=useState<string>(()=>CAREER_TRACKS[0].id);
+  const saved=useRef<ResearchCase | null>(readCase(trackId));
+  const [record,setRecord]=useState<ResearchCase>(()=>saved.current??newCase(new Date(),trackId));
   const draft=useRef<ResearchCase>(record);
   const requestVersion=useRef(0);
   const [loading,setLoading]=useState(false);
   const [showQueue,setShowQueue]=useState(false);
   const [error,setError]=useState('');
-  const [archive,setArchive]=useState<ResearchCase[]>(()=>readCaseArchive());
+  const [archive,setArchive]=useState<ResearchCase[]>(()=>readCaseArchive(trackId));
   const [conflicted,setConflicted]=useState(false);
   const archived=useRef(false);
-  useEffect(()=>{ if(!archived.current && saved.current?.stage==='complete') { archived.current=true; try { setArchive(archiveCompletedCase(saved.current)); } catch { /* the saved case itself is unaffected when its archive copy fails */ } } },[]);
+  useEffect(()=>{ if(!archived.current && saved.current?.stage==='complete') { archived.current=true; try { setArchive(archiveCompletedCase(saved.current,trackId)); } catch { /* the saved case itself is unaffected when its archive copy fails */ } } },[trackId]);
+  function selectTrack(id:string) { const track=getTrack(id); if(!track.available||id===trackId) return; const latest=readCase(id); saved.current=latest; draft.current=latest??newCase(new Date(),id); setRecord(draft.current); setTrackId(id); setArchive(readCaseArchive(id)); setError(''); setConflicted(false); if(latest?.stage==='complete'){try{setArchive(archiveCompletedCase(latest,id));}catch{/* the loaded case remains saved even if its archive copy fails */}} }
   const [marketHistory,setMarketHistory]=useState<MarketAsset['history']>([]);
   function update(patch:Partial<ResearchCase>) { const next={...draft.current,...patch,updatedAt:new Date().toISOString()};draft.current=next;setRecord(next); }
-  function persist(next:ResearchCase):boolean { try { saveCase(next,saved.current);saved.current=next;draft.current=next;setRecord(next);setError('');setConflicted(false);return true; } catch (cause) {const conflict=cause instanceof CaseConflictError;setConflicted(conflict);setError(t(conflict?'career_conflict':'career_storage_error'));return false;} }
+  function persist(next:ResearchCase):boolean { try { saveCase(next,saved.current,trackId);saved.current=next;draft.current=next;setRecord(next);setError('');setConflicted(false);return true; } catch (cause) {const conflict=cause instanceof CaseConflictError;setConflicted(conflict);setError(t(conflict?'career_conflict':'career_storage_error'));return false;} }
   /** Recovery only reads: the newer snapshot is shown, and the next save is a fresh guarded write. */
-  function loadLatest() { const latest=readCase();saved.current=latest;draft.current=latest??newCase();setRecord(draft.current);setError('');setConflicted(false);if(latest?.stage==='complete'){try{setArchive(archiveCompletedCase(latest));}catch{/* the loaded case remains saved even if its archive copy fails */}} }
+  function loadLatest() { const latest=readCase(trackId);saved.current=latest;draft.current=latest??newCase(new Date(),trackId);setRecord(draft.current);setError('');setConflicted(false);if(latest?.stage==='complete'){try{setArchive(archiveCompletedCase(latest,trackId));}catch{/* the loaded case remains saved even if its archive copy fails */}} }
   async function loadEvidence() {
     const caseId=draft.current.id;
     const version=++requestVersion.current;
     setLoading(true);setError('');
     try {
-      const asset=await fetchMarketAssetBySymbol(CASE_SYMBOL);
+      const symbol=getTrack(trackId).evidenceSymbol;if(!symbol){setError(t('career_no_data'));return;}
+      const asset=await fetchMarketAssetBySymbol(symbol);
       if (draft.current.id!==caseId || draft.current.stage!=='research' || version!==requestVersion.current) return;
       if (!asset || asset.isMock!==false || !asset.dataSource || !['alpha_vantage','yahoo_finance'].includes(asset.dataSource) ||
         !asset.timestamp || Number.isNaN(Date.parse(asset.timestamp)) || !asset.currency || !/^[A-Z]{3}$/.test(asset.currency) ||
@@ -43,7 +47,7 @@ export default function CareerLabPage() {
       // The quote may arrive after the learner edits the thesis or opens another case.
       const current=draft.current;
       if (current.id!==caseId || current.stage!=='research' || version!==requestVersion.current) return;
-      const evidence:EvidenceSnapshot={symbol:CASE_SYMBOL,price:asset.price,currency:asset.currency,
+      const evidence:EvidenceSnapshot={symbol,price:asset.price,currency:asset.currency,
         source:asset.dataSource as EvidenceSnapshot['source'],timestamp:asset.timestamp,
         freshness:asset.freshness as EvidenceSnapshot['freshness'],capturedAt:new Date().toISOString()};
       const history=asset.history.filter(point=>point.date<=asset.timestamp!.slice(0,10) && Number.isFinite(point.close) && point.close>0);
@@ -60,6 +64,7 @@ export default function CareerLabPage() {
     <GameFamilies/>
     <div className="grid gap-5 lg:grid-cols-[17rem_minmax(0,1fr)]">
       <aside className="space-y-4" aria-label={t('career_task_board')}>
+        <div className="rounded-2xl border border-border bg-card p-4"><h2 className="font-bold">{t('career_tracks')}</h2><ol className="mt-3 space-y-2">{CAREER_TRACKS.map(track=><li key={track.id}>{track.available?<button type="button" aria-pressed={trackId===track.id} className={`w-full rounded-lg border p-3 text-start text-sm ${trackId===track.id?'border-primary bg-primary/10 font-bold':'border-border'}`} onClick={()=>selectTrack(track.id)}>{t(`${track.contentKey}_title`)}</button>:<p className="rounded-lg border border-dashed border-border p-3 text-sm text-muted-foreground">{t(`${track.contentKey}_title`)} · {t('career_track_locked')}</p>}</li>)}</ol></div>
         <div className="rounded-2xl border border-border bg-card p-4"><div className="flex items-center justify-between gap-2"><h2 className="font-bold">{t('career_task_board')}</h2><button type="button" className="rounded-lg border border-border px-3 py-1 text-xs lg:hidden" aria-expanded={showQueue} onClick={()=>setShowQueue(!showQueue)}>{showQueue?t('career_hide_queue'):t('career_show_queue')}</button></div><p className="mt-1 text-xs text-muted-foreground">{t('career_task_board_note')}</p>
           <ol className={`mt-4 space-y-2 ${showQueue?'':'hidden lg:block'}`}>{(['lesson','practice','research','defense','review','improve','complete'] as const).map((s,i)=><li key={s} aria-current={record.stage===s?'step':undefined} className={`rounded-lg border p-3 text-sm ${record.stage===s?'border-primary bg-primary/10 font-bold':'border-border'}`}><span className="block">{i+1}. {t(`career_stage_${s}`)}</span><span className="text-xs text-muted-foreground">{taskStatus(s)}</span></li>)}</ol><p className="mt-3 text-sm font-semibold text-primary lg:hidden">{t(`career_stage_${record.stage}`)} · {t('career_task_active')}</p>
         </div>
@@ -96,10 +101,10 @@ export default function CareerLabPage() {
         <h3 className="font-semibold">{t('career_archive_title')}</h3>
         <p className="text-xs text-muted-foreground">{t('career_archive_note')}</p>
         {archive.length===0?<p className="text-sm">{t('career_archive_empty')}</p>:<ol className="space-y-2">{[...archive].reverse().map(item=><li key={item.id} className="rounded-lg border border-border p-3 text-sm"><p dir="ltr">{t('career_completedAt')}: {item.completedAt}</p><p dir="ltr">{t('career_assist')}: {item.assistance} · {t('career_verification')}: {item.id}</p></li>)}</ol>}
-        <button className="rounded-lg border p-3" onClick={()=>persist(newCase())}>{t('career_new')}</button></>}
+        <button className="rounded-lg border p-3" onClick={()=>persist(newCase(new Date(),trackId))}>{t('career_new')}</button></>}
       {error&&<p role="alert" className="text-red-600">{error}</p>}
       {conflicted&&<button type="button" className="rounded-lg border border-primary px-4 py-2" onClick={loadLatest}>{t('career_load_latest')}</button>}
-      {record.stage!=='complete'&&<div className="flex flex-wrap gap-3"><button type="button" className="rounded-lg border border-primary p-3" onClick={()=>persist(record)}>{t('career_save')}</button><button type="button" disabled={!canAdvance(record)} className="rounded-lg bg-primary px-5 py-3 text-white disabled:opacity-50" onClick={()=>{const next=advance(record);if(persist(next)&&next.stage==='complete'){try{setArchive(archiveCompletedCase(next));}catch{/* the completed case remains saved even if its archive copy fails */}}}}>{t('career_next')}</button>{!canAdvance(record)&&<span className="text-sm text-muted-foreground">{t('career_required')}</span>}</div>}
+      {record.stage!=='complete'&&<div className="flex flex-wrap gap-3"><button type="button" className="rounded-lg border border-primary p-3" onClick={()=>persist(record)}>{t('career_save')}</button><button type="button" disabled={!canAdvance(record)} className="rounded-lg bg-primary px-5 py-3 text-white disabled:opacity-50" onClick={()=>{const next=advance(record);if(persist(next)&&next.stage==='complete'){try{setArchive(archiveCompletedCase(next,trackId));}catch{/* the completed case remains saved even if its archive copy fails */}}}}>{t('career_next')}</button>{!canAdvance(record)&&<span className="text-sm text-muted-foreground">{t('career_required')}</span>}</div>}
       </div>
     </div><DisclaimerBanner /></section></Layout>;
 }

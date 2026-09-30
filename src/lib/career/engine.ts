@@ -1,4 +1,5 @@
 import { isAllocationScenario, simulatedAllocation, type AllocationScenario } from './allocation';
+import { getTrack, isTrackId } from './tracks';
 import { checkProvenanceChoice, type ProvenanceChoice } from './lessonCheck';
 /** Career Lab's first local-only case. Client records are educational drafts, not verified credentials. */
 export type AssistanceLevel = 0 | 1 | 2 | 3 | 4;
@@ -14,6 +15,8 @@ export interface EvidenceSnapshot {
 }
 export interface ResearchCase {
   id: string;
+  /** Track from the Career Lab registry. Undefined means the original Investment Analyst case, so earlier local saves stay readable. */
+  track?: string;
   stage: CaseStage;
   startedAt: string;
   updatedAt: string;
@@ -33,8 +36,8 @@ export interface ResearchCase {
 export const CASE_SYMBOL = 'AAPL';
 export const CASE_KEY = 'invested_career_analyst_v1';
 export const STAGES: CaseStage[] = ['lesson','practice','research','defense','review','improve','complete'];
-export function newCase(now = new Date()): ResearchCase {
-  return { id: crypto.randomUUID(), stage:'lesson', startedAt:now.toISOString(), updatedAt:now.toISOString(), assistance:0, lessonAnswer:'', provenanceChoice:'noChoice', practiceAnswer:'', allocationDecision:null, evidence:null, thesis:'', bearCase:'', risk:'', defense:'', improvement:'', completedAt:null };
+export function newCase(now = new Date(), trackId?: string): ResearchCase {
+  return { id: crypto.randomUUID(), track:getTrack(trackId).id, stage:'lesson', startedAt:now.toISOString(), updatedAt:now.toISOString(), assistance:0, lessonAnswer:'', provenanceChoice:'noChoice', practiceAnswer:'', allocationDecision:null, evidence:null, thesis:'', bearCase:'', risk:'', defense:'', improvement:'', completedAt:null };
 }
 const nonBlank = (value: string) => value.trim().length >= 20;
 export function validAllocationDecision(input: unknown): input is {equity:number;cash:number;scenario?:AllocationScenario} {
@@ -93,51 +96,51 @@ export function skillEvidence(record: ResearchCase): SkillEvidence[] {
 export function isResearchCase(input: unknown): input is ResearchCase {
   if (!input || typeof input !== 'object') return false;
   const r=input as ResearchCase;
-  return typeof r.id==='string' && r.id.length>0 && STAGES.includes(r.stage) &&
+  return typeof r.id==='string' && r.id.length>0 && STAGES.includes(r.stage) && (r.track===undefined || isTrackId(r.track)) &&
     Number.isFinite(Date.parse(r.startedAt)) && Number.isFinite(Date.parse(r.updatedAt)) &&
     [0,1,2,3,4].includes(r.assistance) &&
     ['lessonAnswer','practiceAnswer','thesis','bearCase','risk','defense','improvement'].every(k=>typeof r[k as keyof ResearchCase]==='string') &&
     (r.completedAt===null || Number.isFinite(Date.parse(r.completedAt))) &&
     (r.stage==='complete' || r.completedAt===null) &&
-    (r.stage!=='complete' || (r.completedAt!==null && ['lessonAnswer','practiceAnswer','thesis','bearCase','risk','defense','improvement'].every(k=>nonBlank(r[k as keyof ResearchCase] as string)) && isEvidence(r.evidence))) &&
-    (r.evidence===null || isEvidence(r.evidence)) &&
+    (r.stage!=='complete' || (r.completedAt!==null && ['lessonAnswer','practiceAnswer','thesis','bearCase','risk','defense','improvement'].every(k=>nonBlank(r[k as keyof ResearchCase] as string)) && isEvidence(r.evidence, r.track))) &&
+    (r.evidence===null || isEvidence(r.evidence, r.track)) &&
     (r.provenanceChoice===undefined || ['withSource','withoutSource','noChoice'].includes(r.provenanceChoice)) &&
     (r.allocationDecision===undefined || r.allocationDecision===null || validAllocationDecision(r.allocationDecision)) &&
     (r.stage==='lesson' || nonBlank(r.lessonAnswer)) &&
     (r.stage==='lesson' || r.stage==='practice' || nonBlank(r.practiceAnswer)) &&
-    (['lesson','practice','research'].includes(r.stage) || (isEvidence(r.evidence) && nonBlank(r.thesis) && nonBlank(r.bearCase) && nonBlank(r.risk))) &&
+    (['lesson','practice','research'].includes(r.stage) || (isEvidence(r.evidence, r.track) && nonBlank(r.thesis) && nonBlank(r.bearCase) && nonBlank(r.risk))) &&
     (['lesson','practice','research','defense'].includes(r.stage) || nonBlank(r.defense)) &&
     (r.stage!=='complete' || nonBlank(r.improvement));
 }
-export function isEvidence(value: unknown): value is EvidenceSnapshot {
+export function isEvidence(value: unknown, trackId?: string): value is EvidenceSnapshot {
   if (!value || typeof value!=='object') return false;
   const e=value as EvidenceSnapshot;
-  return e.symbol===CASE_SYMBOL && Number.isFinite(e.price) && e.price>0 &&
+  return e.symbol===getTrack(trackId).evidenceSymbol && Number.isFinite(e.price) && e.price>0 &&
     typeof e.currency==='string' && /^[A-Z]{3}$/.test(e.currency) &&
     (e.source==='alpha_vantage'||e.source==='yahoo_finance') &&
     ['current','recent','stale'].includes(e.freshness) &&
     Number.isFinite(Date.parse(e.timestamp)) && Number.isFinite(Date.parse(e.capturedAt)) &&
     Date.parse(e.timestamp)<=Date.parse(e.capturedAt) + 5*60*1000;
 }
-export function readCase(): ResearchCase | null {
-  try { const raw=localStorage.getItem(CASE_KEY); const value=raw ? JSON.parse(raw) : null; return isResearchCase(value) ? value : null; }
+export function readCase(trackId?: string): ResearchCase | null {
+  try { const raw=localStorage.getItem(getTrack(trackId).caseKey); const value=raw ? JSON.parse(raw) : null; return isResearchCase(value) ? value : null; }
   catch { return null; }
 }
 export class CaseConflictError extends Error {}
 /** Compare the entire previous record, not just timestamp: two tabs may write in the same millisecond. */
-export function saveCase(record: ResearchCase, expected: ResearchCase | null): void {
+export function saveCase(record: ResearchCase, expected: ResearchCase | null, trackId?: string): void {
   if (!isResearchCase(record)) throw new Error('Invalid case record');
-  const actual=readCase();
+  const actual=readCase(trackId ?? record.track);
   if (JSON.stringify(actual)!==JSON.stringify(expected)) throw new CaseConflictError('Case changed in another tab');
-  localStorage.setItem(CASE_KEY, JSON.stringify(record));
+  localStorage.setItem(getTrack(trackId ?? record.track).caseKey, JSON.stringify(record));
 }
 /** Bounded device-local archive of completed cases. Self-reported practice records, never verified credentials or employment. */
 export const CASE_ARCHIVE_KEY = 'invested_career_analyst_archive_v1';
 export const CASE_ARCHIVE_LIMIT = 10;
 const isCompleteCase = (value: unknown): value is ResearchCase => isResearchCase(value) && value.stage === 'complete';
-export function readCaseArchive(): ResearchCase[] {
+export function readCaseArchive(trackId?: string): ResearchCase[] {
   try {
-    const raw=localStorage.getItem(CASE_ARCHIVE_KEY);
+    const raw=localStorage.getItem(getTrack(trackId).archiveKey);
     const value=raw ? JSON.parse(raw) : [];
     if (!Array.isArray(value) || value.length > CASE_ARCHIVE_LIMIT) return [];
     if (!value.every(isCompleteCase)) return [];
@@ -146,9 +149,10 @@ export function readCaseArchive(): ResearchCase[] {
   } catch { return []; }
 }
 /** Idempotent by case id: archiving the same completed case again replaces its copy, never duplicates it. */
-export function archiveCompletedCase(record: ResearchCase): ResearchCase[] {
+export function archiveCompletedCase(record: ResearchCase, trackId?: string): ResearchCase[] {
   if (!isCompleteCase(record)) throw new Error('Only a completed case can be archived');
-  const next=[...readCaseArchive().filter(item => item.id !== record.id), record].slice(-CASE_ARCHIVE_LIMIT);
-  localStorage.setItem(CASE_ARCHIVE_KEY, JSON.stringify(next));
+  const track=trackId ?? record.track;
+  const next=[...readCaseArchive(track).filter(item => item.id !== record.id), record].slice(-CASE_ARCHIVE_LIMIT);
+  localStorage.setItem(getTrack(track).archiveKey, JSON.stringify(next));
   return next;
 }

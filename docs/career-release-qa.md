@@ -95,3 +95,10 @@ At the current checkpoint, all three original game completion journeys passed ag
 - Exercises are version-gated like the operations desk: new runs carry planVersion 2; earlier local saves keep monitoring as a label without effect, and their trust replays are unchanged. The plan note copy is version-aware in both languages.
 - Four new tests cover the +4/-10/0 scoring, legacy no-effect saves, and plan-version validation. Full suite: 840 tests / 88 files; typecheck, production build and lint pass with the existing six warnings.
 - Real local browser journeys in both languages committed the monitor plan and verified the versioned note and saved record; inspected bilingual 1440px/390px captures, no page-level horizontal overflow. External requests blocked.
+
+## Career Lab track registry (engine generalization)
+
+- The Career Lab engine now runs on a track registry (src/lib/career/tracks.ts). Investment Analyst keeps its original storage keys (invested_career_analyst_v1 / _archive_v1), evidence symbol (AAPL) and content untouched; records without a track field remain readable as analyst cases. Banking / Credit Analyst is registered with its own keys, no live evidence symbol, and shows as a locked "in preparation" entry - selecting it is not possible.
+- All engine storage and evidence functions take an explicit track and default to the analyst track, so existing saves, archives and conflict recovery behave byte-identically. A track picker on the Career Lab page lists registered tracks; locked tracks render disabled with a dashed treatment in both languages.
+- Four new registry tests cover analyst key preservation, the locked credit track, legacy no-track readability with per-track storage separation, and rejection of unregistered tracks with per-track archives. Full suite: 844 tests / 89 files; typecheck, production build and lint pass with the existing six warnings.
+- Inspected bilingual 1440px/390px captures of the Career Lab picker with a completed analyst case and archive seeded; no page-level horizontal overflow. External requests blocked during capture.
