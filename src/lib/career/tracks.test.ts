@@ -11,10 +11,11 @@ describe('career track registry',()=>{
     expect(analyst.available).toBe(true);
     expect(DEFAULT_TRACK.id).toBe('investment-analyst');
   });
-  it('registers the credit analyst track locked with its own keys and no live symbol',()=>{
+  it('registers the credit analyst track with its own keys and fixed invented teaching evidence instead of a live symbol',()=>{
     const credit=getTrack('credit-analyst');
-    expect(credit.available).toBe(false);
+    expect(credit.available).toBe(true);
     expect(credit.evidenceSymbol).toBeNull();
+    expect(credit.inventedEvidence).toEqual({symbol:'INVENTED-BORROWER-01',price:8.4,currency:'USD'});
     expect(credit.caseKey).not.toBe(CASE_KEY);
     expect(isTrackId('credit-analyst')).toBe(true);
     expect(isTrackId('unknown-track')).toBe(false);

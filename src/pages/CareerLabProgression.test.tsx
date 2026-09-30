@@ -71,3 +71,24 @@ for(const language of ['he','en'] as const){
   expect(text()).toContain(done.id);
  });
 }
+for(const language of ['he','en'] as const){
+ it(`${language}: the credit track opens with its own heading and loads labeled invented evidence without any market fetch`,async()=>{
+  localStorage.setItem('invested_language_preference',language);
+  const {fetchMarketAssetBySymbol}=await import('@/lib/marketData');
+  const draft={...newCase(new Date('2026-09-30T09:00:00Z'),'credit-analyst'),stage:'research' as const,lessonAnswer:'Verified borrower data is required.',practiceAnswer:'Judge repayment over time.',provenanceChoice:'withSource' as const};
+  localStorage.setItem('invested_career_credit_v1',JSON.stringify(draft));
+  act(()=>root.render(<MemoryRouter><LanguageProvider><CareerLabPage/></LanguageProvider></MemoryRouter>));
+  const buttons=[...container.querySelectorAll('button')];
+  const pick=buttons.find(b=>b.textContent===(language==='he'?'בנקאות · אנליסט אשראי':'Banking · Credit Analyst'));
+  expect(pick).toBeTruthy();
+  act(()=>pick!.dispatchEvent(new MouseEvent('click',{bubbles:true})));
+  expect(text()).toContain(language==='he'?'אנליסט אשראי | מעבדת קריירה':'Credit Analyst | Career Lab');
+  const load=[...container.querySelectorAll('button')].find(b=>b.textContent===(language==='he'?'טעינת תמונת הלווים הבדויה':'Load the invented borrower snapshot'));
+  expect(load).toBeTruthy();
+  act(()=>load!.dispatchEvent(new MouseEvent('click',{bubbles:true})));
+  expect(fetchMarketAssetBySymbol).not.toHaveBeenCalled();
+  expect(text()).toContain('INVENTED-BORROWER-01');
+  expect(text()).toContain(language==='he'?'נתון הוראה בדוי וקבוע':'Invented fixed teaching input');
+  expect(JSON.parse(localStorage.getItem('invested_career_credit_v1')??'{}').evidence?.source).toBe('invented_teaching_input');
+ });
+}

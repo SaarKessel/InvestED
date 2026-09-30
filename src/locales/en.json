@@ -1881,5 +1881,16 @@
   "career_tracks": "Career tracks",
   "career_track_locked": "In preparation",
   "career_track_analyst_title": "Investment Analyst",
-  "career_track_credit_title": "Banking · Credit Analyst"
+  "career_track_credit_title": "Banking · Credit Analyst",
+  "career_track_credit_heading": "Credit Analyst | Career Lab",
+  "career_track_credit_lesson": "Why must a lending decision cite verifiable borrower data rather than a general impression?",
+  "career_track_credit_practice": "How would you judge a borrower's repayment ability without relying on a single good month?",
+  "career_track_credit_case_question": "Should a bank lend to INVENTED-BORROWER-01 based on this invented snapshot alone? Explain what else must be checked.",
+  "career_track_credit_thesis": "Lending thesis and supporting reasoning",
+  "career_track_credit_bear": "Reasons the borrower might fail to repay",
+  "career_track_credit_risk": "Main credit risks and uncertainty",
+  "career_track_credit_defense": "What evidence could change your lending decision?",
+  "career_evidence_invented_note": "Invented fixed teaching input - not market data and not a real borrower.",
+  "career_track_credit_load": "Load the invented borrower snapshot",
+  "career_track_credit_stage_research": "Research case: INVENTED-BORROWER-01 (invented)"
 }

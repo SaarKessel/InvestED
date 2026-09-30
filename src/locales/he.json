@@ -1881,5 +1881,16 @@
   "career_tracks": "מסלולי קריירה",
   "career_track_locked": "בהכנה",
   "career_track_analyst_title": "אנליסט השקעות",
-  "career_track_credit_title": "בנקאות · אנליסט אשראי"
+  "career_track_credit_title": "בנקאות · אנליסט אשראי",
+  "career_track_credit_heading": "אנליסט אשראי | מעבדת קריירה",
+  "career_track_credit_lesson": "למה החלטת אשראי חייבת להסתמך על נתוני לווים הניתנים לאימות ולא על רושם כללי?",
+  "career_track_credit_practice": "איך תעריכו את יכולת ההחזר של לווים בלי להסתמך על חודש טוב אחד?",
+  "career_track_credit_case_question": "האם בנק צריך להלוות ל-INVENTED-BORROWER-01 על סמך התמונה הבדויה הזו בלבד? הסבירו מה עוד חייבים לבדוק.",
+  "career_track_credit_thesis": "תזת האשראי והנימוקים התומכים",
+  "career_track_credit_bear": "סיבות שהלווים עלולים שלא להחזיר",
+  "career_track_credit_risk": "סיכוני האשראי המרכזיים ואי-הוודאות",
+  "career_track_credit_defense": "איזו עדות יכולה לשנות את החלטת האשראי שלך?",
+  "career_evidence_invented_note": "נתון הוראה בדוי וקבוע - לא נתוני שוק ולא לווים אמיתיים.",
+  "career_track_credit_load": "טעינת תמונת הלווים הבדויה",
+  "career_track_credit_stage_research": "מקרה מחקר: INVENTED-BORROWER-01 (בדוי)"
 }

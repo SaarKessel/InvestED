@@ -11,10 +11,14 @@ export interface CareerTrack {
   contentKey: string;
   /** Locked tracks render in the picker as in-preparation and cannot be opened. */
   available: boolean;
+  /** When false the case flow skips the allocation practice desk (a lending track has no portfolio allocation). */
+  allocationDesk: boolean;
+  /** Fixed invented teaching evidence for tracks without a live symbol. Always labeled invented in the UI; never market data. */
+  inventedEvidence: {symbol: string; price: number; currency: string} | null;
 }
 export const CAREER_TRACKS: readonly CareerTrack[] = [
-  {id:'investment-analyst',caseKey:'invested_career_analyst_v1',archiveKey:'invested_career_analyst_archive_v1',evidenceSymbol:'AAPL',contentKey:'career_track_analyst',available:true},
-  {id:'credit-analyst',caseKey:'invested_career_credit_v1',archiveKey:'invested_career_credit_archive_v1',evidenceSymbol:null,contentKey:'career_track_credit',available:false},
+  {id:'investment-analyst',caseKey:'invested_career_analyst_v1',archiveKey:'invested_career_analyst_archive_v1',evidenceSymbol:'AAPL',contentKey:'career_track_analyst',available:true,allocationDesk:true,inventedEvidence:null},
+  {id:'credit-analyst',caseKey:'invested_career_credit_v1',archiveKey:'invested_career_credit_archive_v1',evidenceSymbol:null,contentKey:'career_track_credit',available:true,allocationDesk:false,inventedEvidence:{symbol:'INVENTED-BORROWER-01',price:8.4,currency:'USD'}},
 ] as const;
 export const DEFAULT_TRACK = CAREER_TRACKS[0];
 export const getTrack = (id: string | undefined): CareerTrack => CAREER_TRACKS.find(track => track.id === id) ?? DEFAULT_TRACK;

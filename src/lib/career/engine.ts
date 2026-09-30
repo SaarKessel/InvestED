@@ -8,7 +8,7 @@ export interface EvidenceSnapshot {
   symbol: string;
   price: number;
   currency: string;
-  source: 'alpha_vantage' | 'yahoo_finance';
+  source: 'alpha_vantage' | 'yahoo_finance' | 'invented_teaching_input';
   timestamp: string;
   freshness: 'current' | 'recent' | 'stale';
   capturedAt: string;
@@ -50,8 +50,8 @@ export function validAllocationDecision(input: unknown): input is {equity:number
 export function canAdvance(record: ResearchCase): boolean {
   switch(record.stage) {
     case 'lesson': return nonBlank(record.lessonAnswer) && checkProvenanceChoice(record.provenanceChoice??'noChoice')==='correct';
-    case 'practice': return nonBlank(record.practiceAnswer) && validAllocationDecision(record.allocationDecision);
-    case 'research': return isEvidence(record.evidence) && nonBlank(record.thesis) && nonBlank(record.bearCase) && nonBlank(record.risk);
+    case 'practice': return nonBlank(record.practiceAnswer) && (!getTrack(record.track).allocationDesk || validAllocationDecision(record.allocationDecision));
+    case 'research': return isEvidence(record.evidence, record.track) && nonBlank(record.thesis) && nonBlank(record.bearCase) && nonBlank(record.risk);
     case 'defense': return nonBlank(record.defense);
     case 'review': return true;
     case 'improve': return nonBlank(record.improvement);
@@ -115,12 +115,24 @@ export function isResearchCase(input: unknown): input is ResearchCase {
 export function isEvidence(value: unknown, trackId?: string): value is EvidenceSnapshot {
   if (!value || typeof value!=='object') return false;
   const e=value as EvidenceSnapshot;
-  return e.symbol===getTrack(trackId).evidenceSymbol && Number.isFinite(e.price) && e.price>0 &&
+  const track=getTrack(trackId);
+  const shared = Number.isFinite(e.price) && e.price>0 &&
     typeof e.currency==='string' && /^[A-Z]{3}$/.test(e.currency) &&
-    (e.source==='alpha_vantage'||e.source==='yahoo_finance') &&
     ['current','recent','stale'].includes(e.freshness) &&
     Number.isFinite(Date.parse(e.timestamp)) && Number.isFinite(Date.parse(e.capturedAt)) &&
     Date.parse(e.timestamp)<=Date.parse(e.capturedAt) + 5*60*1000;
+  if (track.inventedEvidence) {
+    return shared && e.source==='invented_teaching_input' &&
+      e.symbol===track.inventedEvidence.symbol && e.price===track.inventedEvidence.price && e.currency===track.inventedEvidence.currency;
+  }
+  return shared && e.symbol===track.evidenceSymbol && (e.source==='alpha_vantage'||e.source==='yahoo_finance');
+}
+/** Fixed invented teaching snapshot for tracks without a live symbol. Not market data; the UI labels it as invented. */
+export function inventedEvidenceSnapshot(trackId?: string, now = new Date()): EvidenceSnapshot | null {
+  const invented=getTrack(trackId).inventedEvidence;
+  if (!invented) return null;
+  return { symbol:invented.symbol, price:invented.price, currency:invented.currency,
+    source:'invented_teaching_input', timestamp:now.toISOString(), freshness:'current', capturedAt:now.toISOString() };
 }
 export function readCase(trackId?: string): ResearchCase | null {
   try { const raw=localStorage.getItem(getTrack(trackId).caseKey); const value=raw ? JSON.parse(raw) : null; return isResearchCase(value) ? value : null; }

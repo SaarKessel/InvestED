@@ -8,12 +8,15 @@ import { FICTIONAL_MANDATES, simulatedAllocation, type AllocationScenario } from
 import { fictionalStress } from '@/lib/career/stress';
 import { checkProvenanceChoice } from '@/lib/career/lessonCheck';
 import type { MarketAsset } from '@/types';
-import { advance, archiveCompletedCase, canAdvance, CaseConflictError, newCase, readCase, readCaseArchive, review, saveCase, skillEvidence, type AssistanceLevel, type EvidenceSnapshot, type ResearchCase } from '@/lib/career/engine';
+import { advance, archiveCompletedCase, canAdvance, CaseConflictError, inventedEvidenceSnapshot, newCase, readCase, readCaseArchive, review, saveCase, skillEvidence, type AssistanceLevel, type EvidenceSnapshot, type ResearchCase } from '@/lib/career/engine';
 import { CAREER_TRACKS, getTrack } from '@/lib/career/tracks';
 
 export default function CareerLabPage() {
   const {t,language}=useLanguage();
   const [trackId,setTrackId]=useState<string>(()=>CAREER_TRACKS[0].id);
+  const track=getTrack(trackId);
+  /** Track-specific copy with the shared analyst wording as fallback. */
+  const tk=(suffix:string)=>t(`${track.contentKey}_${suffix}`,t(`career_${suffix}`));
   const saved=useRef<ResearchCase | null>(readCase(trackId));
   const [record,setRecord]=useState<ResearchCase>(()=>saved.current??newCase(new Date(),trackId));
   const draft=useRef<ResearchCase>(record);
@@ -36,7 +39,13 @@ export default function CareerLabPage() {
     const version=++requestVersion.current;
     setLoading(true);setError('');
     try {
-      const symbol=getTrack(trackId).evidenceSymbol;if(!symbol){setError(t('career_no_data'));return;}
+      const symbol=track.evidenceSymbol;
+      if(!symbol){
+        const snapshot=inventedEvidenceSnapshot(trackId);
+        if(!snapshot || draft.current.id!==caseId || draft.current.stage!=='research'){setError(t('career_no_data'));return;}
+        persist({...draft.current,evidence:snapshot,updatedAt:new Date().toISOString()});
+        return;
+      }
       const asset=await fetchMarketAssetBySymbol(symbol);
       if (draft.current.id!==caseId || draft.current.stage!=='research' || version!==requestVersion.current) return;
       if (!asset || asset.isMock!==false || !asset.dataSource || !['alpha_vantage','yahoo_finance'].includes(asset.dataSource) ||
@@ -59,14 +68,14 @@ export default function CareerLabPage() {
     ['lesson','practice','research','defense','review','improve','complete'].indexOf(record.stage)>['lesson','practice','research','defense','review','improve','complete'].indexOf(stage)?t('career_task_done'):t('career_task_locked');
   const field=(key:'lessonAnswer'|'practiceAnswer'|'thesis'|'bearCase'|'risk'|'defense'|'improvement',label:string)=><label className="block space-y-2 font-medium"><span>{label}</span><textarea className="w-full min-h-28 rounded-xl border border-border bg-background p-3 text-foreground" value={record[key]} onChange={e=>update({[key]:e.target.value})}/></label>;
   return <Layout><section className="container max-w-7xl py-10 space-y-6" dir={language==='he'?'rtl':'ltr'}>
-    <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-widest text-primary">{t('career_workspace')}</p><h1 className="mt-2 text-3xl font-bold">{t('career_title')}</h1><p className="mt-3 max-w-3xl">{t('career_intro')}</p></div><div className="rounded-xl border border-border bg-card p-3 text-xs"><p>{t('career_role')}: {t('career_role_analyst')}</p><p>{t('career_mode')}: {t('career_local_mode')}</p></div></div>
+    <div className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-xs font-bold uppercase tracking-widest text-primary">{t('career_workspace')}</p><h1 className="mt-2 text-3xl font-bold">{tk('heading')}</h1><p className="mt-3 max-w-3xl">{t('career_intro')}</p></div><div className="rounded-xl border border-border bg-card p-3 text-xs"><p>{t('career_role')}: {t(`${track.contentKey}_title`)}</p><p>{t('career_mode')}: {t('career_local_mode')}</p></div></div>
     <p className="rounded-xl border border-warning/40 bg-warning/10 p-4 text-sm">{t('career_local')}</p>
     <GameFamilies/>
     <div className="grid gap-5 lg:grid-cols-[17rem_minmax(0,1fr)]">
       <aside className="space-y-4" aria-label={t('career_task_board')}>
         <div className="rounded-2xl border border-border bg-card p-4"><h2 className="font-bold">{t('career_tracks')}</h2><ol className="mt-3 space-y-2">{CAREER_TRACKS.map(track=><li key={track.id}>{track.available?<button type="button" aria-pressed={trackId===track.id} className={`w-full rounded-lg border p-3 text-start text-sm ${trackId===track.id?'border-primary bg-primary/10 font-bold':'border-border'}`} onClick={()=>selectTrack(track.id)}>{t(`${track.contentKey}_title`)}</button>:<p className="rounded-lg border border-dashed border-border p-3 text-sm text-muted-foreground">{t(`${track.contentKey}_title`)} · {t('career_track_locked')}</p>}</li>)}</ol></div>
         <div className="rounded-2xl border border-border bg-card p-4"><div className="flex items-center justify-between gap-2"><h2 className="font-bold">{t('career_task_board')}</h2><button type="button" className="rounded-lg border border-border px-3 py-1 text-xs lg:hidden" aria-expanded={showQueue} onClick={()=>setShowQueue(!showQueue)}>{showQueue?t('career_hide_queue'):t('career_show_queue')}</button></div><p className="mt-1 text-xs text-muted-foreground">{t('career_task_board_note')}</p>
-          <ol className={`mt-4 space-y-2 ${showQueue?'':'hidden lg:block'}`}>{(['lesson','practice','research','defense','review','improve','complete'] as const).map((s,i)=><li key={s} aria-current={record.stage===s?'step':undefined} className={`rounded-lg border p-3 text-sm ${record.stage===s?'border-primary bg-primary/10 font-bold':'border-border'}`}><span className="block">{i+1}. {t(`career_stage_${s}`)}</span><span className="text-xs text-muted-foreground">{taskStatus(s)}</span></li>)}</ol><p className="mt-3 text-sm font-semibold text-primary lg:hidden">{t(`career_stage_${record.stage}`)} · {t('career_task_active')}</p>
+          <ol className={`mt-4 space-y-2 ${showQueue?'':'hidden lg:block'}`}>{(['lesson','practice','research','defense','review','improve','complete'] as const).map((s,i)=><li key={s} aria-current={record.stage===s?'step':undefined} className={`rounded-lg border p-3 text-sm ${record.stage===s?'border-primary bg-primary/10 font-bold':'border-border'}`}><span className="block">{i+1}. {tk(`stage_${s}`)}</span><span className="text-xs text-muted-foreground">{taskStatus(s)}</span></li>)}</ol><p className="mt-3 text-sm font-semibold text-primary lg:hidden">{tk(`stage_${record.stage}`)} · {t('career_task_active')}</p>
         </div>
         <div className="rounded-2xl border border-border bg-card p-4"><h2 className="font-bold">{t('career_work_tools')}</h2><p className="mt-1 text-xs text-muted-foreground">{t('career_work_tools_note')}</p>
           <div className="mt-3 flex flex-col gap-2"><a className="rounded-lg border border-border p-2 text-sm hover:border-primary" href="/research" target="_blank" rel="noopener noreferrer">{t('career_tool_research')}</a><a className="rounded-lg border border-border p-2 text-sm hover:border-primary" href="/calculator" target="_blank" rel="noopener noreferrer">{t('career_tool_calculator')}</a><a className="rounded-lg border border-border p-2 text-sm hover:border-primary" href="/strategy-lab" target="_blank" rel="noopener noreferrer">{t('career_tool_strategy')}</a><a className="rounded-lg border border-border p-2 text-sm hover:border-primary" href="/learn" target="_blank" rel="noopener noreferrer">{t('career_tool_university')}</a></div>
@@ -74,30 +83,30 @@ export default function CareerLabPage() {
       </aside>
       <div className="min-w-0 rounded-2xl border border-border bg-card p-5 space-y-5">
 
-      <h2 className="text-xl font-semibold">{t(`career_stage_${record.stage}`)}</h2>
+      <h2 className="text-xl font-semibold">{tk(`stage_${record.stage}`)}</h2>
       <label className="block space-y-2">{t('career_assist')} <select disabled={record.stage==='complete'} className="block rounded-lg border border-border bg-background p-2" value={record.assistance} onChange={e=>update({assistance:Number(e.target.value) as AssistanceLevel})}>{[0,1,2,3,4].map(i=><option value={i} key={i}>{t(`career_level${i}`)}</option>)}</select></label>
       <p className="text-sm text-muted-foreground">{t('career_assist_note')}</p>
-      {record.stage==='lesson'&&<><div className="rounded-xl border border-border p-4 space-y-3"><h3 className="font-semibold">{t('career_source_exercise')}</h3><p>{t('career_source_prompt')}</p><div className="grid gap-2 sm:grid-cols-2">{(['withoutSource','withSource'] as const).map(choice=><button type="button" key={choice} aria-pressed={record.provenanceChoice===choice} className={`rounded-lg border p-3 text-start text-sm ${record.provenanceChoice===choice?'border-primary bg-primary/10':'border-border'}`} onClick={()=>update({provenanceChoice:choice})}>{t(`career_source_${choice}`)}</button>)}</div><p role="status" className="text-sm">{t(`career_source_${checkProvenanceChoice(record.provenanceChoice??'noChoice')}`)}</p></div><SimulationDesk t={t} allocation={record.allocationDecision} onAllocation={decision=>update({allocationDecision:decision})} />{field('lessonAnswer',t('career_lesson'))}</>}
-      {record.stage==='practice'&&<><SimulationDesk t={t} allocation={record.allocationDecision} onAllocation={decision=>update({allocationDecision:decision})} />{field('practiceAnswer',t('career_practice'))}</>}
-      {record.stage==='research'&&<><p>{t('career_case_question')}</p><button type="button" disabled={loading} onClick={loadEvidence} className="rounded-lg border border-primary px-4 py-2 disabled:opacity-50">{loading?t('career_loading'):t('career_load')}</button>
-        {record.evidence&&<div className="rounded-lg border border-border p-3 text-sm" dir="ltr"><b>{t('career_evidence')}</b>: {record.evidence.symbol} {record.evidence.price} {record.evidence.currency} | {record.evidence.source} | {record.evidence.timestamp} | {record.evidence.freshness}<p>{t('career_source_note')}</p></div>}
+      {record.stage==='lesson'&&<><div className="rounded-xl border border-border p-4 space-y-3"><h3 className="font-semibold">{t('career_source_exercise')}</h3><p>{t('career_source_prompt')}</p><div className="grid gap-2 sm:grid-cols-2">{(['withoutSource','withSource'] as const).map(choice=><button type="button" key={choice} aria-pressed={record.provenanceChoice===choice} className={`rounded-lg border p-3 text-start text-sm ${record.provenanceChoice===choice?'border-primary bg-primary/10':'border-border'}`} onClick={()=>update({provenanceChoice:choice})}>{t(`career_source_${choice}`)}</button>)}</div><p role="status" className="text-sm">{t(`career_source_${checkProvenanceChoice(record.provenanceChoice??'noChoice')}`)}</p></div>{track.allocationDesk&&<SimulationDesk t={t} allocation={record.allocationDecision} onAllocation={decision=>update({allocationDecision:decision})} />}{field('lessonAnswer',tk('lesson'))}</>}
+      {record.stage==='practice'&&<>{track.allocationDesk&&<SimulationDesk t={t} allocation={record.allocationDecision} onAllocation={decision=>update({allocationDecision:decision})} />}{field('practiceAnswer',tk('practice'))}</>}
+      {record.stage==='research'&&<><p>{tk('case_question')}</p><button type="button" disabled={loading} onClick={loadEvidence} className="rounded-lg border border-primary px-4 py-2 disabled:opacity-50">{loading?t('career_loading'):tk('load')}</button>
+        {record.evidence&&<div className="rounded-lg border border-border p-3 text-sm" dir="ltr"><b>{t('career_evidence')}</b>: {record.evidence.symbol} {record.evidence.price} {record.evidence.currency} | {record.evidence.source} | {record.evidence.timestamp} | {record.evidence.freshness}<p>{record.evidence.source==='invented_teaching_input'?t('career_evidence_invented_note'):t('career_source_note')}</p></div>}
         {marketHistory.length>1&&record.evidence&&<ResearchHistoryChart history={marketHistory} currency={record.evidence.currency}/>}
         {record.evidence&&marketHistory.length<2&&<p className="text-sm text-muted-foreground">{t('career_chart_unavailable')}</p>}
-        {field('thesis',t('career_thesis'))}{field('bearCase',t('career_bear'))}{field('risk',t('career_risk'))}</>}
-      {record.stage==='defense'&&field('defense',t('career_defense'))}
-      {record.stage==='review'&&<><SimulationDesk t={t} allocation={record.allocationDecision} onAllocation={decision=>update({allocationDecision:decision})} /><ul className="list-disc ps-6">{review(record).map(k=><li key={k}>{t(`career_review_${k}`)}</li>)}</ul></>}
-      {record.stage==='improve'&&<><SimulationDesk t={t} allocation={record.allocationDecision} onAllocation={decision=>update({allocationDecision:decision})} /><ul className="list-disc ps-6">{review(record).map(k=><li key={k}>{t(`career_review_${k}`)}</li>)}</ul>{field('improvement',t('career_improve'))}</>}
+        {field('thesis',tk('thesis'))}{field('bearCase',tk('bear'))}{field('risk',tk('risk'))}</>}
+      {record.stage==='defense'&&field('defense',tk('defense'))}
+      {record.stage==='review'&&<>{track.allocationDesk&&<SimulationDesk t={t} allocation={record.allocationDecision} onAllocation={decision=>update({allocationDecision:decision})} />}<ul className="list-disc ps-6">{review(record).map(k=><li key={k}>{t(`career_review_${k}`)}</li>)}</ul></>}
+      {record.stage==='improve'&&<>{track.allocationDesk&&<SimulationDesk t={t} allocation={record.allocationDecision} onAllocation={decision=>update({allocationDecision:decision})} />}<ul className="list-disc ps-6">{review(record).map(k=><li key={k}>{t(`career_review_${k}`)}</li>)}</ul>{field('improvement',tk('improve'))}</>}
       {record.stage==='complete'&&<><p>{t('career_complete')}</p><p className="break-all text-sm" dir="ltr">{t('career_verification')}: {record.id}</p><p className="text-sm">{t('career_assist')}: {record.assistance}</p>
         <dl className="grid gap-3 sm:grid-cols-2">{(['startedAt','completedAt'] as const).map(k=><div key={k} className="rounded-lg border border-border p-3"><dt className="text-xs text-muted-foreground">{t(`career_${k}`)}</dt><dd dir="ltr">{record[k]}</dd></div>)}</dl>
         <h3 className="font-semibold">{t('career_evidence_summary')}</h3>
         {record.evidence&&<p className="break-all text-sm" dir="ltr">{record.evidence.symbol} {record.evidence.price} {record.evidence.currency} | {record.evidence.source} | {record.evidence.timestamp} | {record.evidence.freshness}</p>}
         <h3 className="font-semibold">{t('career_skill_practice')}</h3><ul className="list-disc ps-6">{skillEvidence(record).map(e=><li key={e.skill}>{t(`career_skill_${e.skill}`)}: {t('career_practiced')}</li>)}</ul>
-        <h3 className="font-semibold">{t('career_sim_decision')}</h3>{record.allocationDecision&&<p>{t(`career_${record.allocationDecision.scenario??'base'}`)}: <span dir="ltr">{t('career_asset_equity')}: {record.allocationDecision.equity}%, {t('career_asset_cash')}: {record.allocationDecision.cash}%, {t('career_asset_bonds')}: {100-record.allocationDecision.equity-record.allocationDecision.cash}%</span></p>}{review(record).filter(k=>k==='equityLimit'||k==='liquidityFloor').map(k=><p key={k}>{t(`career_review_${k}`)}</p>)}
+        {record.allocationDecision&&<><h3 className="font-semibold">{t('career_sim_decision')}</h3><p>{t(`career_${record.allocationDecision.scenario??'base'}`)}: <span dir="ltr">{t('career_asset_equity')}: {record.allocationDecision.equity}%, {t('career_asset_cash')}: {record.allocationDecision.cash}%, {t('career_asset_bonds')}: {100-record.allocationDecision.equity-record.allocationDecision.cash}%</span></p>{review(record).filter(k=>k==='equityLimit'||k==='liquidityFloor').map(k=><p key={k}>{t(`career_review_${k}`)}</p>)}</>}
         <h3 className="font-semibold">{t('career_decision_record')}</h3>
-        <p className="whitespace-pre-wrap">{record.thesis}</p><h4 className="font-semibold">{t('career_bear')}</h4><p className="whitespace-pre-wrap">{record.bearCase}</p>
-        <h4 className="font-semibold">{t('career_risk')}</h4><p className="whitespace-pre-wrap">{record.risk}</p>
-        <h4 className="font-semibold">{t('career_defense')}</h4><p className="whitespace-pre-wrap">{record.defense}</p>
-        <h4 className="font-semibold">{t('career_improve')}</h4><p className="whitespace-pre-wrap">{record.improvement}</p>
+        <p className="whitespace-pre-wrap">{record.thesis}</p><h4 className="font-semibold">{tk('bear')}</h4><p className="whitespace-pre-wrap">{record.bearCase}</p>
+        <h4 className="font-semibold">{tk('risk')}</h4><p className="whitespace-pre-wrap">{record.risk}</p>
+        <h4 className="font-semibold">{tk('defense')}</h4><p className="whitespace-pre-wrap">{record.defense}</p>
+        <h4 className="font-semibold">{tk('improve')}</h4><p className="whitespace-pre-wrap">{record.improvement}</p>
         <h3 className="font-semibold">{t('career_archive_title')}</h3>
         <p className="text-xs text-muted-foreground">{t('career_archive_note')}</p>
         {archive.length===0?<p className="text-sm">{t('career_archive_empty')}</p>:<ol className="space-y-2">{[...archive].reverse().map(item=><li key={item.id} className="rounded-lg border border-border p-3 text-sm"><p dir="ltr">{t('career_completedAt')}: {item.completedAt}</p><p dir="ltr">{t('career_assist')}: {item.assistance} · {t('career_verification')}: {item.id}</p></li>)}</ol>}
