@@ -93,7 +93,10 @@ export default async function handler(req: CopilotChatRequest, res: CopilotChatR
     const text = parseGeminiResponse(await response.json());
     if (!text) return res.status(200).json({ fallback: true, reason: "empty_completion" });
     return res.status(200).json({ text });
-  } catch {
-    return res.status(200).json({ fallback: true, reason: "gemini_unreachable" });
+  } catch (err) {
+    // TEMPORARY diagnostic: surface the transport error class/message (never
+    // the key; Google errors do not contain it) to pin the live failure.
+    const detail = err instanceof Error ? `${err.name}:${err.message}` : String(err);
+    return res.status(200).json({ fallback: true, reason: `gemini_unreachable`, detail: detail.slice(0, 120) });
   }
 }
