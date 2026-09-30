@@ -13,6 +13,8 @@ import { createConversation, deleteConversation, listConversations, loadMessages
 import { ChatSiteLaunch } from "./ChatSiteLaunch";
 import { resolveSiteIntent, SITE_CAPABILITIES, type SiteCapability } from "@/lib/copilot/siteCapabilities";
 import { ChatDataDesk } from "./ChatDataDesk";
+import { ChatCalcCard } from "./ChatCalcCard";
+import { runCalcDesk, type CalcDeskResult } from "@/lib/copilot/calcDesk";
 import { loadDataDesk, resolveDataDesk, type DataDeskResult } from "@/lib/copilot/dataDesk";
 import { ChatStrategyCard } from "./ChatStrategyCard";
 import { ChatStrategyFitCard } from "./ChatStrategyFitCard";
@@ -20,7 +22,7 @@ import { appendDictation, getSpeechRecognition, joinTranscript, speechLocale, ty
 import { useAnalysis } from "@/context/useAnalysis";
 import type { CopilotResponse } from "@/lib/copilotResponse";
 
-interface Message { role: "user" | "copilot"; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; }
+interface Message { role: "user" | "copilot"; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; }
 
 export function AIChatCard() {
   const { t, language } = useLanguage();
@@ -95,6 +97,11 @@ export function AIChatCard() {
         : { role: "copilot", text: t("cap_open_lead"), siteCaps: site.matches }]);
       return;
     }
+    const calc = runCalcDesk(text);
+    if (calc) {
+      setMessages((current) => [...current, { role: "copilot", text: t("calc_lead"), calc }]);
+      return;
+    }
     const deskKind = resolveDataDesk(text);
     if (deskKind) {
       try {
@@ -155,6 +162,7 @@ export function AIChatCard() {
             <div className="min-w-0 flex-1">
             <p className="whitespace-pre-wrap">{message.text}</p>
             {message.desk && <ChatDataDesk data={message.desk} />}
+            {message.calc && <ChatCalcCard data={message.calc} />}
             {message.siteCaps && <ChatSiteLaunch capabilities={message.siteCaps} />}
             {message.careerLaunch && <Link to="/career-lab" className="mt-3 inline-block rounded-lg border border-primary px-3 py-2 text-xs font-bold text-primary">{t("career_chat_open")}</Link>}
             {response?.toolResult && <div className="mt-3 rounded-lg border border-border/70 bg-background/70 p-2.5 text-xs"><p className="font-semibold">{t("copilot_verified_calculation")}</p>{response.toolResult.formula && <p className="mt-1 font-mono" dir="ltr">{response.toolResult.formula}</p>}{response.toolResult.assumptions.length > 0 && <p className="mt-1 text-muted-foreground">{t("copilot_assumptions")}: {response.toolResult.assumptions.join(" · ")}</p>}</div>}
