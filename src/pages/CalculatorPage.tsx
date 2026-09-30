@@ -139,7 +139,7 @@ export default function CalculatorPage() {
   return (
     <div dir={language === "he" ? "rtl" : "ltr"} className="calculator-stage relative min-h-screen overflow-hidden bg-background p-4 text-foreground md:p-6">
       <div className="calculator-grid pointer-events-none absolute inset-x-0 top-0 h-[760px]" aria-hidden="true" />
-      <div className="relative mx-auto max-w-6xl">
+      <main className="relative mx-auto max-w-6xl">
         {/* Hero */}
         <div className="relative mb-10 overflow-hidden rounded-[2rem] border border-primary/15 bg-card/55 px-4 py-10 text-center shadow-[0_24px_80px_-50px_hsl(var(--primary)/0.35)] sm:px-8 md:py-14">
           <div className="pointer-events-none absolute left-1/2 top-0 h-40 w-80 -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
@@ -457,7 +457,7 @@ export default function CalculatorPage() {
             </div>
           </div>
         )}
-      </div>
+      </main>
     </div>
   );
 }
