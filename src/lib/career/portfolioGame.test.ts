@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import {describe,it,expect} from 'vitest';
-import {instrumentPrice,holding,clientReply,clientMessage,portfolioClients,portfolioResult,isPortfolioGame,GAME_DAYS,GAME_KEY,GameActionError,GameConflictError,INITIAL_CASH,newPortfolioGame,playPortfolioGame,portfolioValue,readPortfolioGame,savePortfolioGame} from './portfolioGame';
+import {instrumentPrice,holding,clientReply,clientMessage,portfolioClients,portfolioResult,isPortfolioGame,GAME_DAYS,GAME_KEY,GameActionError,GameConflictError,INITIAL_CASH,newPortfolioGame,playPortfolioGame,portfolioValue,readPortfolioGame,savePortfolioGame,type PortfolioGame} from './portfolioGame';
 describe('fictional portfolio manager game',()=>{
   it('buys, marks daily value and only charges a fee on realized gains',()=>{
     let g=newPortfolioGame();expect(portfolioValue(g)).toBe(INITIAL_CASH);
@@ -147,5 +147,33 @@ describe('fictional portfolio manager game',()=>{
     savePortfolioGame(first,null);const newer=playPortfolioGame(first,{type:'buy',quantity:1});savePortfolioGame(newer,first);
     expect(()=>savePortfolioGame(playPortfolioGame(first,{type:'next'}),first)).toThrow(GameConflictError);
     expect(readPortfolioGame()).toEqual(newer);localStorage.removeItem(GAME_KEY);
+  });
+});
+describe('monitoring plan scoring by plan version',()=>{
+  const withPlan=(plan:'cashBuffer'|'monitor',answer:'explained'|'ignored'|'guaranteed',version?:2)=>{
+    let g=newPortfolioGame();if(version===undefined){delete (g as Partial<PortfolioGame>).planVersion;}
+    g=playPortfolioGame(g,{type:'buy',quantity:50});
+    g=playPortfolioGame(g,{type:'plan',clientId:'balanced',plan});
+    g=playPortfolioGame(g,{type:'reply',clientId:'balanced',answer});
+    g=playPortfolioGame(g,{type:'next'});
+    return portfolioClients(g).find(client=>client.id==='balanced')!.trust;
+  };
+  it('scores monitoring as a report-back commitment in version 2 games',()=>{
+    // Day 0 loss is 0%: no tolerance breach. Base trust 80, reply effects: explained +8, ignored -22, guaranteed -35.
+    expect(withPlan('monitor','explained',2)).toBe(80+8+4);
+    expect(withPlan('monitor','ignored',2)).toBe(80-22-10);
+    expect(withPlan('monitor','guaranteed',2)).toBe(80-35);
+  });
+  it('keeps monitoring a label without effect in earlier saves',()=>{
+    expect(withPlan('monitor','explained')).toBe(80+8);
+    expect(withPlan('monitor','ignored')).toBe(80-22);
+  });
+  it('validates the plan version field and defaults new games to version 2',()=>{
+    expect(newPortfolioGame().planVersion).toBe(2);
+    const g=newPortfolioGame();
+    expect(isPortfolioGame({...g,planVersion:2})).toBe(true);
+    expect(isPortfolioGame({...g,planVersion:3 as never})).toBe(false);
+    const legacy={...g};delete (legacy as Partial<PortfolioGame>).planVersion;
+    expect(isPortfolioGame(legacy)).toBe(true);
   });
 });

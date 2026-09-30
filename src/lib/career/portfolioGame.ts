@@ -21,20 +21,20 @@ export type GameAction = {type:'buy'|'sell';quantity:number;instrument?:Instrume
 export interface Trade {day:number;side:'buy'|'sell';quantity:number;price:number;fee:number;instrument?:Instrument;}
 export interface PortfolioGame {runs?:PracticeRun[];
   day:number;cash:number;shares:number;basis:number;clients:number;feeEarned:number;clientPlans?:Partial<Record<ClientId,('none'|'cashBuffer'|'monitor')[]>>;scenario?:Scenario;holdings?:Partial<Record<Instrument,{shares:number;basis:number}>>;
-  replies:ClientReply[];trades:Trade[];departures:number[];settled?:boolean;clientReplies?:Partial<Record<ClientId,ClientReply[]>>;
+  replies:ClientReply[];trades:Trade[];departures:number[];settled?:boolean;planVersion?:2;clientReplies?:Partial<Record<ClientId,ClientReply[]>>;
 }
 export const GAME_KEY='invested_career_portfolio_game_v1';
 export const INITIAL_CASH=10000;
 export const GAME_TARGET=11500;
 export const GAME_FEE_RATE=.1;
 const cents=(value:number)=>Math.round(value*100)/100;
-export const newPortfolioGame=():PortfolioGame=>({day:0,cash:INITIAL_CASH,shares:0,basis:0,clients:3,feeEarned:0,replies:GAME_DAYS.map(()=> 'none'),trades:[],departures:[]});
+export const newPortfolioGame=():PortfolioGame=>({day:0,cash:INITIAL_CASH,shares:0,basis:0,clients:3,feeEarned:0,planVersion:2,replies:GAME_DAYS.map(()=> 'none'),trades:[],departures:[]});
 export const portfolioValue=(game:PortfolioGame):number=>cents(game.cash+INSTRUMENTS.reduce((total,instrument)=>total+holding(game,instrument).shares*instrumentPrice(game,instrument),0));
 export const isPortfolioGame=(value:unknown):value is PortfolioGame=>{
   if (!value || typeof value!=='object') return false;
   const g=value as PortfolioGame;
   if(!validPracticeRuns(g.runs,'portfolio'))return false;
-  return (g.clientPlans===undefined||(!!g.clientPlans&&typeof g.clientPlans==='object'&&Object.entries(g.clientPlans).every(([id,plans])=>CLIENT_PROFILES.some(profile=>profile.id===id)&&Array.isArray(plans)&&plans.length===GAME_DAYS.length&&plans.every(plan=>['none','cashBuffer','monitor'].includes(plan))))) && (g.scenario===undefined||['base','stress'].includes(g.scenario)) && (g.holdings===undefined||(!!g.holdings&&typeof g.holdings==='object'&&!Array.isArray(g.holdings)&&Object.entries(g.holdings).every(([id,h])=>INSTRUMENTS.includes(id as Instrument)&&id!=='NST-F'&&!!h&&Number.isInteger(h.shares)&&h.shares>=0&&Number.isFinite(h.basis)&&h.basis>=0&&(!g.settled||(h.shares===0&&h.basis===0))))) && (g.settled===undefined||typeof g.settled==='boolean') && (!g.settled||(g.day===GAME_DAYS.length-1&&g.shares===0&&g.basis===0)) && Number.isInteger(g.day) && g.day>=0 && g.day<GAME_DAYS.length &&
+  return (g.planVersion===undefined||g.planVersion===2) && (g.clientPlans===undefined||(!!g.clientPlans&&typeof g.clientPlans==='object'&&Object.entries(g.clientPlans).every(([id,plans])=>CLIENT_PROFILES.some(profile=>profile.id===id)&&Array.isArray(plans)&&plans.length===GAME_DAYS.length&&plans.every(plan=>['none','cashBuffer','monitor'].includes(plan))))) && (g.scenario===undefined||['base','stress'].includes(g.scenario)) && (g.holdings===undefined||(!!g.holdings&&typeof g.holdings==='object'&&!Array.isArray(g.holdings)&&Object.entries(g.holdings).every(([id,h])=>INSTRUMENTS.includes(id as Instrument)&&id!=='NST-F'&&!!h&&Number.isInteger(h.shares)&&h.shares>=0&&Number.isFinite(h.basis)&&h.basis>=0&&(!g.settled||(h.shares===0&&h.basis===0))))) && (g.settled===undefined||typeof g.settled==='boolean') && (!g.settled||(g.day===GAME_DAYS.length-1&&g.shares===0&&g.basis===0)) && Number.isInteger(g.day) && g.day>=0 && g.day<GAME_DAYS.length &&
     Number.isInteger(g.shares) && g.shares>=0 && Number.isFinite(g.cash) && g.cash>=0 &&
     Number.isFinite(g.basis) && g.basis>=0 && Number.isInteger(g.clients) && g.clients>=0 && g.clients<=3 &&
     Number.isFinite(g.feeEarned) && g.feeEarned>=0 && Array.isArray(g.replies) && g.replies.length===GAME_DAYS.length && g.replies.every(r=>['none','explained','ignored','guaranteed'].includes(r)) && (g.clientReplies===undefined||(!!g.clientReplies&&typeof g.clientReplies==='object'&&Object.entries(g.clientReplies).every(([id,replies])=>CLIENT_PROFILES.some(profile=>profile.id===id)&&Array.isArray(replies)&&replies.length===GAME_DAYS.length&&replies.every(reply=>['none','explained','ignored','guaranteed'].includes(reply))))) &&
@@ -121,7 +121,8 @@ export function portfolioClients(game:PortfolioGame):ClientStatus[]{
       const reply=clientReply(game,profile.id,day);
       const plan=game.clientPlans?.[profile.id]?.[day]??'none';
       const endValue=cash+INSTRUMENTS.reduce((total,instrument)=>total+positions[instrument]*instrumentPrice(game,instrument,day),0);
-      const planEffect=plan==='cashBuffer'?(endValue>0&&cash/endValue>=.25?6:-18):0;
+      /** Monitor is a commitment to watch and report: explaining earns trust, silence breaks it. Only plan version 2 scores it; earlier saves keep monitor as a label without effect. */
+      const planEffect=plan==='cashBuffer'?(endValue>0&&cash/endValue>=.25?6:-18):plan==='monitor'&&game.planVersion===2?(reply==='explained'?4:reply==='none'||reply==='ignored'?-10:0):0;
       trust=Math.min(100,Math.max(0,trust+planEffect+(reply==='explained'?8:reply==='guaranteed'?-35:reply==='ignored'?-22:-12)-(loss>profile.lossTolerance?20:0)));
       if(trust<=30)return {id:profile.id,trust,active:false,leftDay:Math.min(day+1,GAME_DAYS.length-1),reason:loss>profile.lossTolerance?'risk':'communication'};
     }

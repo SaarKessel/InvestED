@@ -1640,9 +1640,9 @@
   "game_stress_news_3": "Fictional earnings warning: inspect concentration and client mandates.",
   "game_stress_news_4": "Fictional partial recovery; settlement is not a guarantee of profit.",
   "game_client_plan": "Commit a client risk plan",
-  "game_client_plan_note": "One commitment per client/day, separate from the reply. Cash-buffer plan: keep at least 25% cash at today’s close (+6 trust if met, -18 if broken). Monitoring alone adds no trust. No automatic trades or guaranteed protection.",
+  "game_client_plan_note": "One commitment per client/day, separate from the reply. Cash-buffer: keep at least 25% cash at today’s close (+6 trust if met, -18 if broken). Monitoring: watch the day and report back (+4 trust when you explain today, -10 if you stay silent). No automatic trades or guaranteed protection.",
   "game_plan_cashBuffer": "Commit to 25% cash at close",
-  "game_plan_monitor": "Monitor, without a cash commitment",
+  "game_plan_monitor": "Monitor daily with the client",
   "game_plan_none": "No risk plan committed for this day.",
   "game_source_title": "Source market desk",
   "game_source_readonly": "Read-only",
@@ -1876,5 +1876,6 @@
   "ops_evidence_combinedApproval": "Combined approval packet: S-104 corrected custody is 6 units; documented fee is 15, reconciling gross cash 600 to net bank cash 585. Reference REF-104 remains unique.",
   "ops_support_combined": "The packet separately supports the missing custody unit and the 15-unit fee. Both original breaks remain visible above.",
   "ops_resolution_combined": "Resolved: corrected custody and the documented fee bridge are both recorded; original books remain unchanged.",
-  "game_candle_window": "Visible candle count"
+  "game_candle_window": "Visible candle count",
+  "game_client_plan_note_v1": "One commitment per client/day, separate from the reply. Cash-buffer plan: keep at least 25% cash at today’s close (+6 trust if met, -18 if broken). Monitoring alone adds no trust. No automatic trades or guaranteed protection."
 }

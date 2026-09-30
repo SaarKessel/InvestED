@@ -88,3 +88,10 @@ At the current checkpoint, all three original game completion journeys passed ag
 - Follow-up appears only after the evidence selection is supported. Changing evidence resets the follow-up to unanswered. Records from earlier generations (no follow-up field) remain readable and submittable under their own rules; new runs start with the field unanswered.
 - Five new contract tests cover per-role answers, the submission gate, legacy-generation readability and validation of the stored value. Full suite: 837 tests / 88 files; typecheck, production build and lint pass with the existing six warnings.
 - Real local browser journeys in both languages on both desks: wrong follow-up keeps submission blocked, the supported answer enables it. Inspected bilingual 1440px/390px captures; no page-level horizontal overflow. External requests blocked; the source desk stayed read-only.
+
+## Monitoring plan scoring (trading-loop deepening)
+
+- The Portfolio desk's monitor commitment now has a deterministic, explained effect in new games: report back to the client (+4 trust when you explain that day) or break the commitment (-10 on silence/ignoring). Unrealistic guarantees keep their standalone -35. Cash-buffer rules are unchanged.
+- Exercises are version-gated like the operations desk: new runs carry planVersion 2; earlier local saves keep monitoring as a label without effect, and their trust replays are unchanged. The plan note copy is version-aware in both languages.
+- Four new tests cover the +4/-10/0 scoring, legacy no-effect saves, and plan-version validation. Full suite: 840 tests / 88 files; typecheck, production build and lint pass with the existing six warnings.
+- Real local browser journeys in both languages committed the monitor plan and verified the versioned note and saved record; inspected bilingual 1440px/390px captures, no page-level horizontal overflow. External requests blocked.
