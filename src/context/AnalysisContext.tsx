@@ -10,6 +10,7 @@ import type {
 
 import { createConversationSession, type ConversationSession, type TurnResolution } from "@/lib/conversationContext";
 import { processAIMessage, type AIConversationTurn } from "@/lib/aiConversationService";
+import { rephraseWithGateway } from "@/lib/copilot/copilotGateway";
 import { investorProfileFromResult } from "@/lib/aiConversationService";
 
 import { useLanguage } from "@/context/languageContext";
@@ -81,6 +82,12 @@ export function AnalysisProvider({
 
   const runTurn = async (data: string, updateDashboardResult: boolean) => {
     const turn = await processAIMessage(sessionRef.current!, data, language);
+    // Facelift phase 1: best-effort rephrase through the AI Gateway. The
+    // deterministic answer is the fact source; any gateway failure keeps it.
+    if (!turn.clarification && turn.response.text) {
+      const rephrased = await rephraseWithGateway(data, language, turn.response);
+      if (rephrased) turn.response = { ...turn.response, text: rephrased };
+    }
     setLastResolution(turn.resolution);
     setClarification(turn.clarification);
     setCopilotTurn(turn);
