@@ -416,7 +416,7 @@ const INITIAL_AMOUNT_PATTERNS: RegExp[] = [
     // horizon ahead: "10,000 דולר ב-7% ל-20 שנה", "10000 דולר בעוד 20 שנה".
     // The negative lookahead keeps monthly/yearly contribution phrases in
     // the monthly parser.
-    /(\d[\d,.]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון|thousand|million)?\s*(?:דולר(?:ים)?|שקל(?:ים)?|ש["״']?ח|₪|usd|dollars?|ils)(?!\s*(?:בחודש|לחודש|כל חודש|בשנה|לשנה|per month|a month|monthly))(?=[\s\S]{0,80}(?:שנה|שנים|years?))/i,
+    /(\d[\d,.]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון|thousand|million)?\s*(?=(דולר(?:ים)?|שקל(?:ים)?|ש["״']?ח|₪|usd|dollars?|ils))\3(?!\s*(?:בחודש|לחודש|כל חודש|בשנה|לשנה|per month|a month|every month|each month|monthly))(?=[\s\S]{0,80}(?:שנה|שנים|years?))/i,
 
   ];
 
@@ -568,14 +568,14 @@ function detectMonthlyContribution(
     /(?:מפקיד|מוסיף|מפריש|חוסך)\s+(?:של\s+)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון|thousand|million)?/i,
 
     // English: explicit monthly patterns first (highest priority)
-    /(\d[\d,]*(?:\.\d+)?)\s*(?:shekels?|ils?|₪)?\s*(?:per month|every month|each month|a month|monthly)/i,
+    /(\d[\d,]*(?:\.\d+)?)\s*(?:shekels?|ils?|₪|usd|dollars?|\$)?\s*(?:per month|every month|each month|a month|monthly)/i,
 
-    /(\d+(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?\s*(?:per month|every month|each month|a month|monthly)/i,
+    /(\d+(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪|usd|dollars?|\$)?\s*(?:per month|every month|each month|a month|monthly)/i,
 
     // English: "contribute X monthly", "deposit X per month", "add X every month"
-    /(?:contribute|deposit|add|contributing|depositing|adding)\s+(\d[\d,]*(?:\.\d+)?)\s*(?:shekels?|ils?|₪)?\s*(?:per month|every month|each month|monthly|a month)?/i,
+    /(?:contribute|deposit|add|contributing|depositing|adding)\s+(\d[\d,]*(?:\.\d+)?)\s*(?:shekels?|ils?|₪|usd|dollars?|\$)?\s*(?:per month|every month|each month|monthly|a month)?/i,
 
-    /(\d+(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?\s*(?:per month|every month|each month|monthly|a month)/i,
+    /(\d+(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪|usd|dollars?|\$)?\s*(?:per month|every month|each month|monthly|a month)/i,
 
     // Hebrew: X שקל בחודש, X לחודש, X כל חודש
     /(\d[\d,]*(?:\.\d+)?)\s*(?:שקל)?\s*(?:בחודש|לחודש|כל חודש)/i,

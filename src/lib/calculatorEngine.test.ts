@@ -282,6 +282,21 @@ describe("English natural language parsing", () => {
     expect(scenario.years).toBe(20);
   });
 
+  it("parses English monthly contribution with USD currency words", () => {
+    for (const phrase of [
+      "invest 500 dollars a month for 10 years at 7%",
+      "invest 500 USD per month for 10 years at 7%",
+      "invest $500 monthly for 10 years at 7%",
+      "invest 500 dollars every month for 10 years at 7%",
+      "contribute 500 dollars each month for 10 years at 7%",
+    ]) {
+      const scenario = analyzeFinancialScenario(phrase);
+      expect(scenario.monthlyContribution, phrase).toBe(500);
+      expect(scenario.initialInvestment, phrase).toBe(0);
+      expect(scenario.years, phrase).toBe(10);
+    }
+  });
+
   it("parses English monthly contribution from 'X shekels every month'", () => {
     const scenario = analyzeFinancialScenario(
       "I am 30 years old and can contribute 2,000 shekels every month for 15 years"
