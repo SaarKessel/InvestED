@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { isCareerLaunchRequest } from "@/lib/career/chatRoute";
-import { Check, Clipboard, Loader2, RotateCcw, Send, Sparkles } from "lucide-react";
+import { Check, Clipboard, Loader2, Mic, Square, RotateCcw, Send, Sparkles } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
 import { ChatAssetCards } from "./ChatAssetCards";
 import { ChatCalculationCard } from "./ChatCalculationCard";
@@ -13,18 +13,36 @@ import { ChatDataDesk } from "./ChatDataDesk";
 import { loadDataDesk, resolveDataDesk, type DataDeskResult } from "@/lib/copilot/dataDesk";
 import { ChatStrategyCard } from "./ChatStrategyCard";
 import { ChatStrategyFitCard } from "./ChatStrategyFitCard";
+import { appendDictation, getSpeechRecognition, joinTranscript, speechLocale, type SpeechRecognitionLike } from "@/lib/copilot/voiceInput";
 import { useAnalysis } from "@/context/useAnalysis";
 import type { CopilotResponse } from "@/lib/copilotResponse";
 
 interface Message { role: "user" | "copilot"; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; }
 
 export function AIChatCard() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { askCopilot, isAnalyzing, reset } = useAnalysis();
   const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [copied, setCopied] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const SpeechCtor = getSpeechRecognition();
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
+  const [listening, setListening] = useState(false);
+  const [voiceError, setVoiceError] = useState(false);
+  useEffect(() => () => recognitionRef.current?.stop(), []);
+  function toggleVoice() {
+    if (!SpeechCtor) return;
+    if (listening) { recognitionRef.current?.stop(); return; }
+    const rec = new SpeechCtor();
+    rec.lang = speechLocale(language); rec.interimResults = false; rec.continuous = false;
+    const before = question;
+    rec.onresult = (event) => setQuestion(appendDictation(before, joinTranscript(event.results)));
+    rec.onerror = () => { setVoiceError(true); setListening(false); };
+    rec.onend = () => setListening(false);
+    setVoiceError(false); recognitionRef.current = rec;
+    try { rec.start(); setListening(true); } catch { setVoiceError(true); }
+  }
   useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }); }, [messages, isAnalyzing]);
 
   async function submit(event: FormEvent) {
@@ -96,9 +114,10 @@ export function AIChatCard() {
       </div>
       <form onSubmit={submit} className="mt-5 flex items-end gap-2">
         <textarea rows={2} aria-label={t("copilot_input")} value={question} onChange={(event) => setQuestion(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} placeholder={t("copilot_placeholder")} className="min-h-12 min-w-0 flex-1 resize-none rounded-xl border border-border bg-background px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-ring" />
+        {SpeechCtor && <button type="button" onClick={toggleVoice} aria-pressed={listening} aria-label={t(listening ? "voice_stop" : "voice_start")} title={t(listening ? "voice_stop" : "voice_start")} className={`inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-border ${listening ? "bg-primary text-primary-foreground animate-pulse" : "text-primary hover:border-primary"}`}>{listening ? <Square className="h-4 w-4" /> : <Mic className="h-5 w-5" />}</button>}
         <button type="submit" disabled={!question.trim() || isAnalyzing} className="inline-flex h-12 items-center gap-2 rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground disabled:opacity-50">{isAnalyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}<span className="hidden sm:inline">{t("copilot_send")}</span></button>
       </form>
-      <p className="mt-2 text-[11px] text-muted-foreground">{t("copilot_enter_hint")}</p>
+      <p className="mt-2 text-[11px] text-muted-foreground" aria-live="polite">{voiceError ? t("voice_error") : listening ? t("voice_listening") : t("copilot_enter_hint")}</p>
     </div>
   );
 }

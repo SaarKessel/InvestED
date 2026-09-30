@@ -1994,5 +1994,9 @@
   "desk_insurance_note": "Public insurance-sector report. Past yields do not predict future results.",
   "desk_movers_lead": "Here are today's movers, read straight from the market feed.",
   "desk_policy_rate_lead": "Here is the latest Bank of Israel policy rate from BIS data.",
-  "desk_insurance_lead": "Here is the latest public insurance-fund report, ranked by year-to-date yield."
+  "desk_insurance_lead": "Here is the latest public insurance-fund report, ranked by year-to-date yield.",
+  "voice_start": "Dictate a question",
+  "voice_stop": "Stop dictation",
+  "voice_listening": "Listening... speak now, then review the text before sending.",
+  "voice_error": "Voice input did not work. Check microphone permission and try again."
 }
