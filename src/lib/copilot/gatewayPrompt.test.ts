@@ -196,3 +196,12 @@ describe("rephraseIntroducesNoNewFacts", () => {
     ).toBe(true);
   });
 });
+
+describe("system prompt ticker protection", () => {
+  it("requires ticker symbols to stay exact in every language", async () => {
+    const { buildSystemPrompt } = await import("./gatewayPrompt");
+    for (const language of ["en", "he", "mixed"] as const) {
+      expect(buildSystemPrompt(language)).toContain("never transliterate");
+    }
+  });
+});

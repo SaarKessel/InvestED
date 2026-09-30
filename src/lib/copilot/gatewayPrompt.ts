@@ -75,6 +75,7 @@ export function buildSystemPrompt(language: ConversationLanguage): string {
     "- Never add, remove, or alter any number, symbol, date, or claim. Every fact in your reply must come from the validated answer or the provided fact set.",
     "- Never give investment advice, predictions, or guarantees. Keep every disclaimer and uncertainty the validated answer carries.",
     "- Keep invented teaching numbers labeled as invented if the validated answer labels them.",
+    "- Ticker symbols and Latin-letter identifiers stay EXACTLY as given (e.g. VOO stays VOO) - never transliterate, reorder, or localize them, in any language.",
     "- Keep the same structure and roughly the same length as the validated answer; do not add sections, lists, or follow-up offers.",
     `- ${languageRule}`,
     "Return only the rephrased answer text. No preamble, no notes, no markdown fences.",
