@@ -1892,5 +1892,16 @@
   "career_track_credit_defense": "איזו עדות יכולה לשנות את החלטת האשראי שלך?",
   "career_evidence_invented_note": "נתון הוראה בדוי וקבוע - לא נתוני שוק ולא לווים אמיתיים.",
   "career_track_credit_load": "טעינת תמונת הלווים הבדויה",
-  "career_track_credit_stage_research": "מקרה מחקר: INVENTED-BORROWER-01 (בדוי)"
+  "career_track_credit_stage_research": "מקרה מחקר: INVENTED-BORROWER-01 (בדוי)",
+  "career_track_pension_title": "ביטוח · אנליסט פנסיה",
+  "career_track_pension_heading": "אנליסט פנסיה | מעבדת קריירה",
+  "career_track_pension_lesson": "למה החלטת פנסיה או ביטוח חייבת להסתמך על נתוני פוליסה הניתנים לאימות ולא על הבטחה מחוברת שיווקית?",
+  "career_track_pension_practice": "איך תעריכו אם ההפקדות של חוסך יספיקו לצורך הפנסיוני בלי להסתמך על שנת תשואה טובה אחת?",
+  "career_track_pension_case_question": "האם חוסך צריך לבחור ב-INVENTED-POLICY-01 על סמך התמונה הבדויה הזו בלבד? הסבירו מה עוד חייבים לבדוק.",
+  "career_track_pension_thesis": "תזת ההמלצה והנימוקים התומכים",
+  "career_track_pension_bear": "סיבות שהפוליסה עלולה לא לענות על צורך החוסך",
+  "career_track_pension_risk": "סיכוני הפנסיה והביטוח המרכזיים ואי-הוודאות",
+  "career_track_pension_defense": "איזו עדות יכולה לשנות את ההמלצה שלך?",
+  "career_track_pension_load": "טעינת תמונת הפוליסה הבדויה",
+  "career_track_pension_stage_research": "מקרה מחקר: INVENTED-POLICY-01 (בדוי)"
 }

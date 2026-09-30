@@ -1892,5 +1892,16 @@
   "career_track_credit_defense": "What evidence could change your lending decision?",
   "career_evidence_invented_note": "Invented fixed teaching input - not market data and not a real borrower.",
   "career_track_credit_load": "Load the invented borrower snapshot",
-  "career_track_credit_stage_research": "Research case: INVENTED-BORROWER-01 (invented)"
+  "career_track_credit_stage_research": "Research case: INVENTED-BORROWER-01 (invented)",
+  "career_track_pension_title": "Insurance · Pension Analyst",
+  "career_track_pension_heading": "Pension Analyst | Career Lab",
+  "career_track_pension_lesson": "Why must a pension or insurance decision cite verifiable policy data rather than a brochure promise?",
+  "career_track_pension_practice": "How would you judge whether a saver's contributions will meet a retirement need without relying on one good return year?",
+  "career_track_pension_case_question": "Should a saver choose INVENTED-POLICY-01 based on this invented snapshot alone? Explain what else must be checked.",
+  "career_track_pension_thesis": "Recommendation thesis and supporting reasoning",
+  "career_track_pension_bear": "Reasons the policy might not meet the saver's need",
+  "career_track_pension_risk": "Main pension and insurance risks and uncertainty",
+  "career_track_pension_defense": "What evidence could change your recommendation?",
+  "career_track_pension_load": "Load the invented policy snapshot",
+  "career_track_pension_stage_research": "Research case: INVENTED-POLICY-01 (invented)"
 }

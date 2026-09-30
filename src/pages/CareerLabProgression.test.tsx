@@ -92,3 +92,23 @@ for(const language of ['he','en'] as const){
   expect(JSON.parse(localStorage.getItem('invested_career_credit_v1')??'{}').evidence?.source).toBe('invented_teaching_input');
  });
 }
+for(const language of ['he','en'] as const){
+ it(`${language}: the pension track opens with its own heading and loads labeled invented evidence without any market fetch`,async()=>{
+  localStorage.setItem('invested_language_preference',language);
+  const {fetchMarketAssetBySymbol}=await import('@/lib/marketData');
+  const draft={...newCase(new Date('2026-09-30T09:00:00Z'),'pension-analyst'),stage:'research' as const,lessonAnswer:'Verifiable policy data is required.',practiceAnswer:'Judge contributions over decades.',provenanceChoice:'withSource' as const};
+  localStorage.setItem('invested_career_pension_v1',JSON.stringify(draft));
+  act(()=>root.render(<MemoryRouter><LanguageProvider><CareerLabPage/></LanguageProvider></MemoryRouter>));
+  const pick=[...container.querySelectorAll('button')].find(b=>b.textContent===(language==='he'?'ביטוח · אנליסט פנסיה':'Insurance · Pension Analyst'));
+  expect(pick).toBeTruthy();
+  act(()=>pick!.dispatchEvent(new MouseEvent('click',{bubbles:true})));
+  expect(text()).toContain(language==='he'?'אנליסט פנסיה | מעבדת קריירה':'Pension Analyst | Career Lab');
+  const load=[...container.querySelectorAll('button')].find(b=>b.textContent===(language==='he'?'טעינת תמונת הפוליסה הבדויה':'Load the invented policy snapshot'));
+  expect(load).toBeTruthy();
+  act(()=>load!.dispatchEvent(new MouseEvent('click',{bubbles:true})));
+  expect(fetchMarketAssetBySymbol).not.toHaveBeenCalled();
+  expect(text()).toContain('INVENTED-POLICY-01');
+  expect(text()).toContain(language==='he'?'נתון הוראה בדוי וקבוע':'Invented fixed teaching input');
+  expect(JSON.parse(localStorage.getItem('invested_career_pension_v1')??'{}').evidence?.source).toBe('invented_teaching_input');
+ });
+}

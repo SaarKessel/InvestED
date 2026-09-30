@@ -19,6 +19,7 @@ export interface CareerTrack {
 export const CAREER_TRACKS: readonly CareerTrack[] = [
   {id:'investment-analyst',caseKey:'invested_career_analyst_v1',archiveKey:'invested_career_analyst_archive_v1',evidenceSymbol:'AAPL',contentKey:'career_track_analyst',available:true,allocationDesk:true,inventedEvidence:null},
   {id:'credit-analyst',caseKey:'invested_career_credit_v1',archiveKey:'invested_career_credit_archive_v1',evidenceSymbol:null,contentKey:'career_track_credit',available:true,allocationDesk:false,inventedEvidence:{symbol:'INVENTED-BORROWER-01',price:8.4,currency:'USD'}},
+  {id:'pension-analyst',caseKey:'invested_career_pension_v1',archiveKey:'invested_career_pension_archive_v1',evidenceSymbol:null,contentKey:'career_track_pension',available:true,allocationDesk:false,inventedEvidence:{symbol:'INVENTED-POLICY-01',price:4.9,currency:'USD'}},
 ] as const;
 export const DEFAULT_TRACK = CAREER_TRACKS[0];
 export const getTrack = (id: string | undefined): CareerTrack => CAREER_TRACKS.find(track => track.id === id) ?? DEFAULT_TRACK;

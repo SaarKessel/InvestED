@@ -110,3 +110,10 @@ At the current checkpoint, all three original game completion journeys passed ag
 - A lending track has no portfolio allocation, so the registry marks the allocation practice desk off for this track; the engine's practice gate and the complete-stage simulation section follow that flag. canAdvance now validates evidence against the record's own track.
 - Three new engine tests (invented/live evidence acceptance matrix, allocation-free practice, full credit journey with storage separation) and two bilingual page tests (credit heading, invented evidence load with zero market fetches). The milestone-A lock assertion was updated to the intended unlocked state. Full suite: 849 tests / 90 files; typecheck, production build and lint pass with the existing six warnings.
 - Inspected bilingual 1440px/390px captures of the credit track selected with its invented evidence loaded; no page-level horizontal overflow. External requests blocked during capture.
+
+## Pension analyst track (insurance / pension)
+
+- The Insurance / Pension Analyst track is available inside the same 7-stage engine with its own storage keys, heading, stage prompts and load control in both languages. No engine changes were needed beyond the registry entry: the invented-evidence path and the allocationDesk flag from the credit track carry it.
+- Evidence is a fixed, explicitly invented policy snapshot (INVENTED-POLICY-01, 4.9 USD annuity factor) loaded locally with no market request and labeled as an invented teaching input in the stage heading, evidence box and load button. Live or tampered snapshots are rejected for this track.
+- Two new engine tests (invented/live acceptance matrix, full journey with cross-track storage separation) and two bilingual page tests (pension heading, invented evidence load with the market fetch asserted never called). Full suite: 853 tests / 91 files; typecheck, production build and lint pass with the existing six warnings.
+- Inspected bilingual 1440px/390px captures of the pension track selected with its invented evidence loaded; no page-level horizontal overflow. External requests blocked during capture.

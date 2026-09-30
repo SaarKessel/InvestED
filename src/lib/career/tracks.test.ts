@@ -21,7 +21,7 @@ describe('career track registry',()=>{
     expect(isTrackId('unknown-track')).toBe(false);
     expect(getTrack('unknown-track').id).toBe('investment-analyst');
     expect(getTrack(undefined).id).toBe('investment-analyst');
-    expect(CAREER_TRACKS.map(t=>t.id)).toEqual(['investment-analyst','credit-analyst']);
+    expect(CAREER_TRACKS.map(t=>t.id)).toEqual(['investment-analyst','credit-analyst','pension-analyst']);
   });
   it('keeps legacy analyst records without a track field readable and separates track storage',()=>{
     const legacy=newCase(new Date('2026-09-29T12:00:00Z'));
