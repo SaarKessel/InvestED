@@ -76,7 +76,8 @@ export default async function handler(req: CopilotChatRequest, res: CopilotChatR
 
   const token = process.env.AI_GATEWAY_API_KEY || process.env.VERCEL_OIDC_TOKEN || "";
   const model = process.env.AI_GATEWAY_MODEL || "";
-  if (!token || !model) return res.status(200).json({ fallback: true, reason: "not_configured" });
+  if (!model) return res.status(200).json({ fallback: true, reason: "model_not_configured" });
+  if (!token) return res.status(200).json({ fallback: true, reason: "auth_not_configured" });
 
   try {
     const response = await fetch(GATEWAY_URL, {
