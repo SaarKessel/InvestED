@@ -76,6 +76,7 @@ describe("Phase 6 Copilot strategy routing", () => {
     const { deps } = setup();
     const missing = await processAIMessage(createConversationSession(), "Does momentum investing fit my profile?", "en", deps);
     expect(missing.response.clarification?.missing).toContain("investor_profile");
+    expect(missing.response.strategyFit?.status).toBe("needs_profile");
 
     const session = createConversationSession({
       investorProfile: { classification: "growth", riskScore: 8, summary: "high risk tolerance" },

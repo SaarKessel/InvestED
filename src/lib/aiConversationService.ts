@@ -234,6 +234,23 @@ export async function processAIMessage(
   }
 
   if (resolution.status === "needs_clarification") {
+    // A strategy-fit question without a genuine profile still carries the
+    // engine's needs_profile assessment, so the chat can show it as a card
+    // alongside the clarification question.
+    const fitOnlyPayload: StrategyCopilotPayload | null =
+      resolution.intent === "strategy_question" && resolution.strategyFitRequested && resolution.strategyIds[0]
+        ? {
+            kind: "explain",
+            explanation: null,
+            comparison: null,
+            fit: evaluateEducationalFit(
+              resolution.strategyIds[0],
+              resolution.investorProfileContext,
+              resolution.language === "en" ? "en" : "he"
+            ),
+            marketExamples: [],
+          }
+        : null;
     return {
       resolution,
       result: null,
@@ -241,7 +258,7 @@ export async function processAIMessage(
       assetAnalyses: [],
       assetResearch: [],
       orchestrationPlan: createOrchestrationPlan(resolution),
-      response: buildCopilotResponse(message, resolution, null, []),
+      response: buildCopilotResponse(message, resolution, null, [], null, fitOnlyPayload),
     };
   }
 
