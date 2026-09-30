@@ -1,12 +1,15 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { isCareerLaunchRequest } from "@/lib/career/chatRoute";
-import { Check, Clipboard, Loader2, Mic, Square, RotateCcw, Send } from "lucide-react";
+import { Check, Clipboard, History, Loader2, LogOut, Mic, Square, RotateCcw, Send, Trash2 } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
 import { ChatAssetCards } from "./ChatAssetCards";
 import { ChatCalculationCard } from "./ChatCalculationCard";
 import { ChatComparisonTable } from "./ChatComparisonTable";
 import { ChatNewsList } from "./ChatNewsList";
+import { ChatAuthGate } from "./ChatAuthGate";
+import { useAuth } from "@/context/useAuth";
+import { createConversation, deleteConversation, listConversations, loadMessages, saveMessage, type ChatConversation } from "@/lib/copilot/chatHistory";
 import { ChatSiteLaunch } from "./ChatSiteLaunch";
 import { resolveSiteIntent, SITE_CAPABILITIES, type SiteCapability } from "@/lib/copilot/siteCapabilities";
 import { ChatDataDesk } from "./ChatDataDesk";
@@ -22,6 +25,11 @@ interface Message { role: "user" | "copilot"; text: string; response?: CopilotRe
 export function AIChatCard() {
   const { t, language } = useLanguage();
   const { askCopilot, isAnalyzing, reset } = useAnalysis();
+  const { user, loading: authLoading, signOut } = useAuth();
+  const conversationId = useRef<string | null>(null);
+  const savedCount = useRef(0);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [copied, setCopied] = useState<number | null>(null);
@@ -42,6 +50,31 @@ export function AIChatCard() {
     rec.onend = () => setListening(false);
     setVoiceError(false); recognitionRef.current = rec;
     try { rec.start(); setListening(true); } catch { setVoiceError(true); }
+  }
+  useEffect(() => {
+    if (!user || messages.length <= savedCount.current) return;
+    const pending = messages.slice(savedCount.current);
+    savedCount.current = messages.length;
+    void (async () => {
+      try {
+        if (!conversationId.current) conversationId.current = await createConversation(pending[0].text);
+        for (const m of pending) await saveMessage(conversationId.current, { role: m.role, text: m.text });
+      } catch { /* history is best-effort; the chat keeps working */ }
+    })();
+  }, [messages, user]);
+  async function toggleHistory() {
+    const next = !historyOpen; setHistoryOpen(next);
+    if (next) { try { setConversations(await listConversations()); } catch { setConversations([]); } }
+  }
+  async function openConversation(id: string) {
+    try {
+      const stored = await loadMessages(id);
+      conversationId.current = id; savedCount.current = stored.length; reset();
+      setMessages(stored.map((m) => ({ role: m.role, text: m.text }))); setHistoryOpen(false);
+    } catch { /* ignore */ }
+  }
+  async function removeConversation(id: string) {
+    try { await deleteConversation(id); setConversations((c) => c.filter((x) => x.id !== id)); if (conversationId.current === id) clearConversation(); } catch { /* ignore */ }
   }
   useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }); }, [messages, isAnalyzing]);
 
@@ -80,7 +113,7 @@ export function AIChatCard() {
     }
   }
 
-  function clearConversation() { reset(); setMessages([]); setQuestion(""); }
+  function clearConversation() { reset(); setMessages([]); setQuestion(""); conversationId.current = null; savedCount.current = 0; }
   async function copyMessage(text: string, index: number) { await navigator.clipboard.writeText(text); setCopied(index); window.setTimeout(() => setCopied(null), 1500); }
 
   const started = messages.length > 0;
@@ -91,6 +124,20 @@ export function AIChatCard() {
           <img src="/copilot-avatar.png" alt="" width="80" height="80" className="h-20 w-20 rounded-2xl object-cover shadow-lg shadow-amber-500/20 ring-1 ring-amber-400/30" />
           <h1 className="mt-5 text-3xl font-extrabold sm:text-4xl">{t("copilot_home_title")}</h1>
           <p className="mt-2 text-sm text-muted-foreground">{t("copilot_home_sub")}</p>
+        </div>
+      )}
+      {user && (
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <button type="button" onClick={() => void toggleHistory()} aria-expanded={historyOpen} className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"><History className="h-3.5 w-3.5" aria-hidden="true" />{t("history_open")}</button>
+          <button type="button" onClick={() => void signOut()} className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"><LogOut className="h-3.5 w-3.5" aria-hidden="true" />{t("auth_sign_out")}</button>
+        </div>
+      )}
+      {user && historyOpen && (
+        <div className="mb-4 rounded-2xl border border-border bg-card p-3">
+          <p className="mb-2 text-xs font-semibold text-muted-foreground">{t("history_title")}</p>
+          {conversations.length === 0 ? <p className="text-xs text-muted-foreground">{t("history_empty")}</p> : (
+            <ul className="space-y-1">{conversations.map((c) => <li key={c.id} className="flex items-center gap-2"><button type="button" onClick={() => void openConversation(c.id)} className="min-w-0 flex-1 truncate rounded-lg px-2 py-1.5 text-start text-sm hover:bg-muted">{c.title || "..."}</button><button type="button" aria-label={t("history_delete")} onClick={() => void removeConversation(c.id)} className="shrink-0 rounded-lg p-1.5 text-muted-foreground hover:text-destructive"><Trash2 className="h-3.5 w-3.5" aria-hidden="true" /></button></li>)}</ul>
+          )}
         </div>
       )}
       {started && (
@@ -124,7 +171,8 @@ export function AIChatCard() {
         })}
         {isAnalyzing && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />{t("copilot_working")}</div>}
       </div>
-      <div className={started ? "sticky bottom-0 bg-background/90 pb-3 pt-2 backdrop-blur" : ""}>
+      {!user && !authLoading && <ChatAuthGate />}
+      {user && <div className={started ? "sticky bottom-0 bg-background/90 pb-3 pt-2 backdrop-blur" : ""}>
         <form onSubmit={submit} className="flex items-end gap-2 rounded-3xl border border-border bg-card p-2 shadow-lg shadow-primary/5 focus-within:border-primary">
           <textarea rows={1} aria-label={t("copilot_input")} value={question} onChange={(event) => setQuestion(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} placeholder={t("copilot_placeholder")} className="max-h-40 min-h-11 min-w-0 flex-1 resize-none bg-transparent px-3 py-2.5 text-sm outline-none" />
           {SpeechCtor && <button type="button" onClick={toggleVoice} aria-pressed={listening} aria-label={t(listening ? "voice_stop" : "voice_start")} title={t(listening ? "voice_stop" : "voice_start")} className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${listening ? "animate-pulse bg-primary text-primary-foreground" : "text-primary hover:bg-primary/10"}`}>{listening ? <Square className="h-4 w-4" /> : <Mic className="h-5 w-5" />}</button>}
@@ -136,7 +184,7 @@ export function AIChatCard() {
           </ul>
         )}
         <p className="mt-3 text-center text-[11px] text-muted-foreground" aria-live="polite">{voiceError ? t("voice_error") : listening ? t("voice_listening") : t("copilot_disclaimer_short")}</p>
-      </div>
+      </div>}
     </div>
   );
 }

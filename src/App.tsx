@@ -2,6 +2,7 @@ import { lazy, Suspense } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { LanguageProvider } from "@/context/languageContext";
+import { AuthProvider } from "@/context/authContext";
 import { AnalysisProvider } from "@/context/AnalysisContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Layout } from "@/components/layout/Layout";
@@ -46,6 +47,7 @@ function PageLoading() {
 export default function App() {
   return (
     <LanguageProvider>
+      <AuthProvider>
       <ErrorBoundary>
         <ThemeProvider>
           <AnalysisProvider>
@@ -88,6 +90,7 @@ export default function App() {
         </AnalysisProvider>
       </ThemeProvider>
       </ErrorBoundary>
+      </AuthProvider>
     </LanguageProvider>
 );
 }
