@@ -1922,5 +1922,7 @@
   "game_paper_notional": "Snapshot notional per currency (no conversion)",
   "game_paper_orders": "Recorded orders (newest first)",
   "game_paper_snapshot": "Frozen snapshot",
-  "game_paper_snapshot_note": "Each order keeps its own immutable source/time/price snapshot. This is a self-recorded teaching ledger, not trading, advice or a verified track record."
+  "game_paper_snapshot_note": "Each order keeps its own immutable source/time/price snapshot. This is a self-recorded teaching ledger, not trading, advice or a verified track record.",
+  "career_heading": "Career Lab",
+  "career_track_analyst_heading": "Investment Analyst | Career Lab"
 }
