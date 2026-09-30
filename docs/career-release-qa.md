@@ -81,3 +81,10 @@ At the current checkpoint, all three original game completion journeys passed ag
 - Completed Career Lab cases are archived on completion and on first load of a previously completed case: device-local, deduplicated by case id, capped at 10, validated as complete records only. Starting a new case no longer destroys the completed experience record. Archive renders on the complete stage in both languages.
 - Career Lab stale-tab conflicts now offer explicit load-latest recovery matching the committee/operations contract: recovery reads without writing; the alert clears; the newer snapshot is shown, and a newly loaded completed snapshot is archived too. Conflict copy now names the recovery control instead of a page reload. Covered by six bilingual page tests.
 - Full suite: 835 tests / 88 files. Typecheck, production build and lint pass with the existing six warnings and bundle-size warning.
+
+## Chair follow-up challenge
+
+- Analyst and Accountant board desks now end with a chair follow-up: one question, three fixed low-typing responses, only the evidence-bounded answer unlocks submission. Overclaims (a settled question, a proven thesis, a company that cannot fail, replacing an audit) are rejected with a correction note.
+- Follow-up appears only after the evidence selection is supported. Changing evidence resets the follow-up to unanswered. Records from earlier generations (no follow-up field) remain readable and submittable under their own rules; new runs start with the field unanswered.
+- Five new contract tests cover per-role answers, the submission gate, legacy-generation readability and validation of the stored value. Full suite: 837 tests / 88 files; typecheck, production build and lint pass with the existing six warnings.
+- Real local browser journeys in both languages on both desks: wrong follow-up keeps submission blocked, the supported answer enables it. Inspected bilingual 1440px/390px captures; no page-level horizontal overflow. External requests blocked; the source desk stayed read-only.

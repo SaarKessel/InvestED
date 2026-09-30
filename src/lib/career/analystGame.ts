@@ -1,5 +1,5 @@
 import {validPracticeRuns,type PracticeRun} from './practiceRuns';
-import {isEvidenceSelection,readyBoardEvidence} from './boardEvidence';
+import {isEvidenceSelection,isFollowupChoice,readyBoardEvidence,readyFollowup} from './boardEvidence';
 /** Invented company report for a learning game, not a real filing or market data. */
 export const FICTIONAL_REPORT = {
   company:'Northstar Tools (fictional)',
@@ -10,10 +10,10 @@ export const FICTIONAL_REPORT = {
 } as const;
 export type AnalystMetric='revenueGrowth'|'operatingMargin'|'shareholderReturn';
 export type BoardChoice = 'none'|'review'|'proceed';
-export interface AnalystGame {runs?:PracticeRun[]; answers:Partial<Record<AnalystMetric,string>>; checked:AnalystMetric[]; boardChoice?:BoardChoice; memo:string; submitted:boolean; evidence?:string[]; }
+export interface AnalystGame {runs?:PracticeRun[]; answers:Partial<Record<AnalystMetric,string>>; checked:AnalystMetric[]; boardChoice?:BoardChoice; memo:string; submitted:boolean; evidence?:string[]; followup?:string; }
 export const ANALYST_KEY='invested_career_analyst_game_v1';
 export const ANALYST_METRICS:AnalystMetric[]=['revenueGrowth','operatingMargin','shareholderReturn'];
-export const newAnalystGame=():AnalystGame=>({answers:{},checked:[],boardChoice:'none',memo:'',submitted:false,evidence:[]});
+export const newAnalystGame=():AnalystGame=>({answers:{},checked:[],boardChoice:'none',memo:'',submitted:false,evidence:[],followup:'none'});
 const [prior,current]=FICTIONAL_REPORT.rows;
 /** Percent values. Shareholder return includes the invented dividend. */
 export const expectedMetric=(metric:AnalystMetric):number=>{
@@ -33,9 +33,9 @@ export const isAnalystGame=(value:unknown):value is AnalystGame=>{
   if(!validPracticeRuns(v.runs,'analyst'))return false;
   return !!v.answers && typeof v.answers==='object' && ANALYST_METRICS.every(key=>v.answers[key]===undefined||typeof v.answers[key]==='string') &&
     Array.isArray(v.checked) && v.checked.every(key=>ANALYST_METRICS.includes(key)) && new Set(v.checked).size===v.checked.length &&
-    (v.boardChoice===undefined||['none','review','proceed'].includes(v.boardChoice)) && typeof v.memo==='string' && typeof v.submitted==='boolean' && (v.evidence===undefined||isEvidenceSelection('analyst',v.evidence)) && (!v.submitted || submittedRecordValid(v));
+    (v.boardChoice===undefined||['none','review','proceed'].includes(v.boardChoice)) && typeof v.memo==='string' && typeof v.submitted==='boolean' && (v.evidence===undefined||isEvidenceSelection('analyst',v.evidence)) && (v.followup===undefined||isFollowupChoice('analyst',v.followup)) && (!v.submitted || submittedRecordValid(v));
 };
-export const readyToSubmit=(game:AnalystGame):boolean=>ANALYST_METRICS.every(key=>game.checked.includes(key)&&checkMetric(key,game.answers[key]??''))&&(game.boardChoice==='review'||game.boardChoice==='proceed')&&(game.evidence===undefined?game.memo.trim().length>=20:readyBoardEvidence('analyst',game.evidence));
+export const readyToSubmit=(game:AnalystGame):boolean=>ANALYST_METRICS.every(key=>game.checked.includes(key)&&checkMetric(key,game.answers[key]??''))&&(game.boardChoice==='review'||game.boardChoice==='proceed')&&(game.evidence===undefined?game.memo.trim().length>=20:readyBoardEvidence('analyst',game.evidence))&&(game.followup===undefined||readyFollowup('analyst',game.followup));
 /** A submitted draft stays readable under the rule in force when it was written: the first local generation had no board choice and required a 40-character memo. */
 export const submittedRecordValid=(game:AnalystGame):boolean=>{
   if(game.boardChoice===undefined&&game.evidence===undefined)
