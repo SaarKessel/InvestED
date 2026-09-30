@@ -7,12 +7,14 @@ import { ChatAssetCards } from "./ChatAssetCards";
 import { ChatCalculationCard } from "./ChatCalculationCard";
 import { ChatComparisonTable } from "./ChatComparisonTable";
 import { ChatNewsList } from "./ChatNewsList";
+import { ChatSiteLaunch } from "./ChatSiteLaunch";
+import { resolveSiteIntent, SITE_CAPABILITIES, type SiteCapability } from "@/lib/copilot/siteCapabilities";
 import { ChatStrategyCard } from "./ChatStrategyCard";
 import { ChatStrategyFitCard } from "./ChatStrategyFitCard";
 import { useAnalysis } from "@/context/useAnalysis";
 import type { CopilotResponse } from "@/lib/copilotResponse";
 
-interface Message { role: "user" | "copilot"; text: string; response?: CopilotResponse; careerLaunch?: boolean; }
+interface Message { role: "user" | "copilot"; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; }
 
 export function AIChatCard() {
   const { t } = useLanguage();
@@ -31,6 +33,13 @@ export function AIChatCard() {
     setMessages((current) => [...current, { role: "user", text }]);
     if (isCareerLaunchRequest(text)) {
       setMessages((current) => [...current, { role: "copilot", text: t("career_chat_launch"), careerLaunch: true }]);
+      return;
+    }
+    const site = resolveSiteIntent(text);
+    if (site) {
+      setMessages((current) => [...current, site.kind === "overview"
+        ? { role: "copilot", text: t("cap_overview"), siteCaps: SITE_CAPABILITIES }
+        : { role: "copilot", text: t("cap_open_lead"), siteCaps: site.matches }]);
       return;
     }
     try {
@@ -57,6 +66,7 @@ export function AIChatCard() {
           const assets = response?.assets ?? [];
           return <div key={index} className={`group max-w-[92%] rounded-xl p-3 text-sm leading-6 sm:max-w-[86%] ${message.role === "user" ? "ms-auto bg-primary text-primary-foreground" : "bg-muted"}`}>
             <p className="whitespace-pre-wrap">{message.text}</p>
+            {message.siteCaps && <ChatSiteLaunch capabilities={message.siteCaps} />}
             {message.careerLaunch && <Link to="/career-lab" className="mt-3 inline-block rounded-lg border border-primary px-3 py-2 text-xs font-bold text-primary">{t("career_chat_open")}</Link>}
             {response?.toolResult && <div className="mt-3 rounded-lg border border-border/70 bg-background/70 p-2.5 text-xs"><p className="font-semibold">{t("copilot_verified_calculation")}</p>{response.toolResult.formula && <p className="mt-1 font-mono" dir="ltr">{response.toolResult.formula}</p>}{response.toolResult.assumptions.length > 0 && <p className="mt-1 text-muted-foreground">{t("copilot_assumptions")}: {response.toolResult.assumptions.join(" · ")}</p>}</div>}
             {response?.calculation && <ChatCalculationCard projection={response.calculation} />}
