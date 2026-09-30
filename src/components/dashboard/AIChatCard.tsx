@@ -4,6 +4,7 @@ import { isCareerLaunchRequest } from "@/lib/career/chatRoute";
 import { Check, Clipboard, Loader2, RotateCcw, Send, Sparkles } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
 import { ChatAssetCards } from "./ChatAssetCards";
+import { ChatCalculationCard } from "./ChatCalculationCard";
 import { ChatComparisonTable } from "./ChatComparisonTable";
 import { useAnalysis } from "@/context/useAnalysis";
 import type { CopilotResponse } from "@/lib/copilotResponse";
@@ -55,6 +56,7 @@ export function AIChatCard() {
             <p className="whitespace-pre-wrap">{message.text}</p>
             {message.careerLaunch && <Link to="/career-lab" className="mt-3 inline-block rounded-lg border border-primary px-3 py-2 text-xs font-bold text-primary">{t("career_chat_open")}</Link>}
             {response?.toolResult && <div className="mt-3 rounded-lg border border-border/70 bg-background/70 p-2.5 text-xs"><p className="font-semibold">{t("copilot_verified_calculation")}</p>{response.toolResult.formula && <p className="mt-1 font-mono" dir="ltr">{response.toolResult.formula}</p>}{response.toolResult.assumptions.length > 0 && <p className="mt-1 text-muted-foreground">{t("copilot_assumptions")}: {response.toolResult.assumptions.join(" · ")}</p>}</div>}
+            {response?.calculation && <ChatCalculationCard projection={response.calculation} />}
             {response?.comparison && response.comparison.length >= 2
               ? <ChatComparisonTable assets={response.comparison} />
               : <ChatAssetCards assets={assets} />}
