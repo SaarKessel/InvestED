@@ -122,7 +122,7 @@ export function AIExplanationCard({
 
         <div>
       <h2 className="text-2xl font-bold text-foreground">
-        {t("ai_explanation_title_full", "🤖 How InvestED Analyzed Your Scenario")}
+        {t("ai_explanation_title_full", "🤖 How InvestED+ Analyzed Your Scenario")}
       </h2>
       <p className="mt-1 text-sm text-muted-foreground">
         {t("ai_explanation_subtitle_full", "Explainable AI Simulation")}

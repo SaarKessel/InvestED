@@ -346,7 +346,7 @@ function generateAiNarration(
   return {
 
     source:
-      "InvestED Explainable AI Engine v5",
+      "InvestED+ Explainable AI Engine v5",
 
     profileSummary:
       isHebrew

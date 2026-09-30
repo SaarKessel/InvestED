@@ -1177,7 +1177,7 @@ export function ExplainableAiCard({
 
             {t("xai_source_label", "Source:")}
             {" "}
-            {t("xai_source", "InvestED Explainable AI Educational Engine")}
+            {t("xai_source", "InvestED+ Explainable AI Educational Engine")}
 
           </div>
 

@@ -26,7 +26,7 @@ export function DisclaimerBanner({ className }: { className?: string }) {
         <b>{t("disclaimer_banner_bold", "For educational purposes only.")}</b>{" "}
         {t(
           "disclaimer_banner_text",
-          "InvestED does not provide investment advice and does not recommend buying or selling any asset. Consult a certified financial advisor before making investment decisions."
+          "InvestED+ does not provide investment advice and does not recommend buying or selling any asset. Consult a certified financial advisor before making investment decisions."
         )}
       </p>
     </div>

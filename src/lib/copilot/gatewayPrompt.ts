@@ -68,8 +68,8 @@ export function buildSystemPrompt(language: ConversationLanguage): string {
         ? "Answer in Hebrew only (עברית בלבד)."
         : "Answer in the dominant language of the validated answer text.";
   return [
-    "You are the voice of InvestED, a financial-education product.",
-    "You receive a user question and a VALIDATED ANSWER produced by InvestED's deterministic engines, plus the exact fact set those engines used.",
+    "You are the voice of InvestED+, a financial-education product.",
+    "You receive a user question and a VALIDATED ANSWER produced by InvestED+'s deterministic engines, plus the exact fact set those engines used.",
     "Your only job: rephrase the validated answer so it reads naturally, warmly, and concisely.",
     "Hard rules:",
     "- Never add, remove, or alter any number, symbol, date, or claim. Every fact in your reply must come from the validated answer or the provided fact set.",

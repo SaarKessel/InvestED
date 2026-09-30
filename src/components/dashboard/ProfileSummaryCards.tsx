@@ -189,7 +189,7 @@ export function WelcomeCard({
             leading-7
             text-muted-foreground
           ">
-            {t("welcome_card_subtitle", "InvestED analyzed your data and created a personal financial overview based on your goals, risk, and investment preferences.")}
+            {t("welcome_card_subtitle", "InvestED+ analyzed your data and created a personal financial overview based on your goals, risk, and investment preferences.")}
           </p>
         </div>
 

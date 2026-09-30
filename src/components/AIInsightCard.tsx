@@ -11,7 +11,7 @@ export function AIInsightCard({ insight }: Props) {
   return (
     <div className="rounded-3xl border border-border bg-card p-6 shadow-soft">
       <h2 className="mb-5 text-2xl font-bold text-foreground">
-        {t("ai_insight_emoji_thinking", "🧠 InvestED AI Analysis")}
+        {t("ai_insight_emoji_thinking", "🧠 InvestED+ AI Analysis")}
       </h2>
 
       <div className="space-y-4">

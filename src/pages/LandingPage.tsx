@@ -151,7 +151,7 @@ export function LandingPage() {
           >
             {t(
               "hero_desc",
-              "InvestED turns the complex world of ETFs, diversification, risk and asset allocation into a clear, interactive, personalized learning experience."
+              "InvestED+ turns the complex world of ETFs, diversification, risk and asset allocation into a clear, interactive, personalized learning experience."
             )}
 
             <span className="mt-3 block text-xs sm:text-sm">
@@ -233,7 +233,7 @@ export function LandingPage() {
         <div className="container">
           <div className="mb-14 text-center">
             <h2 className="font-display text-3xl font-bold text-foreground md:text-4xl">
-              {t("features_title", "What is InvestED?")}
+              {t("features_title", "What is InvestED+?")}
             </h2>
 
             <p className="mx-auto mt-3 max-w-2xl text-muted-foreground">
@@ -445,7 +445,7 @@ export function LandingPage() {
             <p className="mt-4 text-muted-foreground">
               {t(
                 "audience_subtitle",
-                "InvestED was built for people who want to understand the world of investing before making decisions."
+                "InvestED+ was built for people who want to understand the world of investing before making decisions."
               )}
             </p>
 
@@ -479,7 +479,7 @@ export function LandingPage() {
                 <div className="flex items-center justify-between">
                   <div>
                     <span className="text-xs text-muted-foreground">
-                      {t("sample_card_tag", "InvestED Analysis")}
+                      {t("sample_card_tag", "InvestED+ Analysis")}
                     </span>
 
                     <span className="mt-1 block text-sm font-semibold text-foreground">
