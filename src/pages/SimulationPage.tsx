@@ -179,7 +179,7 @@ export default function SimulationPage() {
           <p className="mt-3 max-w-3xl leading-7 text-muted-foreground">{t("sim_page_subtitle")}</p>
         </div>
 
-        <div className="mb-8 flex items-center gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm font-bold text-amber-600 dark:text-amber-400">
+        <div className="mb-8 flex items-center gap-2 rounded-xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm font-bold text-amber-800 dark:text-amber-400">
           <AlertTriangle className="h-4 w-4 shrink-0" />
           {t("sim_simulated_banner")}
         </div>
