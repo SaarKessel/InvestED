@@ -1982,5 +1982,17 @@
   "cap_data_desc": "See and delete the data stored on this device.",
   "cap_overview": "Here is everything I can open for you. Ask me to open any of them, or just ask a question.",
   "cap_open_lead": "Here is what you asked for.",
-  "cap_open_action": "Open"
+  "cap_open_action": "Open",
+  "desk_movers_title": "Market movers",
+  "desk_gainers": "Top gainers",
+  "desk_losers": "Top losers",
+  "desk_unavailable": "This data is not available right now. Nothing is estimated.",
+  "desk_source_yahoo": "Source: Yahoo Finance quotes. Descriptive, not advice.",
+  "desk_rate_title": "Bank of Israel policy rate (latest monthly)",
+  "desk_source_bis": "Source: BIS central bank policy rates",
+  "desk_insurance_title": "Insurance funds: highest year-to-date yield",
+  "desk_insurance_note": "Public insurance-sector report. Past yields do not predict future results.",
+  "desk_movers_lead": "Here are today's movers, read straight from the market feed.",
+  "desk_policy_rate_lead": "Here is the latest Bank of Israel policy rate from BIS data.",
+  "desk_insurance_lead": "Here is the latest public insurance-fund report, ranked by year-to-date yield."
 }
