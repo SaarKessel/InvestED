@@ -6,6 +6,7 @@ import { useLanguage } from "@/context/languageContext";
 import { ChatAssetCards } from "./ChatAssetCards";
 import { ChatCalculationCard } from "./ChatCalculationCard";
 import { ChatComparisonTable } from "./ChatComparisonTable";
+import { ChatNewsList } from "./ChatNewsList";
 import { ChatStrategyCard } from "./ChatStrategyCard";
 import { ChatStrategyFitCard } from "./ChatStrategyFitCard";
 import { useAnalysis } from "@/context/useAnalysis";
@@ -59,6 +60,7 @@ export function AIChatCard() {
             {message.careerLaunch && <Link to="/career-lab" className="mt-3 inline-block rounded-lg border border-primary px-3 py-2 text-xs font-bold text-primary">{t("career_chat_open")}</Link>}
             {response?.toolResult && <div className="mt-3 rounded-lg border border-border/70 bg-background/70 p-2.5 text-xs"><p className="font-semibold">{t("copilot_verified_calculation")}</p>{response.toolResult.formula && <p className="mt-1 font-mono" dir="ltr">{response.toolResult.formula}</p>}{response.toolResult.assumptions.length > 0 && <p className="mt-1 text-muted-foreground">{t("copilot_assumptions")}: {response.toolResult.assumptions.join(" · ")}</p>}</div>}
             {response?.calculation && <ChatCalculationCard projection={response.calculation} />}
+            {assets.length > 0 && <ChatNewsList symbols={assets.map((asset) => asset.symbol)} />}
             {response?.strategyExplanation && <ChatStrategyCard explanation={response.strategyExplanation} />}
             {response?.strategyFit && <ChatStrategyFitCard fit={response.strategyFit} />}
             {response?.comparison && response.comparison.length >= 2
