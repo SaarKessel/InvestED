@@ -135,7 +135,7 @@ export function allowSimulatedFallback(isDevelopment: boolean): boolean {
 
 const allowDevelopmentSimulation = allowSimulatedFallback(import.meta.env.DEV);
 
-function mapApiAsset(api: ApiMarketAsset, fallback: KnownAsset | undefined, seedIndex: number): MarketAsset | null {
+function mapApiAsset(api: ApiMarketAsset, fallback: KnownAsset | undefined, seedIndex: number, allowMock=allowDevelopmentSimulation): MarketAsset | null {
   // An asset the server could not serve (price=null, freshness
   // "unavailable") is dropped here — never replaced with silent mock.
   if (!api || typeof api.price !== "number" || !Number.isFinite(api.price)) return null;
@@ -172,7 +172,7 @@ function mapApiAsset(api: ApiMarketAsset, fallback: KnownAsset | undefined, seed
   // The last price may be real, but a simulated history makes every
   // derived indicator (RSI, volatility) simulated — so the whole asset
   // is labeled mock. This rule is a Phase 3C truthfulness guarantee.
-  if (!allowDevelopmentSimulation) return null;
+  if (!allowMock) return null;
   const known = findKnownAsset(symbol);
   const history = generateMockHistory(api.price || 100, seedFromSymbol(symbol) + seedIndex);
   return {
@@ -198,10 +198,10 @@ function normalizeRange(period?: string): HistoryRange {
   return period && isHistoryRange(period) ? period : "3mo";
 }
 
-async function requestAssets(symbols: string[], range: HistoryRange): Promise<MarketAsset[]> {
+async function requestAssets(symbols: string[], range: HistoryRange, options?:{provider?:'yahoo_finance';allowSimulated?:boolean}): Promise<MarketAsset[]> {
   const symbolQuery = symbols.join(",");
   const response = await fetch(
-    `/api/market-quote?symbols=${encodeURIComponent(symbolQuery)}&range=${range}`
+    `/api/market-quote?symbols=${encodeURIComponent(symbolQuery)}&range=${range}${options?.provider?`&provider=${options.provider}`:''}`
   );
   if (!response.ok) throw new Error(`market-quote responded ${response.status}`);
 
@@ -209,7 +209,7 @@ async function requestAssets(symbols: string[], range: HistoryRange): Promise<Ma
   if (!Array.isArray(data?.assets)) throw new Error("malformed response from market-quote");
 
   const assets = (data.assets as ApiMarketAsset[])
-    .map((api, idx) => mapApiAsset(api, findKnownAsset(symbols[idx]), idx))
+    .map((api, idx) => mapApiAsset(api, findKnownAsset(symbols[idx]), idx, options?.allowSimulated??allowDevelopmentSimulation))
     .filter((asset): asset is MarketAsset => asset !== null);
 
   if (assets.length === 0) throw new Error("empty response from market-quote");
@@ -248,7 +248,8 @@ export async function fetchMarketAssets(interests: InterestArea[] = []): Promise
 export async function fetchMarketAssetBySymbol(
   symbol: string,
   period?: string,
-  _interval?: string
+  _interval?: string,
+  options?:{provider?:'yahoo_finance';allowSimulated?:boolean}
 ): Promise<MarketAsset | null> {
   const resolution = resolveAssetSymbol(symbol);
   if (!resolution) return null;
@@ -256,10 +257,10 @@ export async function fetchMarketAssetBySymbol(
   const range = normalizeRange(period);
 
   try {
-    const assets = await requestAssets([normalized], range);
-    return assets[0] ?? null;
+    const assets = await requestAssets([normalized], range,options);
+    return assets.find(asset=>asset.symbol===normalized&&(!options?.provider||asset.dataSource===options.provider)) ?? null;
   } catch {
     // API unreachable (local dev, provider outage): labeled mock fallback.
-    return allowDevelopmentSimulation ? buildMockAsset({ symbol: normalized, name: normalized, assetType: "unknown", basePrice: 100 }) : null;
+    return (options?.allowSimulated??allowDevelopmentSimulation) ? buildMockAsset({ symbol: normalized, name: normalized, assetType: "unknown", basePrice: 100 }) : null;
   }
 }

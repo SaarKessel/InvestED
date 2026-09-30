@@ -11,7 +11,7 @@
 import { SP500_STOCKS } from "../sp500Stocks.js";
 import { listKnownAssets } from "./knownAssets.js";
 
-const TICKER_PATTERN = /^(?:[A-Za-z]{1,5}|[A-Za-z]{3,6}=X)$/;
+const TICKER_PATTERN = /^[A-Za-z0-9^][A-Za-z0-9.\-^=]{0,9}$/;
 
 export interface SymbolResolution {
   symbol: string;
@@ -25,11 +25,6 @@ function normalize(query: string): string {
 export function resolveAssetSymbol(query: string): SymbolResolution | null {
   const trimmed = query.trim();
   if (!trimmed) return null;
-
-  // Ticker-pattern tokens resolve directly ("NVDA", "nvda", "amd").
-  if (TICKER_PATTERN.test(trimmed)) {
-    return { symbol: trimmed.toUpperCase(), matched: "ticker" };
-  }
 
   const needle = normalize(trimmed);
 
@@ -55,6 +50,11 @@ export function resolveAssetSymbol(query: string): SymbolResolution | null {
         return { symbol: stock.symbol, matched: "alias" };
       }
     }
+  }
+
+  // Ticker-pattern tokens resolve directly ("NVDA", "nvda", "amd").
+  if (TICKER_PATTERN.test(trimmed)) {
+    return { symbol: trimmed.toUpperCase(), matched: "ticker" };
   }
 
   return null;

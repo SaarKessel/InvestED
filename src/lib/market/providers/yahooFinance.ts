@@ -117,10 +117,11 @@ export function normalizeYahooChart(
     const open = asNumber(opens[i]);
     const high = asNumber(highs[i]);
     const low = asNumber(lows[i]);
-    if (typeof t !== "number" || close === null) return;
+    if (typeof t !== "number" || !Number.isFinite(t) || t <= 0 || close === null || close <= 0 || !Number.isFinite(t * 1000) || t * 1000 > 8640000000000000) return;
     history.push({
       date: new Date(t * 1000).toISOString().slice(0, 10),
       price: round2(close),
+      ohlcAvailable: open !== null && high !== null && low !== null,
       open: open !== null ? round2(open) : round2(close),
       high: high !== null ? round2(high) : round2(close),
       low: low !== null ? round2(low) : round2(close),
@@ -129,8 +130,10 @@ export function normalizeYahooChart(
     });
   });
 
-  const lastClose = history[history.length - 1]?.price ?? null;
-  const price = asNumber(meta.regularMarketPrice) ?? lastClose;
+  const latestCandle = history.reduce<CandleDatum | null>((latest, candle) =>
+    !latest || candle.date > latest.date ? candle : latest, null);
+  const metadataPrice = asNumber(meta.regularMarketPrice);
+  const price = metadataPrice !== null && metadataPrice > 0 ? metadataPrice : latestCandle?.price ?? null;
   if (price === null) {
     throw new ProviderResponseError(`Yahoo Finance chart for ${symbol} has no usable price`);
   }
@@ -144,6 +147,11 @@ export function normalizeYahooChart(
       : 0;
 
   const regularMarketTime = asNumber(meta.regularMarketTime);
+  const validMarketTime = regularMarketTime !== null && regularMarketTime > 0 &&
+    Number.isFinite(regularMarketTime * 1000) && regularMarketTime * 1000 <= 8640000000000000;
+  const quoteTimestamp = metadataPrice !== null && metadataPrice > 0
+    ? validMarketTime ? new Date(regularMarketTime * 1000).toISOString() : null
+    : latestCandle ? `${latestCandle.date}T00:00:00.000Z` : null;
 
   const quote: NormalizedQuote = {
     symbol: typeof meta.symbol === "string" ? (meta.symbol as string) : symbol,
@@ -170,7 +178,7 @@ export function normalizeYahooChart(
     marketStatus: mapYahooMarketState(meta.marketState),
     dataSource: "yahoo_finance",
     timestamp:
-      regularMarketTime !== null ? new Date(regularMarketTime * 1000).toISOString() : null,
+      quoteTimestamp,
   };
 
   return { quote, history };

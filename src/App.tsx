@@ -25,6 +25,11 @@ const TriviaPage = lazy(() => import("@/pages/TriviaPage"));
 const NewsPage = lazy(() => import("@/pages/NewsPage"));
 const SimulationPage = lazy(() => import("@/pages/SimulationPage"));
 const LearnPage = lazy(() => import("@/pages/LearnPage"));
+const CareerLabPage = lazy(() => import("@/pages/CareerLabPage"));
+const PortfolioGamePage = lazy(() => import("@/pages/PortfolioGamePage"));
+const AnalystGamePage = lazy(() => import("@/pages/AnalystGamePage"));
+const OperationsGamePage = lazy(() => import("@/pages/OperationsGamePage"));
+const AccountantGamePage = lazy(() => import("@/pages/AccountantGamePage"));
 const DataControlsPage = lazy(() => import("@/pages/DataControlsPage"));
 
 function PageLoading() {
@@ -58,6 +63,11 @@ export default function App() {
               <Route path="/news" element={<Suspense fallback={<PageLoading />}><NewsPage /></Suspense>} />
               <Route path="/simulation" element={<Suspense fallback={<PageLoading />}><SimulationPage /></Suspense>} />
               <Route path="/learn" element={<Suspense fallback={<PageLoading />}><LearnPage /></Suspense>} />
+              <Route path="/career-lab" element={<Suspense fallback={<PageLoading />}><CareerLabPage /></Suspense>} />
+              <Route path="/career-lab/portfolio-game" element={<Suspense fallback={<PageLoading />}><PortfolioGamePage /></Suspense>} />
+              <Route path="/career-lab/analyst-game" element={<Suspense fallback={<PageLoading />}><AnalystGamePage /></Suspense>} />
+              <Route path="/career-lab/operations-game" element={<Suspense fallback={<PageLoading />}><OperationsGamePage /></Suspense>} />
+              <Route path="/career-lab/accountant-game" element={<Suspense fallback={<PageLoading />}><AccountantGamePage /></Suspense>} />
               <Route
                 path="/strategy-lab"
                 element={

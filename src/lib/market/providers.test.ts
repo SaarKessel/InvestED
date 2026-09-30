@@ -173,6 +173,10 @@ describe("Alpha Vantage provider normalization", () => {
 });
 
 describe("Yahoo Finance provider normalization (yfinance path)", () => {
+  it("marks close-only history as missing source OHLC",()=>{
+    const raw=structuredClone(YAHOO_CHART);raw.chart.result[0].indicators.quote[0].open=[];
+    expect(normalizeYahooChart(raw,"NVDA").history.every(candle=>candle.ohlcAvailable===false)).toBe(true);
+  });
   it("normalizes the v8 chart payload into quote + history", () => {
     const { quote, history } = normalizeYahooChart(YAHOO_CHART, "NVDA");
     expect(quote).toMatchObject({
@@ -191,6 +195,27 @@ describe("Yahoo Finance provider normalization (yfinance path)", () => {
     });
     expect(history.length).toBe(2);
     expect(history[1]).toMatchObject({ close: 131.88, volume: 200 });
+  });
+
+  it("dates a fallback close by the latest valid candle, never the unrelated metadata clock", () => {
+    const raw=structuredClone(YAHOO_CHART);
+    raw.chart.result[0].meta.regularMarketPrice=0;
+    raw.chart.result[0].meta.regularMarketTime=REGULAR_MARKET_TIME + 86400;
+    raw.chart.result[0].timestamp=[REGULAR_MARKET_TIME, REGULAR_MARKET_TIME-86400];
+    raw.chart.result[0].indicators.quote[0].close=[120,119];
+    const {quote}=normalizeYahooChart(raw,'NVDA');
+    expect(quote.price).toBe(120);
+    expect(quote.timestamp).toBe(new Date(REGULAR_MARKET_TIME*1000).toISOString().slice(0,10)+'T00:00:00.000Z');
+  });
+
+  it("rejects non-positive prices and invalid source times", () => {
+    const raw=structuredClone(YAHOO_CHART);
+    raw.chart.result[0].meta.regularMarketPrice=0;
+    raw.chart.result[0].meta.regularMarketTime=Number.MAX_VALUE;
+    raw.chart.result[0].indicators.quote[0].close=[-1,0];
+    expect(()=>normalizeYahooChart(raw,'NVDA')).toThrow(ProviderResponseError);
+    raw.chart.result[0].meta.regularMarketPrice=131.88;
+    expect(normalizeYahooChart(raw,'NVDA').quote.timestamp).toBeNull();
   });
 
   it("maps market states truthfully", () => {

@@ -371,3 +371,15 @@
   background-size: 48px 48px;
   mask-image: linear-gradient(to bottom, black, transparent);
 }
+
+/* Shared dark work desks need a focus color independent of the page theme. */
+.career-desk :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid #5eead4;
+  outline-offset: 3px;
+}
+.career-desk :where(button, summary) { min-height: 44px; }
+@media (forced-colors: active) {
+  .career-desk :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline-color: Highlight;
+  }
+}

@@ -429,6 +429,9 @@ export interface AnalysisResult {
 
 export interface CandleDatum {
 
+  /** False if provider supplied only closes, not complete OHLC. */
+  ohlcAvailable?: boolean;
+
   date: string;
 
   open: number;
