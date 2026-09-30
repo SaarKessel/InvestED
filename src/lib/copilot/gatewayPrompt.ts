@@ -218,8 +218,12 @@ export function rephraseIntroducesNoNewFacts(
 ): boolean {
   const allowed = `${answer} ${JSON.stringify(facts ?? {})}`.replace(/,/g, "");
   const haystack = text.replace(/,/g, "");
+  // Exact-token membership: substring checks would wave drift through
+  // ("5" hides inside "51", "VO" inside "VOO").
+  const allowedSymbols = new Set(allowed.match(/\b[A-Z]{2,6}\b/g) ?? []);
+  const allowedNumbers = new Set(allowed.match(/\d+(\.\d+)?/g) ?? []);
   const symbols = haystack.match(/\b[A-Z]{2,6}\b/g) ?? [];
-  if (!symbols.every((symbol) => allowed.includes(symbol))) return false;
+  if (!symbols.every((symbol) => allowedSymbols.has(symbol))) return false;
   const numbers = haystack.match(/\d+(\.\d+)?/g) ?? [];
-  return numbers.every((num) => allowed.includes(num));
+  return numbers.every((num) => allowedNumbers.has(num));
 }
