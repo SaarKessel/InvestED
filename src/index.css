@@ -394,9 +394,8 @@
 .welcome-emblem::before { content:""; position:absolute; inset:0; margin:auto; width:15rem; height:15rem; border-radius:9999px;
   background:radial-gradient(circle, rgba(245,180,60,.42), rgba(245,180,60,.10) 45%, transparent 70%);
   filter:blur(18px); animation:welcome-glow 6s ease-in-out infinite; }
-.welcome-emblem::after { content:""; position:absolute; inset:0; margin:auto; width:8.5rem; height:8.5rem; border-radius:2rem;
-  background:conic-gradient(from 0deg, rgba(245,180,60,.0), rgba(245,180,60,.55), rgba(45,212,191,.35), rgba(245,180,60,0));
-  filter:blur(6px); animation:welcome-spin 14s linear infinite; }
+.welcome-emblem::after { content:""; position:absolute; inset:0; margin:auto; width:9rem; height:9rem; border-radius:2.25rem;
+  border:1px solid rgba(245,180,60,.22); box-shadow:0 0 40px rgba(245,180,60,.18) inset; animation:welcome-glow 6s ease-in-out infinite; }
 .welcome-emblem img { position:relative; z-index:1; animation:welcome-float 7s ease-in-out infinite; }
 .welcome-title { background:linear-gradient(180deg, hsl(var(--foreground)) 35%, rgba(245,190,90,.95)); -webkit-background-clip:text; background-clip:text; color:transparent; }
 .welcome-chip { backdrop-filter:blur(6px); transition:transform .2s ease, border-color .2s ease, background-color .2s ease; }
