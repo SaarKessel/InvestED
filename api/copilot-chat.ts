@@ -26,6 +26,7 @@ import {
   GEMINI_API_BASE,
   normalizeGatewayPayload,
   parseGeminiResponse,
+  rephrasePreservesFacts,
   resolveGeminiConfig,
 } from "../src/lib/copilot/gatewayPrompt.js";
 
@@ -92,11 +93,13 @@ export default async function handler(req: CopilotChatRequest, res: CopilotChatR
     }
     const text = parseGeminiResponse(await response.json());
     if (!text) return res.status(200).json({ fallback: true, reason: "empty_completion" });
+    // The model ASKED to preserve facts is not enough: verify every symbol
+    // and number survived; any drift keeps the deterministic answer.
+    if (!rephrasePreservesFacts(payload.facts, text)) {
+      return res.status(200).json({ fallback: true, reason: "fact_mismatch" });
+    }
     return res.status(200).json({ text });
-  } catch (err) {
-    // TEMPORARY diagnostic: surface the transport error class/message (never
-    // the key; Google errors do not contain it) to pin the live failure.
-    const detail = err instanceof Error ? `${err.name}:${err.message}` : String(err);
-    return res.status(200).json({ fallback: true, reason: `gemini_unreachable`, detail: detail.slice(0, 120) });
+  } catch {
+    return res.status(200).json({ fallback: true, reason: "gemini_unreachable" });
   }
 }

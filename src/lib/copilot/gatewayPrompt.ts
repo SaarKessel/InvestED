@@ -155,7 +155,7 @@ export function resolveGatewayToken(
 // logged or returned.
 // ---------------------------------------------------------------------------
 
-export const DEFAULT_GEMINI_MODEL = "gemini-2.5-flash";
+export const DEFAULT_GEMINI_MODEL = "gemini-3.5-flash-lite";
 export const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta/models";
 
 export interface GeminiConfig {
@@ -201,4 +201,25 @@ export function parseGeminiResponse(body: unknown): string | null {
     .trim();
   if (!text || text.length > MAX_REPHRASED_LENGTH) return null;
   return text;
+}
+
+/**
+ * Deterministic enforcement of the no-new-facts contract. The system prompt
+ * ASKS the model to preserve every fact; this CHECKS it: every asset symbol
+ * and every number in the validated fact set must survive the rephrase
+ * verbatim (tolerating commas, percent signs, and a minus turned into a
+ * word). Any drift and the caller falls back to the deterministic answer.
+ */
+export function rephrasePreservesFacts(facts: GatewayFacts, text: string): boolean {
+  const haystack = text.replace(/,/g, "");
+  const tokens: string[] = [];
+  for (const asset of facts.assets ?? []) {
+    if (asset && typeof asset.symbol === "string" && asset.symbol) tokens.push(asset.symbol);
+  }
+  const numbers = JSON.stringify(facts ?? {}).match(/-?\d+(\.\d+)?/g) ?? [];
+  for (const raw of numbers) {
+    const abs = raw.replace(/^-/, "");
+    if (abs && abs !== "0") tokens.push(abs);
+  }
+  return tokens.every((token) => haystack.includes(token));
 }

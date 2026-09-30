@@ -150,3 +150,45 @@ describe("geminiTransport", () => {
     expect(parseGeminiResponse({ candidates: [{ content: { parts: [{ text: "x".repeat(6001) }] } }] })).toBeNull();
   });
 });
+
+describe("rephrasePreservesFacts", () => {
+  const facts = {
+    intent: "asset_analysis",
+    assets: [{ symbol: "VOO", price: 706.07, changePercent: -0.22, volatilityPct: 14.2, rsi: 51, isMock: false }],
+    calculation: null,
+    holdingValuation: null,
+    purchasePower: null,
+    strategies: [],
+    clarification: null,
+  } as never;
+
+  it("accepts a faithful English rephrase", async () => {
+    const { rephrasePreservesFacts } = await import("./gatewayPrompt");
+    expect(
+      rephrasePreservesFacts(facts, "VOO is trading at 706.07 USD, down 0.22% today. Volatility 14.2, RSI 51.")
+    ).toBe(true);
+  });
+
+  it("rejects a rephrase that corrupts the symbol", async () => {
+    const { rephrasePreservesFacts } = await import("./gatewayPrompt");
+    expect(
+      rephrasePreservesFacts(facts, "VVO trades at 706.07 USD, down 0.22%. Volatility 14.2, RSI 51.")
+    ).toBe(false);
+  });
+
+  it("rejects a rephrase that drops a number", async () => {
+    const { rephrasePreservesFacts } = await import("./gatewayPrompt");
+    expect(rephrasePreservesFacts(facts, "VOO trades at 706.07 USD.")).toBe(false);
+  });
+
+  it("tolerates commas, percent signs, and a minus turned into a word", async () => {
+    const { rephrasePreservesFacts } = await import("./gatewayPrompt");
+    const big = {
+      ...facts,
+      assets: [{ symbol: "VOO", price: 1234.5, changePercent: -0.22, volatilityPct: 14.2, rsi: 51, isMock: false }],
+    } as never;
+    expect(
+      rephrasePreservesFacts(big, "VOO trades at 1,234.5 USD, a decline of 0.22% today, volatility 14.2, RSI 51.")
+    ).toBe(true);
+  });
+});
