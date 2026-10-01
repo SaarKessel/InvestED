@@ -38,6 +38,8 @@ import { ChatDepth } from "./ChatDepth";
 import { depthSections } from "@/lib/copilot/depth";
 import { ChatAgentTag } from "./ChatAgentTag";
 import { readPickedAgent, routeAgent, savePickedAgent, AGENTS } from "@/lib/agents";
+import { ChatSymbolCard } from "./ChatSymbolCard";
+import { lookupSymbol, parseSymbolQuestion, type SymbolInfo } from "@/lib/copilot/symbolDesk";
 import { ChatFxCard } from "./ChatFxCard";
 import { loadFx, type FxResult } from "@/lib/copilot/fxDesk";
 import { type MathDeskResult } from "@/lib/copilot/mathDesk";
@@ -55,7 +57,7 @@ import { appendDictation, getSpeechRecognition, joinTranscript, speechLocale, ty
 import { useAnalysis } from "@/context/useAnalysis";
 import type { CopilotResponse } from "@/lib/copilotResponse";
 
-interface Message { agent?: { id: string | null; switchTo?: string }; deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxResult | null; fxFailed?: boolean; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
+interface Message { agent?: { id: string | null; switchTo?: string }; deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxResult | null; fxFailed?: boolean; symbol?: SymbolInfo; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
 
 export function AIChatCard() {
   const { t, language } = useLanguage();
@@ -211,6 +213,18 @@ export function AIChatCard() {
       setMessages((current) => current.map((m, i) => i === at.i ? { role: "copilot", text: result.text ? result.text + (result.missing.length ? `\n\n${t("deep_missing")} ${result.missing.join(", ")}` : "") : t("deep_none"), trace: result.text ? trace : undefined, deep: result.text ? { steps: result.steps.length, reworded: result.reworded } : undefined, question: result.text ? q : undefined } : m));
       return;
     }
+    const symQ = parseSymbolQuestion(text);
+    if (symQ) {
+      const info = await lookupSymbol(symQ);
+      if (info) {
+        const trace: TraceStep[] = [
+          { text: { en: "Recognized a question about a ticker.", he: "זיהיתי שאלה על סימול." } },
+          { text: { en: "Looked it up in a static list built from FinanceDatabase. It holds names and types, not prices.", he: "חיפשתי ברשימה סטטית שנבנתה מ-FinanceDatabase. היא כוללת שמות וסוגים, בלי מחירים." }, trust: "KNOWLEDGE" },
+          { text: { en: "No model wrote this.", he: "אף מודל לא כתב את זה." } }];
+        setMessages((current) => [...current, { role: "copilot", trace, text: language === "he" ? `${info.symbol} הוא ${info.kind === "equity" ? "סימול של מניה" : "סימול של קרן סל או קרן"}:` : `${info.symbol} is ${info.kind === "equity" ? "a stock" : "an ETF or fund"}:`, symbol: info }]);
+        return;
+      }
+    }
     const plan = planQuestion(text);
     const trace = plan.trace;
     const keywordPath = plan.toolPath ?? null;
@@ -288,6 +302,7 @@ export function AIChatCard() {
     return (<>
             {message.desk && <ChatDataDesk data={message.desk} />}
             {message.calc && <ChatCalcCard data={message.calc} />}
+            {message.symbol && <ChatSymbolCard info={message.symbol} onAsk={(q) => void send(q)} />}
             {message.fx && <ChatFxCard data={message.fx} />}
             {message.math && <ChatMathCard data={message.math} />}
             {message.knowledge && message.knowledge.length > 0 && <ChatKnowledge items={message.knowledge} />}

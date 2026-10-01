@@ -8,3 +8,8 @@
 ## Frankfurter (European Central Bank reference rates)
 - Service: https://frankfurter.dev, data from the European Central Bank daily reference rates
 - Use: currency conversion in chat. Shown as a daily reference rate, not a live trading quote.
+
+## FinanceDatabase
+- Project: https://github.com/JerBouma/FinanceDatabase
+- License: MIT (verified from the repository's license field)
+- Use: src/data/symbols.json, a trimmed copy (US large and mega cap stocks and US-listed ETFs; name, sector or issuer only; no descriptions, no prices). Rebuild with scripts/build-symbol-db.py. Shown as identity details only.
