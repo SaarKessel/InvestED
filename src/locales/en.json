@@ -2007,6 +2007,7 @@
   "talk_stop": "End voice conversation",
   "speak_no_voice": "This device has no Hebrew voice installed, so the answer cannot be read aloud. Text still works.",
   "speak_unsupported": "This browser cannot read answers aloud.",
+  "disclaimer_one_line": "Education only, not investment advice.",
   "voice_start": "Dictate a question",
   "voice_stop": "Stop dictation",
   "voice_listening": "Listening... speak now, then review the text before sending.",

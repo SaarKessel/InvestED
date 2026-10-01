@@ -11,8 +11,8 @@ export function Logo({ className, showWordmark = true }: { className?: string; s
         className="h-8 w-8 rounded-lg shadow-sm"
       />
       {showWordmark && (
-        <span dir="ltr" className="font-display text-lg font-extrabold tracking-tight">
-          Invest<span className="gradient-text">ED+</span>
+        <span dir="ltr" className="font-display text-lg font-extrabold tracking-tight text-[#B8862B] dark:text-[#E0B253]">
+          InvestED+
         </span>
       )}
     </span>
