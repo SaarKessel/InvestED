@@ -54,7 +54,7 @@ export default function KnowledgePage() {
       </div>
       <form onSubmit={submit} className={`${box} space-y-3`}>
         <p className="text-sm font-semibold">{t("kbo_add")}</p>
-        <input required maxLength={200} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder={t("kbo_title")} className={field} />
+        <input required maxLength={200} value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder={t("kbo_note_title")} className={field} />
         <textarea required maxLength={4000} rows={5} value={form.body} onChange={(e) => setForm({ ...form, body: e.target.value })} placeholder={t("kbo_body")} className={field} />
         <div className="grid gap-3 sm:grid-cols-3">
           <input required maxLength={200} value={form.source_label} onChange={(e) => setForm({ ...form, source_label: e.target.value })} placeholder={t("kbo_source")} className={field} />

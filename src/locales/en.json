@@ -2028,6 +2028,7 @@
   "kbo_stat_down": "Not helpful",
   "kbo_stat_gaps": "Open gaps",
   "kbo_add": "Add knowledge",
+  "kbo_note_title": "Title",
   "kbo_body": "Text (shown to users verbatim)",
   "kbo_source": "Source name",
   "kbo_save": "Save",
