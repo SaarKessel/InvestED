@@ -17,8 +17,8 @@ export function ChatSidebar(p: Props) {
   if (!p.open) return null;
   return (
     <>
-      <div className="fixed inset-0 z-40 bg-black/40 lg:hidden" onClick={p.onClose} aria-hidden="true" />
-      <aside dir="ltr" aria-label={t("sidebar_title")} className="fixed bottom-0 left-0 top-0 z-50 flex w-72 max-w-[85vw] flex-col border-e border-border bg-card shadow-2xl">
+      <div className="fixed inset-0 z-[60] bg-black/40 lg:bg-black/20" onClick={p.onClose} aria-hidden="true" />
+      <aside dir="ltr" aria-label={t("sidebar_title")} className="fixed bottom-0 left-0 top-0 z-[70] flex w-72 max-w-[85vw] flex-col border-e border-border bg-card shadow-2xl">
         <div className="flex items-center justify-between px-3 py-3">
           <span className="text-sm font-semibold">{t("sidebar_title")}</span>
           <button type="button" onClick={p.onClose} aria-label={t("tool_close")} className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"><X className="h-4 w-4" aria-hidden="true" /></button>
