@@ -1,5 +1,5 @@
 /**
- * Country statistics from the World Bank open data API (CC BY 4.0, free, no key).
+ * Country statistics from the World Bank open data API (CC BY 4.0, free, no key), through our own /api/worldbank pass-through because the browser cannot call it reliably.
  * Yearly values, published with a delay, so the card shows the year of every number.
  */
 export type WbIndicator = "inflation" | "gdp_growth" | "unemployment";
@@ -37,7 +37,7 @@ export function parseWbRequest(text: string): WbRequest | null {
 
 export async function loadWb(req: WbRequest, fetcher: typeof fetch = fetch): Promise<WbResult | null> {
   try {
-    const r = await fetcher(`https://api.worldbank.org/v2/country/${req.country}/indicator/${IND[req.indicator].code}?format=json&mrv=6&per_page=6`);
+    const r = await fetcher(`/api/worldbank?country=${req.country}&code=${IND[req.indicator].code}`);
     if (!r.ok) return null;
     const j = (await r.json()) as [{ lastupdated?: string }, { date: string; value: number | null }[] | null];
     const rows = (j[1] ?? []).filter((x) => typeof x.value === "number") as { date: string; value: number }[];
