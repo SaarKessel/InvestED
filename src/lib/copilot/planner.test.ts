@@ -39,3 +39,10 @@ describe("wb route", () => {
     expect(planQuestion("what is inflation").route).not.toBe("wb");
   });
 });
+
+describe("scenario route", () => {
+  it("routes a long multi-calculation question", () => {
+    expect(planQuestion("Invest 10000 and save 500 a month for 10 years. Then what is 15% of 2000?").route).toBe("scenario");
+    expect(planQuestion("invest 10000 and save 500 a month for 10 years").route).toBe("calc");
+  });
+});

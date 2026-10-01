@@ -3,6 +3,7 @@ import { isCareerLaunchRequest } from "@/lib/career/chatRoute";
 import { resolveToolKeyword } from "./toolKeywords";
 import { looksLikeLearningPathRequest } from "./learnDesk";
 import { resolveSiteIntent } from "./siteCapabilities";
+import { runScenario, type ScenarioPart } from "./scenarioDesk";
 import { parseWbRequest, type WbRequest } from "./worldBankDesk";
 import { parseFxRequest, type FxRequest } from "./fxDesk";
 import { runMathDesk, type MathDeskResult } from "./mathDesk";
@@ -11,10 +12,10 @@ import { resolveDataDesk, type DataDeskKind } from "./dataDesk";
 import { TRUST_LABEL } from "@/lib/intelligence/provenance";
 import type { TrustClass } from "@/lib/intelligence/verificationEngine";
 
-export type Route = "tool" | "career" | "learnpath" | "site" | "calc" | "math" | "fx" | "wb" | "desk" | "copilot";
+export type Route = "tool" | "career" | "learnpath" | "site" | "calc" | "math" | "fx" | "wb" | "scenario" | "desk" | "copilot";
 export interface Bi { en: string; he: string }
 export interface TraceStep { text: Bi; trust?: TrustClass }
-export interface Plan { route: Route; toolPath?: string; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxRequest; wb?: WbRequest; desk?: DataDeskKind; trace: TraceStep[] }
+export interface Plan { route: Route; toolPath?: string; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxRequest; wb?: WbRequest; scenario?: ScenarioPart[]; desk?: DataDeskKind; trace: TraceStep[] }
 const b = (en: string, he: string): Bi => ({ en, he });
 
 export function planQuestion(text: string): Plan {
@@ -29,6 +30,11 @@ export function planQuestion(text: string): Plan {
   if (fx) return { route: "fx", fx, trace: [
     { text: b("Recognized a currency conversion.", "זיהיתי בקשה להמרת מטבע.") },
     { text: b("Loaded the European Central Bank daily reference rate and multiplied. It is a daily reference rate, not a live trading quote.", "טענתי את שער היחס היומי של הבנק המרכזי האירופי וכפלתי. זהו שער יחס יומי, לא שער מסחר חי."), trust: "DATA" },
+    { text: b("No model chose or changed any number.", "אף מודל לא בחר או שינה מספר.") }] };
+  const scenario = runScenario(text);
+  if (scenario) return { route: "scenario", scenario, trace: [
+    { text: b("Found several calculations in one question and split them into parts.", "מצאתי בשאלה כמה חישובים וחילקתי אותם לחלקים.") },
+    { text: b("Ran each part through the fixed calculator, loan formula or math parser, in order. A part that cannot be read safely is named and not guessed.", "הרצתי כל חלק במחשבון הקבוע, בנוסחת ההלוואה או במנתח החשבון, לפי הסדר. חלק שאי אפשר לקרוא בבטחה מסומן ולא מנוחש."), trust: "CALCULATION" },
     { text: b("No model chose or changed any number.", "אף מודל לא בחר או שינה מספר.") }] };
   const wb = parseWbRequest(text);
   if (wb) return { route: "wb", wb, trace: [

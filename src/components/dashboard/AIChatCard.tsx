@@ -40,6 +40,8 @@ import { ChatAgentTag } from "./ChatAgentTag";
 import { readPickedAgent, routeAgent, savePickedAgent, AGENTS } from "@/lib/agents";
 import { ChatSymbolCard } from "./ChatSymbolCard";
 import { lookupSymbol, parseSymbolQuestion, type SymbolInfo } from "@/lib/copilot/symbolDesk";
+import { ChatScenarioCard } from "./ChatScenarioCard";
+import { type ScenarioPart } from "@/lib/copilot/scenarioDesk";
 import { ChatWbCard } from "./ChatWbCard";
 import { loadWb, type WbResult } from "@/lib/copilot/worldBankDesk";
 import { ChatFxCard } from "./ChatFxCard";
@@ -59,7 +61,7 @@ import { appendDictation, getSpeechRecognition, joinTranscript, speechLocale, ty
 import { useAnalysis } from "@/context/useAnalysis";
 import type { CopilotResponse } from "@/lib/copilotResponse";
 
-interface Message { agent?: { id: string | null; switchTo?: string }; deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxResult | null; fxFailed?: boolean; symbol?: SymbolInfo; wb?: WbResult | null; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
+interface Message { agent?: { id: string | null; switchTo?: string }; deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxResult | null; fxFailed?: boolean; symbol?: SymbolInfo; wb?: WbResult | null; scenario?: ScenarioPart[]; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
 
 export function AIChatCard() {
   const { t, language } = useLanguage();
@@ -256,6 +258,10 @@ export function AIChatCard() {
       setMessages((current) => [...current, { role: "copilot", trace, text: t("calc_lead"), calc }]);
       return;
     }
+    if (plan.scenario) {
+      setMessages((current) => [...current, { role: "copilot", trace, text: language === "he" ? "חילקתי את השאלה לחלקים והנה כל חישוב:" : "I split your question into parts. Here is each calculation:", scenario: plan.scenario }]);
+      return;
+    }
     if (plan.wb) {
       const wb = await loadWb(plan.wb);
       setMessages((current) => [...current, { role: "copilot", trace, text: wb ? (language === "he" ? "הנה הנתון:" : "Here is the statistic:") : (language === "he" ? "לא הצלחתי לטעון עכשיו את הנתון מהבנק העולמי, ולכן לא מציגה כלום. נסו שוב בעוד רגע." : "I could not load that statistic from the World Bank right now, so I am not showing anything. Try again in a moment."), wb }]);
@@ -310,6 +316,7 @@ export function AIChatCard() {
             {message.desk && <ChatDataDesk data={message.desk} />}
             {message.calc && <ChatCalcCard data={message.calc} />}
             {message.symbol && <ChatSymbolCard info={message.symbol} onAsk={(q) => void send(q)} />}
+            {message.scenario && <ChatScenarioCard parts={message.scenario} />}
             {message.wb && <ChatWbCard data={message.wb} />}
             {message.fx && <ChatFxCard data={message.fx} />}
             {message.math && <ChatMathCard data={message.math} />}
