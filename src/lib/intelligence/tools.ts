@@ -10,6 +10,7 @@ import { lookupSymbol, type SymbolInfo } from "@/lib/copilot/symbolDesk";
 import { runMathDesk, type MathDeskResult } from "@/lib/copilot/mathDesk";
 import { runCalcDesk, type CalcDeskResult } from "@/lib/copilot/calcDesk";
 import { runScenario, type ScenarioPart } from "@/lib/copilot/scenarioDesk";
+import { TOOLS as ENGINES } from "./toolRegistry";
 import type { Bi, ToolResult } from "./envelope";
 import type { TrustClass } from "./verificationEngine";
 
@@ -71,4 +72,15 @@ export async function runTool<T = unknown>(id: string, input: unknown, ctx: { ag
   if (!agentMayUse(ctx.agentId ?? null, id)) return { ok: false, reason: "denied" };
   const result = await (ADAPTERS[id] as (i: unknown) => Promise<ToolResult | null>)(input);
   return result ? { ok: true, result: result as ToolResult<T> } : { ok: false, reason: "unavailable" };
+}
+
+export interface CatalogEntry { id: string; kind: "desk" | "engine"; runnable: boolean; title: Bi; trust: TrustClass }
+/**
+ * One list of everything the intelligence layer can name: the runnable desks above and the
+ * engine catalogue the intent stage (aiConversationService) plans with. Same vocabulary, one place.
+ */
+export function toolCatalog(): CatalogEntry[] {
+  const desks = Object.values(TOOL_SPECS).map((t) => ({ id: t.id, kind: "desk" as const, runnable: true, title: t.title, trust: t.trust }));
+  const engines = Object.values(ENGINES).map((t) => ({ id: t.id, kind: "engine" as const, runnable: false, title: t.title, trust: t.trust }));
+  return [...desks, ...engines];
 }

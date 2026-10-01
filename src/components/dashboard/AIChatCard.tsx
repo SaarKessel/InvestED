@@ -260,31 +260,31 @@ export function AIChatCard() {
         : { role: "copilot", trace, text: t("cap_open_lead"), siteCaps: site.matches }]);
       return;
     }
-    const calcOut = plan.calc ? await runTool<CalcDeskResult>("calc", text, { agentId: pickedAgent }) : null;
+    const calcOut = plan.calc ? await runTool<CalcDeskResult>(plan.tools[0], text, { agentId: pickedAgent }) : null;
     const calc = calcOut && calcOut.ok ? calcOut.result.value : (plan.calc ?? null);
     if (calc) {
       setMessages((current) => [...current, { role: "copilot", trace, text: t("calc_lead"), calc, prov: calcOut && calcOut.ok ? calcOut.result.provenance : undefined }]);
       return;
     }
     if (plan.scenario) {
-      const scOut = await runTool("scenario", text, { agentId: pickedAgent });
+      const scOut = await runTool(plan.tools[0], text, { agentId: pickedAgent });
       setMessages((current) => [...current, { role: "copilot", trace, text: language === "he" ? "חילקתי את השאלה לחלקים והנה כל חישוב:" : "I split your question into parts. Here is each calculation:", scenario: plan.scenario, prov: scOut.ok ? scOut.result.provenance : undefined }]);
       return;
     }
     if (plan.wb) {
-      const wbOut = await runTool<WbResult>("wb", plan.wb, { agentId: pickedAgent });
+      const wbOut = await runTool<WbResult>(plan.tools[0], plan.wb, { agentId: pickedAgent });
       const wb = wbOut.ok ? wbOut.result.value : null;
       setMessages((current) => [...current, { role: "copilot", trace, text: wb ? (language === "he" ? "הנה הנתון:" : "Here is the statistic:") : (language === "he" ? "לא הצלחתי לטעון עכשיו את הנתון מהבנק העולמי, ולכן לא מציגה כלום. נסו שוב בעוד רגע." : "I could not load that statistic from the World Bank right now, so I am not showing anything. Try again in a moment."), wb, prov: wbOut.ok ? wbOut.result.provenance : undefined }]);
       return;
     }
     if (plan.fx) {
-      const fxOut = await runTool<FxResult>("fx", plan.fx, { agentId: pickedAgent });
+      const fxOut = await runTool<FxResult>(plan.tools[0], plan.fx, { agentId: pickedAgent });
       const fx = fxOut.ok ? fxOut.result.value : null;
       setMessages((current) => [...current, { role: "copilot", trace, text: fx ? (language === "he" ? "הנה ההמרה:" : "Here is the conversion:") : (language === "he" ? "לא הצלחתי לטעון עכשיו את שער היחס, ולכן לא המרתי. נסו שוב בעוד רגע." : "I could not load the reference rate right now, so I did not convert anything. Try again in a moment."), fx, prov: fxOut.ok ? fxOut.result.provenance : undefined }]);
       return;
     }
     if (plan.math) {
-      const mOut = await runTool("math", text, { agentId: pickedAgent });
+      const mOut = await runTool(plan.tools[0], text, { agentId: pickedAgent });
       setMessages((current) => [...current, { role: "copilot", trace, text: language === "he" ? "הנה החישוב:" : "Here is the calculation:", math: plan.math, prov: mOut.ok ? mOut.result.provenance : undefined }]);
       return;
     }

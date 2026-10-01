@@ -51,3 +51,23 @@ describe("agent permissions", () => {
     expect(may("limited", "wb", agents)).toBe(false);
   });
 });
+
+import { planQuestion } from "../copilot/planner";
+import { toolCatalog } from "./tools";
+
+describe("one vocabulary", () => {
+  it("every tool a planner route names is a runnable registry tool", () => {
+    for (const q of ["100 USD to ILS", "Israel inflation 2020-2025", "what is 2+3*4", "I invest 10000 and add 500 per month for 10 years at 6%"]) {
+      const plan = planQuestion(q);
+      expect(plan.tools.length, q).toBe(1);
+      for (const id of plan.tools) expect(isToolId(id), id).toBe(true);
+    }
+    expect(planQuestion("open the calculator").tools).toEqual([]);
+  });
+  it("the catalogue lists the six desks and the eight intent-stage engines with no duplicate ids", () => {
+    const c = toolCatalog();
+    expect(c.filter((x) => x.kind === "desk")).toHaveLength(6);
+    expect(c.filter((x) => x.kind === "engine")).toHaveLength(8);
+    expect(new Set(c.map((x) => x.id)).size).toBe(c.length);
+  });
+});
