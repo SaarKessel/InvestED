@@ -16,12 +16,12 @@ export function LevelPicker({ level, onChange }: { level: Level; onChange: (l: L
     return () => { document.removeEventListener("mousedown", close); document.removeEventListener("keydown", esc); };
   }, [open]);
   return (
-    <div ref={box} className="relative">
+    <div ref={box}>
       <button type="button" onClick={() => setOpen((o) => !o)} aria-haspopup="listbox" aria-expanded={open} aria-label={t("level_title")} title={t("level_title")} className="inline-flex h-10 shrink-0 items-center gap-1 rounded-full px-2.5 text-xs font-medium text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground">
         {t(`level_${level}`)}<ChevronDown className="h-3.5 w-3.5" strokeWidth={1.75} aria-hidden="true" />
       </button>
       {open && (
-        <ul role="listbox" aria-label={t("level_title")} className="absolute bottom-full end-0 z-30 mb-2 w-64 rounded-2xl border border-border bg-background p-2 shadow-2xl">
+        <ul role="listbox" aria-label={t("level_title")} className="absolute bottom-full end-2 z-30 mb-2 w-64 max-w-[calc(100vw-2rem)] rounded-2xl border border-border bg-background p-2 shadow-2xl">
           {LEVELS.map((l) => (
             <li key={l.id} role="option" aria-selected={l.id === level} aria-disabled={!l.available}>
               <button type="button" disabled={!l.available} onClick={() => { onChange(l.id); setOpen(false); }} className={`flex w-full items-start justify-between gap-2 rounded-xl px-3 py-2 text-start text-sm ${l.available ? "text-foreground hover:bg-accent" : "cursor-not-allowed text-muted-foreground/60"}`}>
