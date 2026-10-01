@@ -2,7 +2,7 @@
 export interface SpeechRecognitionLike {
   lang: string; interimResults: boolean; continuous: boolean;
   onresult: ((event: { results: ArrayLike<ArrayLike<{ transcript: string }> & { isFinal?: boolean }> }) => void) | null;
-  onerror: (() => void) | null; onend: (() => void) | null;
+  onerror: ((event?: { error?: string }) => void) | null; onend: (() => void) | null;
   start(): void; stop(): void;
 }
 type Ctor = new () => SpeechRecognitionLike;
@@ -21,4 +21,18 @@ export function joinTranscript(results: ArrayLike<ArrayLike<{ transcript: string
 export function appendDictation(existing: string, dictated: string): string {
   const d = dictated.trim(); if (!d) return existing;
   return existing.trim() ? `${existing.trimEnd()} ${d}` : d;
+}
+
+export type VoiceProblem = "permission" | "no_speech" | "no_mic" | "network" | "language" | "unsupported" | null;
+/** Maps the browser's error code to what the user can actually do. "aborted" is a normal stop, not a problem. */
+export function voiceProblem(code: string | undefined): VoiceProblem {
+  switch (code) {
+    case "not-allowed": case "service-not-allowed": return "permission";
+    case "no-speech": return "no_speech";
+    case "audio-capture": return "no_mic";
+    case "network": return "network";
+    case "language-not-supported": return "language";
+    case "aborted": return null;
+    default: return "permission";
+  }
 }

@@ -64,7 +64,7 @@ import { loadDataDesk, type DataDeskResult } from "@/lib/copilot/dataDesk";
 import { ChatStrategyCard } from "./ChatStrategyCard";
 import { ChatStrategyFitCard } from "./ChatStrategyFitCard";
 import { speak, stopSpeaking, unlockSpeech, getSynth, type SpeakResult } from "@/lib/copilot/speechOutput";
-import { appendDictation, getSpeechRecognition, joinTranscript, speechLocale, type SpeechRecognitionLike } from "@/lib/copilot/voiceInput";
+import { appendDictation, getSpeechRecognition, joinTranscript, speechLocale, voiceProblem, type SpeechRecognitionLike, type VoiceProblem } from "@/lib/copilot/voiceInput";
 import { useAnalysis } from "@/context/useAnalysis";
 import type { CopilotResponse } from "@/lib/copilotResponse";
 
@@ -90,7 +90,8 @@ export function AIChatCard() {
   const SpeechCtor = getSpeechRecognition();
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const [listening, setListening] = useState(false);
-  const [voiceError, setVoiceError] = useState(false);
+  const [voiceError, setVoiceError] = useState<VoiceProblem>(null);
+  const voiceNote = !SpeechCtor ? t("voice_unsupported") : voiceError ? t(voiceError === "permission" ? "voice_error" : `voice_${voiceError}`) : null;
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const [fileBusy, setFileBusy] = useState(false);
@@ -125,7 +126,7 @@ export function AIChatCard() {
   }
   const toggleVoiceRef = useRef<(() => void) | null>(null);
   const sendRef = useRef<((raw: string) => Promise<void>) | null>(null);
-  function toggleTalk() { if (talk) { setTalk(false); stopSpeaking(); setSpeakingIdx(null); recognitionRef.current?.stop(); } else { unlockSpeech(); setTalk(true); if (SpeechCtor && !listening) window.setTimeout(() => toggleVoiceRef.current?.(), 0); } }
+  function toggleTalk() { if (talk) { setTalk(false); stopSpeaking(); setSpeakingIdx(null); recognitionRef.current?.stop(); } else { unlockSpeech(); setTalk(true); if (SpeechCtor && !listening) toggleVoice(); } }
   useEffect(() => () => stopSpeaking(), []);
   useEffect(() => () => recognitionRef.current?.stop(), []);
   const wantListening = useRef(false);
@@ -140,7 +141,7 @@ export function AIChatCard() {
       if (talkRef.current) return;
       setQuestion(said);
     };
-    rec.onerror = () => { wantListening.current = false; setVoiceError(true); setListening(false); };
+    rec.onerror = (e) => { wantListening.current = false; setVoiceError(voiceProblem(e?.error)); setListening(false); };
     rec.onend = () => {
       // Browsers stop after a short pause; a long question keeps going until the user taps stop.
       if (wantListening.current && !talkRef.current) { try { startRecognition(dictated.current || base); return; } catch { /* fall through */ } }
@@ -153,8 +154,8 @@ export function AIChatCard() {
   function toggleVoice() {
     if (!SpeechCtor) return;
     if (listening) { wantListening.current = false; recognitionRef.current?.stop(); return; }
-    setVoiceError(false); dictated.current = ""; wantListening.current = true;
-    try { startRecognition(question); setListening(true); } catch { wantListening.current = false; setVoiceError(true); }
+    setVoiceError(null); dictated.current = ""; wantListening.current = true;
+    try { startRecognition(question); setListening(true); } catch { wantListening.current = false; setVoiceError("permission"); }
   }
   useEffect(() => {
     if (!user || messages.length <= savedCount.current) return;
@@ -402,7 +403,7 @@ export function AIChatCard() {
         {toolOpen && <ChatToolPanel />}
         {(isAnalyzing || fileBusy) && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />{t("copilot_working")}</div>}
       </div>
-      {talk && <VoiceOrb state={speakingIdx !== null ? "speaking" : isAnalyzing ? "thinking" : listening ? "listening" : "idle"} onClose={toggleTalk} onTapOrb={() => { if (speakingIdx !== null) { stopSpeaking(); setSpeakingIdx(null); } else toggleVoice(); }} note={speechNote === "no_voice" ? t("speak_no_voice") : speechNote === "unsupported" ? t("speak_unsupported") : voiceError ? t("voice_error") : null} />}
+      {talk && <VoiceOrb state={speakingIdx !== null ? "speaking" : isAnalyzing ? "thinking" : listening ? "listening" : "idle"} onClose={toggleTalk} onTapOrb={() => { if (speakingIdx !== null) { stopSpeaking(); setSpeakingIdx(null); } else toggleVoice(); }} note={speechNote === "no_voice" ? t("speak_no_voice") : speechNote === "unsupported" ? t("speak_unsupported") : voiceNote} />}
       {!user && !authLoading && <ChatAuthGate />}
       {user && <div className={started ? "sticky bottom-0 bg-background/90 pb-3 pt-2 backdrop-blur" : ""}>
         {consentAsk && !consented && (
@@ -426,7 +427,7 @@ export function AIChatCard() {
           {SpeechCtor && <button type="button" onClick={toggleVoice} aria-pressed={listening} aria-label={t(listening ? "voice_stop" : "voice_start")} title={t(listening ? "voice_stop" : "voice_start")} className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-150 ${listening ? "animate-pulse bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>{listening ? <Square className="h-3.5 w-3.5" /> : <Mic className="h-[18px] w-[18px]" strokeWidth={1.75} />}</button>}
           <button type="submit" disabled={(!question.trim() && !pendingFile) || isAnalyzing || fileBusy} aria-label={t("copilot_send")} className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition-all duration-150 hover:brightness-110 active:scale-95 disabled:bg-muted-foreground/20 disabled:text-muted-foreground disabled:shadow-none">{isAnalyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-[18px] w-[18px]" strokeWidth={2.25} />}</button>
         </form>
-        <p className="mt-3 truncate text-center text-[11px] text-muted-foreground" aria-live="polite">{speechNote === "no_voice" ? t("speak_no_voice") : speechNote === "unsupported" ? t("speak_unsupported") : voiceError ? t("voice_error") : listening ? t("voice_listening") : t("disclaimer_one_line")}</p>
+        <p className="mt-3 truncate text-center text-[11px] text-muted-foreground" aria-live="polite">{speechNote === "no_voice" ? t("speak_no_voice") : speechNote === "unsupported" ? t("speak_unsupported") : voiceError ? voiceNote : listening ? t("voice_listening") : t("disclaimer_one_line")}</p>
         <p className="mt-1 truncate text-center text-[10px] leading-4 text-muted-foreground/80">{t("legal_line_credit")}</p>
       </div>}
     </div>

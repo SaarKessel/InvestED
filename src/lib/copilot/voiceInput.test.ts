@@ -14,3 +14,13 @@ describe("voice input", () => {
     expect(appendDictation("keep", "  ")).toBe("keep");
   });
 });
+
+import { voiceProblem } from "./voiceInput";
+describe("voiceProblem", () => {
+  it("tells permission from no speech, network, mic and language", () => {
+    expect(voiceProblem("not-allowed")).toBe("permission"); expect(voiceProblem("service-not-allowed")).toBe("permission");
+    expect(voiceProblem("no-speech")).toBe("no_speech"); expect(voiceProblem("audio-capture")).toBe("no_mic");
+    expect(voiceProblem("network")).toBe("network"); expect(voiceProblem("language-not-supported")).toBe("language");
+    expect(voiceProblem("aborted")).toBeNull(); expect(voiceProblem(undefined)).toBe("permission");
+  });
+});
