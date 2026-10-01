@@ -7,10 +7,10 @@ Rule that governs everything below: do not break InvestED 3.0 / InvestED+; add l
 
 ## 1. Current architecture (what exists today)
 
-Size: about 45,000 lines of TypeScript/TSX. 241 files in src/lib (28.4k lines), 118 in src/components (12.7k), 29 in src/pages (4k). 137 test files, 1,081 tests, all passing. 9 serverless endpoints in api/. 2 Supabase migrations. 283 commits.
+Size: about 45,000 lines of TypeScript/TSX. 241 files in src/lib (28.4k lines), 118 in src/components (12.7k), 29 in src/pages (4k). 139 test files, 1,081 tests, all passing. 9 serverless endpoints in api/. 2 Supabase migrations. 283 commits.
 
 ### 1.1 Shell
-- One route: `<Route path="*">` renders `AICopilotPage`. The chat is the whole product shell. Everything else is a lazy page loaded inside the chat's tool panel (`components/dashboard/chatTools.ts`, 22 tools: calculator, loans, insurance reports, research, news, strategy lab, simulation, trivia, learn, career lab and its four games, knowledge, data controls, dashboard, overview, start).
+- One route: `<Route path="*">` renders `AICopilotPage`. The chat is the whole product shell. Everything else is a lazy page loaded inside the chat's tool panel (`components/dashboard/chatTools.ts`, 24 lazy page entries: calculator, loans, insurance reports, research, news, strategy lab, simulation, trivia, learn, career lab and its four games, knowledge, data controls, dashboard, overview, start).
 - Providers: Language (en/he, RTL/LTR), Auth (Supabase), Theme, ErrorBoundary, Analysis (investor profile result, localStorage).
 - UI: React 18, Vite, Tailwind, framer-motion, Lightweight Charts (Apache-2.0). Locale files en.json and he.json with a parity test.
 
@@ -34,7 +34,7 @@ Size: about 45,000 lines of TypeScript/TSX. 241 files in src/lib (28.4k lines), 
 | Strategy | lib/strategy/*, strategies, recommendationEngine | strategies and profile fit |
 | Research | lib/research/*, assetResearchEngine | asset research |
 | News | newsClient, newsIntelligence, newsRefresh, newsPopup, api/news, api/news-summary | feed, impact enrichment, pop-up, AI summary with credit |
-| Knowledge | lib/knowledge/concepts (registry and about 140 concepts, en/he), knowledge.ts, feeds, Supabase knowledge_items | stored explanations, aliases, related graph (concept `related` edges exist) |
+| Knowledge | lib/knowledge/concepts (registry and about 120 concepts, en/he), knowledge.ts, feeds, Supabase knowledge_items | stored explanations, aliases, related graph (concept `related` edges exist) |
 | Education | financialEducation, conceptExplanations, learningJourney, quizBank, educationContent, Learn and Trivia pages | lessons, quizzes, progress |
 | Career / simulation | lib/career/* (engine, tracks, 4 games, committee cases, paper ledger, stress, practice runs, source quotes), lib/simulation/* | Career Lab, Analyst/Portfolio/Operations/Accountant games, paper ledger |
 | Intelligence | lib/intelligence/* (orchestrator 11 lines, toolRegistry 15, provenance 18, verificationEngine 13) | see gaps |
