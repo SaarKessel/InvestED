@@ -2085,6 +2085,12 @@
   "panel_chart_unavailable": "אין כרגע נתוני גרף",
   "tool_opening": "פותחת כאן את {tool}.",
   "also_title": "עוד בשאלה שלך",
+  "orb_title": "שיחה קולית",
+  "orb_idle": "הקישו על הכדור כדי לדבר",
+  "orb_listening": "מקשיב...",
+  "orb_thinking": "חושב...",
+  "orb_speaking": "מדבר (הקישו כדי להפסיק)",
+  "orb_hint": "לימוד בלבד. הקול פועל על המכשיר שלכם.",
   "related_title": "מושגים קשורים",
   "related_try": "נסו:"
 }

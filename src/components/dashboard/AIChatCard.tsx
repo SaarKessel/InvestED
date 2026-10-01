@@ -18,6 +18,7 @@ import { openingLine } from "@/lib/copilot/toolKeywords";
 import { resolveToolKeyword } from "@/lib/copilot/toolKeywords";
 import { ChatRelated } from "./ChatRelated";
 import { ChatAlsoAsked } from "./ChatAlsoAsked";
+import { VoiceOrb } from "./VoiceOrb";
 import { ChatSidePanel } from "./ChatSidePanel";
 import { hasVisuals, useWide } from "./chatPanelState";
 import { resolveSiteIntent, SITE_CAPABILITIES, type SiteCapability } from "@/lib/copilot/siteCapabilities";
@@ -58,6 +59,7 @@ export function AIChatCard() {
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const [listening, setListening] = useState(false);
   const [voiceError, setVoiceError] = useState(false);
+  const composerRef = useRef<HTMLTextAreaElement>(null);
   const [talk, setTalk] = useState(false);
   const [speakingIdx, setSpeakingIdx] = useState<number | null>(null);
   const [speechNote, setSpeechNote] = useState<SpeakResult | null>(null);
@@ -72,17 +74,33 @@ export function AIChatCard() {
   function toggleTalk() { if (talk) { setTalk(false); stopSpeaking(); setSpeakingIdx(null); recognitionRef.current?.stop(); } else { unlockSpeech(); setTalk(true); if (SpeechCtor && !listening) window.setTimeout(() => toggleVoiceRef.current?.(), 0); } }
   useEffect(() => () => stopSpeaking(), []);
   useEffect(() => () => recognitionRef.current?.stop(), []);
+  const wantListening = useRef(false);
+  const dictated = useRef("");
+  function startRecognition(base: string) {
+    if (!SpeechCtor) return;
+    const rec = new SpeechCtor();
+    rec.lang = speechLocale(language); rec.interimResults = true; rec.continuous = false;
+    rec.onresult = (event) => {
+      const said = appendDictation(base, joinTranscript(event.results));
+      dictated.current = said;
+      if (talkRef.current) return;
+      setQuestion(said);
+    };
+    rec.onerror = () => { wantListening.current = false; setVoiceError(true); setListening(false); };
+    rec.onend = () => {
+      // Browsers stop after a short pause; a long question keeps going until the user taps stop.
+      if (wantListening.current && !talkRef.current) { try { startRecognition(dictated.current || base); return; } catch { /* fall through */ } }
+      const said = dictated.current; wantListening.current = false; setListening(false);
+      if (talkRef.current && said.trim()) { setQuestion(""); void sendRef.current?.(said); }
+    };
+    recognitionRef.current = rec;
+    rec.start();
+  }
   function toggleVoice() {
     if (!SpeechCtor) return;
-    if (listening) { recognitionRef.current?.stop(); return; }
-    const rec = new SpeechCtor();
-    rec.lang = speechLocale(language); rec.interimResults = false; rec.continuous = false;
-    const before = question;
-    rec.onresult = (event) => { const said = appendDictation(before, joinTranscript(event.results)); setQuestion(said); if (talkRef.current && said.trim()) { setQuestion(""); void sendRef.current?.(said); } };
-    rec.onerror = () => { setVoiceError(true); setListening(false); };
-    rec.onend = () => setListening(false);
-    setVoiceError(false); recognitionRef.current = rec;
-    try { rec.start(); setListening(true); } catch { setVoiceError(true); }
+    if (listening) { wantListening.current = false; recognitionRef.current?.stop(); return; }
+    setVoiceError(false); dictated.current = ""; wantListening.current = true;
+    try { startRecognition(question); setListening(true); } catch { wantListening.current = false; setVoiceError(true); }
   }
   useEffect(() => {
     if (!user || messages.length <= savedCount.current) return;
@@ -247,11 +265,12 @@ export function AIChatCard() {
         {toolOpen && <ChatToolPanel />}
         {isAnalyzing && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />{t("copilot_working")}</div>}
       </div>
+      {talk && <VoiceOrb state={speakingIdx !== null ? "speaking" : isAnalyzing ? "thinking" : listening ? "listening" : "idle"} onClose={toggleTalk} onTapOrb={() => { if (speakingIdx !== null) { stopSpeaking(); setSpeakingIdx(null); } else toggleVoice(); }} note={speechNote === "no_voice" ? t("speak_no_voice") : speechNote === "unsupported" ? t("speak_unsupported") : voiceError ? t("voice_error") : null} />}
       {!user && !authLoading && <ChatAuthGate />}
       {user && <div className={started ? "sticky bottom-0 bg-background/90 pb-3 pt-2 backdrop-blur" : ""}>
         <form onSubmit={submit} className="welcome-composer flex items-end gap-1 rounded-[1.75rem] border border-border/60 bg-muted/50 p-2">
-          <ChatToolMenu />
-          <textarea rows={1} style={{ scrollbarWidth: "none" }} aria-label={t("copilot_input")} value={question} onChange={(event) => setQuestion(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} placeholder={t("copilot_placeholder")} className="max-h-40 min-h-11 min-w-0 flex-1 resize-none bg-transparent px-2 py-2.5 text-[15px] leading-5 outline-none placeholder:text-muted-foreground/70" />
+          <ChatToolMenu query={question.startsWith("/") ? question.slice(1) : null} onPlus={() => { setQuestion("/"); composerRef.current?.focus(); }} onPick={() => setQuestion((q) => (q.startsWith("/") ? "" : q))} />
+          <textarea ref={composerRef} rows={1} style={{ scrollbarWidth: "none" }} aria-label={t("copilot_input")} value={question} onChange={(event) => setQuestion(event.target.value)} onKeyDown={(event) => { if (event.key === "Escape" && question.startsWith("/")) { setQuestion(""); return; } if (event.key === "Enter" && !event.shiftKey && question.startsWith("/")) { event.preventDefault(); return; } if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} placeholder={t("copilot_placeholder")} className="max-h-40 min-h-11 min-w-0 flex-1 resize-none bg-transparent px-2 py-2.5 text-[15px] leading-5 outline-none placeholder:text-muted-foreground/70" />
           {canSpeak && SpeechCtor && <button type="button" onClick={toggleTalk} aria-pressed={talk} aria-label={t(talk ? "talk_stop" : "talk_start")} title={t(talk ? "talk_stop" : "talk_start")} className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-150 ${talk ? "bg-primary/15 text-primary" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}><Volume2 className="h-[18px] w-[18px]" strokeWidth={1.75} /></button>}
           {SpeechCtor && <button type="button" onClick={toggleVoice} aria-pressed={listening} aria-label={t(listening ? "voice_stop" : "voice_start")} title={t(listening ? "voice_stop" : "voice_start")} className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-150 ${listening ? "animate-pulse bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>{listening ? <Square className="h-3.5 w-3.5" /> : <Mic className="h-[18px] w-[18px]" strokeWidth={1.75} />}</button>}
           <button type="submit" disabled={!question.trim() || isAnalyzing} aria-label={t("copilot_send")} className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition-all duration-150 hover:brightness-110 active:scale-95 disabled:bg-muted-foreground/20 disabled:text-muted-foreground disabled:shadow-none">{isAnalyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-[18px] w-[18px]" strokeWidth={2.25} />}</button>

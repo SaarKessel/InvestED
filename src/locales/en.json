@@ -2085,6 +2085,12 @@
   "panel_chart_unavailable": "no chart data available right now",
   "tool_opening": "Opening {tool} right here.",
   "also_title": "Also in your question",
+  "orb_title": "Voice conversation",
+  "orb_idle": "Tap the orb to talk",
+  "orb_listening": "Listening...",
+  "orb_thinking": "Thinking...",
+  "orb_speaking": "Speaking (tap to interrupt)",
+  "orb_hint": "Education only. Voice runs on your device.",
   "related_title": "Related intelligence",
   "related_try": "Try it:"
 }
