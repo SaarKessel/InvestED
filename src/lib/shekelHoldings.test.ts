@@ -49,3 +49,20 @@ describe("retirement withdrawal and assumed defaults", () => {
     if (/projected final balance/.test(turn.response.text)) expect(turn.response.text).toMatch(/You did not give a horizon/);
   });
 });
+
+describe("goal solver", () => {
+  const d = () => ({ fetchAsset: vi.fn(async () => null), enhance: vi.fn(async () => null) }) as AIConversationDependencies;
+  it("solves the monthly deposit (en)", async () => {
+    const turn = await processAIMessage(createConversationSession(), "How much do I need to save monthly to reach 1,000,000 in 15 years at 6%?", "en", d());
+    expect(turn.response.text).toContain("3,43");
+    expect(turn.response.text).toMatch(/teaching assumption/);
+  });
+  it("solves the monthly deposit (he)", async () => {
+    const turn = await processAIMessage(createConversationSession(), "כמה צריך להפקיד כל חודש כדי להגיע למיליון ש״ח ב-15 שנה בתשואה 6%?", "he", d());
+    expect(turn.response.text).toContain("3,43");
+  });
+  it("asks nothing invented when the rate is missing", async () => {
+    const turn = await processAIMessage(createConversationSession(), "How much do I need to save monthly to reach 1,000,000 in 15 years?", "en", d());
+    expect(turn.response.text).not.toMatch(/teaching assumption you gave/);
+  });
+});

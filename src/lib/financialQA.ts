@@ -21,6 +21,7 @@ import {
   type PurchasePowerRequest,
   type PurchasePowerResult,
 } from "./financialEducation";
+import { calculateRequiredMonthlyContribution as calcRequiredMonthlyContribution } from "./calculatorEngine";
 import { computeSchpitzer, parseLoanQuery } from "./loanEngine";
 
 export type QALanguage = "he" | "en";
@@ -811,6 +812,26 @@ function retirementWithdrawal(message: string, lang: QALanguage): QAPlan | null 
     : `By the 4% rule (a research rule of thumb, not a guarantee): withdrawing 4% a year from ${fmt(amount, lang)} is ${fmt(yearly, lang)} a year, about ${fmt(yearly / 12, lang)} a month, before tax, raised with inflation each year. The rule is based on past US data and depends on the order of returns. This is an educational calculation, not advice.`);
 }
 
+function goalSolver(message: string, lang: QALanguage): QAPlan | null {
+  if (!/(reach|get to|hit|accumulate|להגיע|לצבור|למיליון|ליעד)/i.test(message)) return null;
+  if (!/(per month|monthly|a month|each month|every month|כל חודש|בחודש|חודשי|להפקיד|לחסוך|save)/i.test(message)) return null;
+  const years = message.match(/(\d+(?:\.\d+)?)\s*(?:years?|שנה|שנים)/i);
+  const rate = message.match(/(\d+(?:\.\d+)?)\s*(?:%|אחוז|percent)/i);
+  if (!years || !rate) return null;
+  const million = /\b1\s*million|למיליון|מיליון\s*(?:ש|₪|דולר|\$)/i.test(message) && !/\d\s*(?:אלף|מיליון|million|thousand|[kKmM])\b/i.test(message);
+  const targetMatch = message.match(new RegExp(`${NUM}\\s*${UNIT}\\s*(?:ש["״']?ח|שקל|₪|ILS|NIS|shekels?|dollars?|דולר|USD|\\$)?`, "i"));
+  const target = million ? 1_000_000 : targetMatch ? scaled(targetMatch[1], targetMatch[2]) : null;
+  const y = Number(years[1]);
+  const r = Number(rate[1]);
+  if (!target || target < 1000 || !y || y <= 0 || y > 60 || r < 0 || r > 30) return null;
+  const monthly = calcRequiredMonthlyContribution(target, 0, y, r);
+  if (!Number.isFinite(monthly) || monthly <= 0) return null;
+  const contributed = monthly * y * 12;
+  return textPlan("goal_solver", lang === "he"
+    ? `כדי להגיע ל-${fmt(target, lang)} בעוד ${fmt(y, lang, 0)} שנים בהנחת תשואה של ${fmt(r, lang)}% בשנה (הנחה לימודית שנתת, לא תחזית), צריך להפקיד בערך ${fmt(monthly, lang, 0)} בחודש. סך ההפקדות: ${fmt(contributed, lang, 0)}, והשאר מגיע מהתשואה. החישוב מניח הפקדה בסוף כל חודש וריבית דריבית חודשית, לפני מסים ועמלות. זה חישוב לימודי, לא ייעוץ.`
+    : `To reach ${fmt(target, lang)} in ${fmt(y, lang, 0)} years at ${fmt(r, lang)}% a year (a teaching assumption you gave, not a forecast), you would need to save about ${fmt(monthly, lang, 0)} a month. Total deposits: ${fmt(contributed, lang, 0)}, and the rest comes from returns. It assumes a deposit at the end of each month and monthly compounding, before tax and fees. This is an educational calculation, not advice.`);
+}
+
 function loanCalc(message: string, lang: QALanguage): QAPlan | null {
   const isMortgage = /משכנתא|mortgage/i.test(message);
   const isLoanPayment = /הלוואה|loan/i.test(message) && /החזר|payment/i.test(message);
@@ -905,6 +926,9 @@ export function planFinancialQA(message: string, lang: QALanguage, memory: QAMem
   if (averageFirst) return averageFirst;
   const splitFirst = stockSplitCalc(message, lang);
   if (splitFirst) return splitFirst;
+
+  const goal = goalSolver(message, lang);
+  if (goal) return goal;
 
   const retirement = retirementWithdrawal(message, lang);
   if (retirement) return retirement;
