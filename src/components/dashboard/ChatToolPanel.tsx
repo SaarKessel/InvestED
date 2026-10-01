@@ -19,7 +19,7 @@ export function ChatToolPanel() {
         <p className="text-sm font-semibold">{hit.tool ? t(hit.tool.labelKey) : ""}</p>
         <button type="button" onClick={() => navigate("/")} aria-label={t("tool_close")} className="inline-flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground"><X className="h-4 w-4" aria-hidden="true" /></button>
       </div>
-      <div className="max-h-[70vh] overflow-y-auto">
+      <div className="max-h-[70vh] overflow-y-auto [scrollbar-width:thin] [scrollbar-color:hsl(var(--border))_transparent]">
         <EmbedContext.Provider value>
           <Suspense fallback={<div className="p-6 text-sm text-muted-foreground">{t("copilot_working")}</div>}><Page /></Suspense>
         </EmbedContext.Provider>
