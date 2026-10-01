@@ -193,11 +193,11 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
   ];
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); setQuestion("/"); composerRef.current?.focus(); }
+      if (!workstation && (e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); setQuestion("/"); composerRef.current?.focus(); }
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, []);
+  }, [workstation]);
   async function toggleHistory() {
     const next = !historyOpen; setHistoryOpen(next);
     if (next) { try { setConversations(await listConversations()); } catch { setConversations([]); } }
