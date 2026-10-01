@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useLanguage } from "@/context/languageContext";
 import type { CalcDeskResult } from "@/lib/copilot/calcDesk";
 import { formatCurrency } from "@/lib/format";
+import { calcSteps } from "@/lib/copilot/calcExplain";
 
 /** Read-only projection card. Numbers come from calculatorEngine; the rate is a labeled teaching assumption. */
 export function ChatCalcCard({ data }: { data: CalcDeskResult }) {
@@ -20,6 +21,10 @@ export function ChatCalcCard({ data }: { data: CalcDeskResult }) {
       </div>
       {data.target !== null && <p className="mt-3 font-medium">{t(data.reachesTarget ? "calc_target_yes" : "calc_target_no").replace("{target}", money(data.target))}</p>}
       <p className="mt-3 text-muted-foreground">{t("calc_assumption").replace("{rate}", String(data.returnPct))}</p>
+      <details className="mt-3">
+        <summary className="cursor-pointer select-none font-medium text-muted-foreground hover:text-foreground">{t("calc_how")}</summary>
+        <ol className="mt-1.5 list-decimal space-y-1 ps-5 text-muted-foreground">{calcSteps({ data, money, language: language === "he" ? "he" : "en" }).map((x, i) => <li key={i}>{x}</li>)}</ol>
+      </details>
       <Link to="/calculator" className="mt-2 inline-block font-semibold text-primary hover:underline">{t("calc_open")}</Link>
     </div>
   );

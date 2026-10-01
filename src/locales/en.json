@@ -2141,5 +2141,6 @@
   "mode_market": "Market data",
   "mode_market_prompt": "Show me the market: ",
   "saved_do": "Save",
-  "saved_done": "Saved"
+  "saved_done": "Saved",
+  "calc_how": "How was this calculated?"
 }

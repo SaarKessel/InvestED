@@ -2141,5 +2141,6 @@
   "mode_market": "נתוני שוק",
   "mode_market_prompt": "הראה לי את השוק: ",
   "saved_do": "שמירה",
-  "saved_done": "נשמר"
+  "saved_done": "נשמר",
+  "calc_how": "איך זה חושב?"
 }

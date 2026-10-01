@@ -146,6 +146,13 @@ export function AIChatCard() {
     { id: "calc", label: t("mode_calc"), prompt: t("mode_calc_prompt") },
     { id: "market", label: t("mode_market"), prompt: t("mode_market_prompt") },
   ];
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") { e.preventDefault(); setQuestion("/"); composerRef.current?.focus(); }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
   async function toggleHistory() {
     const next = !historyOpen; setHistoryOpen(next);
     if (next) { try { setConversations(await listConversations()); } catch { setConversations([]); } }
