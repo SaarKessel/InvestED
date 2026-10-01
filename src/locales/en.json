@@ -2111,6 +2111,11 @@
   "file_too_big": "The file is too large. Try a smaller image or a PDF under 3 MB.",
   "file_failed": "I could not read the file right now (the free reading service may be busy or off). Please try again later.",
   "file_label": "Analysis by Gemini (Google) from your file. Educational only, not medical or investment advice, and it can be wrong.",
+  "ticker_label": "US stock prices",
+  "ticker_open": "Market open",
+  "ticker_after": "After-hours",
+  "ticker_preview": "Preview, market closed",
+  "ticker_note": "Free Yahoo data, may be delayed up to 15 min. Last quote",
   "related_title": "Related intelligence",
   "related_try": "Try it:"
 }
