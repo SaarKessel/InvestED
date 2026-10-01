@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { isCareerLaunchRequest } from "@/lib/career/chatRoute";
 import { Check, Clipboard, History, Loader2, LogOut, Mic, Square, RotateCcw, Send, Trash2 } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
@@ -14,6 +14,7 @@ import { ChatSiteLaunch } from "./ChatSiteLaunch";
 import { ChatToolPanel } from "./ChatToolPanel";
 import { ChatToolMenu } from "./ChatToolMenu";
 import { toolForPath } from "./chatTools";
+import { resolveToolKeyword } from "@/lib/copilot/toolKeywords";
 import { ChatSidePanel } from "./ChatSidePanel";
 import { hasVisuals, useWide } from "./chatPanelState";
 import { resolveSiteIntent, SITE_CAPABILITIES, type SiteCapability } from "@/lib/copilot/siteCapabilities";
@@ -37,6 +38,7 @@ interface Message { role: "user" | "copilot"; text: string; response?: CopilotRe
 export function AIChatCard() {
   const { t, language } = useLanguage();
   const { askCopilot, isAnalyzing, reset } = useAnalysis();
+  const navigate = useNavigate();
   const toolOpen = toolForPath(useLocation().pathname) !== null;
   const { user, loading: authLoading, signOut } = useAuth();
   const conversationId = useRef<string | null>(null);
@@ -98,6 +100,13 @@ export function AIChatCard() {
     if (!text || isAnalyzing) return;
     setQuestion("");
     setMessages((current) => [...current, { role: "user", text }]);
+    const keywordPath = resolveToolKeyword(text);
+    const keywordTool = keywordPath ? toolForPath(keywordPath) : null;
+    if (keywordPath && keywordTool) {
+      setMessages((current) => [...current, { role: "copilot", text: t("tool_opening").replace("{tool}", keywordTool.tool ? t(keywordTool.tool.labelKey) : "") }]);
+      navigate(keywordPath);
+      return;
+    }
     if (isCareerLaunchRequest(text)) {
       setMessages((current) => [...current, { role: "copilot", text: t("career_chat_launch"), careerLaunch: true }]);
       return;
