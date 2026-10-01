@@ -1,3 +1,6 @@
+import enLocale from "@/locales/en.json";
+import heLocale from "@/locales/he.json";
+
 // Every tool in the "+" menu is also a keyword: typing it opens that tool
 // inside the chat. Only a bare keyword (optionally with "open"/"פתח") counts,
 // so real questions such as "what is the news about NVDA" still go to the answer engine.
@@ -41,3 +44,11 @@ export function resolveToolKeyword(text: string): string | null {
 }
 
 export const TOOL_KEYWORD_PATHS = Object.keys(KEYWORDS);
+
+/** "Opening X right here" in the language of the question, not of the UI. */
+export function openingLine(question: string, labelKey: string | undefined): string {
+  const he = /[א-ת]/.test(question);
+  const dict = (he ? heLocale : enLocale) as Record<string, string>;
+  const label = labelKey ? dict[labelKey] ?? "" : "";
+  return (dict.tool_opening ?? "").replace("{tool}", label);
+}

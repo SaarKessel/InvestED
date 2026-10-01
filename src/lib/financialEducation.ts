@@ -574,6 +574,13 @@ const CONCEPTS: ConceptEntry[] = [
 
 
 
+/** The stored plain-language answer for a concept, by its English label (used by the concept registry). */
+export function conceptAnswerByLabel(enLabel: string, language: ConversationLanguage): string | null {
+  const concept = CONCEPTS.find((entry) => entry.enLabel === enLabel);
+  if (!concept) return null;
+  return language === "en" ? concept.en : concept.he;
+}
+
 export function explainFinancialConcept(message: string, language: ConversationLanguage): string | null {
   const concept = CONCEPTS.find((entry) => entry.patterns.some((pattern) => pattern.test(message)));
   if (!concept) return null;

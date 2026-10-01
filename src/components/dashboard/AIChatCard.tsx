@@ -14,6 +14,7 @@ import { ChatSiteLaunch } from "./ChatSiteLaunch";
 import { ChatToolPanel } from "./ChatToolPanel";
 import { ChatToolMenu } from "./ChatToolMenu";
 import { toolForPath } from "./chatTools";
+import { openingLine } from "@/lib/copilot/toolKeywords";
 import { resolveToolKeyword } from "@/lib/copilot/toolKeywords";
 import { ChatSidePanel } from "./ChatSidePanel";
 import { hasVisuals, useWide } from "./chatPanelState";
@@ -103,7 +104,7 @@ export function AIChatCard() {
     const keywordPath = resolveToolKeyword(text);
     const keywordTool = keywordPath ? toolForPath(keywordPath) : null;
     if (keywordPath && keywordTool) {
-      setMessages((current) => [...current, { role: "copilot", text: t("tool_opening").replace("{tool}", keywordTool.tool ? t(keywordTool.tool.labelKey) : "") }]);
+      setMessages((current) => [...current, { role: "copilot", text: openingLine(text, keywordTool.tool?.labelKey) }]);
       navigate(keywordPath);
       return;
     }
