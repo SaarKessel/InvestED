@@ -147,7 +147,7 @@ export function fxSections(level: Level, r: FxResult): DepthSection[] {
     out.push({ id: "fxsens", trust: "CALCULATION", title: b("Other ways to read it", "דרכים נוספות לקרוא את זה"), lines: [
       b(`1 ${r.to} = ${num(inv)} ${r.from} (the inverse of ${num(r.rate)}).`, `${iso(`1 ${r.to} = ${num(inv)} ${r.from}`)} (ההופכי של ${iso(num(r.rate))}).`),
       b(`If the rate were 1% lower, ${num(r.amount, 2)} ${r.from} would give ${num(r.result * 0.99, 2)} ${r.to} (a what-if for teaching, not a forecast).`,
-        `אם השער היה נמוך ב-1%, ${iso(`${num(r.amount, 2)} ${r.from}`)} היו נותנים ${iso(`${num(r.result * 0.99, 2)} ${r.to}`)} (תרחיש לימוד, לא תחזית).`)] });
+        `אם השער היה נמוך ב-${iso("1%")}, ${iso(`${num(r.amount, 2)} ${r.from}`)} היו נותנים ${iso(`${num(r.result * 0.99, 2)} ${r.to}`)} (תרחיש לימוד, לא תחזית).`)] });
   }
   if (d >= 4) out.push({ id: "fxlimits", trust: "DATA", title: b("Limits of this data", "מגבלות הנתונים"), lines: [
     b("Real conversions add a spread or a fee, so you receive less than this. Rates move every day and past moves do not predict the next one.", "המרה אמיתית כוללת מרווח או עמלה, ולכן תקבלו פחות. שערים זזים כל יום ותנועות עבר לא חוזות את הבאה.")] });
