@@ -2129,5 +2129,17 @@
   "newspop_setting": "Show breaking-news pop-ups while the US market is open",
   "newspop_setting_note": "Saved on this device only.",
   "trace_title": "What I did",
-  "term_more": "Ask more about this"
+  "term_more": "Ask more about this",
+  "sidebar_title": "Menu",
+  "sidebar_modes": "Modes",
+  "sidebar_saved": "Saved",
+  "sidebar_saved_empty": "Nothing saved yet. Use Save under an answer.",
+  "mode_learn": "Learn a concept",
+  "mode_learn_prompt": "Explain in simple words: ",
+  "mode_calc": "Calculate",
+  "mode_calc_prompt": "Calculate: ",
+  "mode_market": "Market data",
+  "mode_market_prompt": "Show me the market: ",
+  "saved_do": "Save",
+  "saved_done": "Saved"
 }

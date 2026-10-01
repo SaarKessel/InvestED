@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { isCareerLaunchRequest } from "@/lib/career/chatRoute";
-import { Check, Clipboard, History, Loader2, LogOut, Mic, Square, RotateCcw, Trash2, Volume2, VolumeX, ArrowUp, Paperclip } from "lucide-react";
+import { Check, Clipboard, History, Loader2, LogOut, Mic, Square, RotateCcw, Volume2, VolumeX, ArrowUp, Paperclip } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
 import { ChatAssetCards } from "./ChatAssetCards";
 import { ChatCalculationCard } from "./ChatCalculationCard";
@@ -18,6 +18,8 @@ import { openingLine } from "@/lib/copilot/toolKeywords";
 import { ChatRelated } from "./ChatRelated";
 import { ChatAlsoAsked } from "./ChatAlsoAsked";
 import { ChatTrace } from "./ChatTrace";
+import { ChatSidebar, type SidebarMode } from "./ChatSidebar";
+import { isSaved, loadSaved, removeSaved, toggleSaved, type SavedAnswer } from "@/lib/copilot/savedAnswers";
 import { ChatLinkedText } from "./ChatLinkedText";
 import { planQuestion, type TraceStep } from "@/lib/copilot/planner";
 import { VoiceOrb } from "./VoiceOrb";
@@ -56,6 +58,8 @@ export function AIChatCard() {
   const savedCount = useRef(0);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
+  const [saved, setSaved] = useState<SavedAnswer[]>([]);
+  useEffect(() => { setSaved(user ? loadSaved(user.id) : []); }, [user]);
   const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [dismissedPanel, setDismissedPanel] = useState<number | null>(null);
@@ -137,6 +141,11 @@ export function AIChatCard() {
       } catch { /* history is best-effort; the chat keeps working */ }
     })();
   }, [messages, user]);
+  const modes: SidebarMode[] = [
+    { id: "learn", label: t("mode_learn"), prompt: t("mode_learn_prompt") },
+    { id: "calc", label: t("mode_calc"), prompt: t("mode_calc_prompt") },
+    { id: "market", label: t("mode_market"), prompt: t("mode_market_prompt") },
+  ];
   async function toggleHistory() {
     const next = !historyOpen; setHistoryOpen(next);
     if (next) { try { setConversations(await listConversations()); } catch { setConversations([]); } }
@@ -266,14 +275,10 @@ export function AIChatCard() {
           <button type="button" onClick={() => { clearConversation(); void signOut(); }} className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"><LogOut className="h-3.5 w-3.5" aria-hidden="true" />{t("auth_sign_out")}</button>
         </div>
       )}
-      {user && historyOpen && (
-        <div className="mb-4 rounded-2xl border border-border bg-card p-3">
-          <p className="mb-2 text-xs font-semibold text-muted-foreground">{t("history_title")}</p>
-          {conversations.length === 0 ? <p className="text-xs text-muted-foreground">{t("history_empty")}</p> : (
-            <ul className="space-y-1">{conversations.map((c) => <li key={c.id} className="flex items-center gap-2"><button type="button" onClick={() => void openConversation(c.id)} className="min-w-0 flex-1 truncate rounded-lg px-2 py-1.5 text-start text-sm hover:bg-muted">{c.title || "..."}</button><button type="button" aria-label={t("history_delete")} onClick={() => void removeConversation(c.id)} className="shrink-0 rounded-lg p-1.5 text-muted-foreground hover:text-destructive"><Trash2 className="h-3.5 w-3.5" aria-hidden="true" /></button></li>)}</ul>
-          )}
-        </div>
-      )}
+      {user && <ChatSidebar open={historyOpen} onClose={() => setHistoryOpen(false)} onNew={clearConversation}
+        conversations={conversations} onOpenConversation={(id) => void openConversation(id)} onDeleteConversation={(id) => void removeConversation(id)}
+        saved={saved} onAskSaved={(q) => void send(q)} onRemoveSaved={(id) => setSaved(removeSaved(user.id, id))}
+        modes={modes} onMode={(prompt) => setQuestion(prompt)} />}
       {started && (
         <div className="mb-2 flex justify-end">
           <button type="button" onClick={clearConversation} className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"><RotateCcw className="h-3.5 w-3.5" aria-hidden="true" /><span>{t("copilot_clear")}</span></button>
@@ -292,6 +297,7 @@ export function AIChatCard() {
             {!inPanel(index) && visuals(message)}
             {message.role === "copilot" && <button type="button" onClick={() => copyMessage(message.text, index)} className="mt-2 inline-flex items-center gap-1 text-[11px] text-muted-foreground opacity-70 hover:opacity-100" aria-label={t("copilot_copy")}>{copied === index ? <Check className="h-3 w-3" /> : <Clipboard className="h-3 w-3" />}{copied === index ? t("copilot_copied") : t("copilot_copy")}</button>}{message.role === "copilot" && canSpeak && <button type="button" onClick={() => speakingIdx === index ? (stopSpeaking(), setSpeakingIdx(null)) : speakMessage(message.text, index)} className="ms-3 mt-2 inline-flex items-center gap-1 text-[11px] text-muted-foreground opacity-70 hover:opacity-100" aria-label={t(speakingIdx === index ? "speak_stop" : "speak_play")}>{speakingIdx === index ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}{t(speakingIdx === index ? "speak_stop" : "speak_play")}</button>}
             {message.role === "copilot" && message.trace && <ChatTrace steps={message.trace} />}
+            {message.role === "copilot" && message.question && user && <button type="button" onClick={() => setSaved(toggleSaved(user.id, message.question!, message.text))} aria-pressed={isSaved(saved, message.question, message.text)} className="mt-2 ms-3 inline-flex items-center gap-1 text-[11px] text-muted-foreground opacity-70 hover:opacity-100">{isSaved(saved, message.question, message.text) ? t("saved_done") : t("saved_do")}</button>}
             {message.fromFile && <p className="mt-2 text-[11px] text-muted-foreground">{t("file_label")}</p>}
             {message.role === "copilot" && message.question && <ChatAlsoAsked question={message.question} answer={message.text} />}
             {message.role === "copilot" && message.question && <ChatRelated question={message.question} onAsk={(q) => void send(q)} />}

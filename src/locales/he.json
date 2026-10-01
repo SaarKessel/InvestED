@@ -2129,5 +2129,17 @@
   "newspop_setting": "הצגת חלונות חדשות חשובות בזמן שהשוק האמריקאי פתוח",
   "newspop_setting_note": "נשמר במכשיר הזה בלבד.",
   "trace_title": "מה עשיתי",
-  "term_more": "לשאול עוד על זה"
+  "term_more": "לשאול עוד על זה",
+  "sidebar_title": "תפריט",
+  "sidebar_modes": "מצבים",
+  "sidebar_saved": "שמורים",
+  "sidebar_saved_empty": "עוד לא שמרתם כלום. אפשר ללחוץ שמירה מתחת לתשובה.",
+  "mode_learn": "ללמוד מושג",
+  "mode_learn_prompt": "הסבר במילים פשוטות: ",
+  "mode_calc": "חישוב",
+  "mode_calc_prompt": "חשב: ",
+  "mode_market": "נתוני שוק",
+  "mode_market_prompt": "הראה לי את השוק: ",
+  "saved_do": "שמירה",
+  "saved_done": "נשמר"
 }
