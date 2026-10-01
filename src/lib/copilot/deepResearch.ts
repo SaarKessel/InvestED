@@ -25,17 +25,22 @@ export function buildBrief(steps: ResearchStep[], question: string, lang: "he" |
   const body = [...steps.map((s) => `${s.label}: ${s.text}`), ...hints].join("\n\n");
   return body.slice(0, MAX_ANSWER_LENGTH - 50);
 }
-export interface DeepResult { text: string; steps: ResearchStep[]; reworded: boolean }
+/** Topics named in the question that have no stored explanation yet. Said plainly, never filled in. */
+export function missingTopics(question: string, lang: "he" | "en"): string[] {
+  return findConceptsInText(question, 8).filter((c) => !c.explain).slice(0, 4).map((c) => (lang === "he" ? c.he : c.en));
+}
+export interface DeepResult { text: string; steps: ResearchStep[]; reworded: boolean; missing: string[] }
 export async function runDeepResearch(
   question: string, lang: "he" | "en", onStep: (done: number, total: number, label: string) => void,
   rephrase: (q: string, brief: string) => Promise<string | null> = defaultRephrase(lang),
 ): Promise<DeepResult> {
   const steps = planResearch(question, lang);
+  const missing = missingTopics(question, lang);
   for (let i = 0; i < steps.length; i++) onStep(i + 1, steps.length, steps[i].label);
-  if (!steps.length) return { text: "", steps, reworded: false };
+  if (!steps.length) return { text: "", steps, reworded: false, missing };
   const brief = buildBrief(steps, question, lang);
   const text = await rephrase(question, brief);
-  return text ? { text, steps, reworded: true } : { text: brief, steps, reworded: false };
+  return text ? { text, steps, reworded: true, missing } : { text: brief, steps, reworded: false, missing };
 }
 function defaultRephrase(lang: "he" | "en") {
   return async (question: string, brief: string): Promise<string | null> => {

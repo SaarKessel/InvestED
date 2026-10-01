@@ -196,7 +196,7 @@ export function AIChatCard() {
         { text: { en: `Split the question into ${result.steps.length} known topics (max 4) and took the stored explanation for each, one after the other.`, he: `פיצלתי את השאלה ל-${result.steps.length} נושאים מוכרים (עד 4) ולקחתי לכל אחד את ההסבר השמור, בזה אחר זה.` }, trust: "EDUCATIONAL" },
         { text: result.reworded ? { en: "A free AI model reworded the joined text. The server rejected any new number or ticker.", he: "מודל AI חינמי ניסח מחדש את הטקסט המחובר. השרת פוסל כל מספר או סימול חדש." } : { en: "No AI rewording this time. The stored text is shown as written.", he: "בלי ניסוח מחדש הפעם. הטקסט השמור מוצג כפי שנכתב." }, trust: "ANALYSIS" },
       ];
-      setMessages((current) => current.map((m, i) => i === at.i ? { role: "copilot", text: result.text || t("deep_none"), trace: result.text ? trace : undefined, deep: result.text ? { steps: result.steps.length, reworded: result.reworded } : undefined, question: result.text ? q : undefined } : m));
+      setMessages((current) => current.map((m, i) => i === at.i ? { role: "copilot", text: result.text ? result.text + (result.missing.length ? `\n\n${t("deep_missing")} ${result.missing.join(", ")}` : "") : t("deep_none"), trace: result.text ? trace : undefined, deep: result.text ? { steps: result.steps.length, reworded: result.reworded } : undefined, question: result.text ? q : undefined } : m));
       return;
     }
     const plan = planQuestion(text);

@@ -2147,5 +2147,6 @@
   "deep_none": "I could not find enough in the stored knowledge for a deep research answer on this. Try naming the topics, for example inflation and bonds.",
   "deep_label": "Deep research - {n} topics - educational, from stored knowledge",
   "mode_deep": "Deep research",
-  "mode_deep_prompt": "Deep research: "
+  "mode_deep_prompt": "Deep research: ",
+  "deep_missing": "No stored explanation yet for:"
 }

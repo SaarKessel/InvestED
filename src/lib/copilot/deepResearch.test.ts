@@ -25,3 +25,6 @@ describe("deepResearch", () => {
     expect(r.steps).toEqual([]); expect(r.text).toBe("");
   });
 });
+
+import { missingTopics } from "./deepResearch";
+describe("missing topics", () => { it("names concepts without a stored explanation, never invents text", async () => { const m = missingTopics("inflation bonds diversification", "en"); expect(Array.isArray(m)).toBe(true); const r = await runDeepResearch("inflation bonds diversification", "en", () => undefined, async () => null); expect(r.missing).toEqual(m); }); });
