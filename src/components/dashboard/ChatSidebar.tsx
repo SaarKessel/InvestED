@@ -4,6 +4,8 @@ import { useLanguage } from "@/context/languageContext";
 import type { ChatConversation } from "@/lib/copilot/chatHistory";
 import { type AgentDef } from "@/lib/agents";
 import type { SavedAnswer } from "@/lib/copilot/savedAnswers";
+import { MemoryPanel } from "./MemoryPanel";
+import type { MemoryApi } from "@/lib/memory/memoryApi";
 
 export interface SidebarMode { id: string; label: string; prompt: string }
 interface Props {
@@ -11,7 +13,7 @@ interface Props {
   conversations: ChatConversation[]; onOpenConversation: (id: string) => void; onDeleteConversation: (id: string) => void;
   saved: SavedAnswer[]; onAskSaved: (question: string) => void; onRemoveSaved: (id: string) => void;
   modes: SidebarMode[]; onMode: (prompt: string) => void;
-  agents: AgentDef[]; pickedAgent: string | null; onPickAgent: (id: string | null) => void;
+  memoryApi?: MemoryApi; agents: AgentDef[]; pickedAgent: string | null; onPickAgent: (id: string | null) => void;
 }
 const head = "px-3 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground";
 /** Optional drawer on the physical left in both languages. Closed by default. Conversations, Saved and starter modes only. */
@@ -49,6 +51,7 @@ export function ChatSidebar(p: Props) {
                 <button type="button" onClick={() => { p.onOpenConversation(c.id); p.onClose(); }} className="min-w-0 flex-1 truncate rounded-lg px-2 py-1.5 text-start text-sm hover:bg-muted">{c.title || "..."}</button>
                 <button type="button" aria-label={t("history_delete")} onClick={() => p.onDeleteConversation(c.id)} className="shrink-0 rounded-lg p-1.5 text-muted-foreground hover:text-destructive"><Trash2 className="h-3.5 w-3.5" aria-hidden="true" /></button></li>))}</ul>
           )}
+          {p.memoryApi && <MemoryPanel api={p.memoryApi} />}
         </div>
       </aside>
     </>,

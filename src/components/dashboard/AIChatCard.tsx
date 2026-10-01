@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { isCareerLaunchRequest } from "@/lib/career/chatRoute";
 import { Check, Clipboard, History, Loader2, LogOut, Mic, Square, RotateCcw, Volume2, VolumeX, ArrowUp, Paperclip } from "lucide-react";
@@ -25,6 +25,7 @@ import { ChatRelated } from "./ChatRelated";
 import { ChatAlsoAsked } from "./ChatAlsoAsked";
 import { ChatTrace } from "./ChatTrace";
 import { isDeepRequest, runDeepResearch, stepsForLevel, stripTrigger } from "@/lib/copilot/deepResearch";
+import { defaultMemoryApi } from "@/lib/memory/memoryApi";
 import { ChatSidebar, type SidebarMode } from "./ChatSidebar";
 import { isSaved, loadSaved, removeSaved, toggleSaved, type SavedAnswer } from "@/lib/copilot/savedAnswers";
 import { ChatLinkedText } from "./ChatLinkedText";
@@ -76,6 +77,7 @@ export function AIChatCard() {
   const navigate = useNavigate();
   const toolOpen = toolForPath(useLocation().pathname) !== null;
   const { user, loading: authLoading, signOut } = useAuth();
+  const memoryApi = useMemo(() => (user ? defaultMemoryApi(user.id) : undefined), [user]);
   const conversationId = useRef<string | null>(null);
   const savedCount = useRef(0);
   const [historyOpen, setHistoryOpen] = useState(false);
@@ -385,7 +387,7 @@ export function AIChatCard() {
       {user && <ChatSidebar open={historyOpen} onClose={() => setHistoryOpen(false)} onNew={clearConversation}
         conversations={conversations} onOpenConversation={(id) => void openConversation(id)} onDeleteConversation={(id) => void removeConversation(id)}
         saved={saved} onAskSaved={(q) => void send(q)} onRemoveSaved={(id) => setSaved(removeSaved(user.id, id))}
-        modes={modes} onMode={(prompt) => setQuestion(prompt)} agents={AGENTS} pickedAgent={pickedAgent} onPickAgent={pickAgent} />}
+        modes={modes} onMode={(prompt) => setQuestion(prompt)} memoryApi={memoryApi} agents={AGENTS} pickedAgent={pickedAgent} onPickAgent={pickAgent} />}
       {started && (
         <div className="mb-2 flex justify-end">
           <button type="button" onClick={clearConversation} className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"><RotateCcw className="h-3.5 w-3.5" aria-hidden="true" /><span>{t("copilot_clear")}</span></button>
