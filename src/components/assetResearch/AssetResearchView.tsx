@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Search, RefreshCw, GitCompareArrows, Bot, Database } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
 import { fetchMarketAssetBySymbol } from "@/lib/marketData";
@@ -16,7 +17,8 @@ const formattedTimestamp = (timestamp: string | null, language: string) => {
 };
 export function AssetResearchView() {
   const { language, t } = useLanguage(); const { askCopilot } = useAnalysis();
-  const [query, setQuery] = useState("NVDA"); const [research, setResearch] = useState<AssetResearch | null>(null);
+  const initialSymbol = (useLocation().state as { symbol?: string } | null)?.symbol;
+  const [query, setQuery] = useState(initialSymbol ?? "NVDA"); const [research, setResearch] = useState<AssetResearch | null>(null);
   const [loading, setLoading] = useState(false); const [error, setError] = useState(""); const [aiText, setAiText] = useState("");
   async function load(event?: React.FormEvent) { event?.preventDefault(); setLoading(true); setError(""); setAiText(""); try { const result = await researchAsset(query, { fetchAsset: fetchMarketAssetBySymbol }); if (!result) throw new Error("not-found"); setResearch(result); } catch { setResearch(null); setError(t("research_error")); } finally { setLoading(false); } }
   async function ask() { if (!research) return; const turn = await askCopilot(`Analyze ${research.symbol}`); setAiText(turn.response.text); }

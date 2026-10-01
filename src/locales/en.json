@@ -2173,5 +2173,6 @@
   "cockpit_agents": "Agents",
   "compare_title": "Compared, both start at 100",
   "compare_unavailable": "no comparison data available right now",
-  "compare_note": "Rebased to 100 on the first shared date, past performance only"
+  "compare_note": "Rebased to 100 on the first shared date, past performance only",
+  "terminal_markets": "Markets & watchlist"
 }

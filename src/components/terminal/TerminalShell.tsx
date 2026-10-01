@@ -14,7 +14,7 @@ import { Tooltip } from "@/components/ui/interactive";
 
 const navigation = [
   { group: ["Intelligence", "מודיעין"], items: [{path:"/", label:["InvestED+", "InvestED+"], icon:Activity}, {path:"/dashboard",label:["Portfolio intelligence","מודיעין תיק השקעות"],icon:LayoutDashboard}] },
-  { group:["Markets","שווקים"], items:[{path:"/research",label:["Asset research","מחקר נכסים"],icon:Activity},{path:"/news",label:["Market news","חדשות שוק"],icon:Newspaper},{path:"/strategy-lab",label:["Strategy lab","מעבדת אסטרטגיות"],icon:LayoutDashboard}] },
+  { group:["Markets","שווקים"], items:[{path:"/markets",label:["Markets & watchlist","שווקים ומעקב"],icon:LayoutDashboard},{path:"/research",label:["Asset research","מחקר נכסים"],icon:Activity},{path:"/news",label:["Market news","חדשות שוק"],icon:Newspaper},{path:"/strategy-lab",label:["Strategy lab","מעבדת אסטרטגיות"],icon:LayoutDashboard}] },
   { group:["Career","קריירה"], items:[{path:"/career-lab",label:["Career lab","מעבדת קריירה"],icon:BriefcaseBusiness},{path:"/simulation",label:["Simulation","סימולציה"],icon:Activity}] },
   { group:["University","אוניברסיטה"], items:[{path:"/learn",label:["Learning","למידה"],icon:BookOpen},{path:"/trivia",label:["Knowledge practice","תרגול ידע"],icon:BookOpen},{path:"/calculator",label:["Financial calculator","מחשבון פיננסי"],icon:Calculator}] },
   { group:["Personal","אישי"], items:[{path:"/start",label:["Investor profile","פרופיל משקיע"],icon:BriefcaseBusiness},{path:"/data-controls",label:["Data controls","בקרת נתונים"],icon:Settings}] },
