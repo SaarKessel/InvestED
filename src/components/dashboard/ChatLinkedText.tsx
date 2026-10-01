@@ -12,7 +12,7 @@ export function ChatLinkedText({ text, onAsk }: { text: string; onAsk: (q: strin
   const info = open ? termExplanation(open, lang) : null;
   return (
     <>
-      <p className="whitespace-pre-wrap">
+      <p dir="auto" className="whitespace-pre-wrap">
         {segments.map((s, i) => s.id
           ? <button key={i} type="button" onClick={() => setOpen(open === s.id ? null : s.id!)} aria-expanded={open === s.id} className="underline decoration-dotted decoration-primary/60 underline-offset-4 hover:text-primary">{s.text}</button>
           : <span key={i}>{s.text}</span>)}

@@ -7,6 +7,14 @@ export interface ToolHint { toolId: "simulation" | "calculator" | "loans"; he: s
 
 const isHebrew = (q: string) => /[א-ת]/.test(q);
 
+const words = (t: string) => t.toLowerCase().split(/[^a-z0-9\u0590-\u05ff]+/).filter((w) => w.length > 2);
+/** True when the main answer already says (nearly) the same thing, e.g. a rephrase of the same stored text. */
+export function mostlyCovered(text: string, mainAnswer: string): boolean {
+  const have = new Set(words(mainAnswer));
+  const w = words(text);
+  return w.length > 0 && w.filter((x) => have.has(x)).length / w.length >= 0.6;
+}
+
 /** Other concepts named in the question, each with its stored plain explanation, skipping any the main answer already says. */
 export function alsoAnswered(question: string, mainAnswer: string, limit = 3): AlsoItem[] {
   const lang = isHebrew(question) ? "he" : "en";
@@ -14,7 +22,7 @@ export function alsoAnswered(question: string, mainAnswer: string, limit = 3): A
   for (const c of findConceptsInText(question, 8)) {
     if (!c.explain) continue;
     const text = conceptAnswerByLabel(c.explain, lang);
-    if (!text || mainAnswer.includes(text.slice(0, 30))) continue;
+    if (!text || mainAnswer.includes(text.slice(0, 30)) || mostlyCovered(text, mainAnswer)) continue;
     out.push({ id: c.id, label: lang === "he" ? c.he : c.en, text });
     if (out.length >= limit) break;
   }

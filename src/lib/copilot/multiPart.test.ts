@@ -18,3 +18,11 @@ describe("multiPart", () => {
   });
   it("hints carry no digits", () => { for (const q of ["market drop monthly loan"]) for (const h of toolHints(q)) expect(/\d/.test(h.en + h.he)).toBe(false); });
 });
+
+import { mostlyCovered as _mc } from "./multiPart";
+describe("mostlyCovered", () => {
+  it("treats a rephrase of the same stored text as covered, but not a different topic", () => {
+    expect(_mc("Diversification means not putting all your money in one place.", "Diversification simply means not putting all your money in one place. If one falls, others soften it.")).toBe(true);
+    expect(_mc("Inflation is the general rise in prices over time.", "Diversification simply means not putting all your money in one place.")).toBe(false);
+  });
+});
