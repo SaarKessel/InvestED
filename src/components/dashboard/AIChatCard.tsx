@@ -33,6 +33,8 @@ import { hasVisuals, useWide } from "./chatPanelState";
 import { resolveSiteIntent, SITE_CAPABILITIES, type SiteCapability } from "@/lib/copilot/siteCapabilities";
 import { ChatDataDesk } from "./ChatDataDesk";
 import { ChatCalcCard } from "./ChatCalcCard";
+import { ChatMathCard } from "./ChatMathCard";
+import { type MathDeskResult } from "@/lib/copilot/mathDesk";
 import { ChatLearnPath } from "./ChatLearnPath";
 import { ChatKnowledge, FeedbackButtons } from "./ChatKnowledge";
 import { searchKnowledge, recordGap } from "@/lib/knowledge/knowledgeClient";
@@ -47,7 +49,7 @@ import { appendDictation, getSpeechRecognition, joinTranscript, speechLocale, ty
 import { useAnalysis } from "@/context/useAnalysis";
 import type { CopilotResponse } from "@/lib/copilotResponse";
 
-interface Message { deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
+interface Message { deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; math?: MathDeskResult; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
 
 export function AIChatCard() {
   const { t, language } = useLanguage();
@@ -228,6 +230,10 @@ export function AIChatCard() {
       setMessages((current) => [...current, { role: "copilot", trace, text: t("calc_lead"), calc }]);
       return;
     }
+    if (plan.math) {
+      setMessages((current) => [...current, { role: "copilot", trace, text: language === "he" ? "הנה החישוב:" : "Here is the calculation:", math: plan.math }]);
+      return;
+    }
     const deskKind = plan.desk ?? null;
     if (deskKind) {
       try {
@@ -267,6 +273,7 @@ export function AIChatCard() {
     return (<>
             {message.desk && <ChatDataDesk data={message.desk} />}
             {message.calc && <ChatCalcCard data={message.calc} />}
+            {message.math && <ChatMathCard data={message.math} />}
             {message.knowledge && message.knowledge.length > 0 && <ChatKnowledge items={message.knowledge} />}
             {message.learnPath && <ChatLearnPath />}
             {response?.toolResult && <div className="mt-3 rounded-lg border border-border/70 bg-background/70 p-2.5 text-xs"><p className="font-semibold">{t("copilot_verified_calculation")}</p>{response.toolResult.formula && <p className="mt-1 font-mono" dir="ltr">{response.toolResult.formula}</p>}{response.toolResult.assumptions.length > 0 && <p className="mt-1 text-muted-foreground">{t("copilot_assumptions")}: {response.toolResult.assumptions.join(" · ")}</p>}</div>}

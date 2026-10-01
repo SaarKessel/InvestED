@@ -18,3 +18,10 @@ describe("planner routes", () => {
     }
   });
 });
+
+describe("math route", () => {
+  it("routes plain arithmetic to the math desk and leaves questions alone", () => {
+    expect(planQuestion("1000*1.07^10").route).toBe("math");
+    expect(planQuestion("what is inflation").route).not.toBe("math");
+  });
+});
