@@ -34,6 +34,8 @@ import { resolveSiteIntent, SITE_CAPABILITIES, type SiteCapability } from "@/lib
 import { ChatDataDesk } from "./ChatDataDesk";
 import { ChatCalcCard } from "./ChatCalcCard";
 import { ChatMathCard } from "./ChatMathCard";
+import { ChatFxCard } from "./ChatFxCard";
+import { loadFx, type FxResult } from "@/lib/copilot/fxDesk";
 import { type MathDeskResult } from "@/lib/copilot/mathDesk";
 import { ChatLearnPath } from "./ChatLearnPath";
 import { ChatKnowledge, FeedbackButtons } from "./ChatKnowledge";
@@ -49,7 +51,7 @@ import { appendDictation, getSpeechRecognition, joinTranscript, speechLocale, ty
 import { useAnalysis } from "@/context/useAnalysis";
 import type { CopilotResponse } from "@/lib/copilotResponse";
 
-interface Message { deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; math?: MathDeskResult; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
+interface Message { deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxResult | null; fxFailed?: boolean; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
 
 export function AIChatCard() {
   const { t, language } = useLanguage();
@@ -230,6 +232,11 @@ export function AIChatCard() {
       setMessages((current) => [...current, { role: "copilot", trace, text: t("calc_lead"), calc }]);
       return;
     }
+    if (plan.fx) {
+      const fx = await loadFx(plan.fx);
+      setMessages((current) => [...current, { role: "copilot", trace, text: fx ? (language === "he" ? "הנה ההמרה:" : "Here is the conversion:") : (language === "he" ? "לא הצלחתי לטעון עכשיו את שער היחס, ולכן לא המרתי. נסו שוב בעוד רגע." : "I could not load the reference rate right now, so I did not convert anything. Try again in a moment."), fx }]);
+      return;
+    }
     if (plan.math) {
       setMessages((current) => [...current, { role: "copilot", trace, text: language === "he" ? "הנה החישוב:" : "Here is the calculation:", math: plan.math }]);
       return;
@@ -273,6 +280,7 @@ export function AIChatCard() {
     return (<>
             {message.desk && <ChatDataDesk data={message.desk} />}
             {message.calc && <ChatCalcCard data={message.calc} />}
+            {message.fx && <ChatFxCard data={message.fx} />}
             {message.math && <ChatMathCard data={message.math} />}
             {message.knowledge && message.knowledge.length > 0 && <ChatKnowledge items={message.knowledge} />}
             {message.learnPath && <ChatLearnPath />}

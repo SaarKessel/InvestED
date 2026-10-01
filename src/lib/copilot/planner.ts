@@ -3,16 +3,17 @@ import { isCareerLaunchRequest } from "@/lib/career/chatRoute";
 import { resolveToolKeyword } from "./toolKeywords";
 import { looksLikeLearningPathRequest } from "./learnDesk";
 import { resolveSiteIntent } from "./siteCapabilities";
+import { parseFxRequest, type FxRequest } from "./fxDesk";
 import { runMathDesk, type MathDeskResult } from "./mathDesk";
 import { runCalcDesk, type CalcDeskResult } from "./calcDesk";
 import { resolveDataDesk, type DataDeskKind } from "./dataDesk";
 import { TRUST_LABEL } from "@/lib/intelligence/provenance";
 import type { TrustClass } from "@/lib/intelligence/verificationEngine";
 
-export type Route = "tool" | "career" | "learnpath" | "site" | "calc" | "math" | "desk" | "copilot";
+export type Route = "tool" | "career" | "learnpath" | "site" | "calc" | "math" | "fx" | "desk" | "copilot";
 export interface Bi { en: string; he: string }
 export interface TraceStep { text: Bi; trust?: TrustClass }
-export interface Plan { route: Route; toolPath?: string; calc?: CalcDeskResult; math?: MathDeskResult; desk?: DataDeskKind; trace: TraceStep[] }
+export interface Plan { route: Route; toolPath?: string; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxRequest; desk?: DataDeskKind; trace: TraceStep[] }
 const b = (en: string, he: string): Bi => ({ en, he });
 
 export function planQuestion(text: string): Plan {
@@ -23,6 +24,11 @@ export function planQuestion(text: string): Plan {
   if (isCareerLaunchRequest(text)) return { route: "career", trace: [{ text: b("Recognized a career-lab request and linked it.", "זיהיתי בקשה למעבדת הקריירה וקישרתי אליה.") }] };
   if (looksLikeLearningPathRequest(text)) return { route: "learnpath", trace: [{ text: b("Recognized a request for a learning path and built it from the lesson list.", "זיהיתי בקשה למסלול למידה ובניתי אותו מרשימת השיעורים.") }] };
   if (resolveSiteIntent(text)) return { route: "site", trace: [{ text: b("Matched your question to what the site can do and listed the matching tools.", "התאמתי את השאלה ליכולות האתר והצגתי את הכלים המתאימים.") }] };
+  const fx = parseFxRequest(text);
+  if (fx) return { route: "fx", fx, trace: [
+    { text: b("Recognized a currency conversion.", "זיהיתי בקשה להמרת מטבע.") },
+    { text: b("Loaded the European Central Bank daily reference rate and multiplied. It is a daily reference rate, not a live trading quote.", "טענתי את שער היחס היומי של הבנק המרכזי האירופי וכפלתי. זהו שער יחס יומי, לא שער מסחר חי."), trust: "DATA" },
+    { text: b("No model chose or changed any number.", "אף מודל לא בחר או שינה מספר.") }] };
   const calc = runCalcDesk(text);
   if (calc) return { route: "calc", calc, trace: [
     { text: b("Found numbers and a calculation request in your question.", "מצאתי בשאלה מספרים ובקשה לחישוב.") },

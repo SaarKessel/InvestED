@@ -25,3 +25,10 @@ describe("math route", () => {
     expect(planQuestion("what is inflation").route).not.toBe("math");
   });
 });
+
+describe("fx route", () => {
+  it("routes a currency question and keeps others out", () => {
+    expect(planQuestion("100 USD to ILS").route).toBe("fx");
+    expect(planQuestion("what is inflation").route).not.toBe("fx");
+  });
+});
