@@ -26,7 +26,16 @@ function normalize(raw: string): string {
   return s.replace(/\s+/g, " ").trim();
 }
 
-const FN: Record<string, (...a: number[]) => number> = { sqrt: Math.sqrt, abs: Math.abs, round: Math.round, min: Math.min, max: Math.max, pow: Math.pow };
+const FN: Record<string, (...a: number[]) => number> = { sqrt: Math.sqrt, abs: Math.abs, round: Math.round, min: Math.min, max: Math.max, pow: Math.pow,
+  /** cagr(start, end, years) in percent */
+  cagr: (a, b, y) => { if (!(a > 0) || !(y > 0)) throw new Error("unparseable"); return (Math.pow(b / a, 1 / y) - 1) * 100; },
+  /** pmt(loan, annualPct, years): fixed monthly payment, monthly compounding */
+  pmt: (loan, pct, y) => { const n = Math.round(y * 12); if (!(n > 0)) throw new Error("unparseable"); const r = pct / 1200; return r === 0 ? loan / n : (loan * r) / (1 - Math.pow(1 + r, -n)); },
+  /** fv(annualPct, years, monthly, start): monthly compounding, deposits at month end */
+  fv: (pct, y, m, st = 0) => { const n = Math.round(y * 12), r = pct / 1200; return r === 0 ? st + m * n : st * Math.pow(1 + r, n) + (m * (Math.pow(1 + r, n) - 1)) / r; },
+  /** real(nominalPct, inflationPct): real return in percent */
+  real: (nom, inf) => ((1 + nom / 100) / (1 + inf / 100) - 1) * 100,
+};
 
 class Parser {
   i = 0; steps: MathStep[] = [];
@@ -79,9 +88,9 @@ export function fmt(n: number): string {
 /** Only fires when the whole sentence is arithmetic: at least two numbers (or a function) and an operator. */
 export function runMathDesk(text: string): MathDeskResult | null {
   const s = normalize(text);
-  if (!s || /[א-תa-wyz]{2,}/i.test(s.replace(/\b(?:sqrt|abs|round|min|max|pow|of)\b/gi, ""))) return null;
+  if (!s || /[א-תa-wyz]{2,}/i.test(s.replace(/\b(?:sqrt|abs|round|min|max|pow|cagr|pmt|fv|real|of)\b/gi, ""))) return null;
   const numbers = s.match(/\d+(?:\.\d+)?/g) ?? [];
-  const hasFn = /\b(?:sqrt|abs|round|min|max|pow)\s*\(/i.test(s);
+  const hasFn = /\b(?:sqrt|abs|round|min|max|pow|cagr|pmt|fv|real)\s*\(/i.test(s);
   if (!/[+\-*/^]/.test(s.replace(/^-/, "")) && !hasFn) return null;
   if (numbers.length < 2 && !hasFn) return null;
   if (!/^[\d\s+\-*/^().,%a-z]+$/i.test(s)) return null;

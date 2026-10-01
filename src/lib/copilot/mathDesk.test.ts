@@ -20,3 +20,14 @@ describe("mathDesk", () => {
   });
   it("shows steps", () => { expect(runMathDesk("2+3*4")?.steps.map((s) => s.expr)).toEqual(["3 * 4", "2 + 12"]); });
 });
+
+describe("finance functions", () => {
+  it("cagr, pmt, fv, real", () => {
+    expect(v("cagr(1000, 2000, 10)")).toBeCloseTo(7.177, 2);
+    expect(v("pmt(200000, 5, 30)")).toBeCloseTo(1073.64, 1);
+    expect(v("fv(7, 10, 500, 10000)")).toBeCloseTo(10000 * Math.pow(1 + 0.07 / 12, 120) + 500 * ((Math.pow(1 + 0.07 / 12, 120) - 1) / (0.07 / 12)), 4);
+    expect(v("real(7, 2.5)")).toBeCloseTo(4.39, 2);
+  });
+  it("composes with arithmetic", () => { expect(v("pmt(200000,5,30)*12")).toBeCloseTo(12883.7, 0); });
+  it("bad arguments say unparseable", () => { expect(runMathDesk("cagr(0, 5, 3)")?.error).toBe("unparseable"); });
+});
