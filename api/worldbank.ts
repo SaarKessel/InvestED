@@ -1,8 +1,8 @@
-// Server-side pass-through to World Bank open data (CC BY 4.0). The browser cannot call it reliably (CORS is inconsistent), so this fixed allowlist forwards only three indicators for eight countries.
+// Server-side pass-through to World Bank open data (CC BY 4.0). The browser cannot call it reliably (CORS is inconsistent), so this fixed allowlist forwards only four indicators for eight countries.
 interface Req { query?: Record<string, string | string[] | undefined> }
 interface Response { setHeader(name: string, value: string): void; status(code: number): { json(body: unknown): void } }
 const COUNTRIES = new Set(['ISR', 'USA', 'GBR', 'DEU', 'EMU', 'JPN', 'CHN', 'IND']);
-const INDICATORS = new Set(['FP.CPI.TOTL.ZG', 'NY.GDP.MKTP.KD.ZG', 'SL.UEM.TOTL.ZS']);
+const INDICATORS = new Set(['FP.CPI.TOTL.ZG', 'NY.GDP.MKTP.KD.ZG', 'SL.UEM.TOTL.ZS', 'NY.GDP.MKTP.CD']);
 const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v) ?? '';
 export default async function handler(req: Req, res: Response) {
   res.setHeader('Cache-Control', 's-maxage=3600, stale-while-revalidate=86400');

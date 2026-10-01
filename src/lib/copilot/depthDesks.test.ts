@@ -34,3 +34,17 @@ describe("depth for desk cards", () => {
     expect(depthSections("professional", { math: { ok: false, expression: "", steps: [] } as never })).toEqual([]);
   });
 });
+
+import { parseWbRequest, formatWbValue } from "./worldBankDesk";
+describe("GDP level indicator", () => {
+  it("plain GDP of a country uses the level; GDP growth keeps the growth indicator", () => {
+    expect(parseWbRequest("Show me GDP of Israel")?.indicator).toBe("gdp");
+    expect(parseWbRequest("GDP growth in Japan")?.indicator).toBe("gdp_growth");
+    expect(parseWbRequest("what is GDP")).toBeNull();
+  });
+  it("formats dollars in billions and trillions, rates in percent", () => {
+    expect(formatWbValue("gdp", 610777842873.6)).toBe("$610.8B");
+    expect(formatWbValue("gdp", 27.7e12)).toBe("$27.70T");
+    expect(formatWbValue("inflation", 3.456)).toBe("3.5%");
+  });
+});

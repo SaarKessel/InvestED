@@ -14,7 +14,7 @@ import { fmt } from "./mathDesk";
 import type { DataDeskKind } from "./dataDesk";
 import type { FxResult } from "./fxDesk";
 import type { MathDeskResult } from "./mathDesk";
-import type { WbResult } from "./worldBankDesk";
+import { formatWbValue, type WbResult } from "./worldBankDesk";
 import type { SymbolInfo } from "./symbolDesk";
 
 type Bi = { en: string; he: string };
@@ -165,7 +165,9 @@ export function wbSections(level: Level, r: WbResult): DepthSection[] {
     const avg = vals.reduce((a, v) => a + v, 0) / vals.length;
     const hi = r.points.reduce((a, p) => (p.value > a.value ? p : a)), lo = r.points.reduce((a, p) => (p.value < a.value ? p : a));
     out.push({ id: "wbrange", trust: "CALCULATION", title: b("Across the years shown", "על פני השנים המוצגות"), lines: [
-      b(`Average ${num(avg, 2)}%. Highest ${num(hi.value, 2)}% in ${hi.year}. Lowest ${num(lo.value, 2)}% in ${lo.year}.`, `ממוצע ${iso(`${num(avg, 2)}%`)}. הגבוה ביותר ${iso(`${num(hi.value, 2)}%`)} ב-${hi.year}. הנמוך ביותר ${iso(`${num(lo.value, 2)}%`)} ב-${lo.year}.`)] });
+      r.indicator === "gdp"
+        ? b(`Average ${formatWbValue("gdp", avg)}. Highest ${formatWbValue("gdp", hi.value)} in ${hi.year}. Lowest ${formatWbValue("gdp", lo.value)} in ${lo.year}.`, `ממוצע ${iso(formatWbValue("gdp", avg))}. הגבוה ביותר ${iso(formatWbValue("gdp", hi.value))} ב-${hi.year}. הנמוך ביותר ${iso(formatWbValue("gdp", lo.value))} ב-${lo.year}.`)
+        : b(`Average ${num(avg, 2)}%. Highest ${num(hi.value, 2)}% in ${hi.year}. Lowest ${num(lo.value, 2)}% in ${lo.year}.`, `ממוצע ${iso(`${num(avg, 2)}%`)}. הגבוה ביותר ${iso(`${num(hi.value, 2)}%`)} ב-${hi.year}. הנמוך ביותר ${iso(`${num(lo.value, 2)}%`)} ב-${lo.year}.`)] });
   }
   if (d >= 4) out.push({ id: "wblimits", trust: "DATA", title: b("Limits of this data", "מגבלות הנתונים"), lines: [
     b("Official figures are revised later, and countries measure in slightly different ways. One indicator does not describe an economy. Source: World Bank Open Data, CC BY 4.0.", "נתונים רשמיים מתוקנים מאוחר יותר, ומדינות מודדות בדרכים מעט שונות. מדד אחד לא מתאר משק. מקור: World Bank Open Data, CC BY 4.0.")] });

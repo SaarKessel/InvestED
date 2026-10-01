@@ -2,16 +2,23 @@
  * Country statistics from the World Bank open data API (CC BY 4.0, free, no key), through our own /api/worldbank pass-through because the browser cannot call it reliably.
  * Yearly values, published with a delay, so the card shows the year of every number.
  */
-export type WbIndicator = "inflation" | "gdp_growth" | "unemployment";
+export type WbIndicator = "inflation" | "gdp_growth" | "unemployment" | "gdp";
 export interface WbRequest { indicator: WbIndicator; country: string; countryName: { en: string; he: string } }
 export interface WbPoint { year: string; value: number }
 export interface WbResult extends WbRequest { points: WbPoint[]; lastUpdated: string }
 
-const IND: Record<WbIndicator, { code: string; re: RegExp; label: { en: string; he: string } }> = {
+const IND: Record<WbIndicator, { code: string; unit?: "usd"; re: RegExp; label: { en: string; he: string } }> = {
   inflation: { code: "FP.CPI.TOTL.ZG", re: /inflation|אינפלציה|עליית מחירים/i, label: { en: "Inflation, consumer prices (annual %)", he: "אינפלציה, מדד המחירים לצרכן (שנתי, %)" } },
   gdp_growth: { code: "NY.GDP.MKTP.KD.ZG", re: /gdp growth|economic growth|צמיחה|תוצר/i, label: { en: "GDP growth (annual %)", he: "צמיחת התוצר (שנתי, %)" } },
   unemployment: { code: "SL.UEM.TOTL.ZS", re: /unemployment|אבטלה/i, label: { en: "Unemployment (% of labor force)", he: "אבטלה (% מכוח העבודה)" } },
+  // listed last so "GDP growth" matches the growth indicator first
+  gdp: { code: "NY.GDP.MKTP.CD", unit: "usd", re: /\bgdp\b|gross domestic product/i, label: { en: "GDP (current US$)", he: "תוצר (דולר נוכחי)" } },
 };
+/** One value as the card and the depth lines print it: percent for rates, dollars in billions or trillions for GDP. */
+export function formatWbValue(i: WbIndicator, v: number, digits = 1): string {
+  if (IND[i].unit === "usd") return Math.abs(v) >= 1e12 ? `$${(v / 1e12).toFixed(2)}T` : `$${(v / 1e9).toFixed(1)}B`;
+  return `${Number(v.toFixed(digits))}%`;
+}
 export const wbLabel = (i: WbIndicator) => IND[i].label;
 
 const COUNTRIES: { iso: string; re: RegExp; name: { en: string; he: string } }[] = [
