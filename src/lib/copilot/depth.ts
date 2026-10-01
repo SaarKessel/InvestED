@@ -144,7 +144,7 @@ export function fxSections(level: Level, r: FxResult): DepthSection[] {
   if (d >= 3) {
     const inv = 1 / r.rate;
     out.push({ id: "fxsens", trust: "CALCULATION", title: b("Other ways to read it", "דרכים נוספות לקרוא את זה"), lines: [
-      b(`1 ${r.to} = ${num(inv)} ${r.from} (the inverse of ${num(r.rate)}).`, `1 ${r.to} = ${iso(`${num(inv)} ${r.from}`)} (ההופכי של ${iso(num(r.rate))}).`),
+      b(`1 ${r.to} = ${num(inv)} ${r.from} (the inverse of ${num(r.rate)}).`, `${iso(`1 ${r.to} = ${num(inv)} ${r.from}`)} (ההופכי של ${iso(num(r.rate))}).`),
       b(`If the rate were 1% lower, ${num(r.amount, 2)} ${r.from} would give ${num(r.result * 0.99, 2)} ${r.to} (a what-if for teaching, not a forecast).`,
         `אם השער היה נמוך ב-1%, ${iso(`${num(r.amount, 2)} ${r.from}`)} היו נותנים ${iso(`${num(r.result * 0.99, 2)} ${r.to}`)} (תרחיש לימוד, לא תחזית).`)] });
   }
