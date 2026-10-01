@@ -35,3 +35,17 @@ describe("holding value in shekels - Hebrew", () => {
     expect(turn.response.text).toContain("11,353");
   });
 });
+
+describe("retirement withdrawal and assumed defaults", () => {
+  const d = () => ({ fetchAsset: vi.fn(async () => null), enhance: vi.fn(async () => null) }) as AIConversationDependencies;
+  it("applies the labeled 4% rule", async () => {
+    const turn = await processAIMessage(createConversationSession(), "I have 3,000,000 shekels saved for retirement, what monthly income can that give me?", "en", d());
+    expect(turn.response.text).toContain("120,000");
+    expect(turn.response.text).toContain("10,000");
+    expect(turn.response.text).toMatch(/rule of thumb, not a guarantee/);
+  });
+  it("says which inputs were defaults", async () => {
+    const turn = await processAIMessage(createConversationSession(), "If I invest 1000 per month at 7% how much will I have?", "en", d());
+    if (/projected final balance/.test(turn.response.text)) expect(turn.response.text).toMatch(/You did not give a horizon/);
+  });
+});

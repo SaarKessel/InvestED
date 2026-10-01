@@ -798,6 +798,19 @@ function stockSplitCalc(message: string, lang: QALanguage): QAPlan | null {
     : `In a ${fmt(multiplier, lang, 0)}x split the share count multiplies by ${fmt(multiplier, lang, 0)} and the per-share price divides by the same factor - total holding value does not change.`);
 }
 
+function retirementWithdrawal(message: string, lang: QALanguage): QAPlan | null {
+  if (!/retire|retirement|פרישה|לפרוש|פורש|פנסיה/i.test(message)) return null;
+  if (!/withdraw|income|למשוך|משיכה|הכנסה|קצבה/i.test(message)) return null;
+  if (/%|אחוז|percent|years?\b|שנים|שנה/i.test(message)) return null;
+  const m = message.match(new RegExp(`${NUM}\\s*${UNIT}`, "i"));
+  const amount = m ? scaled(m[1], m[2]) : null;
+  if (!amount || amount < 10_000) return null;
+  const yearly = amount * 0.04;
+  return textPlan("retirement_withdrawal", lang === "he"
+    ? `לפי כלל ה-4% (כלל אצבע מחקרי, לא הבטחה): משיכה של 4% בשנה מ-${fmt(amount, lang)} היא ${fmt(yearly, lang)} בשנה, בערך ${fmt(yearly / 12, lang)} בחודש, לפני מסים, ומתואמת לאינפלציה בכל שנה. הכלל נשען על נתוני עבר בארה"ב ותלוי בסדר התשואות. זה חישוב לימודי, לא ייעוץ.`
+    : `By the 4% rule (a research rule of thumb, not a guarantee): withdrawing 4% a year from ${fmt(amount, lang)} is ${fmt(yearly, lang)} a year, about ${fmt(yearly / 12, lang)} a month, before tax, raised with inflation each year. The rule is based on past US data and depends on the order of returns. This is an educational calculation, not advice.`);
+}
+
 function loanCalc(message: string, lang: QALanguage): QAPlan | null {
   const isMortgage = /משכנתא|mortgage/i.test(message);
   const isLoanPayment = /הלוואה|loan/i.test(message) && /החזר|payment/i.test(message);
@@ -892,6 +905,9 @@ export function planFinancialQA(message: string, lang: QALanguage, memory: QAMem
   if (averageFirst) return averageFirst;
   const splitFirst = stockSplitCalc(message, lang);
   if (splitFirst) return splitFirst;
+
+  const retirement = retirementWithdrawal(message, lang);
+  if (retirement) return retirement;
 
   const purchase = planPurchase(message, memory);
   if (purchase) {

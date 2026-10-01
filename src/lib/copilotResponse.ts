@@ -160,6 +160,15 @@ export function buildCopilotResponse(
   const dataSources = [...new Set(assets.map((asset) => asset.dataSource))];
   const dataFreshness = [...new Set(assets.map((asset) => asset.freshness ?? (asset.isMock ? "simulated" : "unavailable")))];
 
+  // Inputs the user did not give are defaults of the teaching engine; say so instead of calling them "stated".
+  const fp = resolution.financialParameters;
+  const assumedYears = fp.years === null ? result?.scenario?.years : undefined;
+  const assumedReturn = fp.annualReturnPct === null ? result?.scenario?.annualReturnPct : undefined;
+  const assumedBits = [assumedYears !== undefined ? { en: `${assumedYears} years`, he: `${assumedYears} שנים` } : null, assumedReturn !== undefined ? { en: `${assumedReturn}% a year`, he: `${assumedReturn}% בשנה` } : null].filter((x): x is { en: string; he: string } => x !== null);
+  const assumedNote = (lang: "en" | "he") => assumedBits.length
+    ? (lang === "en" ? ` You did not give ${assumedBits.length === 2 ? "a horizon or a return" : assumedYears !== undefined ? "a horizon" : "a return"}, so I assumed ${assumedBits.map((b) => b.en).join(" and ")} as a teaching default, not a forecast.` : ` לא ציינת ${assumedBits.length === 2 ? "אופק או תשואה" : assumedYears !== undefined ? "אופק" : "תשואה"}, ולכן הנחתי ${assumedBits.map((b) => b.he).join(" ו-")} כברירת מחדל לימודית, לא כתחזית.`)
+    : "";
+
   const holdingValuation = qaOutcome?.holdingValuation ?? null;
   const conceptExplanation = explainFinancialConcepts(message, resolution.language);
 
@@ -220,8 +229,8 @@ export function buildCopilotResponse(
       ? `${asset.symbol}: ${simulated ? "simulated value" : "latest available price"} ${asset.price.toFixed(2)} ${asset.currency ?? ""}, change ${asset.changePercent.toFixed(2)}%, RSI ${asset.rsi?.toFixed(1) ?? "unavailable"}, volatility ${asset.volatilityPct.toFixed(2)}%.`
       : `${asset.symbol}: ${simulated ? "ערך מדומה" : "מחיר זמין אחרון"} ${asset.price.toFixed(2)} ${asset.currency ?? ""}, שינוי ${asset.changePercent.toFixed(2)}%, RSI ${asset.rsi?.toFixed(1) ?? "לא זמין"}, תנודתיות ${asset.volatilityPct.toFixed(2)}%.`;
   } else if (!text && financialNeeded && result && !noFinancialInputs) text = resolution.language === "en"
-    ? `Using the financial engine: projected final balance ${money(result.projection.finalBalance, result.projection.currency)} after ${result.scenario?.years} years, from ${money(result.projection.totalContributed, result.projection.currency)} contributed. This is an educational projection based on the stated return assumption.`
-    : `לפי המנוע הפיננסי: יתרה חזויה של ${money(result.projection.finalBalance, result.projection.currency)} אחרי ${result.scenario?.years} שנים, מתוך הפקדות של ${money(result.projection.totalContributed, result.projection.currency)}. זו תחזית לימודית המבוססת על הנחת התשואה שנמסרה.`;
+    ? `Using the financial engine: projected final balance ${money(result.projection.finalBalance, result.projection.currency)} after ${result.scenario?.years} years, from ${money(result.projection.totalContributed, result.projection.currency)} contributed. This is an educational projection based on the return assumption shown.${assumedNote("en")}`
+    : `לפי המנוע הפיננסי: יתרה חזויה של ${money(result.projection.finalBalance, result.projection.currency)} אחרי ${result.scenario?.years} שנים, מתוך הפקדות של ${money(result.projection.totalContributed, result.projection.currency)}. זו תחזית לימודית המבוססת על הנחת התשואה המוצגת.${assumedNote("he")}`;
   else if (!text && resolution.intent === "investor_profile_fit" && profileUsed) text = resolution.language === "en"
     ? `The fit assessment uses your saved in-session investor profile (${resolution.investorProfileContext?.classification ?? "profile available"}). It is educational and does not create or infer missing profile details.`
     : `בדיקת ההתאמה משתמשת בפרופיל המשקיע הקיים בסשן (${resolution.investorProfileContext?.classification ?? "פרופיל קיים"}). היא לימודית ואינה ממציאה פרטי פרופיל חסרים.`;
