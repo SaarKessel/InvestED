@@ -1,5 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&display=swap');
 
+@import "./styles/terminal.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -38,7 +40,7 @@
 
     --ring: 221 83% 46%;
 
-    --radius: 1rem;
+    --radius: 0.625rem;
   }
 
   .dark {
@@ -60,12 +62,12 @@
     --secondary-foreground: 222 55% 5%;
 
     --muted: 220 40% 14%;
-    --muted-foreground: 210 30% 88%;
+    --muted-foreground: 215 18% 72%;
 
     --accent: 217 91% 62%;
     --accent-foreground: 222 55% 5%;
 
-    --border: 210 35% 28%;
+    --border: 220 20% 22%;
     --input: 210 35% 24%;
 
     --ring: 217 91% 62%;

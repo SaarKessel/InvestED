@@ -1,4 +1,4 @@
-﻿import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 
 export type Theme = "light" | "dark";
 
@@ -21,9 +21,9 @@ export function ThemeProvider({
 }) {
   const [theme, setThemeState] = useState<Theme>(() => {
     if (typeof window !== "undefined") {
-      return (localStorage.getItem("theme") as Theme) || "light";
+      return (localStorage.getItem("theme") as Theme) || "dark";
     }
-    return "light";
+    return "dark";
   });
 
   useEffect(() => {
