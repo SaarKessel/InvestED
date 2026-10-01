@@ -7,7 +7,7 @@ export type OrbState = "idle" | "listening" | "thinking" | "speaking";
 export function VoiceOrb({ state, onClose, onTapOrb, note }: { state: OrbState; onClose: () => void; onTapOrb: () => void; note: string | null }) {
   const { t } = useLanguage();
   return (
-    <div role="dialog" aria-modal="true" aria-label={t("orb_title")} className="fixed inset-0 z-50 flex flex-col items-center justify-between bg-background/95 px-6 py-8 backdrop-blur-md" data-testid="voice-orb">
+    <div role="dialog" aria-modal="true" aria-label={t("orb_title")} className="fixed inset-0 z-[100] flex flex-col items-center justify-between bg-background/95 px-6 py-8 backdrop-blur-md" data-testid="voice-orb">
       <button type="button" onClick={onClose} aria-label={t("talk_stop")} className="self-end rounded-full p-3 text-muted-foreground hover:bg-accent hover:text-foreground"><X className="h-6 w-6" /></button>
       <button type="button" onClick={onTapOrb} aria-label={t(`orb_${state}`)} className="orb-wrap rounded-full outline-none">
         <span className={`orb-halo orb-${state}`} aria-hidden="true" />

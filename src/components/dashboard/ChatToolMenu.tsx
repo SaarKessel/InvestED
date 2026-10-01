@@ -32,7 +32,7 @@ export function ChatToolMenu({ query, onPlus, onPick }: { query: string | null; 
             return (
               <div key={group} className="py-1">
                 <p className="px-3 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{t(`tools_group_${group}`)}</p>
-                {items.map((item) => <Link key={item.id} to={item.path} role="menuitem" onClick={onPick} className="block rounded-xl px-3 py-2 text-sm hover:bg-accent">{t(item.labelKey)}</Link>)}
+                {items.map((item) => <Link key={item.id} to={item.path} role="menuitem" onClick={onPick} className="block rounded-xl px-3 py-2 text-sm text-foreground hover:bg-accent">{t(item.labelKey)}</Link>)}
               </div>
             );
           })}
