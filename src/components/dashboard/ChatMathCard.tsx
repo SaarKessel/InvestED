@@ -15,7 +15,7 @@ export function ChatMathCard({ data }: { data: MathDeskResult }) {
     <div className="mt-3 rounded-lg border border-border/70 bg-background/70 p-3 text-xs">
       <p className="font-semibold">{he ? "חישוב" : "Calculation"}</p>
       <p className="mt-1 font-mono text-muted-foreground" dir="ltr">{data.expression}</p>
-      <p className="mt-2 text-lg font-semibold" dir="ltr">= {fmt(data.value ?? 0)}</p>
+      <p className="mt-2 text-lg font-semibold" dir="ltr">= {fmt(Number((data.value ?? 0).toFixed(4)))}</p>
       {/\b(?:cagr|pmt|fv|real)\s*\(/i.test(data.expression) && <p className="mt-2 text-muted-foreground">{he ? "הנוסחאות: pmt = תשלום חודשי קבוע, fv = ערך עתידי (ריבית חודשית, הפקדה בסוף חודש), cagr = תשואה שנתית ממוצעת באחוזים, real = תשואה ריאלית אחרי אינפלציה." : "Formulas: pmt = fixed monthly payment, fv = future value (monthly compounding, deposits at month end), cagr = average yearly growth in percent, real = return after inflation."}</p>}
       {data.steps.length > 1 && (
         <details className="mt-2">
