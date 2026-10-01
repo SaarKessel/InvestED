@@ -5,7 +5,7 @@ import { X } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
 
 export type OrbState = "idle" | "listening" | "thinking" | "speaking";
-export function VoiceOrb({ state, onClose, onTapOrb, note }: { state: OrbState; onClose: () => void; onTapOrb: () => void; note: string | null }) {
+export function VoiceOrb({ state, onClose, onTapOrb, note, code, trace }: { state: OrbState; onClose: () => void; onTapOrb: () => void; note: string | null; code?: string | null; trace?: string[] }) {
   const { t } = useLanguage();
   return createPortal(
     <div role="dialog" aria-modal="true" aria-label={t("orb_title")} className="fixed inset-0 z-[100] flex flex-col items-center justify-between bg-background/95 px-6 py-8 backdrop-blur-md" data-testid="voice-orb">
@@ -17,6 +17,8 @@ export function VoiceOrb({ state, onClose, onTapOrb, note }: { state: OrbState; 
       <div className="text-center">
         <p className="text-lg font-medium" aria-live="polite">{t(`orb_${state}`)}</p>
         <p className="mt-2 max-w-xs text-xs text-muted-foreground">{note ?? t("orb_hint")}</p>
+        {trace && trace.length > 0 && <p dir="ltr" className="mt-1 max-w-xs text-[10px] text-muted-foreground/70" data-testid="voice-trace">{trace.join(" › ")}</p>}
+        {code && <p className="mt-1 text-[10px] text-muted-foreground/70">{t("voice_code")} <bdi dir="ltr" className="font-mono">{code}</bdi></p>}
       </div>
     </div>,
     document.body,

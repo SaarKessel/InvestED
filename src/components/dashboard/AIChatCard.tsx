@@ -91,6 +91,9 @@ export function AIChatCard() {
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const [listening, setListening] = useState(false);
   const [voiceError, setVoiceError] = useState<VoiceProblem>(null);
+  const [voiceCode, setVoiceCode] = useState<string | null>(null);
+  const [voiceTrace, setVoiceTrace] = useState<string[]>([]);
+  const vtrace = (step: string) => setVoiceTrace((cur) => [...cur.slice(-5), step]);
   const voiceNote = !SpeechCtor ? t("voice_unsupported") : voiceError ? t(voiceError === "permission" ? "voice_error" : voiceError === "service" && isIOS() ? "voice_service_ios" : `voice_${voiceError}`) : null;
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
@@ -133,7 +136,9 @@ export function AIChatCard() {
   const dictated = useRef("");
   function startRecognition(base: string) {
     if (!SpeechCtor) return;
+    vtrace("new recognizer");
     const rec = new SpeechCtor();
+    rec.onstart = () => vtrace("onstart"); rec.onaudiostart = () => vtrace("audio on"); rec.onspeechstart = () => vtrace("speech heard"); rec.onnomatch = () => vtrace("no match");
     rec.lang = speechLocale(language); rec.interimResults = true; rec.continuous = false;
     rec.onresult = (event) => {
       const said = appendDictation(base, joinTranscript(event.results));
@@ -141,21 +146,25 @@ export function AIChatCard() {
       if (talkRef.current) return;
       setQuestion(said);
     };
-    rec.onerror = (e) => { wantListening.current = false; setVoiceError(voiceProblem(e?.error)); setListening(false); };
+    rec.onerror = (e) => { vtrace(`error: ${e?.error ?? "unknown"}`); setVoiceCode(e?.error ?? "unknown"); wantListening.current = false; setVoiceError(voiceProblem(e?.error)); setListening(false); };
     rec.onend = () => {
+      vtrace("onend");
       // Browsers stop after a short pause; a long question keeps going until the user taps stop.
       if (wantListening.current && !talkRef.current) { try { startRecognition(dictated.current || base); return; } catch { /* fall through */ } }
       const said = dictated.current; wantListening.current = false; setListening(false);
       if (talkRef.current && said.trim()) { setQuestion(""); void sendRef.current?.(said); }
     };
     recognitionRef.current = rec;
+    vtrace("calling start()");
     rec.start();
+    vtrace("start() returned");
   }
   function toggleVoice() {
+    vtrace(SpeechCtor ? "tap" : "tap: no SpeechRecognition in this browser");
     if (!SpeechCtor) return;
     if (listening) { wantListening.current = false; recognitionRef.current?.stop(); return; }
-    setVoiceError(null); dictated.current = ""; wantListening.current = true;
-    try { startRecognition(question); setListening(true); } catch { wantListening.current = false; setVoiceError("permission"); }
+    setVoiceError(null); setVoiceCode(null); dictated.current = ""; wantListening.current = true;
+    try { startRecognition(question); setListening(true); } catch (err) { wantListening.current = false; setVoiceError("permission"); setVoiceCode(`start() threw: ${err instanceof Error ? err.name + " " + err.message : String(err)}`.slice(0, 120)); vtrace("start() threw"); }
   }
   useEffect(() => {
     if (!user || messages.length <= savedCount.current) return;
@@ -403,7 +412,7 @@ export function AIChatCard() {
         {toolOpen && <ChatToolPanel />}
         {(isAnalyzing || fileBusy) && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />{t("copilot_working")}</div>}
       </div>
-      {talk && <VoiceOrb state={speakingIdx !== null ? "speaking" : isAnalyzing ? "thinking" : listening ? "listening" : "idle"} onClose={toggleTalk} onTapOrb={() => { if (speakingIdx !== null) { stopSpeaking(); setSpeakingIdx(null); } else toggleVoice(); }} note={speechNote === "no_voice" ? t("speak_no_voice") : speechNote === "unsupported" ? t("speak_unsupported") : voiceNote} />}
+      {talk && <VoiceOrb state={speakingIdx !== null ? "speaking" : isAnalyzing ? "thinking" : listening ? "listening" : "idle"} onClose={toggleTalk} onTapOrb={() => { if (speakingIdx !== null) { stopSpeaking(); setSpeakingIdx(null); } else toggleVoice(); }} note={speechNote === "no_voice" ? t("speak_no_voice") : speechNote === "unsupported" ? t("speak_unsupported") : voiceNote} code={voiceError ? voiceCode : null} trace={voiceTrace} />}
       {!user && !authLoading && <ChatAuthGate />}
       {user && <div className={started ? "sticky bottom-0 bg-background/90 pb-3 pt-2 backdrop-blur" : ""}>
         {consentAsk && !consented && (

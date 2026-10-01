@@ -2018,6 +2018,7 @@
   "voice_unsupported": "This browser does not support voice input. Try Chrome on Android or Safari on iPhone, or type your question.",
   "voice_service": "Voice input is blocked by the browser or system. On Android check Chrome's microphone permission. Type your question meanwhile.",
   "voice_service_ios": "On iPhone, voice input needs Dictation turned on (Settings > General > Keyboard > Enable Dictation) and a normal Safari tab, not a home-screen app or another app's browser. Typing works fully.",
+  "voice_code": "Code:",
   "voice_error": "Voice input did not work. Check microphone permission and try again.",
   "copilot_home_title": "What can I help you with?",
   "copilot_home_sub": "Ask anything about markets, money and investing. Numbers come from InvestED+'s engines.",

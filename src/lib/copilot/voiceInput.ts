@@ -3,6 +3,7 @@ export interface SpeechRecognitionLike {
   lang: string; interimResults: boolean; continuous: boolean;
   onresult: ((event: { results: ArrayLike<ArrayLike<{ transcript: string }> & { isFinal?: boolean }> }) => void) | null;
   onerror: ((event?: { error?: string }) => void) | null; onend: (() => void) | null;
+  onstart?: (() => void) | null; onaudiostart?: (() => void) | null; onspeechstart?: (() => void) | null; onnomatch?: (() => void) | null;
   start(): void; stop(): void;
 }
 type Ctor = new () => SpeechRecognitionLike;
