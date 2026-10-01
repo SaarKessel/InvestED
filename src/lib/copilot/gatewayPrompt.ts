@@ -212,12 +212,15 @@ export function parseGeminiResponse(body: unknown): string | null {
  * and a minus turned into a word). The model may omit facts - it may never
  * introduce one. Any invented token and the caller falls back.
  */
+const FOREIGN_SCRIPT = /[\u0400-\u04FF\u0600-\u06FF\u3040-\u30FF\u4E00-\u9FFF]/;
 export function rephraseIntroducesNoNewFacts(
   answer: string,
   facts: GatewayFacts,
   text: string
 ): boolean {
   const allowed = `${answer} ${JSON.stringify(facts ?? {})}`.replace(/,/g, "");
+  // A model can slip a letter from another script into a word (an Arabic ت inside a Hebrew word was seen live). The stored answer has none, so the reworded text may not either.
+  if (FOREIGN_SCRIPT.test(text) && !FOREIGN_SCRIPT.test(answer)) return false;
   const haystack = text.replace(/,/g, "");
   // Exact-token membership: substring checks would wave drift through
   // ("5" hides inside "51", "VO" inside "VOO").

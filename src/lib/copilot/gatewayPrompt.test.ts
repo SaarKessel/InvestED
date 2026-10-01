@@ -205,3 +205,12 @@ describe("system prompt ticker protection", () => {
     }
   });
 });
+
+import { rephraseIntroducesNoNewFacts as noNewFacts } from "./gatewayPrompt";
+describe("rephrase script guard", () => {
+  it("rejects a reworded Hebrew text with an Arabic letter slipped into a word, accepts clean text", () => {
+    const answer = "יתרה סופית של 2,010 ILS אחרי 10 שנים";
+    expect(noNewFacts(answer, {}, "צפויה יتרה של 2,010 ILS תוך 10 שנים")).toBe(false);
+    expect(noNewFacts(answer, {}, "צפויה יתרה של 2,010 ILS תוך 10 שנים")).toBe(true);
+  });
+});

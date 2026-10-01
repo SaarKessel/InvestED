@@ -9,7 +9,7 @@ export interface FxResult extends FxRequest { rate: number; date: string; result
 const NAMES: [RegExp, string][] = [
   [/\b(?:usd|us dollars?|dollars?)\b|\$|דולר(?:ים)?|(?<![א-ת])דולר/i, "USD"],
   [/\b(?:ils|nis|shekels?|sheqels?)\b|₪|שקל(?:ים)?|ש"ח|שח(?![א-ת])/i, "ILS"],
-  [/\b(?:eur|euros?)\b|€|יורו/i, "EUR"],
+  [/\b(?:eur|euros?)\b|€|יורו|אירו/i, "EUR"],
   [/\b(?:gbp|pounds?|sterling)\b|£|לירה שטרלינג|פאונד/i, "GBP"],
   [/\b(?:jpy|yen)\b|¥|ין(?![א-ת])/i, "JPY"],
   [/\b(?:chf|swiss francs?)\b|פרנק שוויצרי/i, "CHF"],

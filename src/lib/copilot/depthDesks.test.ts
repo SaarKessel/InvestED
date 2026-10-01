@@ -48,3 +48,10 @@ describe("GDP level indicator", () => {
     expect(formatWbValue("inflation", 3.456)).toBe("3.5%");
   });
 });
+
+describe("Hebrew GDP", () => {
+  it("תוצר alone is the level, צמיחת התוצר is growth", () => {
+    expect(parseWbRequest("תוצר של ישראל")?.indicator).toBe("gdp");
+    expect(parseWbRequest("צמיחת התוצר של ישראל")?.indicator).toBe("gdp_growth");
+  });
+});

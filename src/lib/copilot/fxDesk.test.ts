@@ -17,3 +17,11 @@ describe("fxDesk", () => {
     expect(await loadFx({ amount: 10, from: "USD", to: "ILS" }, bad)).toBeNull();
   });
 });
+
+import { parseFxRequest as parseFx2 } from "./fxDesk";
+describe("Hebrew euro spellings", () => {
+  it("reads אירו and יורו the same", () => {
+    expect(parseFx2("כמה זה 250 דולר באירו")).toEqual({ amount: 250, from: "USD", to: "EUR" });
+    expect(parseFx2("כמה זה 250 דולר ביורו")).toEqual({ amount: 250, from: "USD", to: "EUR" });
+  });
+});

@@ -9,10 +9,10 @@ export interface WbResult extends WbRequest { points: WbPoint[]; lastUpdated: st
 
 const IND: Record<WbIndicator, { code: string; unit?: "usd"; re: RegExp; label: { en: string; he: string } }> = {
   inflation: { code: "FP.CPI.TOTL.ZG", re: /inflation|אינפלציה|עליית מחירים/i, label: { en: "Inflation, consumer prices (annual %)", he: "אינפלציה, מדד המחירים לצרכן (שנתי, %)" } },
-  gdp_growth: { code: "NY.GDP.MKTP.KD.ZG", re: /gdp growth|economic growth|צמיחה|תוצר/i, label: { en: "GDP growth (annual %)", he: "צמיחת התוצר (שנתי, %)" } },
+  gdp_growth: { code: "NY.GDP.MKTP.KD.ZG", re: /gdp growth|economic growth|צמיחה|צמיחת/i, label: { en: "GDP growth (annual %)", he: "צמיחת התוצר (שנתי, %)" } },
   unemployment: { code: "SL.UEM.TOTL.ZS", re: /unemployment|אבטלה/i, label: { en: "Unemployment (% of labor force)", he: "אבטלה (% מכוח העבודה)" } },
   // listed last so "GDP growth" matches the growth indicator first
-  gdp: { code: "NY.GDP.MKTP.CD", unit: "usd", re: /\bgdp\b|gross domestic product/i, label: { en: "GDP (current US$)", he: "תוצר (דולר נוכחי)" } },
+  gdp: { code: "NY.GDP.MKTP.CD", unit: "usd", re: /\bgdp\b|gross domestic product|תוצר/i, label: { en: "GDP (current US$)", he: "תוצר (דולר נוכחי)" } },
 };
 /** One value as the card and the depth lines print it: percent for rates, dollars in billions or trillions for GDP. */
 export function formatWbValue(i: WbIndicator, v: number, digits = 1): string {
