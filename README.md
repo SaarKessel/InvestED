@@ -37,6 +37,10 @@ The browser calls `api/market-quote.ts`, `api/market-movers.ts` and `api/news.ts
 
 Core educational answers, scenario calculations and conversation context are deterministic and tested. An optional local Ollama service can rephrase approved content, but it is not required for production functionality and is not presented as a cloud model. The product refuses to invent current market values and keeps education-only guardrails in generated responses.
 
+### Chat desks and the intelligence layer
+
+The chat plans each question with `src/lib/intelligence/router.ts` (one entry: the planner for desks, then the intent stage for plain answers). Desks are deterministic and run through one tool registry (`src/lib/intelligence/tools.ts`), each result carrying its source, license, as-of date and a live, cached, calculated or stored state. Desks: calculator, math, scenario splitter, ECB currency conversion (Frankfurter), World Bank country statistics (CC BY 4.0), symbol lookup (FinanceDatabase, MIT), market movers and Deep Research over stored knowledge only. Four agents (investing, insurance, loans and credit, savings and pension) are declarative registry entries. Domain interfaces (`domains.ts`) name Financial and Market as wired; Research, News, Portfolio, Risk and Learning are declared boundaries without engines. `src/lib/characterization.test.ts` pins the routing of 105 questions in Hebrew and English. Architecture audit and phase plan: `docs/architecture/INVESTED_2030_AUDIT.md`. Hebrew strings awaiting review: `docs/HEBREW_REVIEW.md`.
+
 ### Privacy
 
 The released product has no authentication, billing, cloud profile database or external notification delivery. Local data controls are available at `/data-controls`. Read the in-product Privacy and Terms pages before using the product.
