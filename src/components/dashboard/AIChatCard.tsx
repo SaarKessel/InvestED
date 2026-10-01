@@ -133,21 +133,27 @@ export function AIChatCard() {
   useEffect(() => () => stopSpeaking(), []);
   useEffect(() => () => recognitionRef.current?.stop(), []);
   const wantListening = useRef(false);
+  const fallbackLang = useRef<string | null>(null);
   const dictated = useRef("");
   function startRecognition(base: string) {
     if (!SpeechCtor) return;
     vtrace("new recognizer");
     const rec = new SpeechCtor();
     rec.onstart = () => vtrace("onstart"); rec.onaudiostart = () => vtrace("audio on"); rec.onspeechstart = () => vtrace("speech heard"); rec.onnomatch = () => vtrace("no match");
-    rec.lang = speechLocale(language); rec.interimResults = true; rec.continuous = false;
+    rec.lang = fallbackLang.current ?? speechLocale(language); rec.interimResults = true; rec.continuous = false;
     rec.onresult = (event) => {
       const said = appendDictation(base, joinTranscript(event.results));
       dictated.current = said;
       if (talkRef.current) return;
       setQuestion(said);
     };
-    rec.onerror = (e) => { vtrace(`error: ${e?.error ?? "unknown"}`); setVoiceCode(e?.error ?? "unknown"); wantListening.current = false; setVoiceError(voiceProblem(e?.error)); setListening(false); };
+    rec.onerror = (e) => {
+      vtrace(`error: ${e?.error ?? "unknown"}`);
+      // iOS can answer service-not-allowed for a language its recognizer lacks. Try English once so the cause is visible and English users are served.
+      if ((e?.error === "service-not-allowed" || e?.error === "language-not-supported") && !fallbackLang.current && rec.lang.startsWith("he")) { fallbackLang.current = "en-US"; vtrace("retry en-US"); recognitionRef.current = null; window.setTimeout(() => { try { startRecognition(dictated.current || base); } catch { setVoiceError("service"); setVoiceCode("service-not-allowed"); wantListening.current = false; setListening(false); } }, 0); return; }
+      setVoiceCode(e?.error ?? "unknown"); wantListening.current = false; setVoiceError(voiceProblem(e?.error)); setListening(false); };
     rec.onend = () => {
+      if (recognitionRef.current !== rec) return; // replaced by the English retry
       vtrace("onend");
       // Browsers stop after a short pause; a long question keeps going until the user taps stop.
       if (wantListening.current && !talkRef.current) { try { startRecognition(dictated.current || base); return; } catch { /* fall through */ } }
