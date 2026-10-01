@@ -283,7 +283,7 @@ export function AIChatCard() {
       <div ref={scrollRef} aria-live="polite" aria-busy={isAnalyzing} className={started ? "flex-1 space-y-6 pb-6" : ""}>
         {messages.map((message, index) => {
           const response = message.response;
-          return <div key={index} className={message.role === "user" ? "ms-auto w-fit max-w-[85%] rounded-3xl bg-[hsl(221_83%_44%)] px-4 py-2.5 text-sm leading-6 text-white" : "group flex gap-3 text-sm leading-7"}>
+          return <div key={index} className={message.role === "user" ? "ms-auto w-fit max-w-[85%] rounded-3xl bg-[hsl(221_83%_44%)] px-4 py-2.5 text-sm leading-6 text-white [&_p]:text-white" : "group flex gap-3 text-sm leading-7"}>
             {message.role === "copilot" && <img src="/copilot-avatar.png" alt="" width="36" height="36" className="mt-0.5 h-9 w-9 shrink-0 rounded-xl object-cover ring-1 ring-amber-400/30" />}
             <div className="min-w-0 flex-1">
             {message.role === "copilot" && message.response ? <ChatLinkedText text={message.text} onAsk={(q) => void send(q)} /> : <p dir={/[א-ת]/.test(message.text) ? "rtl" : "ltr"} className="whitespace-pre-wrap">{message.text}</p>}
