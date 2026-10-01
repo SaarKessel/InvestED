@@ -14,6 +14,7 @@ const KEYWORDS: Record<string, { en: string[]; he: string[] }> = {
   "/calculator": { en: ["calculator", "smart calculator"], he: ["מחשבון", "מחשבון חכם"] },
   "/loans": { en: ["loan", "loans", "loan learning", "mortgage"], he: ["הלוואה", "הלוואות", "משכנתא", "למידת הלוואות"] },
   "/insurance-reports": { en: ["insurance", "insurance reports"], he: ["ביטוח", "דוחות ביטוח"] },
+  "/markets": { en: ["markets", "watchlist", "market overview"], he: ["שווקים", "רשימת מעקב", "מעקב מניות"] },
   "/research": { en: ["research", "asset research"], he: ["מחקר", "מחקר נכסים"] },
   "/news": { en: ["news", "headlines"], he: ["חדשות", "כותרות"] },
   "/dashboard": { en: ["dashboard", "my results"], he: ["דשבורד", "לוח בקרה", "התוצאות שלי"] },

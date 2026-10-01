@@ -134,3 +134,22 @@
 .terminal-mobile-menu { display:none; }
 @media(min-width:768px) and (max-width:1199px) { .terminal-shell { --terminal-sidebar:64px; --terminal-copilot:320px; } .terminal-navigation { padding:12px 6px; } .terminal-nav-link span,.terminal-nav-group h2,.terminal-nav-caption>span,.terminal-nav-foot { display:none; } .terminal-nav-link { justify-content:center; } .terminal-launch-grid { grid-template-columns:1fr; } }
 @media(max-width:767px) { .terminal-shell { height:auto; min-height:100dvh; grid-template-columns:minmax(0,1fr); grid-template-rows:56px auto auto auto; overflow:visible; } .terminal-topbar { position:sticky; top:0; z-index:50; gap:8px; padding:0 10px; } .terminal-mobile-menu { display:inline-flex; } .terminal-search,.terminal-user { display:none; } .terminal-icon { min-width:44px; min-height:44px; } .terminal-navigation { display:none; } .terminal-navigation.is-open { display:flex; position:fixed; inset:56px 0 auto; max-height:70dvh; z-index:45; box-shadow:var(--terminal-shadow); } .terminal-workspace-column { grid-row:3; } .terminal-workspace { padding:12px; } .terminal-copilot { grid-row:2; border-inline-start:0; border-bottom:1px solid hsl(var(--border)); } .terminal-context { display:none; } .terminal-conversation { max-height:65dvh; padding:12px; } .terminal-copilot-heading { min-height:44px; } .terminal-conversation .welcome-composer button { min-height:44px; } .terminal-session-tabs { min-height:44px; } .terminal-home-heading h1 { font-size:21px; } .terminal-launch-grid { grid-template-columns:1fr; } .terminal-bottom { grid-row:4; } .terminal-system-note>span:last-child { display:none; } }
+.terminal-workspace-title { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; }
+.terminal-workspace-title h1 { font-size:22px; font-weight:600; margin-top:6px; }
+.terminal-market-workspace { display:grid; gap:16px; }
+.terminal-control { display:inline-flex; align-items:center; justify-content:center; min-height:34px; padding:6px 10px; border:1px solid hsl(var(--border)); border-radius:6px; font-size:11px; color:hsl(var(--foreground)); }
+.terminal-control:hover { background:hsl(var(--muted)); }
+.terminal-watchlist-form { display:flex; gap:8px; margin-bottom:16px; }
+.terminal-watchlist-form input { min-width:0; flex:1; border:1px solid hsl(var(--border)); border-radius:6px; padding:8px 10px; font-size:12px; }
+.terminal-quote-source { display:block; font-size:9px; color:hsl(var(--muted-foreground)); margin-top:4px; }
+/* One presentation contract for existing embedded workspaces; no business logic changes. */
+.terminal-workspace :is(.rounded-3xl,.rounded-2xl) { border-radius:var(--terminal-radius-panel); }
+.terminal-workspace :is(h1,h2) { letter-spacing:0; }
+.terminal-workspace h2 { font-size:18px; }
+.terminal-workspace table { font-size:var(--terminal-text); }
+.terminal-workspace table th { position:sticky; top:0; background:hsl(var(--terminal-raised)); }
+.terminal-workspace table :is(th,td) { padding:8px 12px; }
+.terminal-workspace :is(input,select) { border-radius:var(--terminal-radius-control); }
+@media(max-width:767px) { .terminal-control { min-height:44px; } .terminal-workspace-title h1 { font-size:20px; } }
+.terminal-market-workspace { padding:16px; }
+.terminal-market-workspace .terminal-panel-heading h2 { font-size:var(--terminal-text); }
