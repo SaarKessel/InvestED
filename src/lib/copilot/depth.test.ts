@@ -23,3 +23,13 @@ describe("depth", () => {
     expect(depthSections("junior", { question: "hello" })).toEqual([]);
   });
 });
+
+describe("desk depth", () => {
+  it("market-data answers deepen by level and add no numbers", () => {
+    const ids = (l: "junior" | "senior" | "professional") => depthSections(l, { desk: { kind: "movers" } }).map((s) => s.id);
+    expect(ids("junior")).toEqual(["read"]);
+    expect(ids("senior")).toEqual(["read", "next"]);
+    expect(ids("professional")).toEqual(["read", "next", "datalimits"]);
+    for (const k of ["movers", "policy_rate", "insurance"] as const) for (const s of depthSections("professional", { desk: { kind: k } })) for (const l of s.lines) expect(/\d/.test(l.en + l.he)).toBe(false);
+  });
+});
