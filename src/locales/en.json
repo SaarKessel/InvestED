@@ -2142,5 +2142,10 @@
   "mode_market_prompt": "Show me the market: ",
   "saved_do": "Save",
   "saved_done": "Saved",
-  "calc_how": "How was this calculated?"
+  "calc_how": "How was this calculated?",
+  "deep_working": "Researching",
+  "deep_none": "I could not find enough in the stored knowledge for a deep research answer on this. Try naming the topics, for example inflation and bonds.",
+  "deep_label": "Deep research - {n} topics - educational, from stored knowledge",
+  "mode_deep": "Deep research",
+  "mode_deep_prompt": "Deep research: "
 }

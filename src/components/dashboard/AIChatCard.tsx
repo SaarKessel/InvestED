@@ -18,6 +18,7 @@ import { openingLine } from "@/lib/copilot/toolKeywords";
 import { ChatRelated } from "./ChatRelated";
 import { ChatAlsoAsked } from "./ChatAlsoAsked";
 import { ChatTrace } from "./ChatTrace";
+import { isDeepRequest, runDeepResearch, stripTrigger } from "@/lib/copilot/deepResearch";
 import { ChatSidebar, type SidebarMode } from "./ChatSidebar";
 import { isSaved, loadSaved, removeSaved, toggleSaved, type SavedAnswer } from "@/lib/copilot/savedAnswers";
 import { ChatLinkedText } from "./ChatLinkedText";
@@ -46,7 +47,7 @@ import { appendDictation, getSpeechRecognition, joinTranscript, speechLocale, ty
 import { useAnalysis } from "@/context/useAnalysis";
 import type { CopilotResponse } from "@/lib/copilotResponse";
 
-interface Message { trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
+interface Message { deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
 
 export function AIChatCard() {
   const { t, language } = useLanguage();
@@ -145,6 +146,7 @@ export function AIChatCard() {
     { id: "learn", label: t("mode_learn"), prompt: t("mode_learn_prompt") },
     { id: "calc", label: t("mode_calc"), prompt: t("mode_calc_prompt") },
     { id: "market", label: t("mode_market"), prompt: t("mode_market_prompt") },
+    { id: "deep", label: t("mode_deep"), prompt: t("mode_deep_prompt") },
   ];
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -184,6 +186,19 @@ export function AIChatCard() {
       return;
     }
     setMessages((current) => [...current, { role: "user", text }]);
+    if (isDeepRequest(text)) {
+      const lang = /[א-ת]/.test(text) ? "he" : "en";
+      const q = stripTrigger(text);
+      const at = { i: -1 };
+      setMessages((current) => { at.i = current.length; return [...current, { role: "copilot", text: t("deep_working") }]; });
+      const result = await runDeepResearch(q, lang, (done, total, label) => setMessages((current) => current.map((m, i) => i === at.i ? { ...m, text: `${t("deep_working")} ${done}/${total}: ${label}` } : m)));
+      const trace: TraceStep[] = [
+        { text: { en: `Split the question into ${result.steps.length} known topics (max 4) and took the stored explanation for each, one after the other.`, he: `פיצלתי את השאלה ל-${result.steps.length} נושאים מוכרים (עד 4) ולקחתי לכל אחד את ההסבר השמור, בזה אחר זה.` }, trust: "EDUCATIONAL" },
+        { text: result.reworded ? { en: "A free AI model reworded the joined text. The server rejected any new number or ticker.", he: "מודל AI חינמי ניסח מחדש את הטקסט המחובר. השרת פוסל כל מספר או סימול חדש." } : { en: "No AI rewording this time. The stored text is shown as written.", he: "בלי ניסוח מחדש הפעם. הטקסט השמור מוצג כפי שנכתב." }, trust: "ANALYSIS" },
+      ];
+      setMessages((current) => current.map((m, i) => i === at.i ? { role: "copilot", text: result.text || t("deep_none"), trace: result.text ? trace : undefined, deep: result.text ? { steps: result.steps.length, reworded: result.reworded } : undefined, question: result.text ? q : undefined } : m));
+      return;
+    }
     const plan = planQuestion(text);
     const trace = plan.trace;
     const keywordPath = plan.toolPath ?? null;
@@ -303,6 +318,7 @@ export function AIChatCard() {
             {message.careerLaunch && <Link to="/career-lab" className="mt-3 inline-block rounded-lg border border-primary px-3 py-2 text-xs font-bold text-primary">{t("career_chat_open")}</Link>}
             {!inPanel(index) && visuals(message)}
             {message.role === "copilot" && <button type="button" onClick={() => copyMessage(message.text, index)} className="mt-2 inline-flex items-center gap-1 text-[11px] text-muted-foreground opacity-70 hover:opacity-100" aria-label={t("copilot_copy")}>{copied === index ? <Check className="h-3 w-3" /> : <Clipboard className="h-3 w-3" />}{copied === index ? t("copilot_copied") : t("copilot_copy")}</button>}{message.role === "copilot" && canSpeak && <button type="button" onClick={() => speakingIdx === index ? (stopSpeaking(), setSpeakingIdx(null)) : speakMessage(message.text, index)} className="ms-3 mt-2 inline-flex items-center gap-1 text-[11px] text-muted-foreground opacity-70 hover:opacity-100" aria-label={t(speakingIdx === index ? "speak_stop" : "speak_play")}>{speakingIdx === index ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}{t(speakingIdx === index ? "speak_stop" : "speak_play")}</button>}
+            {message.deep && <p className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-[#B8862B] dark:text-[#E0B253]">{t("deep_label").replace("{n}", String(message.deep.steps))}</p>}
             {message.role === "copilot" && message.trace && <ChatTrace steps={message.trace} />}
             {message.role === "copilot" && message.question && user && <button type="button" onClick={() => setSaved(toggleSaved(user.id, message.question!, message.text))} aria-pressed={isSaved(saved, message.question, message.text)} className="mt-2 ms-3 inline-flex items-center gap-1 text-[11px] text-muted-foreground opacity-70 hover:opacity-100">{isSaved(saved, message.question, message.text) ? t("saved_done") : t("saved_do")}</button>}
             {message.fromFile && <p className="mt-2 text-[11px] text-muted-foreground">{t("file_label")}</p>}
