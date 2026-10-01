@@ -1,15 +1,17 @@
 import type { ReactNode } from "react";
 import { Navbar } from "./Navbar";
-import { Footer } from "./Footer";
 import { ShieldAlert } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
+import { useEmbedded } from "./embed";
 
+/** One screen, like ChatGPT: a slim top bar and the content. No footer, no tabs. */
 export function Layout({ children }: { children: ReactNode }) {
+  const embedded = useEmbedded();
+  if (embedded) return <>{children}</>;
   return (
     <div className="flex min-h-screen flex-col">
       <Navbar />
       <main className="flex-1">{children}</main>
-      <Footer />
     </div>
   );
 }

@@ -2059,5 +2059,18 @@
   "history_open": "היסטוריה",
   "history_delete": "מחיקת שיחה",
   "auth_sign_out": "התנתקות",
-  "history_restored_note": "השיחה הקודמת שוחזרה כטקסט."
+  "history_restored_note": "השיחה הקודמת שוחזרה כטקסט.",
+  "tools_menu": "כלים ועמודים",
+  "tool_close": "סגירה",
+  "tool_start": "התחלת לימוד (פרופיל)",
+  "tool_knowledge": "שולחן ידע",
+  "tool_privacy": "מדיניות פרטיות",
+  "tool_terms": "תנאי שימוש",
+  "tools_group_learn": "לימוד",
+  "tools_group_practice": "תרגול",
+  "tools_group_tools": "כלים",
+  "tools_group_account": "הנתונים שלי",
+  "tools_group_about": "אודות",
+  "legal_line_credit": "© 2026 InvestED+‎. נוצר על ידי סער קסל. כל הזכויות שמורות.",
+  "legal_line_liability": "תוכן לימודי בלבד, לא ייעוץ השקעות. אין כל אחריות להחלטות שיתקבלו על סמך התוכן."
 }

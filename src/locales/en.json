@@ -2059,5 +2059,18 @@
   "history_open": "History",
   "history_delete": "Delete conversation",
   "auth_sign_out": "Sign out",
-  "history_restored_note": "Earlier conversation restored as text."
+  "history_restored_note": "Earlier conversation restored as text.",
+  "tools_menu": "Tools and pages",
+  "tool_close": "Close",
+  "tool_start": "Start learning (profile)",
+  "tool_knowledge": "Knowledge desk",
+  "tool_privacy": "Privacy policy",
+  "tool_terms": "Terms of use",
+  "tools_group_learn": "Learn",
+  "tools_group_practice": "Practice",
+  "tools_group_tools": "Tools",
+  "tools_group_account": "My data",
+  "tools_group_about": "About",
+  "legal_line_credit": "© 2026 InvestED+. Made by Saar Kessel. All rights reserved.",
+  "legal_line_liability": "Educational content only, not investment advice. No liability is accepted for decisions made based on it."
 }

@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { isCareerLaunchRequest } from "@/lib/career/chatRoute";
 import { Check, Clipboard, History, Loader2, LogOut, Mic, Square, RotateCcw, Send, Trash2 } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
@@ -11,6 +11,9 @@ import { ChatAuthGate } from "./ChatAuthGate";
 import { useAuth } from "@/context/useAuth";
 import { createConversation, deleteConversation, listConversations, loadMessages, saveMessage, type ChatConversation } from "@/lib/copilot/chatHistory";
 import { ChatSiteLaunch } from "./ChatSiteLaunch";
+import { ChatToolPanel } from "./ChatToolPanel";
+import { ChatToolMenu } from "./ChatToolMenu";
+import { toolForPath } from "./chatTools";
 import { resolveSiteIntent, SITE_CAPABILITIES, type SiteCapability } from "@/lib/copilot/siteCapabilities";
 import { ChatDataDesk } from "./ChatDataDesk";
 import { ChatCalcCard } from "./ChatCalcCard";
@@ -32,6 +35,7 @@ interface Message { role: "user" | "copilot"; text: string; response?: CopilotRe
 export function AIChatCard() {
   const { t, language } = useLanguage();
   const { askCopilot, isAnalyzing, reset } = useAnalysis();
+  const toolOpen = toolForPath(useLocation().pathname) !== null;
   const { user, loading: authLoading, signOut } = useAuth();
   const conversationId = useRef<string | null>(null);
   const savedCount = useRef(0);
@@ -137,7 +141,7 @@ export function AIChatCard() {
   function clearConversation() { reset(); setMessages([]); setQuestion(""); conversationId.current = null; savedCount.current = 0; }
   async function copyMessage(text: string, index: number) { await navigator.clipboard.writeText(text); setCopied(index); window.setTimeout(() => setCopied(null), 1500); }
 
-  const started = messages.length > 0;
+  const started = messages.length > 0 || toolOpen;
   return (
     <div className={`mx-auto flex w-full max-w-3xl flex-col ${started ? "min-h-[calc(100vh-9rem)]" : "min-h-[calc(100vh-14rem)] justify-center"}`}>
       {!started && (
@@ -193,11 +197,13 @@ export function AIChatCard() {
             </div>
           </div>;
         })}
+        {toolOpen && <ChatToolPanel />}
         {isAnalyzing && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />{t("copilot_working")}</div>}
       </div>
       {!user && !authLoading && <ChatAuthGate />}
       {user && <div className={started ? "sticky bottom-0 bg-background/90 pb-3 pt-2 backdrop-blur" : ""}>
         <form onSubmit={submit} className="welcome-composer flex items-end gap-2 rounded-[1.75rem] border border-border/60 bg-muted/50 p-2.5">
+          <ChatToolMenu />
           <textarea rows={1} aria-label={t("copilot_input")} value={question} onChange={(event) => setQuestion(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} placeholder={t("copilot_placeholder")} className="max-h-40 min-h-11 min-w-0 flex-1 resize-none bg-transparent px-3 py-2.5 text-sm outline-none" />
           {SpeechCtor && <button type="button" onClick={toggleVoice} aria-pressed={listening} aria-label={t(listening ? "voice_stop" : "voice_start")} title={t(listening ? "voice_stop" : "voice_start")} className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${listening ? "animate-pulse bg-primary text-primary-foreground" : "text-primary hover:bg-primary/10"}`}>{listening ? <Square className="h-4 w-4" /> : <Mic className="h-5 w-5" />}</button>}
           <button type="submit" disabled={!question.trim() || isAnalyzing} aria-label={t("copilot_send")} className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground disabled:opacity-40">{isAnalyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 rtl:-scale-x-100" />}</button>
@@ -208,6 +214,7 @@ export function AIChatCard() {
           </ul>
         )}
         <p className="mt-3 text-center text-[11px] text-muted-foreground" aria-live="polite">{voiceError ? t("voice_error") : listening ? t("voice_listening") : t("copilot_disclaimer_short")}</p>
+        <p className="mt-1 text-center text-[10px] leading-4 text-muted-foreground/80">{t("legal_line_credit")} {t("legal_line_liability")}</p>
       </div>}
     </div>
   );
