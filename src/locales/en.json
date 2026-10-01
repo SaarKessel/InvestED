@@ -2161,5 +2161,8 @@
   "cockpit_learn_cta": "Suggest next step",
   "cockpit_saved": "Saved answers",
   "cockpit_saved_none": "Nothing saved yet. Save an answer to find it here.",
-  "cockpit_agents": "Agents"
+  "cockpit_agents": "Agents",
+  "compare_title": "Compared, both start at 100",
+  "compare_unavailable": "no comparison data available right now",
+  "compare_note": "Rebased to 100 on the first shared date, past performance only"
 }

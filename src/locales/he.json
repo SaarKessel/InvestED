@@ -2161,5 +2161,8 @@
   "cockpit_learn_cta": "הצע צעד הבא",
   "cockpit_saved": "תשובות שמורות",
   "cockpit_saved_none": "עוד לא נשמר דבר. שמרו תשובה כדי למצוא אותה כאן.",
-  "cockpit_agents": "סוכנים"
+  "cockpit_agents": "סוכנים",
+  "compare_title": "השוואה, שניהם מתחילים ב-100",
+  "compare_unavailable": "אין כרגע נתוני השוואה זמינים",
+  "compare_note": "מנורמל ל-100 בתאריך המשותף הראשון, ביצועי עבר בלבד"
 }

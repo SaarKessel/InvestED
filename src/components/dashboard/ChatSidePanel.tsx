@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { X } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
 import { ChatChartCard } from "./ChatChartCard";
+import { ChatCompareChart } from "./ChatCompareChart";
 
 export function ChatSidePanel({ symbols, onClose, children }: { symbols: string[]; onClose: () => void; children: ReactNode }) {
   const { t, language } = useLanguage();
@@ -14,6 +15,7 @@ export function ChatSidePanel({ symbols, onClose, children }: { symbols: string[
         <button type="button" onClick={onClose} aria-label={t("tool_close")} className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground"><X className="h-4 w-4" aria-hidden="true" /></button>
       </div>
       <div className="space-y-3 overflow-y-auto p-3 text-xs [scrollbar-width:thin] [scrollbar-color:hsl(var(--border))_transparent]">
+        {symbols.length >= 2 && <ChatCompareChart symbols={[symbols[0], symbols[1]]} />}
         {symbols.slice(0, 2).map((s) => <ChatChartCard key={s} symbol={s} />)}
         {children}
       </div>
