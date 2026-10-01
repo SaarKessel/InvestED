@@ -1,0 +1,1203 @@
+[
+ {
+  "q": "What is a mutual fund?",
+  "route": "copilot",
+  "tools": [],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "A mutual fund collects money from many people and invests it together,"
+ },
+ {
+  "q": "what is compound interest?",
+  "route": "copilot",
+  "tools": [],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "Compound interest means you earn returns on your returns. Your money g"
+ },
+ {
+  "q": "what is diversification",
+  "route": "copilot",
+  "tools": [],
+  "intent": "strategy_question",
+  "engines": [
+   "strategy"
+  ],
+  "clarifies": false,
+  "head": "Diversification means not putting all your money in one place. If one "
+ },
+ {
+  "q": "What is an ETF?",
+  "route": "copilot",
+  "tools": [],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "An ETF is a basket of many investments that you buy as one item on the"
+ },
+ {
+  "q": "explain inflation",
+  "route": "copilot",
+  "tools": [],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "Inflation means prices go up over time, so the same money buys less. T"
+ },
+ {
+  "q": "what is a bond",
+  "route": "copilot",
+  "tools": [],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "A bond is a loan you give to a government or a company. They promise t"
+ },
+ {
+  "q": "what is a dividend",
+  "route": "copilot",
+  "tools": [],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "A dividend is a payment a company makes to its shareholders from its p"
+ },
+ {
+  "q": "what is the P/E ratio",
+  "route": "copilot",
+  "tools": [],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "The P/E ratio is the share price divided by the profit per share. It h"
+ },
+ {
+  "q": "what is RSI",
+  "route": "copilot",
+  "tools": [],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "RSI is a number from 0 to 100 that compares recent rises with recent f"
+ },
+ {
+  "q": "what is volatility",
+  "route": "copilot",
+  "tools": [],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "Volatility is how much a price moves up and down. High volatility mean"
+ },
+ {
+  "q": "what is a stop-loss",
+  "route": "copilot",
+  "tools": [],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "A stop-loss is an order that sells a position automatically if the pri"
+ },
+ {
+  "q": "what is a recession",
+  "route": "copilot",
+  "tools": [],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "A recession is a period when the economy shrinks: production, jobs and"
+ },
+ {
+  "q": "what is a deductible",
+  "route": "copilot",
+  "tools": [],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "A deductible is the part of a loss you pay yourself before the insuran"
+ },
+ {
+  "q": "what is APR",
+  "route": "copilot",
+  "tools": [],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "APR: latest available price 103.00 USD, change 2.00%, RSI unavailable,"
+ },
+ {
+  "q": "what is a credit score",
+  "route": "copilot",
+  "tools": [],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "A credit score is a rating of how reliable you are at paying back debt"
+ },
+ {
+  "q": "מהי קרן נאמנות?",
+  "route": "copilot",
+  "tools": [],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "קרן נאמנות אוספת כסף מהרבה אנשים ומשקיעה אותו יחד לפי תוכנית קבועה. את"
+ },
+ {
+  "q": "מה זה ריבית דריבית",
+  "route": "copilot",
+  "tools": [],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "ריבית דריבית אומרת שמרוויחים תשואה גם על התשואה. הכסף גדל מהר יותר ככל"
+ },
+ {
+  "q": "מה זה פיזור סיכונים",
+  "route": "copilot",
+  "tools": [],
+  "intent": "strategy_question",
+  "engines": [
+   "strategy"
+  ],
+  "clarifies": false,
+  "head": "פיזור אומר לא לשים את כל הכסף במקום אחד. אם השקעה אחת יורדת, האחרות יכ"
+ },
+ {
+  "q": "מה זה ETF",
+  "route": "copilot",
+  "tools": [],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "קרן סל (ETF) היא סל של הרבה השקעות שקונים כפריט אחד בבורסה. רוב הקרנות"
+ },
+ {
+  "q": "הסבר על אינפלציה",
+  "route": "copilot",
+  "tools": [],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "אינפלציה אומרת שהמחירים עולים עם הזמן, אז אותו כסף קונה פחות. כדי שהכס"
+ },
+ {
+  "q": "מה זה אג״ח",
+  "route": "copilot",
+  "tools": [],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "אג״ח היא הלוואה שאתם נותנים למדינה או לחברה. הם מבטיחים לשלם לכם ריבית"
+ },
+ {
+  "q": "מה זה דיבידנד",
+  "route": "copilot",
+  "tools": [],
+  "intent": "strategy_question",
+  "engines": [
+   "strategy"
+  ],
+  "clarifies": false,
+  "head": "דיבידנד הוא תשלום שחברה מעבירה לבעלי המניות שלה מהרווח. הוא לא מובטח, "
+ },
+ {
+  "q": "מה זה RSI?",
+  "route": "copilot",
+  "tools": [],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "RSI הוא מספר בין 0 ל-100 שמשווה עליות אחרונות לירידות אחרונות. הוא מתא"
+ },
+ {
+  "q": "מה זה תנודתיות",
+  "route": "copilot",
+  "tools": [],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "תנודתיות היא כמה המחיר זז למעלה ולמטה. תנודתיות גבוהה אומרת טווח תוצאו"
+ },
+ {
+  "q": "מה זה סטופ לוס",
+  "route": "copilot",
+  "tools": [],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "סטופ לוס היא פקודה שמוכרת פוזיציה אוטומטית אם המחיר יורד לרמה שקבעתם. "
+ },
+ {
+  "q": "מה זה מיתון",
+  "route": "copilot",
+  "tools": [],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "מיתון הוא תקופה שבה המשק מתכווץ: התוצר, התעסוקה והצריכה יורדים במשך כמ"
+ },
+ {
+  "q": "מה זו השתתפות עצמית",
+  "route": "copilot",
+  "tools": [],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "השתתפות עצמית היא החלק מהנזק שאתם משלמים מהכיס לפני שהביטוח משלם את הש"
+ },
+ {
+  "q": "מה זה ביטוח חיים",
+  "route": "copilot",
+  "tools": [],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "ביטוח הוא הסכם: אתם משלמים סכום קבוע, וחברת הביטוח מתחייבת לשלם אם קור"
+ },
+ {
+  "q": "מה זה דירוג אשראי",
+  "route": "copilot",
+  "tools": [],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "דירוג אשראי הוא ציון מחברות כמו S&P ו-Moody's לכמה סביר שלווה יחזיר, מ"
+ },
+ {
+  "q": "מה זה תקציב",
+  "route": "copilot",
+  "tools": [],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "תקציב הוא תוכנית לכסף שלכם: כמה נכנס, כמה יוצא ומה נשאר. הוא מראה לאן "
+ },
+ {
+  "q": "I have 10000 and add 500 per month for 10 years at 6%",
+  "route": "calc",
+  "tools": [
+   "calc"
+  ],
+  "intent": "financial_projection",
+  "engines": [
+   "financial"
+  ],
+  "clarifies": false,
+  "head": "Using the financial engine: projected final balance 100,134 ILS after "
+ },
+ {
+  "q": "invest 20000 for 15 years at 7%",
+  "route": "calc",
+  "tools": [
+   "calc"
+  ],
+  "intent": "financial_projection",
+  "engines": [
+   "financial"
+  ],
+  "clarifies": false,
+  "head": "Using the financial engine: projected final balance 56,979 ILS after 1"
+ },
+ {
+  "q": "what is 2+3*4",
+  "route": "math",
+  "tools": [
+   "math"
+  ],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "That's outside what I can reliably answer — I'm built for financial ed"
+ },
+ {
+  "q": "calculate 15% of 2400",
+  "route": "math",
+  "tools": [
+   "math"
+  ],
+  "intent": "financial_projection",
+  "engines": [
+   "financial"
+  ],
+  "clarifies": false,
+  "head": "15% of 2,400 = 360."
+ },
+ {
+  "q": "what is 12.5 * 8",
+  "route": "math",
+  "tools": [
+   "math"
+  ],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "That's outside what I can reliably answer — I'm built for financial ed"
+ },
+ {
+  "q": "pmt(200000, 5, 30)",
+  "route": "math",
+  "tools": [
+   "math"
+  ],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "That's outside what I can reliably answer — I'm built for financial ed"
+ },
+ {
+  "q": "loan of 200000 at 5% for 30 years",
+  "route": "copilot",
+  "tools": [],
+  "intent": "financial_projection",
+  "engines": [
+   "financial"
+  ],
+  "clarifies": false,
+  "head": "To run that calculation I need the real inputs: how much (one-time and"
+ },
+ {
+  "q": "I invest 5000 and add 200 per month for 20 years. Then what is 3*7?",
+  "route": "scenario",
+  "tools": [
+   "scenario"
+  ],
+  "intent": "financial_projection",
+  "engines": [
+   "financial"
+  ],
+  "clarifies": false,
+  "head": "Using the financial engine: projected final balance 104,185 ILS after "
+ },
+ {
+  "q": "what is 100/0",
+  "route": "math",
+  "tools": [
+   "math"
+  ],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "That's outside what I can reliably answer — I'm built for financial ed"
+ },
+ {
+  "q": "compute (4+6)^2",
+  "route": "math",
+  "tools": [
+   "math"
+  ],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "That's outside what I can reliably answer — I'm built for financial ed"
+ },
+ {
+  "q": "יש לי 10000 ואני מוסיף 500 בחודש ל-10 שנים ב-6%",
+  "route": "calc",
+  "tools": [
+   "calc"
+  ],
+  "intent": "financial_projection",
+  "engines": [
+   "financial"
+  ],
+  "clarifies": false,
+  "head": "לפי המנוע הפיננסי: יתרה חזויה של 100,134 ILS אחרי 10 שנים, מתוך הפקדות"
+ },
+ {
+  "q": "כמה זה 15% מ-2400",
+  "route": "math",
+  "tools": [
+   "math"
+  ],
+  "intent": "financial_projection",
+  "engines": [
+   "financial"
+  ],
+  "clarifies": false,
+  "head": "15% מתוך 2,400 = 360."
+ },
+ {
+  "q": "חשב 12.5 כפול 8",
+  "route": "math",
+  "tools": [
+   "math"
+  ],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "זו שאלה שאין לי עליה מענה מהימן — אני בנויה לחינוך פיננסי: מושגים, חיש"
+ },
+ {
+  "q": "הלוואה של 200000 ב-5% ל-30 שנה",
+  "route": "copilot",
+  "tools": [],
+  "intent": "financial_projection",
+  "engines": [
+   "financial"
+  ],
+  "clarifies": false,
+  "head": "כדי להריץ את החישוב אני צריכה את הקלטים האמיתיים: כמה כסף (חד-פעמי ו/א"
+ },
+ {
+  "q": "כמה זה 100/0",
+  "route": "math",
+  "tools": [
+   "math"
+  ],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "זו שאלה שאין לי עליה מענה מהימן — אני בנויה לחינוך פיננסי: מושגים, חיש"
+ },
+ {
+  "q": "100 USD to ILS",
+  "route": "fx",
+  "tools": [
+   "fx"
+  ],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "100 USD is about 10,300 ILS at a rate of 103. An actual bank or broker"
+ },
+ {
+  "q": "convert 500 euros to dollars",
+  "route": "fx",
+  "tools": [
+   "fx"
+  ],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "500 EUR is about 4.85 USD at a rate of 0.0097. An actual bank or broke"
+ },
+ {
+  "q": "200 GBP to EUR",
+  "route": "fx",
+  "tools": [
+   "fx"
+  ],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "200 GBP is about 200 EUR at a rate of 1. An actual bank or broker conv"
+ },
+ {
+  "q": "כמה זה 100 דולר בשקלים",
+  "route": "fx",
+  "tools": [
+   "fx"
+  ],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "100 USD הם בערך 10,300 ILS לפי שער 103. המרה בפועל בבנק או בברוקר כולל"
+ },
+ {
+  "q": "500 יורו לדולר",
+  "route": "fx",
+  "tools": [
+   "fx"
+  ],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "500 EUR הם בערך 4.85 USD לפי שער 0.0097. המרה בפועל בבנק או בברוקר כול"
+ },
+ {
+  "q": "Israel inflation 2020-2025",
+  "route": "wb",
+  "tools": [
+   "wb"
+  ],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "Inflation means prices go up over time, so the same money buys less. T"
+ },
+ {
+  "q": "US unemployment",
+  "route": "wb",
+  "tools": [
+   "wb"
+  ],
+  "intent": "asset_analysis",
+  "engines": [
+   "market"
+  ],
+  "clarifies": false,
+  "head": "US: latest available price 103.00 USD, change 2.00%, RSI unavailable, "
+ },
+ {
+  "q": "GDP growth in Germany",
+  "route": "wb",
+  "tools": [
+   "wb"
+  ],
+  "intent": "asset_analysis",
+  "engines": [
+   "market"
+  ],
+  "clarifies": false,
+  "head": "GDP: latest available price 103.00 USD, change 2.00%, RSI unavailable,"
+ },
+ {
+  "q": "אינפלציה בישראל",
+  "route": "wb",
+  "tools": [
+   "wb"
+  ],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "אינפלציה אומרת שהמחירים עולים עם הזמן, אז אותו כסף קונה פחות. כדי שהכס"
+ },
+ {
+  "q": "אבטלה בארצות הברית",
+  "route": "wb",
+  "tools": [
+   "wb"
+  ],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "זו שאלה שאין לי עליה מענה מהימן — אני בנויה לחינוך פיננסי: מושגים, חיש"
+ },
+ {
+  "q": "what is VOO",
+  "route": "copilot",
+  "tools": [],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "VOO: latest available price 103.00 USD, change 2.00%, RSI unavailable,"
+ },
+ {
+  "q": "what is AAPL stock",
+  "route": "copilot",
+  "tools": [],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "AAPL: latest available price 103.00 USD, change 2.00%, RSI unavailable"
+ },
+ {
+  "q": "how much are 10 VOO shares worth?",
+  "route": "copilot",
+  "tools": [],
+  "intent": "asset_analysis",
+  "engines": [
+   "market"
+  ],
+  "clarifies": false,
+  "head": "10 VOO shares × 103 USD = 1,030 USD. This is a point-in-time market va"
+ },
+ {
+  "q": "compare AAPL and MSFT",
+  "route": "copilot",
+  "tools": [],
+  "intent": "comparison",
+  "engines": [
+   "market"
+  ],
+  "clarifies": false,
+  "head": "AAPL: 2.00% recent change, 1.63% volatility; MSFT: 2.00% recent change"
+ },
+ {
+  "q": "how is TSLA doing",
+  "route": "copilot",
+  "tools": [],
+  "intent": "asset_analysis",
+  "engines": [
+   "market"
+  ],
+  "clarifies": false,
+  "head": "TSLA: latest available price 103.00 USD, change 2.00%, RSI unavailable"
+ },
+ {
+  "q": "כמה שווה 199 מניות של TSLA?",
+  "route": "copilot",
+  "tools": [],
+  "intent": "asset_analysis",
+  "engines": [
+   "market"
+  ],
+  "clarifies": false,
+  "head": "199 מניות TSLA × 103 USD = 20,497 USD. זהו שווי שוק נקודתי לפני עמלות "
+ },
+ {
+  "q": "מה זה VOO",
+  "route": "copilot",
+  "tools": [],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "VOO: מחיר זמין אחרון 103.00 USD, שינוי 2.00%, RSI לא זמין, תנודתיות 1."
+ },
+ {
+  "q": "השווה בין AAPL ל-MSFT",
+  "route": "copilot",
+  "tools": [],
+  "intent": "comparison",
+  "engines": [
+   "market"
+  ],
+  "clarifies": false,
+  "head": "AAPL: שינוי אחרון 2.00%, תנודתיות 1.63%; MSFT: שינוי אחרון 2.00%, תנוד"
+ },
+ {
+  "q": "מה המחיר של NVDA",
+  "route": "copilot",
+  "tools": [],
+  "intent": "asset_analysis",
+  "engines": [
+   "market"
+  ],
+  "clarifies": false,
+  "head": "NVDA: מחיר זמין אחרון 103.00 USD, שינוי 2.00%, RSI לא זמין, תנודתיות 1"
+ },
+ {
+  "q": "מה קורה עם הנאסדק",
+  "route": "copilot",
+  "tools": [],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "זו שאלה שאין לי עליה מענה מהימן — אני בנויה לחינוך פיננסי: מושגים, חיש"
+ },
+ {
+  "q": "top gainers today",
+  "route": "desk",
+  "tools": [],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "That's outside what I can reliably answer — I'm built for financial ed"
+ },
+ {
+  "q": "what is the Bank of Israel interest rate",
+  "route": "desk",
+  "tools": [],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "An interest rate is the price of money. It is what a borrower pays, or"
+ },
+ {
+  "q": "insurance fund yields",
+  "route": "desk",
+  "tools": [],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "Insurance is an agreement: you pay a fixed amount, and the insurer pro"
+ },
+ {
+  "q": "המניות שעלו היום",
+  "route": "copilot",
+  "tools": [],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "מניה היא חלק קטן מהבעלות על חברה. המחיר שלה עולה ויורד לפי קונים ומוכר"
+ },
+ {
+  "q": "מה ריבית בנק ישראל",
+  "route": "desk",
+  "tools": [],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "ריבית היא המחיר של כסף. זה מה שלווה משלם, או מה שחוסך מרוויח. כשהריבית"
+ },
+ {
+  "q": "open the calculator",
+  "route": "tool",
+  "tools": [],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "That's outside what I can reliably answer — I'm built for financial ed"
+ },
+ {
+  "q": "I want to practice a career",
+  "route": "copilot",
+  "tools": [],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "That's outside what I can reliably answer — I'm built for financial ed"
+ },
+ {
+  "q": "what can this site do",
+  "route": "copilot",
+  "tools": [],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "That's outside what I can reliably answer — I'm built for financial ed"
+ },
+ {
+  "q": "show me a learning path",
+  "route": "learnpath",
+  "tools": [],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "That's outside what I can reliably answer — I'm built for financial ed"
+ },
+ {
+  "q": "open the loan page",
+  "route": "site",
+  "tools": [],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "That's outside what I can reliably answer — I'm built for financial ed"
+ },
+ {
+  "q": "פתח את המחשבון",
+  "route": "site",
+  "tools": [],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "זו שאלה שאין לי עליה מענה מהימן — אני בנויה לחינוך פיננסי: מושגים, חיש"
+ },
+ {
+  "q": "אני רוצה להתנסות בקריירה",
+  "route": "copilot",
+  "tools": [],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "זו שאלה שאין לי עליה מענה מהימן — אני בנויה לחינוך פיננסי: מושגים, חיש"
+ },
+ {
+  "q": "מה האתר יכול לעשות",
+  "route": "copilot",
+  "tools": [],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "זו שאלה שאין לי עליה מענה מהימן — אני בנויה לחינוך פיננסי: מושגים, חיש"
+ },
+ {
+  "q": "תבנה לי מסלול למידה",
+  "route": "learnpath",
+  "tools": [],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "זו שאלה שאין לי עליה מענה מהימן — אני בנויה לחינוך פיננסי: מושגים, חיש"
+ },
+ {
+  "q": "פתח את עמוד ההלוואות",
+  "route": "site",
+  "tools": [],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "זו שאלה שאין לי עליה מענה מהימן — אני בנויה לחינוך פיננסי: מושגים, חיש"
+ },
+ {
+  "q": "is the dividend strategy right for me",
+  "route": "copilot",
+  "tools": [],
+  "intent": "strategy_question",
+  "engines": [
+   "strategy"
+  ],
+  "clarifies": false,
+  "head": "Dividend Investing (Low-to-moderate risk, risk 4/10). Focusing on comp"
+ },
+ {
+  "q": "which strategy fits a low risk investor",
+  "route": "copilot",
+  "tools": [],
+  "intent": "financial_projection",
+  "engines": [
+   "financial"
+  ],
+  "clarifies": false,
+  "head": "To run that calculation I need the real inputs: how much (one-time and"
+ },
+ {
+  "q": "explain the index fund strategy",
+  "route": "copilot",
+  "tools": [],
+  "intent": "strategy_question",
+  "engines": [
+   "strategy"
+  ],
+  "clarifies": false,
+  "head": "Long-Term Index Investing (Moderate risk, risk 5/10). Investing in bro"
+ },
+ {
+  "q": "האם אסטרטגיית דיבידנד מתאימה לי",
+  "route": "copilot",
+  "tools": [],
+  "intent": "strategy_question",
+  "engines": [
+   "strategy"
+  ],
+  "clarifies": false,
+  "head": "השקעת דיבידנדים (סיכון נמוך-בינוני, סיכון 4/10). התמקדות בחברות וקרנות"
+ },
+ {
+  "q": "איזו אסטרטגיה מתאימה למשקיע זהיר",
+  "route": "copilot",
+  "tools": [],
+  "intent": "financial_projection",
+  "engines": [
+   "financial"
+  ],
+  "clarifies": false,
+  "head": "כדי להריץ את החישוב אני צריכה את הקלטים האמיתיים: כמה כסף (חד-פעמי ו/א"
+ },
+ {
+  "q": "will TSLA go up tomorrow",
+  "route": "copilot",
+  "tools": [],
+  "intent": "asset_analysis",
+  "engines": [
+   "market"
+  ],
+  "clarifies": false,
+  "head": "I can't predict where prices will go — nobody reliably can, and anyone"
+ },
+ {
+  "q": "guarantee me 20% returns",
+  "route": "copilot",
+  "tools": [],
+  "intent": "financial_projection",
+  "engines": [
+   "financial"
+  ],
+  "clarifies": false,
+  "head": "There is no such thing as a guaranteed high-return investment — a prom"
+ },
+ {
+  "q": "what is the weather today",
+  "route": "copilot",
+  "tools": [],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "That's outside what I can reliably answer — I'm built for financial ed"
+ },
+ {
+  "q": "tell me a joke",
+  "route": "copilot",
+  "tools": [],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "That's outside what I can reliably answer — I'm built for financial ed"
+ },
+ {
+  "q": "should I buy bitcoin",
+  "route": "copilot",
+  "tools": [],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "I cannot tell you what to buy or sell - that is a personal decision th"
+ },
+ {
+  "q": "האם TSLA תעלה מחר",
+  "route": "copilot",
+  "tools": [],
+  "intent": "asset_analysis",
+  "engines": [
+   "market"
+  ],
+  "clarifies": false,
+  "head": "TSLA: מחיר זמין אחרון 103.00 USD, שינוי 2.00%, RSI לא זמין, תנודתיות 1"
+ },
+ {
+  "q": "תבטיח לי 20% תשואה",
+  "route": "copilot",
+  "tools": [],
+  "intent": "financial_projection",
+  "engines": [
+   "financial"
+  ],
+  "clarifies": false,
+  "head": "אין דבר כזה השקעה בטוחה עם תשואה גבוהה מובטחת — הבטחה כזו היא סימן אזה"
+ },
+ {
+  "q": "מה מזג האוויר היום",
+  "route": "copilot",
+  "tools": [],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "זו שאלה שאין לי עליה מענה מהימן — אני בנויה לחינוך פיננסי: מושגים, חיש"
+ },
+ {
+  "q": "ספר לי בדיחה",
+  "route": "copilot",
+  "tools": [],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "זו שאלה שאין לי עליה מענה מהימן — אני בנויה לחינוך פיננסי: מושגים, חיש"
+ },
+ {
+  "q": "כדאי לקנות ביטקוין",
+  "route": "copilot",
+  "tools": [],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "אני לא יכולה לומר לך מה לקנות או למכור - זו החלטה אישית שתלויה באופק, "
+ },
+ {
+  "q": "do I need life insurance",
+  "route": "copilot",
+  "tools": [],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "Insurance is an agreement: you pay a fixed amount, and the insurer pro"
+ },
+ {
+  "q": "how big should an emergency fund be",
+  "route": "copilot",
+  "tools": [],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "An emergency fund is cash you can reach fast, enough for 3 to 6 months"
+ },
+ {
+  "q": "how does a pension work",
+  "route": "copilot",
+  "tools": [],
+  "intent": "educational_question",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "A pension fund is long-term saving for your retirement. You get a tax "
+ },
+ {
+  "q": "fixed vs variable rate",
+  "route": "copilot",
+  "tools": [],
+  "intent": "comparison",
+  "engines": [
+   "market"
+  ],
+  "clarifies": true,
+  "head": "Which assets would you like to compare? Name at least two, for example"
+ },
+ {
+  "q": "should I refinance my mortgage",
+  "route": "copilot",
+  "tools": [],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "A mortgage is a loan to buy a home, usually for 20 to 30 years. It is "
+ },
+ {
+  "q": "האם אני צריך ביטוח חיים",
+  "route": "copilot",
+  "tools": [],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "ביטוח הוא הסכם: אתם משלמים סכום קבוע, וחברת הביטוח מתחייבת לשלם אם קור"
+ },
+ {
+  "q": "כמה גדולה צריכה להיות קרן חירום",
+  "route": "copilot",
+  "tools": [],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "קרן חירום היא מזומן שאפשר להגיע אליו מהר, מספיק ל-3 עד 6 חודשי הוצאות."
+ },
+ {
+  "q": "איך עובדת פנסיה",
+  "route": "copilot",
+  "tools": [],
+  "intent": "financial_projection",
+  "engines": [
+   "financial"
+  ],
+  "clarifies": false,
+  "head": "קרן פנסיה היא חיסכון ארוך לפרישה. יש הטבת מס על מה שמפקידים. כדאי לבדו"
+ },
+ {
+  "q": "ריבית קבועה או משתנה",
+  "route": "copilot",
+  "tools": [],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "ריבית היא המחיר של כסף. זה מה שלווה משלם, או מה שחוסך מרוויח. כשהריבית"
+ },
+ {
+  "q": "כדאי למחזר משכנתא",
+  "route": "copilot",
+  "tools": [],
+  "intent": "general",
+  "engines": [
+   "education"
+  ],
+  "clarifies": false,
+  "head": "משכנתא היא הלוואה לקניית דירה, בדרך כלל ל-20 עד 30 שנה. היא מחולקת למס"
+ }
+]

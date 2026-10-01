@@ -28,7 +28,8 @@ import { isDeepRequest, runDeepResearch, stripTrigger } from "@/lib/copilot/deep
 import { ChatSidebar, type SidebarMode } from "./ChatSidebar";
 import { isSaved, loadSaved, removeSaved, toggleSaved, type SavedAnswer } from "@/lib/copilot/savedAnswers";
 import { ChatLinkedText } from "./ChatLinkedText";
-import { planQuestion, type TraceStep } from "@/lib/copilot/planner";
+import { type TraceStep } from "@/lib/copilot/planner";
+import { routeRequest } from "@/lib/intelligence/router";
 import { VoiceOrb } from "./VoiceOrb";
 import { LevelPicker } from "./LevelPicker";
 import { checkFile, giveConsent, hasConsent } from "@/lib/copilot/fileAnalysis";
@@ -236,7 +237,7 @@ export function AIChatCard() {
         return;
       }
     }
-    const plan = planQuestion(text);
+    const plan = routeRequest(text).plan;
     const trace = plan.trace;
     const keywordPath = plan.toolPath ?? null;
     const keywordTool = keywordPath ? toolForPath(keywordPath) : null;
