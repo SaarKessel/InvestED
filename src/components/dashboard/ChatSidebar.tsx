@@ -1,3 +1,4 @@
+import { createPortal } from "react-dom";
 import { Bookmark, MessageSquarePlus, Trash2, X } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
 import type { ChatConversation } from "@/lib/copilot/chatHistory";
@@ -15,7 +16,7 @@ const head = "px-3 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-wide t
 export function ChatSidebar(p: Props) {
   const { t, language } = useLanguage();
   if (!p.open) return null;
-  return (
+  return createPortal(
     <>
       <div className="fixed inset-0 z-[60] bg-black/40 lg:bg-black/20" onClick={p.onClose} aria-hidden="true" />
       <aside dir="ltr" aria-label={t("sidebar_title")} className="fixed bottom-0 left-0 top-0 z-[70] flex w-72 max-w-[85vw] flex-col border-e border-border bg-card shadow-2xl">
@@ -43,6 +44,7 @@ export function ChatSidebar(p: Props) {
           )}
         </div>
       </aside>
-    </>
+    </>,
+    document.body
   );
 }
