@@ -23,7 +23,7 @@ export function ChatToolMenu() {
   }, [open]);
   return (
     <div ref={box} className="relative">
-      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-haspopup="menu" aria-label={t("tools_menu")} title={t("tools_menu")} className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-accent hover:text-foreground"><Plus className="h-5 w-5" aria-hidden="true" /></button>
+      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} aria-haspopup="menu" aria-label={t("tools_menu")} title={t("tools_menu")} className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground"><Plus className="h-5 w-5" strokeWidth={1.75} aria-hidden="true" /></button>
       {open && (
         <div role="menu" className="absolute bottom-full start-0 z-30 mb-2 max-h-[min(60vh,26rem)] w-64 overflow-y-auto rounded-2xl border border-border bg-background p-2 shadow-2xl [scrollbar-width:thin] [scrollbar-color:hsl(var(--border))_transparent]">
           {GROUPS.map((group) => {
