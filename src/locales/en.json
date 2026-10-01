@@ -2072,5 +2072,8 @@
   "tools_group_account": "My data",
   "tools_group_about": "About",
   "legal_line_credit": "© 2026 InvestED+. Made by Saar Kessel. All rights reserved.",
-  "legal_line_liability": "Educational content only, not investment advice. No liability is accepted for decisions made based on it."
+  "legal_line_liability": "Educational content only, not investment advice. No liability is accepted for decisions made based on it.",
+  "panel_title": "Charts and explanations",
+  "panel_chart_title": "Last 3 months",
+  "panel_chart_unavailable": "no chart data available right now"
 }

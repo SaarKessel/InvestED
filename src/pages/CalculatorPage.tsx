@@ -18,11 +18,13 @@ import { AIExplanationCard } from "@/components/AIExplanationCard";
 import { InvestmentGrowthChart } from "@/components/InvestmentGrowthChart";
 import { GoalPlannerCard } from "@/components/GoalPlannerCard";
 import { useLanguage } from "@/context/languageContext";
+import { useEmbedded } from "@/components/layout/embed";
 import { formatCurrency, calculatorGoalLabel } from "@/lib/format";
 import { CURRENCIES, DEFAULT_CURRENCY } from "@/lib/currencies";
 
 export default function CalculatorPage() {
   const { t, language } = useLanguage();
+  const embedded = useEmbedded();
 
   const [input, setInput] = useState("");
   const [analysis, setAnalysis] = useState<UnifiedFinancialAnalysis | null>(null);
@@ -141,6 +143,7 @@ export default function CalculatorPage() {
       <div className="calculator-grid pointer-events-none absolute inset-x-0 top-0 h-[760px]" aria-hidden="true" />
       <main className="relative mx-auto max-w-6xl">
         {/* Hero */}
+        {!embedded && (
         <div className="relative mb-10 overflow-hidden rounded-[2rem] border border-primary/15 bg-card/55 px-4 py-10 text-center shadow-[0_24px_80px_-50px_hsl(var(--primary)/0.35)] sm:px-8 md:py-14">
           <div className="pointer-events-none absolute left-1/2 top-0 h-40 w-80 -translate-x-1/2 rounded-full bg-primary/10 blur-3xl" />
           <div className="relative mb-5 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-2 text-sm font-medium text-primary">
@@ -159,6 +162,7 @@ export default function CalculatorPage() {
             <span className="rounded-full border border-primary/20 bg-primary/5 px-3 py-1.5">{t("calc_hero_xai_full")}</span>
           </div>
         </div>
+        )}
 
         <Link to="/loans" className="mb-8 flex min-h-11 items-center justify-center rounded-2xl border border-primary/30 bg-primary/5 px-5 text-center text-sm font-semibold text-primary hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary">{t("loan_calculator_link")}</Link>
 

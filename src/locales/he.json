@@ -2072,5 +2072,8 @@
   "tools_group_account": "הנתונים שלי",
   "tools_group_about": "אודות",
   "legal_line_credit": "© 2026 InvestED+‎. נוצר על ידי סער קסל. כל הזכויות שמורות.",
-  "legal_line_liability": "תוכן לימודי בלבד, לא ייעוץ השקעות. אין כל אחריות להחלטות שיתקבלו על סמך התוכן."
+  "legal_line_liability": "תוכן לימודי בלבד, לא ייעוץ השקעות. אין כל אחריות להחלטות שיתקבלו על סמך התוכן.",
+  "panel_title": "גרפים והסברים",
+  "panel_chart_title": "3 חודשים אחרונים",
+  "panel_chart_unavailable": "אין כרגע נתוני גרף"
 }

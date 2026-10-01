@@ -14,6 +14,8 @@ import { ChatSiteLaunch } from "./ChatSiteLaunch";
 import { ChatToolPanel } from "./ChatToolPanel";
 import { ChatToolMenu } from "./ChatToolMenu";
 import { toolForPath } from "./chatTools";
+import { ChatSidePanel } from "./ChatSidePanel";
+import { hasVisuals, useWide } from "./chatPanelState";
 import { resolveSiteIntent, SITE_CAPABILITIES, type SiteCapability } from "@/lib/copilot/siteCapabilities";
 import { ChatDataDesk } from "./ChatDataDesk";
 import { ChatCalcCard } from "./ChatCalcCard";
@@ -43,6 +45,7 @@ export function AIChatCard() {
   const [conversations, setConversations] = useState<ChatConversation[]>([]);
   const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
+  const [dismissedPanel, setDismissedPanel] = useState<number | null>(null);
   const [copied, setCopied] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const SpeechCtor = getSpeechRecognition();
@@ -141,9 +144,34 @@ export function AIChatCard() {
   function clearConversation() { reset(); setMessages([]); setQuestion(""); conversationId.current = null; savedCount.current = 0; }
   async function copyMessage(text: string, index: number) { await navigator.clipboard.writeText(text); setCopied(index); window.setTimeout(() => setCopied(null), 1500); }
 
+  const wide = useWide();
+  const panelIndex = wide ? messages.reduce((acc, m, i) => (m.role === "copilot" && hasVisuals(m) ? i : acc), -1) : -1;
+  const panelOpen = panelIndex >= 0 && dismissedPanel !== panelIndex;
+  const inPanel = (index: number) => panelOpen && index === panelIndex;
+  const visuals = (message: Message) => {
+    const response = message.response;
+    const assets = response?.assets ?? [];
+    return (<>
+            {message.desk && <ChatDataDesk data={message.desk} />}
+            {message.calc && <ChatCalcCard data={message.calc} />}
+            {message.knowledge && message.knowledge.length > 0 && <ChatKnowledge items={message.knowledge} />}
+            {message.learnPath && <ChatLearnPath />}
+            {response?.toolResult && <div className="mt-3 rounded-lg border border-border/70 bg-background/70 p-2.5 text-xs"><p className="font-semibold">{t("copilot_verified_calculation")}</p>{response.toolResult.formula && <p className="mt-1 font-mono" dir="ltr">{response.toolResult.formula}</p>}{response.toolResult.assumptions.length > 0 && <p className="mt-1 text-muted-foreground">{t("copilot_assumptions")}: {response.toolResult.assumptions.join(" · ")}</p>}</div>}
+            {response?.calculation && <ChatCalculationCard projection={response.calculation} />}
+            {assets.length > 0 && <ChatNewsList symbols={assets.map((asset) => asset.symbol)} />}
+            {response?.strategyExplanation && <ChatStrategyCard explanation={response.strategyExplanation} />}
+            {response?.strategyFit && <ChatStrategyFitCard fit={response.strategyFit} />}
+            {response?.comparison && response.comparison.length >= 2
+              ? <ChatComparisonTable assets={response.comparison} />
+              : <ChatAssetCards assets={assets} />}
+    </>);
+  };
   const started = messages.length > 0 || toolOpen;
+  const panelSymbols = panelOpen ? (messages[panelIndex].response?.assets ?? []).map((a) => a.symbol) : [];
   return (
-    <div className={`mx-auto flex w-full max-w-3xl flex-col ${started ? "min-h-[calc(100vh-9rem)]" : "min-h-[calc(100vh-14rem)] justify-center"}`}>
+    <div dir="ltr" className={panelOpen ? "mx-auto grid w-full max-w-6xl items-start gap-6 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]" : "contents"}>
+    {panelOpen && <ChatSidePanel symbols={panelSymbols} onClose={() => setDismissedPanel(panelIndex)}>{visuals(messages[panelIndex])}</ChatSidePanel>}
+    <div dir={language === "he" ? "rtl" : "ltr"} className={`mx-auto flex w-full max-w-3xl flex-col ${started ? "min-h-[calc(100vh-9rem)]" : "min-h-[calc(100vh-14rem)] justify-center"}`}>
       {!started && (
         <div className="mb-8 flex flex-col items-center text-center">
           <img src="/copilot-avatar.png" alt="" width="56" height="56" className="h-14 w-14 rounded-2xl object-cover" />
@@ -173,25 +201,13 @@ export function AIChatCard() {
       <div ref={scrollRef} aria-live="polite" aria-busy={isAnalyzing} className={started ? "flex-1 space-y-6 pb-6" : ""}>
         {messages.map((message, index) => {
           const response = message.response;
-          const assets = response?.assets ?? [];
           return <div key={index} className={message.role === "user" ? "ms-auto w-fit max-w-[85%] rounded-3xl bg-primary px-4 py-2.5 text-sm leading-6 text-primary-foreground" : "group flex gap-3 text-sm leading-7"}>
             {message.role === "copilot" && <img src="/copilot-avatar.png" alt="" width="36" height="36" className="mt-0.5 h-9 w-9 shrink-0 rounded-xl object-cover ring-1 ring-amber-400/30" />}
             <div className="min-w-0 flex-1">
             <p className="whitespace-pre-wrap">{message.text}</p>
-            {message.desk && <ChatDataDesk data={message.desk} />}
-            {message.calc && <ChatCalcCard data={message.calc} />}
-            {message.knowledge && message.knowledge.length > 0 && <ChatKnowledge items={message.knowledge} />}
-            {message.learnPath && <ChatLearnPath />}
             {message.siteCaps && <ChatSiteLaunch capabilities={message.siteCaps} />}
             {message.careerLaunch && <Link to="/career-lab" className="mt-3 inline-block rounded-lg border border-primary px-3 py-2 text-xs font-bold text-primary">{t("career_chat_open")}</Link>}
-            {response?.toolResult && <div className="mt-3 rounded-lg border border-border/70 bg-background/70 p-2.5 text-xs"><p className="font-semibold">{t("copilot_verified_calculation")}</p>{response.toolResult.formula && <p className="mt-1 font-mono" dir="ltr">{response.toolResult.formula}</p>}{response.toolResult.assumptions.length > 0 && <p className="mt-1 text-muted-foreground">{t("copilot_assumptions")}: {response.toolResult.assumptions.join(" · ")}</p>}</div>}
-            {response?.calculation && <ChatCalculationCard projection={response.calculation} />}
-            {assets.length > 0 && <ChatNewsList symbols={assets.map((asset) => asset.symbol)} />}
-            {response?.strategyExplanation && <ChatStrategyCard explanation={response.strategyExplanation} />}
-            {response?.strategyFit && <ChatStrategyFitCard fit={response.strategyFit} />}
-            {response?.comparison && response.comparison.length >= 2
-              ? <ChatComparisonTable assets={response.comparison} />
-              : <ChatAssetCards assets={assets} />}
+            {!inPanel(index) && visuals(message)}
             {message.role === "copilot" && <button type="button" onClick={() => copyMessage(message.text, index)} className="mt-2 inline-flex items-center gap-1 text-[11px] text-muted-foreground opacity-70 hover:opacity-100" aria-label={t("copilot_copy")}>{copied === index ? <Check className="h-3 w-3" /> : <Clipboard className="h-3 w-3" />}{copied === index ? t("copilot_copied") : t("copilot_copy")}</button>}
             {message.role === "copilot" && message.question && <FeedbackButtons question={message.question} knowledgeIds={(message.knowledge ?? []).map((k) => k.id)} lang={response?.language ?? "en"} />}
             </div>
@@ -216,6 +232,7 @@ export function AIChatCard() {
         <p className="mt-3 text-center text-[11px] text-muted-foreground" aria-live="polite">{voiceError ? t("voice_error") : listening ? t("voice_listening") : t("copilot_disclaimer_short")}</p>
         <p className="mt-1 text-center text-[10px] leading-4 text-muted-foreground/80">{t("legal_line_credit")} {t("legal_line_liability")}</p>
       </div>}
+    </div>
     </div>
   );
 }
