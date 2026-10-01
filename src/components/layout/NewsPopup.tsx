@@ -43,7 +43,7 @@ export function NewsPopup() {
   if (!item) return null;
   const off = () => { saveState({ ...loadState(), off: true }); setItem(null); };
   return createPortal(
-    <div role="dialog" aria-label={t("newspop_title")} className="fixed bottom-4 end-4 z-40 w-[min(22rem,calc(100vw-2rem))] rounded-2xl border border-[#E0B253]/40 bg-[#0b1630] p-4 text-sm text-slate-100 shadow-2xl">
+    <div role="dialog" aria-label={t("newspop_title")} className="fixed end-4 top-[4.5rem] z-40 sm:bottom-4 sm:top-auto w-[min(22rem,calc(100vw-2rem))] rounded-2xl border border-[#E0B253]/40 bg-[#0b1630] p-4 text-sm text-slate-100 shadow-2xl">
       <div className="flex items-start justify-between gap-2">
         <span className="text-[10px] font-semibold uppercase tracking-wider text-[#E0B253]">{t("newspop_title")}</span>
         <button type="button" onClick={() => setItem(null)} aria-label={t("newspop_dismiss")} className="-m-1 rounded p-1 text-slate-300 hover:text-white">✕</button>
