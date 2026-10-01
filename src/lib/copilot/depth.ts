@@ -100,9 +100,35 @@ export function deskSections(level: Level, kind: DataDeskKind): DepthSection[] {
   return out;
 }
 
-export function depthSections(level: Level, msg: { calc?: CalcDeskResult | null; desk?: { kind: DataDeskKind } | null; question?: string }): DepthSection[] {
+export interface AssetLite { symbol: string; price: number; changePercent: number }
+
+export function assetSections(level: Level, assets: AssetLite[]): DepthSection[] {
+  const d = RANK[level], out: DepthSection[] = [];
+  const a = assets[0];
+  if (!a || d < 2) return out;
+  const terms = ["rsi", "volatility"].map((id) => {
+    const c = getConcept(id); if (!c?.explain) return null;
+    const en = conceptAnswerByLabel(c.explain, "en"), he = conceptAnswerByLabel(c.explain, "he");
+    return en && he ? b(`${conceptName(c, "en")}: ${firstSentence(en)}`, `${conceptName(c, "he")}: ${firstSentence(he)}`) : null;
+  }).filter((x): x is Bi => x !== null);
+  if (terms.length) out.push({ id: "terms", trust: "EDUCATIONAL", title: b("Terms in this answer", "מושגים בתשובה"), lines: terms });
+  if (d >= 3) {
+    const m = Math.abs(a.changePercent);
+    const size = m < 1 ? b("small", "קטנה") : m < 3 ? b("moderate", "בינונית") : b("large", "גדולה");
+    out.push({ id: "move", trust: "ANALYSIS", title: b("Size of the move", "גודל התנועה"), lines: [
+      b(`${a.symbol} changed ${fmt(Number(a.changePercent.toFixed(2)))}% in the latest period. Teaching label: a ${size.en} move (under 1% small, 1% to 3% moderate, over 3% large). These bands are a rule of thumb, not a signal.`,
+        `${a.symbol} השתנה ב-${iso(`${fmt(Number(a.changePercent.toFixed(2)))}%`)} בתקופה האחרונה. תווית לימוד: תנועה ${size.he} (מתחת ל-1% קטנה, 1% עד 3% בינונית, מעל 3% גדולה). הטווחים הם כלל אצבע, לא איתות.`)] });
+  }
+  if (d >= 4) out.push({ id: "assetlimits", trust: "DATA", title: b("Limits of this data", "מגבלות הנתונים"), lines: [
+    b("Free feed, possibly delayed, with the date shown on the chart. Indicators describe the past and do not predict. One asset is not a plan, so look at how it fits your whole portfolio.",
+      "מקור חינמי, אולי באיחור, והתאריך מוצג בגרף. אינדיקטורים מתארים את העבר ולא חוזים. נכס בודד הוא לא תוכנית, לכן בדקו איך הוא משתלב בכל התיק.")] });
+  return out;
+}
+
+export function depthSections(level: Level, msg: { calc?: CalcDeskResult | null; desk?: { kind: DataDeskKind } | null; assets?: AssetLite[]; question?: string }): DepthSection[] {
   if (level === "basic") return [];
   if (msg.desk) return deskSections(level, msg.desk.kind);
+  if (msg.assets && msg.assets.length) return assetSections(level, msg.assets);
   if (msg.calc) return calcSections(level, msg.calc);
   return msg.question ? conceptSections(level, msg.question) : [];
 }

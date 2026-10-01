@@ -6,3 +6,11 @@ describe("levels", () => {
   it("defaults to basic, keeps a stored track and ignores unknown values", () => { const s = mem(); expect(readLevel("u1", s)).toBe(DEFAULT_LEVEL); s.setItem("invested.level.u1", "professional"); expect(readLevel("u1", s)).toBe("professional"); s.setItem("invested.level.u1", "wizard"); expect(readLevel("u1", s)).toBe("basic"); });
   it("saves a track per user and rejects unknown ones", () => { const s = mem(); expect(saveLevel("u1", "senior", s)).toBe(true); expect(readLevel("u1", s)).toBe("senior"); expect(readLevel("u2", s)).toBe("basic"); expect(isSelectable("junior")).toBe(true); expect(isSelectable("wizard")).toBe(false); });
 });
+
+describe("speed profile", () => {
+  it("deeper tracks get a longer reword budget", async () => {
+    const { rewordBudgetMs } = await import("./levels");
+    expect(LEVELS.map((l) => l.rewordBudgetMs)).toEqual([5000, 8000, 10000, 14000]);
+    expect(rewordBudgetMs("professional")).toBeGreaterThan(rewordBudgetMs("basic"));
+  });
+});

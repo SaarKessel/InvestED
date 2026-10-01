@@ -10,13 +10,13 @@ export interface AIProvider {
   /** Free tier only. Stubs are not selectable until a free, reviewed integration exists. */
   available: boolean;
   /** Returns reworded text, or null to keep the deterministic answer. Never throws. */
-  rephrase(question: string, language: ConversationLanguage, response: CopilotResponse): Promise<string | null>;
+  rephrase(question: string, language: ConversationLanguage, response: CopilotResponse, timeoutMs?: number): Promise<string | null>;
 }
 
 export const ruleBasedProvider: AIProvider = { id: "rule-based", label: "Rules only", available: true, rephrase: async () => null };
 export const geminiProvider: AIProvider = {
   id: "gemini", label: "Gemini (free tier)", available: true,
-  rephrase: (question, language, response) => rephraseWithGateway(question, language, response),
+  rephrase: (question, language, response, timeoutMs) => rephraseWithGateway(question, language, response, timeoutMs),
 };
 const stub = (id: ProviderId, label: string): AIProvider => ({ id, label, available: false, rephrase: async () => null });
 export const PROVIDERS: Record<ProviderId, AIProvider> = {

@@ -33,3 +33,15 @@ describe("desk depth", () => {
     for (const k of ["movers", "policy_rate", "insurance"] as const) for (const s of depthSections("professional", { desk: { kind: k } })) for (const l of s.lines) expect(/\d/.test(l.en + l.he)).toBe(false);
   });
 });
+
+describe("asset depth", () => {
+  const a = [{ symbol: "AAPL", price: 333.02, changePercent: -1.19 }];
+  it("deepens by level and labels the band", () => {
+    const ids = (l: "junior" | "senior" | "professional") => depthSections(l, { assets: a }).map((s) => s.id);
+    expect(ids("junior")).toEqual(["terms"]);
+    expect(ids("senior")).toEqual(["terms", "move"]);
+    expect(ids("professional")).toEqual(["terms", "move", "assetlimits"]);
+    expect(depthSections("senior", { assets: a }).find((s) => s.id === "move")!.lines[0].en).toContain("moderate");
+    expect(depthSections("basic", { assets: a })).toEqual([]);
+  });
+});
