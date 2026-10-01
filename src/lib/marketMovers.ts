@@ -30,3 +30,7 @@ export async function fetchMarketMovers(): Promise<MarketMoversResult> {
   const payload = (await response.json()) as MarketMoversResult;
   return payload;
 }
+
+/** A one-day move this large is more often a split, spin-off or reverse split in the raw feed than a market move. We flag it, we never hide or adjust it. */
+export const EXTREME_MOVE_PCT = 40;
+export const isExtremeMove = (pct: number | null | undefined): boolean => typeof pct === "number" && Math.abs(pct) >= EXTREME_MOVE_PCT;

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { TrendingUp, TrendingDown, Bookmark, GraduationCap } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
 import { AGENTS } from "@/lib/agents";
-import { fetchMarketMovers, type MarketMoversResult } from "@/lib/marketMovers";
+import { fetchMarketMovers, isExtremeMove, type MarketMoversResult } from "@/lib/marketMovers";
 import { getLearningProgress } from "@/lib/learningProgressStorage";
 import type { SavedAnswer } from "@/lib/copilot/savedAnswers";
 
@@ -29,13 +29,13 @@ export function ChatCockpit({ saved, onAsk }: { saved: SavedAnswer[]; onAsk: (q:
             {rows.map((m) => {
               const up = (m.changePercent ?? 0) >= 0;
               return <li key={m.symbol}><button type="button" onClick={() => onAsk(`${m.symbol} stock`)} className="flex w-full items-center justify-between gap-2 rounded-lg px-1 py-0.5 hover:bg-accent">
-                <span className="font-bold" dir="ltr">{m.symbol}</span>
+                <span className="font-bold" dir="ltr">{m.symbol}{isExtremeMove(m.changePercent) && <span title={t("movers_extreme_note")} aria-label={t("movers_extreme_note")}> ⚠</span>}</span>
                 <span dir="ltr" className={`inline-flex items-center gap-1 font-bold ${up ? "text-green-500" : "text-red-500"}`}>{up ? <TrendingUp className="h-3 w-3" aria-hidden="true" /> : <TrendingDown className="h-3 w-3" aria-hidden="true" />}{m.changePercent === null ? "—" : `${up ? "+" : ""}${m.changePercent.toFixed(2)}%`}</span>
               </button></li>;
             })}
           </ul>
         ) : <p className="mt-2 text-muted-foreground">{failed || (movers && !movers.available) ? t("cockpit_market_off") : t("cockpit_loading")}</p>}
-        {rows.length > 0 && <p className="mt-2 text-[10px] text-muted-foreground">{t("cockpit_market_note")}</p>}
+        {rows.length > 0 && <p className="mt-2 text-[10px] text-muted-foreground">{t("cockpit_market_note")}{rows.some((m) => isExtremeMove(m.changePercent)) ? ` ⚠ ${t("movers_extreme_note")}` : ""}</p>}
       </div>
       <div className={card}>
         <p className="inline-flex items-center gap-1 font-semibold"><GraduationCap className="h-3.5 w-3.5" aria-hidden="true" />{t("cockpit_learning")}</p>

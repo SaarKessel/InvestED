@@ -2157,6 +2157,7 @@
   "mode_deep": "Deep research",
   "mode_deep_prompt": "Deep research: ",
   "deep_missing": "No stored explanation yet for:",
+  "movers_extreme_note": "Move over 40% in one day: often a split or spin-off in the raw feed, not a market move. Check the source.",
   "cockpit_title": "Your cockpit",
   "cockpit_market": "Market movers",
   "cockpit_market_off": "Market data is unavailable right now.",

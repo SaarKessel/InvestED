@@ -15,7 +15,7 @@ function formatPrice(mover: TickerMover): string {
 function formatChange(mover: TickerMover): string {
   if (mover.changePercent === null) return "—";
   const sign = mover.changePercent > 0 ? "+" : "";
-  return `${sign}${mover.changePercent.toFixed(2)}%`;
+  return `${sign}${mover.changePercent.toFixed(2)}%${Math.abs(mover.changePercent) >= 40 ? " ⚠" : ""}`;
 }
 
 function TickerItem({ mover }: { mover: TickerMover }) {
