@@ -21,7 +21,7 @@ export interface CalcDeskResult {
 
 const HAS_NUMBER = /\d/;
 const HAS_YEARS = /\b\d+\s*(?:-|\s)?\s*(?:years?|yrs?)\b|\d+\s*(?:שנה|שנים|שנות)|ל-?\s*\d+\s*שנ|(?:years?|שנים)\s*\d+/i;
-const HAS_INTENT = /\b(?:invest|save|saving|deposit|put away|grow|worth)\b|(?:אשקיע|משקיע|אחסוך|חוסך|אפקיד|מפקיד|להשקיע|לחסוך|כמה יהיה לי|כמה יצטבר)/i;
+const HAS_INTENT = /\b(?:invest|save|saving|deposit|put away|grow|worth)\b|\badd(?:ing)?\s+\$?\d[\d,.]*k?\s*(?:\w+\s+){0,2}(?:per|a|each|every)\s+month\b|\b\d[\d,.]*k?\s*(?:per|a|each|every)\s+month\b|(?:מוסיף|מוסיפה|אוסיף)\s+\d[\d,.]*\s*(?:\S+\s+)?(?:ב|כל\s+)חודש|(?:אשקיע|משקיע|אחסוך|חוסך|אפקיד|מפקיד|להשקיע|לחסוך|כמה יהיה לי|כמה יצטבר)/i;
 
 export function looksLikeCalcRequest(text: string): boolean {
   const t = text.trim();

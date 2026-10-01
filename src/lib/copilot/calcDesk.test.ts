@@ -21,3 +21,11 @@ describe("calcDesk", () => {
     expect(r!.finalBalance).toBeGreaterThan(540000);
   });
 });
+
+describe("plain 'I have X and add Y per month'", () => {
+  it("is a calculation request with the starting amount kept", () => {
+    const r = runCalcDesk("I have 10000 and add 500 per month for 10 years");
+    expect(r?.principal).toBe(10000); expect(r?.monthly).toBe(500); expect(r?.years).toBe(10);
+  });
+  it("ignores unrelated year talk", () => { expect(runCalcDesk("I have 3 years left on my loan")).toBeNull(); });
+});
