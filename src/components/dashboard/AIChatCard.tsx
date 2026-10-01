@@ -143,7 +143,7 @@ export function AIChatCard() {
       {!started && (
         <div className="mb-8 flex flex-col items-center text-center">
           <img src="/copilot-avatar.png" alt="" width="56" height="56" className="h-14 w-14 rounded-2xl object-cover" />
-          <h1 className="mt-6 text-3xl font-semibold tracking-tight sm:text-4xl">{t("copilot_home_title")}</h1>
+          <h1 className="mt-6 text-3xl font-semibold tracking-tight sm:text-4xl">{t(user || authLoading ? "copilot_home_title" : "gate_welcome")}</h1>
         </div>
       )}
       {user && (
