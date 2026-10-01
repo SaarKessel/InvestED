@@ -123,7 +123,7 @@ export const EXTRA_CONCEPTS: ExtraConcept[] = [
   { patterns: [/recession/i, /(?<![א-ת])מיתון(?![א-ת])/], heLabel: "מיתון", enLabel: "Recession",
     he: "מיתון הוא תקופה שבה המשק מתכווץ: התוצר, התעסוקה והצריכה יורדים במשך כמה חודשים. חברות מרוויחות פחות ומחירי מניות לרוב יורדים, אבל השווקים גם נוטים להתאושש אחר כך. מיתון הוא סיבה לבדוק את התוכנית ואת קרן החירום, לא סיבה להיבהל.",
     en: "A recession is a period when the economy shrinks: production, jobs and spending fall for several months. Companies earn less and stock prices often drop, but markets also tend to recover afterwards. A recession is a reason to check your plan and your emergency fund, not to panic." },
-  { patterns: [/\bgdp\b/i, /gross\s+domestic\s+product/i, /תוצר\s+מקומי/, /תמ\"ג/], heLabel: "תוצר מקומי גולמי", enLabel: "GDP",
+  { patterns: [/\bgdp\b/i, /gross\s+domestic\s+product/i, /תוצר\s+מקומי/, /תמ["']ג/], heLabel: "תוצר מקומי גולמי", enLabel: "GDP",
     he: "תמ\"ג, תוצר מקומי גולמי, הוא הערך הכולל של הסחורות והשירותים שמדינה מייצרת בתקופה, בדרך כלל שנה. כשהוא גדל, המשק מתרחב. כדאי להשוות צמיחה אחרי אינפלציה, כי עליית מחירים יכולה לנפח את התמ\"ג בלי שייוצר יותר.",
     en: "GDP, gross domestic product, is the total value of goods and services a country produces in a period, usually a year. When it grows, the economy is expanding. Compare growth after inflation, because prices rising can make GDP look bigger without more being produced." },
   { patterns: [/(?:investment\s+)?scam/i, /\bfraud/i, /ponzi/i, /הונא(?:ה|ות)/, /פירמיד(?:ה|ת)/], heLabel: "הונאת השקעות", enLabel: "Investment scam",
