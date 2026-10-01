@@ -71,7 +71,7 @@ import type { CopilotResponse } from "@/lib/copilotResponse";
 
 interface Message { prov?: Provenance; agent?: { id: string | null; switchTo?: string }; deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxResult | null; fxFailed?: boolean; symbol?: SymbolInfo; wb?: WbResult | null; scenario?: ScenarioPart[]; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
 
-export function AIChatCard() {
+export function AIChatCard({ workstation = false }: { workstation?: boolean } = {}) {
   const { t, language } = useLanguage();
   const { askCopilot, isAnalyzing, reset } = useAnalysis();
   const navigate = useNavigate();
@@ -336,7 +336,8 @@ export function AIChatCard() {
   function clearConversation() { reset(); setMessages([]); setQuestion(""); conversationId.current = null; savedCount.current = 0; }
   async function copyMessage(text: string, index: number) { await navigator.clipboard.writeText(text); setCopied(index); window.setTimeout(() => setCopied(null), 1500); }
 
-  const wide = useWide();
+  const wideViewport = useWide();
+  const wide = wideViewport && !workstation;
   const panelIndex = wide ? messages.reduce((acc, m, i) => (m.role === "copilot" && hasVisuals(m) ? i : acc), -1) : -1;
   const panelOpen = panelIndex >= 0 && dismissedPanel !== panelIndex;
   const inPanel = (index: number) => panelOpen && index === panelIndex;
@@ -365,10 +366,10 @@ export function AIChatCard() {
               : <ChatAssetCards assets={assets} />}
     </>);
   };
-  const started = messages.length > 0 || toolOpen;
+  const started = messages.length > 0 || (!workstation && toolOpen);
   const panelSymbols = panelOpen ? (messages[panelIndex].response?.assets ?? []).map((a) => a.symbol) : [];
   return (
-    <div dir="ltr" className={panelOpen ? "mx-auto grid w-full max-w-6xl items-start gap-6 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]" : "contents"}>
+    <div data-workstation={workstation || undefined} dir="ltr" className={panelOpen ? "mx-auto grid w-full max-w-6xl items-start gap-6 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]" : "contents"}>
     {panelOpen && <ChatSidePanel symbols={panelSymbols} onClose={() => setDismissedPanel(panelIndex)}>{visuals(messages[panelIndex])}</ChatSidePanel>}
     <div dir={language === "he" ? "rtl" : "ltr"} className={`mx-auto flex w-full max-w-3xl flex-col ${started ? "min-h-[calc(100vh-9rem)]" : "min-h-[calc(100vh-14rem)] justify-center"}`}>
       {!started && (
@@ -377,7 +378,7 @@ export function AIChatCard() {
           <h1 className="mt-6 text-3xl font-semibold tracking-tight sm:text-4xl">{t(user || authLoading ? "copilot_home_title" : "gate_welcome")}</h1>
         </div>
       )}
-      {!started && user && <ChatCockpit saved={saved} onAsk={(q) => void send(q)} />}
+      {!started && user && !workstation && <ChatCockpit saved={saved} onAsk={(q) => void send(q)} />}
       {user && (
         <div className="mb-2 flex items-center justify-between gap-2">
           <button type="button" onClick={() => void toggleHistory()} aria-expanded={historyOpen} className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"><History className="h-3.5 w-3.5" aria-hidden="true" />{t("history_open")}</button>
@@ -417,7 +418,7 @@ export function AIChatCard() {
             </div>
           </div>;
         })}
-        {toolOpen && <ChatToolPanel />}
+        {toolOpen && !workstation && <ChatToolPanel />}
         {(isAnalyzing || fileBusy) && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />{t("copilot_working")}</div>}
       </div>
       {talk && <VoiceOrb state={speakingIdx !== null ? "speaking" : isAnalyzing ? "thinking" : listening ? "listening" : "idle"} onClose={toggleTalk} onTapOrb={() => { if (speakingIdx !== null) { stopSpeaking(); setSpeakingIdx(null); } else toggleVoice(); }} note={speechNote === "no_voice" ? t("speak_no_voice") : speechNote === "unsupported" ? t("speak_unsupported") : voiceNote} code={voiceError ? voiceCode : null} trace={voiceTrace} />}

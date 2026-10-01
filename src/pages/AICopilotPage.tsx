@@ -1,4 +1,4 @@
-import { Layout } from "@/components/layout/Layout";
+import { TerminalShell } from "@/components/terminal/TerminalShell";
 import { AIChatCard } from "@/components/dashboard/AIChatCard";
 import { useAuth } from "@/context/useAuth";
 import { useLanguage } from "@/context/languageContext";
@@ -16,13 +16,5 @@ export default function AICopilotPage() {
       </div>
     );
   }
-  return (
-    <Layout>
-      <div className="relative">
-        <section className="container relative z-10 py-6 md:py-10">
-          <AIChatCard />
-        </section>
-      </div>
-    </Layout>
-  );
+  return <TerminalShell><AIChatCard workstation /></TerminalShell>;
 }
