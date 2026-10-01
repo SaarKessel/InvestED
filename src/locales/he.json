@@ -2091,6 +2091,16 @@
   "orb_thinking": "חושב...",
   "orb_speaking": "מדבר (הקישו כדי להפסיק)",
   "orb_hint": "לימוד בלבד. הקול פועל על המכשיר שלכם.",
+  "level_title": "רמת הסבר",
+  "level_basic": "Basic",
+  "level_junior": "Junior",
+  "level_senior": "Senior",
+  "level_professional": "Professional",
+  "level_basic_desc": "פשוט מאוד וקל להבנה",
+  "level_junior_desc": "פשוט, עם מילים יומיומיות מעולם הפיננסים",
+  "level_senior_desc": "רמה גבוהה, יותר פרקטי",
+  "level_professional_desc": "רמת פרופסור, מושגים קשים",
+  "level_soon": "בקרוב",
   "related_title": "מושגים קשורים",
   "related_try": "נסו:"
 }
