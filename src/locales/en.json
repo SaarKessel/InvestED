@@ -2101,6 +2101,16 @@
   "level_senior_desc": "Higher level, more practical",
   "level_professional_desc": "Professor level, hard concepts",
   "level_soon": "Soon",
+  "file_attach": "Attach an image or PDF",
+  "file_consent_title": "Send this file to Google?",
+  "file_consent_body": "To read an image or PDF, the file is sent to Google's Gemini (free tier). Do not send IDs, medical records or anything private you do not want Google to process. InvestED+ does not store the file. Answers are educational and can be wrong.",
+  "file_consent_yes": "I agree, choose a file",
+  "file_consent_no": "Cancel",
+  "file_remove": "Remove",
+  "file_bad_type": "Only JPG, PNG, WebP images and PDF files work.",
+  "file_too_big": "The file is too large. Try a smaller image or a PDF under 3 MB.",
+  "file_failed": "I could not read the file right now (the free reading service may be busy or off). Please try again later.",
+  "file_label": "Analysis by Gemini (Google) from your file. Educational only, not medical or investment advice, and it can be wrong.",
   "related_title": "Related intelligence",
   "related_try": "Try it:"
 }

@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { isCareerLaunchRequest } from "@/lib/career/chatRoute";
-import { Check, Clipboard, History, Loader2, LogOut, Mic, Square, RotateCcw, Trash2, Volume2, VolumeX, ArrowUp } from "lucide-react";
+import { Check, Clipboard, History, Loader2, LogOut, Mic, Square, RotateCcw, Trash2, Volume2, VolumeX, ArrowUp, Paperclip } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
 import { ChatAssetCards } from "./ChatAssetCards";
 import { ChatCalculationCard } from "./ChatCalculationCard";
@@ -20,6 +20,8 @@ import { ChatRelated } from "./ChatRelated";
 import { ChatAlsoAsked } from "./ChatAlsoAsked";
 import { VoiceOrb } from "./VoiceOrb";
 import { LevelPicker } from "./LevelPicker";
+import { checkFile, giveConsent, hasConsent } from "@/lib/copilot/fileAnalysis";
+import { askAboutFile, prepareFile, type PreparedFile } from "@/lib/copilot/fileClient";
 import { readLevel, saveLevel, type Level } from "@/lib/copilot/levels";
 import { ChatSidePanel } from "./ChatSidePanel";
 import { hasVisuals, useWide } from "./chatPanelState";
@@ -40,7 +42,7 @@ import { appendDictation, getSpeechRecognition, joinTranscript, speechLocale, ty
 import { useAnalysis } from "@/context/useAnalysis";
 import type { CopilotResponse } from "@/lib/copilotResponse";
 
-interface Message { role: "user" | "copilot"; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
+interface Message { role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
 
 export function AIChatCard() {
   const { t, language } = useLanguage();
@@ -62,6 +64,21 @@ export function AIChatCard() {
   const [listening, setListening] = useState(false);
   const [voiceError, setVoiceError] = useState(false);
   const composerRef = useRef<HTMLTextAreaElement>(null);
+  const fileInput = useRef<HTMLInputElement>(null);
+  const [fileBusy, setFileBusy] = useState(false);
+  const [pendingFile, setPendingFile] = useState<PreparedFile | null>(null);
+  const [fileNote, setFileNote] = useState<string | null>(null);
+  const [consentAsk, setConsentAsk] = useState(false);
+  const [consented, setConsented] = useState(() => hasConsent());
+  function openFilePicker() { if (!consented) { setConsentAsk(true); return; } fileInput.current?.click(); }
+  async function onFileChosen(file: File | undefined) {
+    if (!file) return;
+    const problem = checkFile(file);
+    if (problem) { setFileNote(t(problem === "type" ? "file_bad_type" : "file_too_big")); return; }
+    const prepared = await prepareFile(file).catch(() => null);
+    if (!prepared) { setFileNote(t("file_too_big")); return; }
+    setFileNote(null); setPendingFile(prepared);
+  }
   const [level, setLevel] = useState<Level>(() => readLevel(user?.id));
   useEffect(() => { setLevel(readLevel(user?.id)); }, [user?.id]);
   const changeLevel = (l: Level) => { if (saveLevel(user?.id, l)) setLevel(l); };
@@ -137,8 +154,17 @@ export function AIChatCard() {
   function submit(event: FormEvent) { event.preventDefault(); void send(question); }
   async function send(raw: string) {
     const text = raw.trim();
-    if (!text || isAnalyzing) return;
+    if ((!text && !pendingFile) || isAnalyzing) return;
     setQuestion("");
+    if (pendingFile) {
+      const file = pendingFile; setPendingFile(null);
+      setMessages((current) => [...current, { role: "user", text: text || file.name, fileNote: file.name }]);
+      setFileBusy(true);
+      const reply = await askAboutFile(file, text, language === "he" ? "he" : "en");
+      setFileBusy(false);
+      setMessages((current) => [...current, { role: "copilot", text: reply ?? t("file_failed"), fromFile: reply !== null }]);
+      return;
+    }
     setMessages((current) => [...current, { role: "user", text }]);
     const keywordPath = resolveToolKeyword(text);
     const keywordTool = keywordPath ? toolForPath(keywordPath) : null;
@@ -261,6 +287,7 @@ export function AIChatCard() {
             {message.careerLaunch && <Link to="/career-lab" className="mt-3 inline-block rounded-lg border border-primary px-3 py-2 text-xs font-bold text-primary">{t("career_chat_open")}</Link>}
             {!inPanel(index) && visuals(message)}
             {message.role === "copilot" && <button type="button" onClick={() => copyMessage(message.text, index)} className="mt-2 inline-flex items-center gap-1 text-[11px] text-muted-foreground opacity-70 hover:opacity-100" aria-label={t("copilot_copy")}>{copied === index ? <Check className="h-3 w-3" /> : <Clipboard className="h-3 w-3" />}{copied === index ? t("copilot_copied") : t("copilot_copy")}</button>}{message.role === "copilot" && canSpeak && <button type="button" onClick={() => speakingIdx === index ? (stopSpeaking(), setSpeakingIdx(null)) : speakMessage(message.text, index)} className="ms-3 mt-2 inline-flex items-center gap-1 text-[11px] text-muted-foreground opacity-70 hover:opacity-100" aria-label={t(speakingIdx === index ? "speak_stop" : "speak_play")}>{speakingIdx === index ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}{t(speakingIdx === index ? "speak_stop" : "speak_play")}</button>}
+            {message.fromFile && <p className="mt-2 text-[11px] text-muted-foreground">{t("file_label")}</p>}
             {message.role === "copilot" && message.question && <ChatAlsoAsked question={message.question} answer={message.text} />}
             {message.role === "copilot" && message.question && <ChatRelated question={message.question} onAsk={(q) => void send(q)} />}
             {message.role === "copilot" && message.question && <FeedbackButtons question={message.question} knowledgeIds={(message.knowledge ?? []).map((k) => k.id)} lang={response?.language ?? "en"} />}
@@ -268,18 +295,31 @@ export function AIChatCard() {
           </div>;
         })}
         {toolOpen && <ChatToolPanel />}
-        {isAnalyzing && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />{t("copilot_working")}</div>}
+        {(isAnalyzing || fileBusy) && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />{t("copilot_working")}</div>}
       </div>
       {talk && <VoiceOrb state={speakingIdx !== null ? "speaking" : isAnalyzing ? "thinking" : listening ? "listening" : "idle"} onClose={toggleTalk} onTapOrb={() => { if (speakingIdx !== null) { stopSpeaking(); setSpeakingIdx(null); } else toggleVoice(); }} note={speechNote === "no_voice" ? t("speak_no_voice") : speechNote === "unsupported" ? t("speak_unsupported") : voiceError ? t("voice_error") : null} />}
       {!user && !authLoading && <ChatAuthGate />}
       {user && <div className={started ? "sticky bottom-0 bg-background/90 pb-3 pt-2 backdrop-blur" : ""}>
+        {consentAsk && !consented && (
+          <div role="alertdialog" aria-label={t("file_consent_title")} className="mb-2 rounded-2xl border border-border bg-muted/50 p-3 text-xs leading-5" data-testid="file-consent">
+            <p className="font-semibold">{t("file_consent_title")}</p>
+            <p className="mt-1 text-muted-foreground">{t("file_consent_body")}</p>
+            <div className="mt-2 flex gap-2">
+              <button type="button" onClick={() => { giveConsent(); setConsented(true); setConsentAsk(false); window.setTimeout(() => fileInput.current?.click(), 0); }} className="rounded-full bg-primary px-3 py-1.5 font-medium text-primary-foreground">{t("file_consent_yes")}</button>
+              <button type="button" onClick={() => setConsentAsk(false)} className="rounded-full border border-border px-3 py-1.5 text-muted-foreground">{t("file_consent_no")}</button>
+            </div>
+          </div>
+        )}
+        {(pendingFile || fileNote) && <p className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">{pendingFile ? <><Paperclip className="h-3.5 w-3.5" />{pendingFile.name}<button type="button" onClick={() => setPendingFile(null)} className="underline">{t("file_remove")}</button></> : fileNote}</p>}
         <form onSubmit={submit} className="welcome-composer relative flex items-end gap-1 rounded-[1.75rem] border border-border/60 bg-muted/50 p-2">
           <ChatToolMenu query={question.startsWith("/") ? question.slice(1) : null} onPlus={() => { setQuestion("/"); composerRef.current?.focus(); }} onPick={() => setQuestion((q) => (q.startsWith("/") ? "" : q))} />
           <textarea ref={composerRef} rows={1} style={{ scrollbarWidth: "none" }} aria-label={t("copilot_input")} value={question} onChange={(event) => setQuestion(event.target.value)} onKeyDown={(event) => { if (event.key === "Escape" && question.startsWith("/")) { setQuestion(""); return; } if (event.key === "Enter" && !event.shiftKey && question.startsWith("/")) { event.preventDefault(); return; } if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} placeholder={t("copilot_placeholder")} className="max-h-40 min-h-11 min-w-0 flex-1 resize-none bg-transparent px-2 py-2.5 text-[15px] leading-5 outline-none placeholder:text-muted-foreground/70" />
+          <input ref={fileInput} type="file" accept="image/*,application/pdf" className="hidden" onChange={(e) => { void onFileChosen(e.target.files?.[0]); e.target.value = ""; }} />
+          <button type="button" onClick={openFilePicker} aria-label={t("file_attach")} title={t("file_attach")} className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground"><Paperclip className="h-[18px] w-[18px]" strokeWidth={1.75} /></button>
           <LevelPicker level={level} onChange={changeLevel} />
           {canSpeak && SpeechCtor && <button type="button" onClick={toggleTalk} aria-pressed={talk} aria-label={t(talk ? "talk_stop" : "talk_start")} title={t(talk ? "talk_stop" : "talk_start")} className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-150 ${talk ? "bg-primary/15 text-primary" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}><Volume2 className="h-[18px] w-[18px]" strokeWidth={1.75} /></button>}
           {SpeechCtor && <button type="button" onClick={toggleVoice} aria-pressed={listening} aria-label={t(listening ? "voice_stop" : "voice_start")} title={t(listening ? "voice_stop" : "voice_start")} className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-150 ${listening ? "animate-pulse bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>{listening ? <Square className="h-3.5 w-3.5" /> : <Mic className="h-[18px] w-[18px]" strokeWidth={1.75} />}</button>}
-          <button type="submit" disabled={!question.trim() || isAnalyzing} aria-label={t("copilot_send")} className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition-all duration-150 hover:brightness-110 active:scale-95 disabled:bg-muted-foreground/20 disabled:text-muted-foreground disabled:shadow-none">{isAnalyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-[18px] w-[18px]" strokeWidth={2.25} />}</button>
+          <button type="submit" disabled={(!question.trim() && !pendingFile) || isAnalyzing || fileBusy} aria-label={t("copilot_send")} className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition-all duration-150 hover:brightness-110 active:scale-95 disabled:bg-muted-foreground/20 disabled:text-muted-foreground disabled:shadow-none">{isAnalyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-[18px] w-[18px]" strokeWidth={2.25} />}</button>
         </form>
         <p className="mt-3 truncate text-center text-[11px] text-muted-foreground" aria-live="polite">{speechNote === "no_voice" ? t("speak_no_voice") : speechNote === "unsupported" ? t("speak_unsupported") : voiceError ? t("voice_error") : listening ? t("voice_listening") : t("disclaimer_one_line")}</p>
         <p className="mt-1 truncate text-center text-[10px] leading-4 text-muted-foreground/80">{t("legal_line_credit")}</p>
