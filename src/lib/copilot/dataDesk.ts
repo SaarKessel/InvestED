@@ -20,14 +20,14 @@ export function resolveDataDesk(text: string): DataDeskKind | null {
 }
 
 export type DataDeskResult =
-  | { kind: "movers"; available: boolean; gainers: TickerMover[]; losers: TickerMover[]; fetchedAt: string }
+  | { kind: "movers"; available: boolean; gainers: TickerMover[]; losers: TickerMover[]; fetchedAt: string; coverage?: "screener" | "watchlist" | null; watchlistSize?: number | null }
   | { kind: "policy_rate"; result: BisRateResult }
   | { kind: "insurance"; status: string; reportPeriod: number | null; top: InsuranceRecord[]; source: string };
 
 export async function loadDataDesk(kind: DataDeskKind): Promise<DataDeskResult> {
   if (kind === "movers") {
     const r = await fetchMarketMovers();
-    return { kind, available: r.available, gainers: r.gainers.slice(0, 5), losers: r.losers.slice(0, 5), fetchedAt: r.fetchedAt };
+    return { kind, available: r.available, gainers: r.gainers.slice(0, 5), losers: r.losers.slice(0, 5), fetchedAt: r.fetchedAt, coverage: r.coverage, watchlistSize: r.watchlistSize };
   }
   if (kind === "policy_rate") return { kind, result: await fetchBisRateHistory() };
   const r = await fetchInsuranceReports();
