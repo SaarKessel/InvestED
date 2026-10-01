@@ -2084,6 +2084,7 @@
   "panel_chart_title": "Last 3 months",
   "panel_chart_unavailable": "no chart data available right now",
   "tool_opening": "Opening {tool} right here.",
+  "also_title": "Also in your question",
   "related_title": "Related intelligence",
   "related_try": "Try it:"
 }

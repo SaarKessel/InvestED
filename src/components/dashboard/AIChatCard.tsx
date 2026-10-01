@@ -17,6 +17,7 @@ import { toolForPath } from "./chatTools";
 import { openingLine } from "@/lib/copilot/toolKeywords";
 import { resolveToolKeyword } from "@/lib/copilot/toolKeywords";
 import { ChatRelated } from "./ChatRelated";
+import { ChatAlsoAsked } from "./ChatAlsoAsked";
 import { ChatSidePanel } from "./ChatSidePanel";
 import { hasVisuals, useWide } from "./chatPanelState";
 import { resolveSiteIntent, SITE_CAPABILITIES, type SiteCapability } from "@/lib/copilot/siteCapabilities";
@@ -237,6 +238,7 @@ export function AIChatCard() {
             {message.careerLaunch && <Link to="/career-lab" className="mt-3 inline-block rounded-lg border border-primary px-3 py-2 text-xs font-bold text-primary">{t("career_chat_open")}</Link>}
             {!inPanel(index) && visuals(message)}
             {message.role === "copilot" && <button type="button" onClick={() => copyMessage(message.text, index)} className="mt-2 inline-flex items-center gap-1 text-[11px] text-muted-foreground opacity-70 hover:opacity-100" aria-label={t("copilot_copy")}>{copied === index ? <Check className="h-3 w-3" /> : <Clipboard className="h-3 w-3" />}{copied === index ? t("copilot_copied") : t("copilot_copy")}</button>}{message.role === "copilot" && canSpeak && <button type="button" onClick={() => speakingIdx === index ? (stopSpeaking(), setSpeakingIdx(null)) : speakMessage(message.text, index)} className="ms-3 mt-2 inline-flex items-center gap-1 text-[11px] text-muted-foreground opacity-70 hover:opacity-100" aria-label={t(speakingIdx === index ? "speak_stop" : "speak_play")}>{speakingIdx === index ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}{t(speakingIdx === index ? "speak_stop" : "speak_play")}</button>}
+            {message.role === "copilot" && message.question && <ChatAlsoAsked question={message.question} answer={message.text} />}
             {message.role === "copilot" && message.question && <ChatRelated question={message.question} onAsk={(q) => void send(q)} />}
             {message.role === "copilot" && message.question && <FeedbackButtons question={message.question} knowledgeIds={(message.knowledge ?? []).map((k) => k.id)} lang={response?.language ?? "en"} />}
             </div>
