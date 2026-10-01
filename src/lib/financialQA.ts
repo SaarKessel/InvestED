@@ -802,7 +802,7 @@ function stockSplitCalc(message: string, lang: QALanguage): QAPlan | null {
 function retirementWithdrawal(message: string, lang: QALanguage): QAPlan | null {
   if (!/retire|retirement|פרישה|לפרוש|פורש|פנסיה/i.test(message)) return null;
   if (!/withdraw|income|למשוך|משיכה|הכנסה|קצבה/i.test(message)) return null;
-  if (/%|אחוז|percent|years?\b|שנים|שנה/i.test(message)) return null;
+  if (/%|אחוז|percent|\d\s*(?:years?|שנים|שנה)\b/i.test(message)) return null;
   const m = message.match(new RegExp(`${NUM}\\s*${UNIT}`, "i"));
   const amount = m ? scaled(m[1], m[2]) : null;
   if (!amount || amount < 10_000) return null;

@@ -135,8 +135,8 @@ describe("Copilot profile privacy", () => {
   it("answers broad Hebrew concept questions without depending on an LLM", async () => {
     const { deps, fetchAsset } = setup();
     const turn = await processAIMessage(createConversationSession(), "מה זה קרן נאמנות?", "he", deps);
-    expect(turn.response.text).toContain("כלי השקעה");
-    expect(turn.response.text).toContain("דמי ניהול");
+    expect(turn.response.text).toContain("אוספת כסף");
+    expect(turn.response.text).toContain("דמי הניהול");
     expect(fetchAsset).not.toHaveBeenCalled();
   });
 

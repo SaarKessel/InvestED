@@ -37,7 +37,7 @@ async function ask(message: string, lang: "he" | "en" = "he", overrides: Paramet
 describe("financial QA benchmark — concepts", () => {
   it("explains an ETF in Hebrew with a direct answer", async () => {
     const { turn, fetchAsset } = await ask("מה זה תעודת סל?");
-    expect(turn.response.text).toContain("נסחרת בבורסה");
+    expect(turn.response.text).toContain("סל של הרבה השקעות");
     expect(fetchAsset).not.toHaveBeenCalled();
   });
   it("explains an ETF in English", async () => {
@@ -64,7 +64,7 @@ describe("financial QA benchmark — concepts", () => {
     expect(turn.response.text).toContain(needle);
   });
   it.each([
-    ["What is dollar cost averaging?", "fixed amount"],
+    ["What is dollar cost averaging?", "same amount"],
     ["What is a REIT?", "real estate"],
     ["What does blue chip mean?", "established"],
   ])("explains %s", async (q, needle) => {

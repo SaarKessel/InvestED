@@ -140,6 +140,11 @@ function strategyCopilotText(payload: StrategyCopilotPayload, language: Conversa
   return segments.join(" ").trim();
 }
 
+const DEFINITION_RE = /^\s*(?:what\s+is|what's|what\s+are|explain|define)\b|^\s*(?:מה\s+(?:זה|זו|הם|היא|הוא)|מהו|מהי|הסבר|הסבירי|הסבר\s+לי)(?![א-ת])/i;
+function isDefinitionQuestion(message: string): boolean {
+  return DEFINITION_RE.test(message) && !/\binvesting\b|\bstrateg|אסטרטגי|גישת\s+השקעה/i.test(message);
+}
+
 export function buildCopilotResponse(
   message: string,
   resolution: TurnResolution,
@@ -209,11 +214,14 @@ export function buildCopilotResponse(
     text = qaOutcome.text;
   } else if (resolution.status === "needs_clarification") {
     text = resolution.clarification?.question ?? "";
+  } else if (noFinancialInputs && conceptExplanation && !strategyOutput && assets.length === 0) {
+    text = conceptExplanation;
   } else if (noFinancialInputs) {
     text = resolution.language === "en"
       ? "To run that calculation I need the real inputs: how much (one-time and/or monthly), for how many years, and what annual return assumption. For example: '500 ILS a month for 10 years at 7%'."
       : "כדי להריץ את החישוב אני צריכה את הקלטים האמיתיים: כמה כסף (חד-פעמי ו/או חודשי), לכמה שנים, ובאיזו הנחת תשואה שנתית. למשל: '500 ש״ח בחודש ל-10 שנים ב-7%'.";
-  } else if (conceptExplanation && !strategyOutput && assets.length === 0) text = conceptExplanation;
+  } else if (conceptExplanation && isDefinitionQuestion(message) && assets.length === 0) text = conceptExplanation;
+  else if (conceptExplanation && !strategyOutput && assets.length === 0) text = conceptExplanation;
   else if (!text && marketNeeded && assets.length === 0) text = resolution.language === "en"
     ? "Market data is unavailable right now, so I won't invent a price or indicator. I can still explain the concept without current market values."
     : "נתוני השוק אינם זמינים כרגע, ולכן לא אמציא מחיר או מדד. אפשר עדיין להסביר את המושג בלי ערכי שוק עדכניים.";

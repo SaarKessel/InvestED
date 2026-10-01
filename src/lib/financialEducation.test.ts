@@ -6,8 +6,8 @@ const tsla: AssetAnalysis = { symbol: "TSLA", price: 250.25, changePercent: 1, v
 
 describe("financial education and holdings", () => {
   it("explains mutual funds in Hebrew and English", () => {
-    expect(explainFinancialConcept("מה זה קרן נאמנות?", "he")).toContain("כלי השקעה");
-    expect(explainFinancialConcept("What is a mutual fund?", "en")).toContain("pools money");
+    expect(explainFinancialConcept("מה זה קרן נאמנות?", "he")).toContain("אוספת כסף");
+    expect(explainFinancialConcept("What is a mutual fund?", "en")).toContain("collects money");
   });
   it.each([
     ["אם יש לי 199 מניות של TSLA מה השווי של זה", 199, "TSLA"],
@@ -28,7 +28,7 @@ describe("financial education and holdings", () => {
     expect(valuation.reason).toBe("simulated");
   });
   it("recognizes the Hebrew ETF synonym", () => {
-    expect(explainFinancialConcept("מה זה תעודת סל?", "he")).toContain("נסחרת בבורסה");
+    expect(explainFinancialConcept("מה זה תעודת סל?", "he")).toContain("סל של הרבה השקעות");
   });
   it("parses and calculates cross-currency whole-share buying power", () => {
     const request = parsePurchasePowerRequest("יש לי 300 אלף שקל, לפי שער עדכני כמה מניות של VYM אוכל לקנות?");
