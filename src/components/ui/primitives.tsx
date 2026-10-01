@@ -1,4 +1,4 @@
-﻿import {
+import {
   type ButtonHTMLAttributes,
   type HTMLAttributes,
   forwardRef,
@@ -13,9 +13,9 @@ import { cn } from "@/lib/utils";
 const buttonVariants = cva(
   [
     "inline-flex items-center justify-center gap-2",
-    "whitespace-nowrap rounded-xl",
+    "whitespace-nowrap rounded-md",
     "text-sm font-semibold",
-    "transition-all duration-200",
+    "transition-colors duration-200",
     "disabled:pointer-events-none disabled:opacity-50",
     "focus-visible:outline-none",
     "focus-visible:ring-2 focus-visible:ring-ring",
@@ -26,7 +26,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "gradient-brand text-white shadow-md hover:shadow-lg hover:-translate-y-0.5",
+          "bg-primary text-primary-foreground hover:brightness-110",
 
         outline:
           "border border-border bg-card text-foreground hover:bg-accent hover:border-primary/40",
@@ -89,10 +89,10 @@ export const Card = forwardRef<
   <div
     ref={ref}
     className={cn(
-      "rounded-3xl border border-border",
+      "rounded-lg border border-border",
       "bg-card text-card-foreground",
       "transition-shadow duration-200",
-      "hover:shadow-lg",
+
       className
     )}
     {...props}
@@ -112,7 +112,7 @@ export const CardHeader = forwardRef<
   <div
     ref={ref}
     className={cn(
-      "flex flex-col gap-2 p-6 pb-3",
+      "flex flex-col gap-1.5 p-4 pb-3",
       className
     )}
     {...props}
@@ -132,7 +132,7 @@ export const CardTitle = forwardRef<
   <h3
     ref={ref}
     className={cn(
-      "font-display text-xl font-bold leading-snug tracking-tight text-foreground",
+      "font-display text-base font-semibold leading-snug tracking-tight text-foreground",
       className
     )}
     {...props}
@@ -172,7 +172,7 @@ export const CardContent = forwardRef<
   <div
     ref={ref}
     className={cn(
-      "p-6 pt-0",
+      "p-4 pt-0",
       className
     )}
     {...props}
@@ -188,7 +188,7 @@ CardContent.displayName = "CardContent";
 const badgeVariants = cva(
   [
     "inline-flex items-center gap-1.5",
-    "rounded-full px-3 py-1",
+    "rounded-md px-2 py-0.5",
     "text-xs font-semibold",
     "transition-colors duration-200",
   ],
@@ -205,10 +205,10 @@ const badgeVariants = cva(
           "border border-primary/20 bg-primary/10 text-primary",
 
         warning:
-          "border border-yellow-500/20 bg-yellow-500/10 text-yellow-700",
+          "border border-yellow-500/20 bg-yellow-500/10 text-yellow-800 dark:text-yellow-300",
 
         danger:
-          "border border-red-500/20 bg-red-500/10 text-red-700",
+          "border border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-300",
       },
     },
 
@@ -261,7 +261,7 @@ export function Progress({
       )}
     >
       <div
-        className="h-full rounded-full gradient-brand shadow-sm transition-[width] duration-700 ease-out"
+        className="h-full rounded-full bg-primary transition-[width] duration-200 ease-out"
         style={{
           width: `${safeValue}%`,
         }}

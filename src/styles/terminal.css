@@ -1,0 +1,65 @@
+/* InvestED terminal contract. Semantic theme values remain owned by index.css. */
+:root {
+  --terminal-surface: 0 0% 100%;
+  --terminal-raised: 216 25% 96%;
+  --terminal-gold: 39 65% 35%;
+  --terminal-space-1: 4px;
+  --terminal-space-2: 8px;
+  --terminal-space-3: 12px;
+  --terminal-space-4: 16px;
+  --terminal-space-6: 24px;
+  --terminal-radius-control: 6px;
+  --terminal-radius-panel: 10px;
+  --terminal-motion: 180ms;
+  --terminal-shadow: 0 2px 8px rgb(0 0 0 / .06);
+  --terminal-z-panel: 30;
+  --terminal-z-menu: 60;
+  --terminal-z-dialog: 80;
+  --terminal-sidebar: 240px;
+  --terminal-sidebar-compact: 64px;
+  --terminal-copilot: 380px;
+  --terminal-row: 36px;
+  --terminal-padding: 12px;
+  --terminal-text: 13px;
+}
+.dark {
+  --terminal-surface: 222 28% 10%;
+  --terminal-raised: 222 25% 13%;
+  --terminal-gold: 40 64% 64%;
+}
+[data-density="comfortable"] { --terminal-row: 44px; --terminal-padding: 16px; --terminal-text: 14px; }
+[data-density="compact"] { --terminal-row: 36px; --terminal-padding: 12px; --terminal-text: 13px; }
+[data-density="terminal"] { --terminal-row: 30px; --terminal-padding: 8px; --terminal-text: 12px; }
+.terminal-panel { min-width: 0; border: 1px solid hsl(var(--border)); border-radius: var(--terminal-radius-panel); background: hsl(var(--terminal-surface)); }
+.terminal-panel-heading { display:flex; align-items:center; justify-content:space-between; gap:12px; min-height:var(--terminal-row); padding:8px var(--terminal-padding); border-bottom:1px solid hsl(var(--border)); }
+.terminal-panel-heading h2 { font-size:var(--terminal-text); font-weight:600; letter-spacing:0; }
+.terminal-panel-body { padding:var(--terminal-padding); }
+.terminal-badge { display:inline-flex; align-items:center; gap:5px; border:1px solid hsl(var(--border)); border-radius:4px; padding:2px 6px; font-size:10px; line-height:1.4; font-weight:600; color:hsl(var(--muted-foreground)); background:hsl(var(--muted) / .5); }
+.terminal-badge[data-kind="simulation"], .terminal-badge[data-kind="assumption"] { border-style:dashed; }
+.terminal-badge[data-kind="calculation"] { color:hsl(var(--primary)); }
+.terminal-status { display:inline-flex; align-items:center; gap:6px; font-size:11px; color:hsl(var(--muted-foreground)); }
+.terminal-status-dot { height:6px; width:6px; border-radius:50%; background:hsl(var(--muted-foreground)); }
+.terminal-status[data-state="live"] .terminal-status-dot { background:hsl(var(--success)); }
+.terminal-status[data-state="stale"] .terminal-status-dot { background:hsl(var(--terminal-gold)); }
+.terminal-status[data-state="simulated"] .terminal-status-dot { background:transparent; border:1px solid currentColor; }
+.terminal-metric { display:flex; flex-direction:column; gap:4px; }
+.terminal-metric dt { font-size:11px; color:hsl(var(--muted-foreground)); }
+.terminal-metric dd { margin:0; font-size:22px; font-weight:600; line-height:1.3; font-variant-numeric:tabular-nums; }
+.terminal-metric small { font-size:10px; color:hsl(var(--muted-foreground)); }
+.terminal-number { font-variant-numeric:tabular-nums; direction:ltr; unicode-bidi:isolate; display:inline-block; }
+.terminal-table-scroll { overflow:auto; max-width:100%; }
+.terminal-table { width:100%; border-collapse:collapse; font-size:var(--terminal-text); }
+.terminal-table th { position:sticky; top:0; background:hsl(var(--terminal-raised)); font-size:11px; font-weight:500; color:hsl(var(--muted-foreground)); text-align:start; }
+.terminal-table :is(th,td) { height:var(--terminal-row); padding:6px var(--terminal-padding); border-bottom:1px solid hsl(var(--border)); white-space:nowrap; }
+.terminal-table tbody tr:hover { background:hsl(var(--muted)/.6); }
+.terminal-table caption { text-align:start; padding:12px; font-weight:600; }
+.terminal-chart { min-width:0; overflow:hidden; border:1px solid hsl(var(--border)); border-radius:var(--terminal-radius-panel); padding:var(--terminal-padding); }
+.terminal-chart figcaption { font-size:11px; color:hsl(var(--muted-foreground)); margin-block-end:12px; }
+/* Ticker has a fixed dark rail in either theme. Never inherit light-theme ink. */
+.ticker-strip .text-foreground { color:#e6ebf3; }
+.ticker-strip .text-foreground\/90 { color:#d4dce8; }
+.ticker-strip .text-muted-foreground { color:#bcc6d7; }
+@media (max-width:767px) {
+  .terminal-table :is(th,td) { min-height:44px; }
+  .terminal-panel-heading { min-height:44px; }
+}

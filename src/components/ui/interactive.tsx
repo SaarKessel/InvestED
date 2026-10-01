@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -55,16 +55,21 @@ export function Accordion({ items, className }: { items: AccordionItemData[]; cl
 
 export function Tooltip({ label, children }: { label: string; children: ReactNode }) {
   const [visible, setVisible] = useState(false);
+  const id = useId();
 
   return (
     <span
       className="relative inline-flex"
       onMouseEnter={() => setVisible(true)}
       onMouseLeave={() => setVisible(false)}
+      onFocus={() => setVisible(true)}
+      onBlur={() => setVisible(false)}
+      onKeyDown={(event) => { if (event.key === "Escape") setVisible(false); }}
+      aria-describedby={visible ? id : undefined}
     >
       {children}
       {visible && (
-        <span className="pointer-events-none absolute bottom-full right-1/2 z-50 mb-2 w-max max-w-[220px] translate-x-1/2 rounded-lg bg-foreground px-3 py-1.5 text-center text-xs font-medium text-background shadow-lg animate-fade-in">
+        <span id={id} role="tooltip" className="pointer-events-none absolute bottom-full right-1/2 z-50 mb-2 w-max max-w-[220px] translate-x-1/2 rounded-lg bg-foreground px-3 py-1.5 text-center text-xs font-medium text-background shadow-lg animate-fade-in">
           {label}
         </span>
       )}
