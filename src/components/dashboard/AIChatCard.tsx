@@ -24,7 +24,7 @@ import { openingLine } from "@/lib/copilot/toolKeywords";
 import { ChatRelated } from "./ChatRelated";
 import { ChatAlsoAsked } from "./ChatAlsoAsked";
 import { ChatTrace } from "./ChatTrace";
-import { isDeepRequest, runDeepResearch, stripTrigger } from "@/lib/copilot/deepResearch";
+import { isDeepRequest, runDeepResearch, stepsForLevel, stripTrigger } from "@/lib/copilot/deepResearch";
 import { ChatSidebar, type SidebarMode } from "./ChatSidebar";
 import { isSaved, loadSaved, removeSaved, toggleSaved, type SavedAnswer } from "@/lib/copilot/savedAnswers";
 import { ChatLinkedText } from "./ChatLinkedText";
@@ -216,9 +216,9 @@ export function AIChatCard() {
       const q = stripTrigger(text);
       const at = { i: -1 };
       setMessages((current) => { at.i = current.length; return [...current, { role: "copilot", text: t("deep_working") }]; });
-      const result = await runDeepResearch(q, lang, (done, total, label) => setMessages((current) => current.map((m, i) => i === at.i ? { ...m, text: `${t("deep_working")} ${done}/${total}: ${label}` } : m)));
+      const result = await runDeepResearch(q, lang, (done, total, label) => setMessages((current) => current.map((m, i) => i === at.i ? { ...m, text: `${t("deep_working")} ${done}/${total}: ${label}` } : m)), undefined, level);
       const trace: TraceStep[] = [
-        { text: { en: `Split the question into ${result.steps.length} known topics (max 4) and took the stored explanation for each, one after the other.`, he: `פיצלתי את השאלה ל-${result.steps.length} נושאים מוכרים (עד 4) ולקחתי לכל אחד את ההסבר השמור, בזה אחר זה.` }, trust: "EDUCATIONAL" },
+        { text: { en: `Split the question into ${result.steps.length} known topics (max ${stepsForLevel(level)} on this level) and took the stored explanation for each, one after the other.`, he: `פיצלתי את השאלה ל-${result.steps.length} נושאים מוכרים (עד ${stepsForLevel(level)} ברמה הזו) ולקחתי לכל אחד את ההסבר השמור, בזה אחר זה.` }, trust: "EDUCATIONAL" },
         { text: result.reworded ? { en: "A free AI model reworded the joined text. The server rejected any new number or ticker.", he: "מודל AI חינמי ניסח מחדש את הטקסט המחובר. השרת פוסל כל מספר או סימול חדש." } : { en: "No AI rewording this time. The stored text is shown as written.", he: "בלי ניסוח מחדש הפעם. הטקסט השמור מוצג כפי שנכתב." }, trust: "ANALYSIS" },
       ];
       setMessages((current) => current.map((m, i) => i === at.i ? { role: "copilot", text: result.text ? result.text + (result.missing.length ? `\n\n${t("deep_missing")} ${result.missing.join(", ")}` : "") : t("deep_none"), trace: result.text ? trace : undefined, deep: result.text ? { steps: result.steps.length, reworded: result.reworded } : undefined, question: result.text ? q : undefined } : m));

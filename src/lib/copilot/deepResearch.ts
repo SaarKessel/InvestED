@@ -5,24 +5,27 @@ import { toolHints } from "./multiPart";
 import { MAX_ANSWER_LENGTH } from "./gatewayPrompt";
 
 export const MAX_STEPS = 4;
+/** Steps per level track: deeper tracks chain more stored explanations. Fixed numbers, no model involved. */
+export const stepsForLevel = (level: "basic" | "junior" | "senior" | "professional"): number => ({ basic: 3, junior: 4, senior: 5, professional: 6 })[level];
+const LIMITS = { en: "Scope: built only from the site's stored explanations, not live data or the web.", he: "היקף: נבנה רק מההסברים השמורים באתר, לא מנתונים חיים או מהרשת." };
 const TRIGGER = /^\s*(?:deep\s+research|מחקר\s+מעמיק)\s*[:\-–]?\s*/i;
 export const isDeepRequest = (text: string): boolean => TRIGGER.test(text) && text.replace(TRIGGER, "").trim().length > 2;
 export const stripTrigger = (text: string): string => text.replace(TRIGGER, "").trim();
 
 export interface ResearchStep { id: string; label: string; text: string }
-export function planResearch(question: string, lang: "he" | "en"): ResearchStep[] {
+export function planResearch(question: string, lang: "he" | "en", maxSteps: number = MAX_STEPS): ResearchStep[] {
   const out: ResearchStep[] = [];
   for (const c of findConceptsInText(question, 8)) {
     if (!c.explain) continue;
     const text = conceptAnswerByLabel(c.explain, lang);
     if (text) out.push({ id: c.id, label: lang === "he" ? c.he : c.en, text });
-    if (out.length >= MAX_STEPS) break;
+    if (out.length >= maxSteps) break;
   }
   return out;
 }
-export function buildBrief(steps: ResearchStep[], question: string, lang: "he" | "en"): string {
+export function buildBrief(steps: ResearchStep[], question: string, lang: "he" | "en", withLimits = false): string {
   const hints = toolHints(question).map((h) => (lang === "he" ? h.he : h.en));
-  const body = [...steps.map((s) => `${s.label}: ${s.text}`), ...hints].join("\n\n");
+  const body = [...steps.map((s) => `${s.label}: ${s.text}`), ...hints, ...(withLimits ? [LIMITS[lang]] : [])].join("\n\n");
   return body.slice(0, MAX_ANSWER_LENGTH - 50);
 }
 /** Topics named in the question that have no stored explanation yet. Said plainly, never filled in. */
@@ -33,12 +36,13 @@ export interface DeepResult { text: string; steps: ResearchStep[]; reworded: boo
 export async function runDeepResearch(
   question: string, lang: "he" | "en", onStep: (done: number, total: number, label: string) => void,
   rephrase: (q: string, brief: string) => Promise<string | null> = defaultRephrase(lang),
+  level: "basic" | "junior" | "senior" | "professional" | null = null,
 ): Promise<DeepResult> {
-  const steps = planResearch(question, lang);
+  const steps = planResearch(question, lang, level ? stepsForLevel(level) : MAX_STEPS);
   const missing = missingTopics(question, lang);
   for (let i = 0; i < steps.length; i++) onStep(i + 1, steps.length, steps[i].label);
   if (!steps.length) return { text: "", steps, reworded: false, missing };
-  const brief = buildBrief(steps, question, lang);
+  const brief = buildBrief(steps, question, lang, level === "senior" || level === "professional");
   const text = await rephrase(question, brief);
   return text ? { text, steps, reworded: true, missing } : { text: brief, steps, reworded: false, missing };
 }

@@ -28,3 +28,18 @@ describe("deepResearch", () => {
 
 import { missingTopics } from "./deepResearch";
 describe("missing topics", () => { it("names concepts without a stored explanation, never invents text", async () => { const m = missingTopics("inflation bonds diversification", "en"); expect(Array.isArray(m)).toBe(true); const r = await runDeepResearch("inflation bonds diversification", "en", () => undefined, async () => null); expect(r.missing).toEqual(m); }); });
+
+import { stepsForLevel } from "./deepResearch";
+describe("level depth", () => {
+  const q = "diversification inflation bonds stocks ETF index fund dividend yield volatility risk";
+  it("deeper tracks chain more steps, never fewer", () => {
+    const n = (["basic", "junior", "senior", "professional"] as const).map((l) => planResearch(q, "en", stepsForLevel(l)).length);
+    expect(n).toEqual(n.slice().sort((a, b) => a - b)); expect(n[0]).toBeLessThanOrEqual(3);
+  });
+  it("senior and professional add a fixed scope line; basic and no level do not", async () => {
+    const pro = await runDeepResearch("diversification and inflation", "en", () => undefined, async () => null, "professional");
+    expect(pro.text).toContain("stored explanations");
+    const none = await runDeepResearch("diversification and inflation", "en", () => undefined, async () => null);
+    expect(none.text).not.toContain("Scope:");
+  });
+});
