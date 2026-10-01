@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useLanguage } from "@/context/languageContext";
 import { easternParts, tickerPhase } from "@/lib/tickerStrip";
 import { loadState, markShown, normalizePopupNews, pickPopup, saveState, type PopupNews } from "@/lib/newsPopup";
@@ -41,7 +42,7 @@ export function NewsPopup() {
   }, [language]);
   if (!item) return null;
   const off = () => { saveState({ ...loadState(), off: true }); setItem(null); };
-  return (
+  return createPortal(
     <div role="dialog" aria-label={t("newspop_title")} className="fixed bottom-4 end-4 z-40 w-[min(22rem,calc(100vw-2rem))] rounded-2xl border border-[#E0B253]/40 bg-[#0b1630] p-4 text-sm text-slate-100 shadow-2xl">
       <div className="flex items-start justify-between gap-2">
         <span className="text-[10px] font-semibold uppercase tracking-wider text-[#E0B253]">{t("newspop_title")}</span>
@@ -57,6 +58,7 @@ export function NewsPopup() {
         <button type="button" onClick={off} className="text-slate-400 underline">{t("newspop_off")}</button>
       </div>
       <p className="mt-2 text-[10px] text-slate-400">{t("newspop_note")}</p>
-    </div>
+    </div>,
+    document.body
   );
 }
