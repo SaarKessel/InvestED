@@ -13,6 +13,7 @@ import { conceptName, findConceptsInText, getConcept, relatedConcepts } from "..
 import { fmt } from "./mathDesk";
 import type { DataDeskKind } from "./dataDesk";
 import type { FxResult } from "./fxDesk";
+import type { MathDeskResult } from "./mathDesk";
 import type { WbResult } from "./worldBankDesk";
 import type { SymbolInfo } from "./symbolDesk";
 
@@ -194,8 +195,23 @@ export function scenarioSections(level: Level): DepthSection[] {
   return out;
 }
 
-export function depthSections(level: Level, msg: { calc?: CalcDeskResult | null; desk?: { kind: DataDeskKind } | null; assets?: AssetLite[]; question?: string; fx?: FxResult | null; wb?: WbResult | null; symbol?: SymbolInfo | null; scenario?: unknown }): DepthSection[] {
+export function mathSections(level: Level, r: MathDeskResult): DepthSection[] {
+  const d = RANK[level], out: DepthSection[] = [];
+  if (d < 2 || !r.ok || r.value === undefined) return out;
+  out.push({ id: "mathread", trust: "CALCULATION", title: b("How it was solved", "איך זה נפתר"), lines: [
+    b(`The expression was solved in ${r.steps.length} step${r.steps.length === 1 ? "" : "s"}, shown above, using the usual order: brackets, powers, multiplication and division, then addition and subtraction.`,
+      `הביטוי נפתר ב-${r.steps.length} שלבים, מוצגים למעלה, לפי הסדר הרגיל: סוגריים, חזקות, כפל וחילוק, ואז חיבור וחיסור.`)] });
+  if (d >= 3) out.push({ id: "mathcheck", trust: "CALCULATION", title: b("Check it yourself", "בדקו בעצמכם"), lines: [
+    b("Redo the steps in the same order with a calculator, or change one number and see how the result moves.", "חזרו על השלבים באותו סדר במחשבון, או שנו מספר אחד וראו איך התוצאה זזה.")] });
+  if (d >= 4) out.push({ id: "mathlimits", trust: "CALCULATION", title: b("Limits", "מגבלות"), lines: [
+    b("The result is shown to 4 decimals and computed in standard floating point, so a very long decimal can differ in the last digits. If an expression cannot be read exactly, the desk says so instead of guessing.",
+      "התוצאה מוצגת עד 4 ספרות אחרי הנקודה ומחושבת בנקודה צפה סטנדרטית, ולכן עשרוני ארוך מאוד יכול להיות שונה בספרות האחרונות. אם ביטוי לא ניתן לקריאה מדויקת, המנוע אומר זאת ולא מנחש.")] });
+  return out;
+}
+
+export function depthSections(level: Level, msg: { calc?: CalcDeskResult | null; desk?: { kind: DataDeskKind } | null; assets?: AssetLite[]; question?: string; fx?: FxResult | null; math?: MathDeskResult | null; wb?: WbResult | null; symbol?: SymbolInfo | null; scenario?: unknown }): DepthSection[] {
   if (level === "basic") return [];
+  if (msg.math) return mathSections(level, msg.math);
   if (msg.fx) return fxSections(level, msg.fx);
   if (msg.wb) return wbSections(level, msg.wb);
   if (msg.symbol) return symbolSections(level, msg.symbol);

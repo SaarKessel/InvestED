@@ -26,4 +26,11 @@ describe("depth for desk cards", () => {
     expect(depthSections("professional", { symbol: { symbol: "VOO", kind: "fund", name: "n", sector: null, size: null, issuer: null } }).some((x) => x.id === "symlimits")).toBe(true);
     expect(depthSections("professional", { scenario: [] }).some((x) => x.id === "sclimits")).toBe(true);
   });
+  it("math card: junior and senior explain, professional states limits, BASIC and failures add nothing", () => {
+    const m = { ok: true, expression: "2+3*4", value: 14, steps: [{ text: "x" }, { text: "y" }] } as never;
+    expect(depthSections("basic", { math: m })).toEqual([]);
+    expect(depthSections("junior", { math: m }).map((x) => x.id)).toEqual(["mathread"]);
+    expect(depthSections("professional", { math: m }).map((x) => x.id)).toEqual(["mathread", "mathcheck", "mathlimits"]);
+    expect(depthSections("professional", { math: { ok: false, expression: "", steps: [] } as never })).toEqual([]);
+  });
 });
