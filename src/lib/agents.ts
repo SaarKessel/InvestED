@@ -12,6 +12,8 @@ export interface AgentDef {
   color: string;
   keywords: { en: string[]; he: string[] };
   starters: { en: string; he: string }[];
+  /** tool ids this agent may call through the tool registry; omitted means all */
+  tools?: string[];
 }
 
 export const AGENTS: AgentDef[] = [
@@ -63,4 +65,11 @@ export function readPickedAgent(userId: string | null | undefined, store: Pick<S
 }
 export function savePickedAgent(userId: string | null | undefined, id: string | null, store: Pick<Storage, "setItem" | "removeItem"> | null = typeof localStorage === "undefined" ? null : localStorage): void {
   try { if (id) store?.setItem(KEY(userId), id); else store?.removeItem(KEY(userId)); } catch { /* ignore */ }
+}
+
+/** Per-agent tool allow-list. No agent or the general agent may use every tool; an unknown agent id is denied nothing it did not declare. */
+export function agentMayUse(agentId: string | null, toolId: string, agents: AgentDef[] = AGENTS): boolean {
+  if (!agentId || agentId === GENERAL_AGENT_ID) return true;
+  const a = agents.find((x) => x.id === agentId);
+  return !a || !a.tools || a.tools.includes(toolId);
 }

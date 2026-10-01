@@ -12,7 +12,6 @@ export function ChatWbCard({ data }: { data: WbResult }) {
       <div className="mt-2 grid grid-cols-3 gap-3 sm:grid-cols-6" dir="ltr">
         {data.points.map((p) => <div key={p.year}><p className="text-muted-foreground">{p.year}</p><p className="mt-0.5 text-sm font-semibold">{fmt(Number(p.value.toFixed(1)))}%</p></div>)}
       </div>
-      <p className="mt-2 text-muted-foreground">{lang === "he" ? `מקור: The World Bank: World Development Indicators (רישיון CC BY 4.0). נתונים שנתיים שמתפרסמים באיחור${data.lastUpdated ? `, עודכן ${data.lastUpdated}` : ""}.` : `Source: The World Bank: World Development Indicators (CC BY 4.0). Yearly values, published with a delay${data.lastUpdated ? `, updated ${data.lastUpdated}` : ""}.`}</p>
     </div>
   );
 }

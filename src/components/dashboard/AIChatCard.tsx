@@ -12,6 +12,9 @@ import { useAuth } from "@/context/useAuth";
 import { createConversation, deleteConversation, listConversations, loadMessages, saveMessage, type ChatConversation } from "@/lib/copilot/chatHistory";
 import { ChatSiteLaunch } from "./ChatSiteLaunch";
 import { ChatCockpit } from "./ChatCockpit";
+import { ChatProvenance } from "./ChatProvenance";
+import { runTool } from "@/lib/intelligence/tools";
+import type { Provenance } from "@/lib/intelligence/envelope";
 import { ChatChartCard } from "./ChatChartCard";
 import { ChatCompareChart } from "./ChatCompareChart";
 import { ChatToolPanel } from "./ChatToolPanel";
@@ -42,13 +45,13 @@ import { depthSections } from "@/lib/copilot/depth";
 import { ChatAgentTag } from "./ChatAgentTag";
 import { readPickedAgent, routeAgent, savePickedAgent, AGENTS } from "@/lib/agents";
 import { ChatSymbolCard } from "./ChatSymbolCard";
-import { lookupSymbol, parseSymbolQuestion, type SymbolInfo } from "@/lib/copilot/symbolDesk";
+import { parseSymbolQuestion, type SymbolInfo } from "@/lib/copilot/symbolDesk";
 import { ChatScenarioCard } from "./ChatScenarioCard";
 import { type ScenarioPart } from "@/lib/copilot/scenarioDesk";
 import { ChatWbCard } from "./ChatWbCard";
-import { loadWb, type WbResult } from "@/lib/copilot/worldBankDesk";
+import { type WbResult } from "@/lib/copilot/worldBankDesk";
 import { ChatFxCard } from "./ChatFxCard";
-import { loadFx, type FxResult } from "@/lib/copilot/fxDesk";
+import { type FxResult } from "@/lib/copilot/fxDesk";
 import { type MathDeskResult } from "@/lib/copilot/mathDesk";
 import { ChatLearnPath } from "./ChatLearnPath";
 import { ChatKnowledge, FeedbackButtons } from "./ChatKnowledge";
@@ -64,7 +67,7 @@ import { appendDictation, getSpeechRecognition, joinTranscript, speechLocale, ty
 import { useAnalysis } from "@/context/useAnalysis";
 import type { CopilotResponse } from "@/lib/copilotResponse";
 
-interface Message { agent?: { id: string | null; switchTo?: string }; deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxResult | null; fxFailed?: boolean; symbol?: SymbolInfo; wb?: WbResult | null; scenario?: ScenarioPart[]; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
+interface Message { prov?: Provenance; agent?: { id: string | null; switchTo?: string }; deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxResult | null; fxFailed?: boolean; symbol?: SymbolInfo; wb?: WbResult | null; scenario?: ScenarioPart[]; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
 
 export function AIChatCard() {
   const { t, language } = useLanguage();
@@ -222,13 +225,14 @@ export function AIChatCard() {
     }
     const symQ = parseSymbolQuestion(text);
     if (symQ) {
-      const info = await lookupSymbol(symQ);
-      if (info) {
+      const symOut = await runTool<SymbolInfo>("symbol", symQ, { agentId: pickedAgent });
+      const info = symOut.ok ? symOut.result.value : null;
+      if (info && symOut.ok) {
         const trace: TraceStep[] = [
           { text: { en: "Recognized a question about a ticker.", he: "זיהיתי שאלה על סימול." } },
           { text: { en: "Looked it up in a static list built from FinanceDatabase. It holds names and types, not prices.", he: "חיפשתי ברשימה סטטית שנבנתה מ-FinanceDatabase. היא כוללת שמות וסוגים, בלי מחירים." }, trust: "KNOWLEDGE" },
           { text: { en: "No model wrote this.", he: "אף מודל לא כתב את זה." } }];
-        setMessages((current) => [...current, { role: "copilot", trace, text: language === "he" ? `${info.symbol} הוא ${info.kind === "equity" ? "סימול של מניה" : "סימול של קרן סל או קרן"}:` : `${info.symbol} is ${info.kind === "equity" ? "a stock" : "an ETF or fund"}:`, symbol: info }]);
+        setMessages((current) => [...current, { role: "copilot", trace, text: language === "he" ? `${info.symbol} הוא ${info.kind === "equity" ? "סימול של מניה" : "סימול של קרן סל או קרן"}:` : `${info.symbol} is ${info.kind === "equity" ? "a stock" : "an ETF or fund"}:`, symbol: info, prov: symOut.result.provenance }]);
         return;
       }
     }
@@ -256,27 +260,32 @@ export function AIChatCard() {
         : { role: "copilot", trace, text: t("cap_open_lead"), siteCaps: site.matches }]);
       return;
     }
-    const calc = plan.calc ?? null;
+    const calcOut = plan.calc ? await runTool<CalcDeskResult>("calc", text, { agentId: pickedAgent }) : null;
+    const calc = calcOut && calcOut.ok ? calcOut.result.value : (plan.calc ?? null);
     if (calc) {
-      setMessages((current) => [...current, { role: "copilot", trace, text: t("calc_lead"), calc }]);
+      setMessages((current) => [...current, { role: "copilot", trace, text: t("calc_lead"), calc, prov: calcOut && calcOut.ok ? calcOut.result.provenance : undefined }]);
       return;
     }
     if (plan.scenario) {
-      setMessages((current) => [...current, { role: "copilot", trace, text: language === "he" ? "חילקתי את השאלה לחלקים והנה כל חישוב:" : "I split your question into parts. Here is each calculation:", scenario: plan.scenario }]);
+      const scOut = await runTool("scenario", text, { agentId: pickedAgent });
+      setMessages((current) => [...current, { role: "copilot", trace, text: language === "he" ? "חילקתי את השאלה לחלקים והנה כל חישוב:" : "I split your question into parts. Here is each calculation:", scenario: plan.scenario, prov: scOut.ok ? scOut.result.provenance : undefined }]);
       return;
     }
     if (plan.wb) {
-      const wb = await loadWb(plan.wb);
-      setMessages((current) => [...current, { role: "copilot", trace, text: wb ? (language === "he" ? "הנה הנתון:" : "Here is the statistic:") : (language === "he" ? "לא הצלחתי לטעון עכשיו את הנתון מהבנק העולמי, ולכן לא מציגה כלום. נסו שוב בעוד רגע." : "I could not load that statistic from the World Bank right now, so I am not showing anything. Try again in a moment."), wb }]);
+      const wbOut = await runTool<WbResult>("wb", plan.wb, { agentId: pickedAgent });
+      const wb = wbOut.ok ? wbOut.result.value : null;
+      setMessages((current) => [...current, { role: "copilot", trace, text: wb ? (language === "he" ? "הנה הנתון:" : "Here is the statistic:") : (language === "he" ? "לא הצלחתי לטעון עכשיו את הנתון מהבנק העולמי, ולכן לא מציגה כלום. נסו שוב בעוד רגע." : "I could not load that statistic from the World Bank right now, so I am not showing anything. Try again in a moment."), wb, prov: wbOut.ok ? wbOut.result.provenance : undefined }]);
       return;
     }
     if (plan.fx) {
-      const fx = await loadFx(plan.fx);
-      setMessages((current) => [...current, { role: "copilot", trace, text: fx ? (language === "he" ? "הנה ההמרה:" : "Here is the conversion:") : (language === "he" ? "לא הצלחתי לטעון עכשיו את שער היחס, ולכן לא המרתי. נסו שוב בעוד רגע." : "I could not load the reference rate right now, so I did not convert anything. Try again in a moment."), fx }]);
+      const fxOut = await runTool<FxResult>("fx", plan.fx, { agentId: pickedAgent });
+      const fx = fxOut.ok ? fxOut.result.value : null;
+      setMessages((current) => [...current, { role: "copilot", trace, text: fx ? (language === "he" ? "הנה ההמרה:" : "Here is the conversion:") : (language === "he" ? "לא הצלחתי לטעון עכשיו את שער היחס, ולכן לא המרתי. נסו שוב בעוד רגע." : "I could not load the reference rate right now, so I did not convert anything. Try again in a moment."), fx, prov: fxOut.ok ? fxOut.result.provenance : undefined }]);
       return;
     }
     if (plan.math) {
-      setMessages((current) => [...current, { role: "copilot", trace, text: language === "he" ? "הנה החישוב:" : "Here is the calculation:", math: plan.math }]);
+      const mOut = await runTool("math", text, { agentId: pickedAgent });
+      setMessages((current) => [...current, { role: "copilot", trace, text: language === "he" ? "הנה החישוב:" : "Here is the calculation:", math: plan.math, prov: mOut.ok ? mOut.result.provenance : undefined }]);
       return;
     }
     const deskKind = plan.desk ?? null;
@@ -323,6 +332,7 @@ export function AIChatCard() {
             {message.scenario && <ChatScenarioCard parts={message.scenario} />}
             {message.wb && <ChatWbCard data={message.wb} />}
             {message.fx && <ChatFxCard data={message.fx} />}
+            {message.prov && <ChatProvenance prov={message.prov} />}
             {message.math && <ChatMathCard data={message.math} />}
             {message.knowledge && message.knowledge.length > 0 && <ChatKnowledge items={message.knowledge} />}
             {message.learnPath && <ChatLearnPath />}
