@@ -23,11 +23,12 @@ export function appendDictation(existing: string, dictated: string): string {
   return existing.trim() ? `${existing.trimEnd()} ${d}` : d;
 }
 
-export type VoiceProblem = "permission" | "no_speech" | "no_mic" | "network" | "language" | "unsupported" | null;
+export type VoiceProblem = "permission" | "service" | "no_speech" | "no_mic" | "network" | "language" | "unsupported" | null;
 /** Maps the browser's error code to what the user can actually do. "aborted" is a normal stop, not a problem. */
 export function voiceProblem(code: string | undefined): VoiceProblem {
   switch (code) {
-    case "not-allowed": case "service-not-allowed": return "permission";
+    case "not-allowed": return "permission";
+    case "service-not-allowed": return "service";
     case "no-speech": return "no_speech";
     case "audio-capture": return "no_mic";
     case "network": return "network";
@@ -35,4 +36,10 @@ export function voiceProblem(code: string | undefined): VoiceProblem {
     case "aborted": return null;
     default: return "permission";
   }
+}
+
+/** iPhone and iPad, including iPadOS that reports as a Mac. Every iOS browser runs WebKit. */
+export function isIOS(nav: { userAgent?: string; platform?: string; maxTouchPoints?: number } | undefined = typeof navigator === "undefined" ? undefined : navigator): boolean {
+  if (!nav) return false;
+  return /iPhone|iPad|iPod/.test(nav.userAgent ?? "") || (nav.platform === "MacIntel" && (nav.maxTouchPoints ?? 0) > 1);
 }

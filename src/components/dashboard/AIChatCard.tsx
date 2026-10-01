@@ -64,7 +64,7 @@ import { loadDataDesk, type DataDeskResult } from "@/lib/copilot/dataDesk";
 import { ChatStrategyCard } from "./ChatStrategyCard";
 import { ChatStrategyFitCard } from "./ChatStrategyFitCard";
 import { speak, stopSpeaking, unlockSpeech, getSynth, type SpeakResult } from "@/lib/copilot/speechOutput";
-import { appendDictation, getSpeechRecognition, joinTranscript, speechLocale, voiceProblem, type SpeechRecognitionLike, type VoiceProblem } from "@/lib/copilot/voiceInput";
+import { appendDictation, getSpeechRecognition, joinTranscript, speechLocale, voiceProblem, isIOS, type SpeechRecognitionLike, type VoiceProblem } from "@/lib/copilot/voiceInput";
 import { useAnalysis } from "@/context/useAnalysis";
 import type { CopilotResponse } from "@/lib/copilotResponse";
 
@@ -91,7 +91,7 @@ export function AIChatCard() {
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const [listening, setListening] = useState(false);
   const [voiceError, setVoiceError] = useState<VoiceProblem>(null);
-  const voiceNote = !SpeechCtor ? t("voice_unsupported") : voiceError ? t(voiceError === "permission" ? "voice_error" : `voice_${voiceError}`) : null;
+  const voiceNote = !SpeechCtor ? t("voice_unsupported") : voiceError ? t(voiceError === "permission" ? "voice_error" : voiceError === "service" && isIOS() ? "voice_service_ios" : `voice_${voiceError}`) : null;
   const composerRef = useRef<HTMLTextAreaElement>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const [fileBusy, setFileBusy] = useState(false);
