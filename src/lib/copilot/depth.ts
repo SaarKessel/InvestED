@@ -12,6 +12,9 @@ import { conceptAnswerByLabel } from "../financialEducation";
 import { conceptName, findConceptsInText, getConcept, relatedConcepts } from "../knowledge/concepts/registry";
 import { fmt } from "./mathDesk";
 import type { DataDeskKind } from "./dataDesk";
+import type { FxResult } from "./fxDesk";
+import type { WbResult } from "./worldBankDesk";
+import type { SymbolInfo } from "./symbolDesk";
 
 type Bi = { en: string; he: string };
 export interface DepthSection { id: string; title: Bi; lines: Bi[]; trust: TrustClass }
@@ -125,8 +128,78 @@ export function assetSections(level: Level, assets: AssetLite[]): DepthSection[]
   return out;
 }
 
-export function depthSections(level: Level, msg: { calc?: CalcDeskResult | null; desk?: { kind: DataDeskKind } | null; assets?: AssetLite[]; question?: string }): DepthSection[] {
+const concept = (id: string): Bi | null => {
+  const c = getConcept(id); if (!c?.explain) return null;
+  const en = conceptAnswerByLabel(c.explain, "en"), he = conceptAnswerByLabel(c.explain, "he");
+  return en && he ? b(`${conceptName(c, "en")}: ${firstSentence(en)}`, `${conceptName(c, "he")}: ${firstSentence(he)}`) : null;
+};
+const num = (n: number, dp = 4) => fmt(Number(n.toFixed(dp)));
+
+export function fxSections(level: Level, r: FxResult): DepthSection[] {
+  const d = RANK[level], out: DepthSection[] = [];
+  if (d < 2) return out;
+  out.push({ id: "fxmeaning", trust: "DATA", title: b("What this rate is", "מה השער הזה"), lines: [
+    b(`The rate is the European Central Bank reference rate for ${r.date}. It is set once per working day.`, `השער הוא שער הייחוס של הבנק המרכזי האירופי לתאריך ${r.date}. הוא נקבע פעם ביום עבודה.`),
+    b("It is not the rate a bank or card company will give you.", "זה לא השער שבנק או חברת אשראי יתנו לכם.")] });
+  if (d >= 3) {
+    const inv = 1 / r.rate;
+    out.push({ id: "fxsens", trust: "CALCULATION", title: b("Other ways to read it", "דרכים נוספות לקרוא את זה"), lines: [
+      b(`1 ${r.to} = ${num(inv)} ${r.from} (the inverse of ${num(r.rate)}).`, `1 ${r.to} = ${iso(`${num(inv)} ${r.from}`)} (ההופכי של ${iso(num(r.rate))}).`),
+      b(`If the rate were 1% lower, ${num(r.amount, 2)} ${r.from} would give ${num(r.result * 0.99, 2)} ${r.to} (a what-if for teaching, not a forecast).`,
+        `אם השער היה נמוך ב-1%, ${iso(`${num(r.amount, 2)} ${r.from}`)} היו נותנים ${iso(`${num(r.result * 0.99, 2)} ${r.to}`)} (תרחיש לימוד, לא תחזית).`)] });
+  }
+  if (d >= 4) out.push({ id: "fxlimits", trust: "DATA", title: b("Limits of this data", "מגבלות הנתונים"), lines: [
+    b("Real conversions add a spread or a fee, so you receive less than this. Rates move every day and past moves do not predict the next one.", "המרה אמיתית כוללת מרווח או עמלה, ולכן תקבלו פחות. שערים זזים כל יום ותנועות עבר לא חוזות את הבאה.")] });
+  return out;
+}
+
+export function wbSections(level: Level, r: WbResult): DepthSection[] {
+  const d = RANK[level], out: DepthSection[] = [];
+  if (d < 2 || r.points.length === 0) return out;
+  out.push({ id: "wbmeaning", trust: "DATA", title: b("How to read this", "איך לקרוא את זה"), lines: [
+    b("Each value is one year. The World Bank publishes with a delay, so the latest year is not this year.", "כל ערך הוא שנה אחת. הבנק העולמי מפרסם באיחור, ולכן השנה האחרונה היא לא השנה הנוכחית."),
+    ...(r.indicator === "inflation" ? [concept("inflation")] : []).filter((x): x is Bi => x !== null)] });
+  if (d >= 3 && r.points.length >= 2) {
+    const vals = r.points.map((p) => p.value);
+    const avg = vals.reduce((a, v) => a + v, 0) / vals.length;
+    const hi = r.points.reduce((a, p) => (p.value > a.value ? p : a)), lo = r.points.reduce((a, p) => (p.value < a.value ? p : a));
+    out.push({ id: "wbrange", trust: "CALCULATION", title: b("Across the years shown", "על פני השנים המוצגות"), lines: [
+      b(`Average ${num(avg, 2)}%. Highest ${num(hi.value, 2)}% in ${hi.year}. Lowest ${num(lo.value, 2)}% in ${lo.year}.`, `ממוצע ${iso(`${num(avg, 2)}%`)}. הגבוה ביותר ${iso(`${num(hi.value, 2)}%`)} ב-${hi.year}. הנמוך ביותר ${iso(`${num(lo.value, 2)}%`)} ב-${lo.year}.`)] });
+  }
+  if (d >= 4) out.push({ id: "wblimits", trust: "DATA", title: b("Limits of this data", "מגבלות הנתונים"), lines: [
+    b("Official figures are revised later, and countries measure in slightly different ways. One indicator does not describe an economy. Source: World Bank Open Data, CC BY 4.0.", "נתונים רשמיים מתוקנים מאוחר יותר, ומדינות מודדות בדרכים מעט שונות. מדד אחד לא מתאר משק. מקור: World Bank Open Data, CC BY 4.0.")] });
+  return out;
+}
+
+export function symbolSections(level: Level, s: SymbolInfo): DepthSection[] {
+  const d = RANK[level], out: DepthSection[] = [];
+  if (d < 2) return out;
+  const terms = (s.kind === "fund" ? ["etf", "index-fund", "expense-ratio"] : ["stock", "market-cap", "dividend"]).map(concept).filter((x): x is Bi => x !== null);
+  if (terms.length) out.push({ id: "symterms", trust: "EDUCATIONAL", title: b("Terms for this kind of asset", "מושגים לסוג הנכס הזה"), lines: terms.slice(0, d >= 3 ? 3 : 2) });
+  if (d >= 3) out.push({ id: "symnext", trust: "EDUCATIONAL", title: b("What to check next", "מה כדאי לבדוק הלאה"), lines: [
+    s.kind === "fund" ? b("What the fund holds, its yearly cost (expense ratio) and how long it has existed.", "במה הקרן מחזיקה, מה העלות השנתית שלה (דמי ניהול) וכמה זמן היא קיימת.")
+      : b("What the company sells, how its price moved over years, and how much of your plan one company should be.", "מה החברה מוכרת, איך המחיר זז לאורך שנים, וכמה מהתוכנית שלכם צריכה להיות חברה אחת.")] });
+  if (d >= 4) out.push({ id: "symlimits", trust: "DATA", title: b("Limits of this data", "מגבלות הנתונים"), lines: [
+    b("Name, sector and size come from the open FinanceDatabase list, which can lag the real company. This is a description, not a recommendation.", "השם, הסקטור והגודל מגיעים מרשימת FinanceDatabase הפתוחה, שיכולה לפגר אחרי החברה האמיתית. זה תיאור, לא המלצה.")] });
+  return out;
+}
+
+export function scenarioSections(level: Level): DepthSection[] {
+  const d = RANK[level], out: DepthSection[] = [];
+  if (d < 2) return out;
+  out.push({ id: "scmeaning", trust: "CALCULATION", title: b("How the parts were handled", "איך טיפלנו בחלקים"), lines: [
+    b("Each part was calculated on its own by a fixed engine. A result is not carried into the next part.", "כל חלק חושב בנפרד על ידי מנוע קבוע. תוצאה אחת לא עוברת לחלק הבא.")] });
+  if (d >= 4) out.push({ id: "sclimits", trust: "CALCULATION", title: b("Limits", "מגבלות"), lines: [
+    b("If a part could not be read exactly, it says so instead of guessing. Rates in these examples are teaching assumptions, not forecasts.", "אם חלק לא היה ניתן לקריאה מדויקת, הוא אומר זאת ולא מנחש. שיעורים בדוגמאות הם הנחות לימוד, לא תחזיות.")] });
+  return out;
+}
+
+export function depthSections(level: Level, msg: { calc?: CalcDeskResult | null; desk?: { kind: DataDeskKind } | null; assets?: AssetLite[]; question?: string; fx?: FxResult | null; wb?: WbResult | null; symbol?: SymbolInfo | null; scenario?: unknown }): DepthSection[] {
   if (level === "basic") return [];
+  if (msg.fx) return fxSections(level, msg.fx);
+  if (msg.wb) return wbSections(level, msg.wb);
+  if (msg.symbol) return symbolSections(level, msg.symbol);
+  if (msg.scenario) return scenarioSections(level);
   if (msg.desk) return deskSections(level, msg.desk.kind);
   if (msg.assets && msg.assets.length) return assetSections(level, msg.assets);
   if (msg.calc) return calcSections(level, msg.calc);
