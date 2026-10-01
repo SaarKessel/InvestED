@@ -15,9 +15,10 @@ import { ChatToolPanel } from "./ChatToolPanel";
 import { ChatToolMenu } from "./ChatToolMenu";
 import { toolForPath } from "./chatTools";
 import { openingLine } from "@/lib/copilot/toolKeywords";
-import { resolveToolKeyword } from "@/lib/copilot/toolKeywords";
 import { ChatRelated } from "./ChatRelated";
 import { ChatAlsoAsked } from "./ChatAlsoAsked";
+import { ChatTrace } from "./ChatTrace";
+import { planQuestion, type TraceStep } from "@/lib/copilot/planner";
 import { VoiceOrb } from "./VoiceOrb";
 import { LevelPicker } from "./LevelPicker";
 import { checkFile, giveConsent, hasConsent } from "@/lib/copilot/fileAnalysis";
@@ -33,8 +34,8 @@ import { ChatKnowledge, FeedbackButtons } from "./ChatKnowledge";
 import { searchKnowledge, recordGap } from "@/lib/knowledge/knowledgeClient";
 import { wantsKnowledgeLookup, type KnowledgeItem } from "@/lib/knowledge/knowledge";
 import { looksLikeLearningPathRequest } from "@/lib/copilot/learnDesk";
-import { runCalcDesk, type CalcDeskResult } from "@/lib/copilot/calcDesk";
-import { loadDataDesk, resolveDataDesk, type DataDeskResult } from "@/lib/copilot/dataDesk";
+import { type CalcDeskResult } from "@/lib/copilot/calcDesk";
+import { loadDataDesk, type DataDeskResult } from "@/lib/copilot/dataDesk";
 import { ChatStrategyCard } from "./ChatStrategyCard";
 import { ChatStrategyFitCard } from "./ChatStrategyFitCard";
 import { speak, stopSpeaking, unlockSpeech, getSynth, type SpeakResult } from "@/lib/copilot/speechOutput";
@@ -42,7 +43,7 @@ import { appendDictation, getSpeechRecognition, joinTranscript, speechLocale, ty
 import { useAnalysis } from "@/context/useAnalysis";
 import type { CopilotResponse } from "@/lib/copilotResponse";
 
-interface Message { role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
+interface Message { trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
 
 export function AIChatCard() {
   const { t, language } = useLanguage();
@@ -166,38 +167,40 @@ export function AIChatCard() {
       return;
     }
     setMessages((current) => [...current, { role: "user", text }]);
-    const keywordPath = resolveToolKeyword(text);
+    const plan = planQuestion(text);
+    const trace = plan.trace;
+    const keywordPath = plan.toolPath ?? null;
     const keywordTool = keywordPath ? toolForPath(keywordPath) : null;
     if (keywordPath && keywordTool) {
-      setMessages((current) => [...current, { role: "copilot", text: openingLine(text, keywordTool.tool?.labelKey) }]);
+      setMessages((current) => [...current, { role: "copilot", trace, text: openingLine(text, keywordTool.tool?.labelKey) }]);
       navigate(keywordPath);
       return;
     }
     if (isCareerLaunchRequest(text)) {
-      setMessages((current) => [...current, { role: "copilot", text: t("career_chat_launch"), careerLaunch: true }]);
+      setMessages((current) => [...current, { role: "copilot", trace, text: t("career_chat_launch"), careerLaunch: true }]);
       return;
     }
     if (looksLikeLearningPathRequest(text)) {
-      setMessages((current) => [...current, { role: "copilot", text: t("learnpath_lead"), learnPath: true }]);
+      setMessages((current) => [...current, { role: "copilot", trace, text: t("learnpath_lead"), learnPath: true }]);
       return;
     }
     const site = resolveSiteIntent(text);
     if (site) {
       setMessages((current) => [...current, site.kind === "overview"
-        ? { role: "copilot", text: t("cap_overview"), siteCaps: SITE_CAPABILITIES }
-        : { role: "copilot", text: t("cap_open_lead"), siteCaps: site.matches }]);
+        ? { role: "copilot", trace, text: t("cap_overview"), siteCaps: SITE_CAPABILITIES }
+        : { role: "copilot", trace, text: t("cap_open_lead"), siteCaps: site.matches }]);
       return;
     }
-    const calc = runCalcDesk(text);
+    const calc = plan.calc ?? null;
     if (calc) {
-      setMessages((current) => [...current, { role: "copilot", text: t("calc_lead"), calc }]);
+      setMessages((current) => [...current, { role: "copilot", trace, text: t("calc_lead"), calc }]);
       return;
     }
-    const deskKind = resolveDataDesk(text);
+    const deskKind = plan.desk ?? null;
     if (deskKind) {
       try {
         const desk = await loadDataDesk(deskKind);
-        setMessages((current) => [...current, { role: "copilot", text: t(`desk_${deskKind}_lead`), desk }]);
+        setMessages((current) => [...current, { role: "copilot", trace, text: t(`desk_${deskKind}_lead`), desk }]);
       } catch {
         setMessages((current) => [...current, { role: "copilot", text: t("desk_unavailable") }]);
       }
@@ -210,7 +213,7 @@ export function AIChatCard() {
         knowledge = await searchKnowledge(text);
         if (!knowledge.length) void recordGap(text, turn.response.language, "no_hit");
       }
-      setMessages((current) => [...current, { role: "copilot", text: turn.response.text, response: turn.response, question: text, knowledge }]);
+      setMessages((current) => [...current, { role: "copilot", trace, text: turn.response.text, response: turn.response, question: text, knowledge }]);
     } catch {
       setMessages((current) => [...current, { role: "copilot", text: t("copilot_error") }]);
     }
@@ -287,6 +290,7 @@ export function AIChatCard() {
             {message.careerLaunch && <Link to="/career-lab" className="mt-3 inline-block rounded-lg border border-primary px-3 py-2 text-xs font-bold text-primary">{t("career_chat_open")}</Link>}
             {!inPanel(index) && visuals(message)}
             {message.role === "copilot" && <button type="button" onClick={() => copyMessage(message.text, index)} className="mt-2 inline-flex items-center gap-1 text-[11px] text-muted-foreground opacity-70 hover:opacity-100" aria-label={t("copilot_copy")}>{copied === index ? <Check className="h-3 w-3" /> : <Clipboard className="h-3 w-3" />}{copied === index ? t("copilot_copied") : t("copilot_copy")}</button>}{message.role === "copilot" && canSpeak && <button type="button" onClick={() => speakingIdx === index ? (stopSpeaking(), setSpeakingIdx(null)) : speakMessage(message.text, index)} className="ms-3 mt-2 inline-flex items-center gap-1 text-[11px] text-muted-foreground opacity-70 hover:opacity-100" aria-label={t(speakingIdx === index ? "speak_stop" : "speak_play")}>{speakingIdx === index ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}{t(speakingIdx === index ? "speak_stop" : "speak_play")}</button>}
+            {message.role === "copilot" && message.trace && <ChatTrace steps={message.trace} />}
             {message.fromFile && <p className="mt-2 text-[11px] text-muted-foreground">{t("file_label")}</p>}
             {message.role === "copilot" && message.question && <ChatAlsoAsked question={message.question} answer={message.text} />}
             {message.role === "copilot" && message.question && <ChatRelated question={message.question} onAsk={(q) => void send(q)} />}
