@@ -13,3 +13,8 @@
 - Project: https://github.com/JerBouma/FinanceDatabase
 - License: MIT (verified from the repository's license field)
 - Use: src/data/symbols.json, a trimmed copy (US large and mega cap stocks and US-listed ETFs; name, sector or issuer only; no descriptions, no prices). Rebuild with scripts/build-symbol-db.py. Shown as identity details only.
+
+## World Bank Open Data
+- Service: https://data.worldbank.org , API at api.worldbank.org
+- License: Creative Commons Attribution 4.0 (CC BY 4.0), attribution shown on every card
+- Use: yearly country statistics in chat (inflation, GDP growth, unemployment).

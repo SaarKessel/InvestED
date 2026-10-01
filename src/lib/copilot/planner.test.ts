@@ -32,3 +32,10 @@ describe("fx route", () => {
     expect(planQuestion("what is inflation").route).not.toBe("fx");
   });
 });
+
+describe("wb route", () => {
+  it("routes a country statistic and keeps concept questions out", () => {
+    expect(planQuestion("inflation in Israel").route).toBe("wb");
+    expect(planQuestion("what is inflation").route).not.toBe("wb");
+  });
+});

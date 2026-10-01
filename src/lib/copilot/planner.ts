@@ -3,6 +3,7 @@ import { isCareerLaunchRequest } from "@/lib/career/chatRoute";
 import { resolveToolKeyword } from "./toolKeywords";
 import { looksLikeLearningPathRequest } from "./learnDesk";
 import { resolveSiteIntent } from "./siteCapabilities";
+import { parseWbRequest, type WbRequest } from "./worldBankDesk";
 import { parseFxRequest, type FxRequest } from "./fxDesk";
 import { runMathDesk, type MathDeskResult } from "./mathDesk";
 import { runCalcDesk, type CalcDeskResult } from "./calcDesk";
@@ -10,10 +11,10 @@ import { resolveDataDesk, type DataDeskKind } from "./dataDesk";
 import { TRUST_LABEL } from "@/lib/intelligence/provenance";
 import type { TrustClass } from "@/lib/intelligence/verificationEngine";
 
-export type Route = "tool" | "career" | "learnpath" | "site" | "calc" | "math" | "fx" | "desk" | "copilot";
+export type Route = "tool" | "career" | "learnpath" | "site" | "calc" | "math" | "fx" | "wb" | "desk" | "copilot";
 export interface Bi { en: string; he: string }
 export interface TraceStep { text: Bi; trust?: TrustClass }
-export interface Plan { route: Route; toolPath?: string; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxRequest; desk?: DataDeskKind; trace: TraceStep[] }
+export interface Plan { route: Route; toolPath?: string; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxRequest; wb?: WbRequest; desk?: DataDeskKind; trace: TraceStep[] }
 const b = (en: string, he: string): Bi => ({ en, he });
 
 export function planQuestion(text: string): Plan {
@@ -28,6 +29,11 @@ export function planQuestion(text: string): Plan {
   if (fx) return { route: "fx", fx, trace: [
     { text: b("Recognized a currency conversion.", "זיהיתי בקשה להמרת מטבע.") },
     { text: b("Loaded the European Central Bank daily reference rate and multiplied. It is a daily reference rate, not a live trading quote.", "טענתי את שער היחס היומי של הבנק המרכזי האירופי וכפלתי. זהו שער יחס יומי, לא שער מסחר חי."), trust: "DATA" },
+    { text: b("No model chose or changed any number.", "אף מודל לא בחר או שינה מספר.") }] };
+  const wb = parseWbRequest(text);
+  if (wb) return { route: "wb", wb, trace: [
+    { text: b("Recognized a country statistic.", "זיהיתי בקשה לנתון כלכלי של מדינה.") },
+    { text: b("Loaded the yearly values from World Bank open data and showed each with its year. Yearly data arrives with a delay.", "טענתי את הערכים השנתיים מהנתונים הפתוחים של הבנק העולמי והצגתי כל אחד עם שנתו. נתונים שנתיים מגיעים באיחור."), trust: "DATA" },
     { text: b("No model chose or changed any number.", "אף מודל לא בחר או שינה מספר.") }] };
   const calc = runCalcDesk(text);
   if (calc) return { route: "calc", calc, trace: [
