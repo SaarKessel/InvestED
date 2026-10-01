@@ -1,4 +1,5 @@
-﻿import React, {
+﻿import { replyLanguageFor } from "@/lib/replyLanguage";
+import React, {
   createContext,
   useRef,
   useState
@@ -80,12 +81,12 @@ export function AnalysisProvider({
   const sessionRef = useRef<ConversationSession | null>(null);
   if (!sessionRef.current) sessionRef.current = createConversationSession();
 
-  const runTurn = async (data: string, updateDashboardResult: boolean) => {
-    const turn = await processAIMessage(sessionRef.current!, data, language);
+  const runTurn = async (data: string, updateDashboardResult: boolean, replyLanguage: "he" | "en" = language === "he" ? "he" : "en") => {
+    const turn = await processAIMessage(sessionRef.current!, data, replyLanguage);
     // Facelift phase 1: best-effort rephrase through the AI Gateway. The
     // deterministic answer is the fact source; any gateway failure keeps it.
     if (!turn.clarification && turn.response.text) {
-      const rephrased = await rephraseWithGateway(data, language, turn.response);
+      const rephrased = await rephraseWithGateway(data, replyLanguage, turn.response);
       if (rephrased) turn.response = { ...turn.response, text: rephrased };
     }
     setLastResolution(turn.resolution);
@@ -97,7 +98,7 @@ export function AnalysisProvider({
 
   const askCopilot = async (data: string) => {
     setIsAnalyzing(true);
-    try { return await runTurn(data, false); } finally { setIsAnalyzing(false); }
+    try { return await runTurn(data, false, replyLanguageFor(data, language === "he" ? "he" : "en")); } finally { setIsAnalyzing(false); }
   };
 
   const analyze = async (data:string) => {
