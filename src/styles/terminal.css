@@ -179,3 +179,31 @@
 .terminal-dialog {display:flex;flex-direction:column;overflow:hidden;}
 .terminal-dialog>header,.terminal-dialog>footer,.terminal-command-input,.terminal-command-hint {flex-shrink:0;}
 .terminal-command-list,.terminal-session-options {overflow:auto;min-height:0;}
+.terminal-mobile-bottom,.terminal-nav-scrim {display:none;}
+@media(max-width:767px) {
+ .terminal-shell {height:100dvh;min-height:0;grid-template-rows:56px minmax(0,1fr) auto auto;overflow:hidden;}
+ .terminal-copilot,.terminal-workspace-column {grid-row:2;min-height:0;}
+ .terminal-shell[data-mobile-view="ai"] .terminal-workspace-column,.terminal-shell[data-mobile-view="workspace"] .terminal-copilot {display:none;}
+ .terminal-copilot {border:0;}
+ .terminal-conversation {max-height:none;overflow:auto;padding:16px 12px;}
+ .terminal-workspace-column {overflow:hidden;}
+ .terminal-workspace {overflow:auto;overscroll-behavior:contain;}
+ .terminal-workspace :is(.chat-tool-panel,.terminal-panel) {scroll-margin-top:12px;}
+ .terminal-session [role="tab"] {min-height:44px;}
+ .terminal-tab-close {min-width:44px;}
+ .terminal-mobile-bottom {grid-row:4;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid hsl(var(--border));padding:4px 4px calc(4px + env(safe-area-inset-bottom));background:hsl(var(--terminal-surface));}
+ .terminal-mobile-bottom button {display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;min-height:52px;border-radius:6px;font-size:10px;color:hsl(var(--muted-foreground));}
+ .terminal-mobile-bottom button[aria-current="page"] {color:hsl(var(--primary));background:hsl(var(--primary)/.08);}
+ .terminal-bottom {grid-row:3;}
+ .terminal-system-note {display:none;}
+ .terminal-bottom .ticker-strip {height:28px;}
+ .terminal-navigation.is-open {inset:56px 0 auto;max-height:calc(100dvh - 120px);border-radius:0 0 12px 12px;z-index:70;}
+ .terminal-navigation .terminal-nav-link {min-height:44px;}
+ .terminal-nav-scrim {display:block;position:fixed;inset:56px 0 0;z-index:65;background:rgb(0 0 0/.5);}
+ .terminal-navigation .terminal-nav-caption>button:not(.terminal-mobile-menu) {display:none;}
+ .terminal-conversation [data-workstation] h1 {font-size:22px;}
+ .terminal-conversation .welcome-composer {padding:12px;}
+ .terminal-conversation textarea {font-size:16px;}
+ .terminal-dialog-backdrop {z-index:100;}
+ .terminal-workspace .chat-tool-panel>div:first-child button {min-height:44px;min-width:44px;}
+}
