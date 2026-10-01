@@ -8,7 +8,7 @@ export function calcSteps({ data, money, language }: CalcStepsInput): string[] {
   const mr = (data.returnPct / 12).toFixed(4).replace(/\.?0+$/, "");
   if (language === "he") return [
     `נקודת התחלה: ${money(data.principal)}. הפקדה חודשית: ${money(data.monthly)}. תקופה: ${months} חודשים (${data.years} שנים).`,
-    `תשואה שנתית לדוגמה (הנחת לימוד, לא תחזית): ${data.returnPct}%. בכל חודש משתמשים ב-${mr}% (השנתית חלקי 12).`,
+    `תשואה שנתית לדוגמה (הנחת לימוד, לא תחזית): ${data.returnPct}%. בכל חודש משתמשים ב-\u2066${mr}%\u2069 (השנתית חלקי 12).`,
     `כל חודש: היתרה כפול (1 + התשואה החודשית), ואז מוסיפים את ההפקדה החודשית. חוזרים על זה ${months} פעמים.`,
     `התוצאה אחרי ${months} חודשים: ${money(data.finalBalance)}. סך מה שהפקדתם: ${money(data.contributed)}. הצמיחה היא ההפרש: ${money(data.growth)}.`,
     `שווי ריאלי: התוצאה מחולקת ב-(1 + ${DEFAULT_INFLATION_PCT}%) בחזקת ${data.years}. אינפלציה של ${DEFAULT_INFLATION_PCT}% בשנה היא הנחת לימוד. התוצאה: ${money(data.real)}.`,
