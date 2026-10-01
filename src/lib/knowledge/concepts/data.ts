@@ -1384,5 +1384,16 @@ export const CONCEPT_DATA: ConceptEntry[] = [
   ],
   "explain": "Investment Analyst"
  },
- {"id":"t-bill","en":"T-bill","he":"אג״ח קצרה ממשלתית","aliases":["treasury bill","מק״מ","מקמ","שטר חוב ממשלתי"],"category":"investments","related":["bond","maturity","interest-rate"],"tools":[],"explain":"T-bill"}
+ {"id":"t-bill","en":"T-bill","he":"אג״ח קצרה ממשלתית","aliases":["treasury bill","מק״מ","מקמ","שטר חוב ממשלתי"],"category":"investments","related":["bond","maturity","interest-rate"],"tools":[],"explain":"T-bill"},
+ {"id":"insurance","en":"Insurance","he":"ביטוח","aliases":["insurance", "ביטוח", "ביטוחים"],"category":"personal","related":["risk", "emergency-fund"],"tools":[],"explain":"Insurance"},
+ {"id":"premium","en":"Premium","he":"פרמיה","aliases":["insurance premium", "premium", "פרמיה", "פרמיית ביטוח"],"category":"personal","related":["insurance", "deductible"],"tools":[],"explain":"Premium"},
+ {"id":"deductible","en":"Deductible","he":"השתתפות עצמית","aliases":["deductible", "excess", "השתתפות עצמית"],"category":"personal","related":["insurance", "premium"],"tools":[],"explain":"Deductible"},
+ {"id":"life-insurance","en":"Life insurance","he":"ביטוח חיים","aliases":["life insurance", "ביטוח חיים"],"category":"personal","related":["insurance", "premium", "mortgage"],"tools":[],"explain":"Life insurance"},
+ {"id":"health-insurance","en":"Health insurance","he":"ביטוח בריאות","aliases":["health insurance", "medical insurance", "ביטוח בריאות", "ביטוח רפואי"],"category":"personal","related":["insurance", "premium", "deductible"],"tools":[],"explain":"Health insurance"},
+ {"id":"car-insurance","en":"Car insurance","he":"ביטוח רכב","aliases":["car insurance", "auto insurance", "ביטוח רכב"],"category":"personal","related":["insurance", "premium", "deductible"],"tools":[],"explain":"Car insurance"},
+ {"id":"credit-score","en":"Credit score","he":"דירוג אשראי","aliases":["credit score", "credit rating of a person", "דירוג אשראי", "ציון אשראי"],"category":"personal","related":["interest-rate", "mortgage"],"tools":[],"explain":"Credit score"},
+ {"id":"apr","en":"APR (annual percentage rate)","he":"ריבית שנתית אפקטיבית","aliases":["apr", "annual percentage rate", "effective interest rate", "ריבית אפקטיבית"],"category":"personal","related":["interest-rate", "mortgage", "compound-interest"],"tools":[],"explain":"APR (annual percentage rate)"},
+ {"id":"fixed-vs-variable-rate","en":"Fixed vs variable rate","he":"ריבית קבועה מול משתנה","aliases":["fixed rate", "variable rate", "fixed vs variable", "ריבית קבועה", "ריבית משתנה", "פריים"],"category":"personal","related":["interest-rate", "mortgage", "apr"],"tools":[],"explain":"Fixed vs variable rate"},
+ {"id":"refinancing","en":"Refinancing","he":"מחזור הלוואה","aliases":["refinance", "refinancing", "מחזור", "מחזור משכנתא", "מחזור הלוואה"],"category":"personal","related":["mortgage", "interest-rate", "apr"],"tools":[],"explain":"Refinancing"},
+ {"id":"budget","en":"Budget","he":"תקציב","aliases":["budget", "household budget", "תקציב", "תקציב משק בית"],"category":"personal","related":["emergency-fund", "pension"],"tools":[],"explain":"Budget"}
 ];

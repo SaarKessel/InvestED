@@ -71,3 +71,16 @@ describe("every registry concept has a plain answer in both languages", () => {
     expect(explainFinancialConcept("what is DCF", "en")).toContain("DCF");
   });
 });
+
+describe("insurance, credit and savings concepts", () => {
+  it("resolve in both languages and have stored explanations", () => {
+    for (const [t, id] of [["deductible", "deductible"], ["השתתפות עצמית", "deductible"], ["life insurance", "life-insurance"], ["ביטוח רכב", "car-insurance"], ["credit score", "credit-score"], ["APR", "apr"], ["מחזור משכנתא", "refinancing"], ["תקציב", "budget"]]) {
+      expect(findConcept(t)?.id, t).toBe(id);
+    }
+    for (const id of ["insurance", "premium", "deductible", "life-insurance", "health-insurance", "car-insurance", "credit-score", "apr", "fixed-vs-variable-rate", "refinancing", "budget"]) {
+      const c = getConcept(id)!;
+      expect(conceptAnswerByLabel(c.explain!, "en"), id).toBeTruthy();
+      expect(conceptAnswerByLabel(c.explain!, "he"), id).toBeTruthy();
+    }
+  });
+});
