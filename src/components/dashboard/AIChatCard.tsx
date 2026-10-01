@@ -34,6 +34,8 @@ import { resolveSiteIntent, SITE_CAPABILITIES, type SiteCapability } from "@/lib
 import { ChatDataDesk } from "./ChatDataDesk";
 import { ChatCalcCard } from "./ChatCalcCard";
 import { ChatMathCard } from "./ChatMathCard";
+import { ChatDepth } from "./ChatDepth";
+import { depthSections } from "@/lib/copilot/depth";
 import { ChatAgentTag } from "./ChatAgentTag";
 import { readPickedAgent, routeAgent, savePickedAgent, AGENTS } from "@/lib/agents";
 import { ChatFxCard } from "./ChatFxCard";
@@ -340,6 +342,7 @@ export function AIChatCard() {
             {!inPanel(index) && visuals(message)}
             {message.role === "copilot" && <button type="button" onClick={() => copyMessage(message.text, index)} className="mt-2 inline-flex items-center gap-1 text-[11px] text-muted-foreground opacity-70 hover:opacity-100" aria-label={t("copilot_copy")}>{copied === index ? <Check className="h-3 w-3" /> : <Clipboard className="h-3 w-3" />}{copied === index ? t("copilot_copied") : t("copilot_copy")}</button>}{message.role === "copilot" && canSpeak && <button type="button" onClick={() => speakingIdx === index ? (stopSpeaking(), setSpeakingIdx(null)) : speakMessage(message.text, index)} className="ms-3 mt-2 inline-flex items-center gap-1 text-[11px] text-muted-foreground opacity-70 hover:opacity-100" aria-label={t(speakingIdx === index ? "speak_stop" : "speak_play")}>{speakingIdx === index ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}{t(speakingIdx === index ? "speak_stop" : "speak_play")}</button>}
             {message.deep && <p className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-[#B8862B] dark:text-[#E0B253]">{t("deep_label").replace("{n}", String(message.deep.steps))}</p>}
+            {message.role === "copilot" && level !== "basic" && <ChatDepth sections={depthSections(level, { calc: message.calc, question: message.question })} />}
             {message.role === "copilot" && message.trace && <ChatTrace steps={message.trace} />}
             {message.role === "copilot" && message.question && user && <button type="button" onClick={() => setSaved(toggleSaved(user.id, message.question!, message.text))} aria-pressed={isSaved(saved, message.question, message.text)} className="mt-2 ms-3 inline-flex items-center gap-1 text-[11px] text-muted-foreground opacity-70 hover:opacity-100">{isSaved(saved, message.question, message.text) ? t("saved_done") : t("saved_do")}</button>}
             {message.fromFile && <p className="mt-2 text-[11px] text-muted-foreground">{t("file_label")}</p>}

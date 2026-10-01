@@ -1,11 +1,11 @@
-/** Four tracks of the InvestED pipeline. Only BASIC is live; the others are visible but not selectable yet. */
+/** Four tracks of the InvestED pipeline. All four tracks are selectable. BASIC is the plain answer; deeper tracks chain more fixed passes (see depth.ts). */
 export type Level = "basic" | "junior" | "senior" | "professional";
 export interface LevelTrack { id: Level; available: boolean; /** engine passes: BASIC runs one pass and plain text; deeper tracks will chain more. */ depth: 1 | 2 | 3 | 4 }
 export const LEVELS: LevelTrack[] = [
   { id: "basic", available: true, depth: 1 },
-  { id: "junior", available: false, depth: 2 },
-  { id: "senior", available: false, depth: 3 },
-  { id: "professional", available: false, depth: 4 },
+  { id: "junior", available: true, depth: 2 },
+  { id: "senior", available: true, depth: 3 },
+  { id: "professional", available: true, depth: 4 },
 ];
 export const DEFAULT_LEVEL: Level = "basic";
 const key = (userId: string | null | undefined) => `invested.level.${userId ?? "anon"}`;
