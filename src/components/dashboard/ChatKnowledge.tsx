@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { ThumbsDown, ThumbsUp } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
-import type { KnowledgeItem } from "@/lib/knowledge/knowledge";
+import { isStaleNote, type KnowledgeItem } from "@/lib/knowledge/knowledge";
 import { submitFeedback } from "@/lib/knowledge/knowledgeClient";
 
 /** Stored notes shown verbatim with source and date. Nothing here is generated. */
@@ -18,6 +18,7 @@ export function ChatKnowledge({ items }: { items: KnowledgeItem[] }) {
             {k.source_url ? <a href={k.source_url} target="_blank" rel="noreferrer" className="text-primary hover:underline">{k.source_label}</a> : k.source_label}
             {k.published_at ? ` · ${k.published_at}` : ""}
           </p>
+          {isStaleNote(k.published_at) && <p role="note" className="mt-1 font-semibold text-amber-500">{t("kb_stale")}</p>}
         </div>
       ))}
     </div>

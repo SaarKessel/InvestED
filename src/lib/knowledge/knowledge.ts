@@ -51,3 +51,13 @@ export const FIXED_CHECK_QUESTIONS: string[] = [
   "מה זה דמי ניהול בקרן פנסיה?",
   "מה ריבית בנק ישראל?",
 ];
+
+/** A stored note older than this is shown with a "may be outdated" warning instead of silently. */
+export const STALE_AFTER_DAYS = 90;
+
+export function isStaleNote(publishedAt: string | null, now: Date = new Date()): boolean {
+  if (!publishedAt || !/^\d{4}-\d{2}-\d{2}$/.test(publishedAt)) return false;
+  const published = Date.parse(`${publishedAt}T00:00:00Z`);
+  if (!Number.isFinite(published)) return false;
+  return (now.getTime() - published) / 86_400_000 > STALE_AFTER_DAYS;
+}

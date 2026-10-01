@@ -2008,6 +2008,7 @@
   "copilot_home_title": "What can I help you with?",
   "copilot_home_sub": "Ask anything about markets, money and investing. Numbers come from InvestED+'s engines.",
   "nav_overview": "Overview",
+  "kb_stale": "May be outdated: this note is more than 90 days old. Check the source for the latest figure.",
   "kb_from": "From the InvestED+ knowledge base",
   "kb_rate": "Rate this answer",
   "kb_good": "Helpful",

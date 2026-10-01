@@ -23,3 +23,11 @@ describe("knowledge", () => {
     expect(wantsKnowledgeLookup("asset_analysis")).toBe(false);
   });
 });
+
+import { isStaleNote } from "./knowledge";
+describe("isStaleNote", () => {
+  const now = new Date("2026-10-01T00:00:00Z");
+  it("flags notes older than 90 days", () => { expect(isStaleNote("2026-07-01", now)).toBe(true); });
+  it("keeps recent notes unflagged", () => { expect(isStaleNote("2026-09-01", now)).toBe(false); });
+  it("does not flag when the date is missing or malformed", () => { expect(isStaleNote(null, now)).toBe(false); expect(isStaleNote("soon", now)).toBe(false); });
+});
