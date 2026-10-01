@@ -31,6 +31,7 @@ const PortfolioGamePage = lazy(() => import("@/pages/PortfolioGamePage"));
 const AnalystGamePage = lazy(() => import("@/pages/AnalystGamePage"));
 const OperationsGamePage = lazy(() => import("@/pages/OperationsGamePage"));
 const AccountantGamePage = lazy(() => import("@/pages/AccountantGamePage"));
+const KnowledgePage = lazy(() => import("@/pages/KnowledgePage"));
 const DataControlsPage = lazy(() => import("@/pages/DataControlsPage"));
 
 function PageLoading() {
@@ -79,6 +80,7 @@ export default function App() {
                   </Suspense>
                 }
               />
+              <Route path="/knowledge" element={<Suspense fallback={<PageLoading />}><KnowledgePage /></Suspense>} />
               <Route path="/data-controls" element={<Suspense fallback={<PageLoading />}><DataControlsPage /></Suspense>} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/faq" element={<FaqPage />} />

@@ -15,6 +15,9 @@ import { resolveSiteIntent, SITE_CAPABILITIES, type SiteCapability } from "@/lib
 import { ChatDataDesk } from "./ChatDataDesk";
 import { ChatCalcCard } from "./ChatCalcCard";
 import { ChatLearnPath } from "./ChatLearnPath";
+import { ChatKnowledge, FeedbackButtons } from "./ChatKnowledge";
+import { searchKnowledge, recordGap } from "@/lib/knowledge/knowledgeClient";
+import { wantsKnowledgeLookup, type KnowledgeItem } from "@/lib/knowledge/knowledge";
 import { looksLikeLearningPathRequest } from "@/lib/copilot/learnDesk";
 import { runCalcDesk, type CalcDeskResult } from "@/lib/copilot/calcDesk";
 import { loadDataDesk, resolveDataDesk, type DataDeskResult } from "@/lib/copilot/dataDesk";
@@ -24,7 +27,7 @@ import { appendDictation, getSpeechRecognition, joinTranscript, speechLocale, ty
 import { useAnalysis } from "@/context/useAnalysis";
 import type { CopilotResponse } from "@/lib/copilotResponse";
 
-interface Message { role: "user" | "copilot"; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; learnPath?: boolean; }
+interface Message { role: "user" | "copilot"; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
 
 export function AIChatCard() {
   const { t, language } = useLanguage();
@@ -120,7 +123,12 @@ export function AIChatCard() {
     }
     try {
       const turn = await askCopilot(text);
-      setMessages((current) => [...current, { role: "copilot", text: turn.response.text, response: turn.response }]);
+      let knowledge: KnowledgeItem[] = [];
+      if (wantsKnowledgeLookup(turn.response.intent)) {
+        knowledge = await searchKnowledge(text);
+        if (!knowledge.length) void recordGap(text, turn.response.language, "no_hit");
+      }
+      setMessages((current) => [...current, { role: "copilot", text: turn.response.text, response: turn.response, question: text, knowledge }]);
     } catch {
       setMessages((current) => [...current, { role: "copilot", text: t("copilot_error") }]);
     }
@@ -168,6 +176,7 @@ export function AIChatCard() {
             <p className="whitespace-pre-wrap">{message.text}</p>
             {message.desk && <ChatDataDesk data={message.desk} />}
             {message.calc && <ChatCalcCard data={message.calc} />}
+            {message.knowledge && message.knowledge.length > 0 && <ChatKnowledge items={message.knowledge} />}
             {message.learnPath && <ChatLearnPath />}
             {message.siteCaps && <ChatSiteLaunch capabilities={message.siteCaps} />}
             {message.careerLaunch && <Link to="/career-lab" className="mt-3 inline-block rounded-lg border border-primary px-3 py-2 text-xs font-bold text-primary">{t("career_chat_open")}</Link>}
@@ -180,6 +189,7 @@ export function AIChatCard() {
               ? <ChatComparisonTable assets={response.comparison} />
               : <ChatAssetCards assets={assets} />}
             {message.role === "copilot" && <button type="button" onClick={() => copyMessage(message.text, index)} className="mt-2 inline-flex items-center gap-1 text-[11px] text-muted-foreground opacity-70 hover:opacity-100" aria-label={t("copilot_copy")}>{copied === index ? <Check className="h-3 w-3" /> : <Clipboard className="h-3 w-3" />}{copied === index ? t("copilot_copied") : t("copilot_copy")}</button>}
+            {message.role === "copilot" && message.question && <FeedbackButtons question={message.question} knowledgeIds={(message.knowledge ?? []).map((k) => k.id)} lang={response?.language ?? "en"} />}
             </div>
           </div>;
         })}
