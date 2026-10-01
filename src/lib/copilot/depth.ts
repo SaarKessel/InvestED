@@ -121,7 +121,7 @@ export function assetSections(level: Level, assets: AssetLite[]): DepthSection[]
     const size = m < 1 ? b("small", "קטנה") : m < 3 ? b("moderate", "בינונית") : b("large", "גדולה");
     out.push({ id: "move", trust: "ANALYSIS", title: b("Size of the move", "גודל התנועה"), lines: [
       b(`${a.symbol} changed ${fmt(Number(a.changePercent.toFixed(2)))}% in the latest period. Teaching label: a ${size.en} move (under 1% small, 1% to 3% moderate, over 3% large). These bands are a rule of thumb, not a signal.`,
-        `${a.symbol} השתנה ב-${iso(`${fmt(Number(a.changePercent.toFixed(2)))}%`)} בתקופה האחרונה. תווית לימוד: תנועה ${size.he} (מתחת ל-1% קטנה, 1% עד 3% בינונית, מעל 3% גדולה). הטווחים הם כלל אצבע, לא איתות.`)] });
+        `${a.symbol} השתנה: ${iso(`${fmt(Number(a.changePercent.toFixed(2)))}%`)} בתקופה האחרונה. תווית לימוד: תנועה ${size.he} (מתחת ל-1% קטנה, 1% עד 3% בינונית, מעל 3% גדולה). הטווחים הם כלל אצבע, לא איתות.`)] });
   }
   if (d >= 4) out.push({ id: "assetlimits", trust: "DATA", title: b("Limits of this data", "מגבלות הנתונים"), lines: [
     b("Free feed, possibly delayed, with the date shown on the chart. Indicators describe the past and do not predict. One asset is not a plan, so look at how it fits your whole portfolio.",
