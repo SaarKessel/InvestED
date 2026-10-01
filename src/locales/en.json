@@ -2117,5 +2117,15 @@
   "ticker_preview": "Preview, market closed",
   "ticker_note": "Free Yahoo data, may be delayed up to 15 min. Last quote",
   "related_title": "Related intelligence",
-  "related_try": "Try it:"
+  "related_try": "Try it:",
+  "newspop_title": "Market news",
+  "newspop_dismiss": "Dismiss",
+  "newspop_loading": "Summarizing the headline...",
+  "newspop_nosummary": "No summary available right now. Open the source for the full story.",
+  "newspop_label": "AI summary of the headline - analysis, educational",
+  "newspop_source": "Source",
+  "newspop_off": "Turn off alerts",
+  "newspop_note": "Headline only. Free Yahoo feed, not investment advice. Board and earnings calendars are not in the free data.",
+  "newspop_setting": "Show breaking-news pop-ups while the US market is open",
+  "newspop_setting_note": "Saved on this device only."
 }

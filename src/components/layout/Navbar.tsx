@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Moon, Sun, Globe } from "lucide-react";
 import { Logo } from "./Logo";
 import { TickerStrip } from "./TickerStrip";
+import { NewsPopup } from "./NewsPopup";
 import { Button } from "@/components/ui/primitives";
 import { useTheme } from "@/hooks/useTheme";
 import { useLanguage } from "@/context/languageContext";
@@ -24,6 +25,7 @@ export function Navbar() {
         </div>
       </div>
       <TickerStrip />
+      <NewsPopup />
     </header>
   );
 }
