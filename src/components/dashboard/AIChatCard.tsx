@@ -34,6 +34,8 @@ import { resolveSiteIntent, SITE_CAPABILITIES, type SiteCapability } from "@/lib
 import { ChatDataDesk } from "./ChatDataDesk";
 import { ChatCalcCard } from "./ChatCalcCard";
 import { ChatMathCard } from "./ChatMathCard";
+import { ChatAgentTag } from "./ChatAgentTag";
+import { readPickedAgent, routeAgent, savePickedAgent, AGENTS } from "@/lib/agents";
 import { ChatFxCard } from "./ChatFxCard";
 import { loadFx, type FxResult } from "@/lib/copilot/fxDesk";
 import { type MathDeskResult } from "@/lib/copilot/mathDesk";
@@ -51,7 +53,7 @@ import { appendDictation, getSpeechRecognition, joinTranscript, speechLocale, ty
 import { useAnalysis } from "@/context/useAnalysis";
 import type { CopilotResponse } from "@/lib/copilotResponse";
 
-interface Message { deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxResult | null; fxFailed?: boolean; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
+interface Message { agent?: { id: string | null; switchTo?: string }; deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxResult | null; fxFailed?: boolean; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
 
 export function AIChatCard() {
   const { t, language } = useLanguage();
@@ -90,6 +92,9 @@ export function AIChatCard() {
     if (!prepared) { setFileNote(t("file_too_big")); return; }
     setFileNote(null); setPendingFile(prepared);
   }
+  const [pickedAgent, setPickedAgent] = useState<string | null>(() => readPickedAgent(user?.id));
+  useEffect(() => { setPickedAgent(readPickedAgent(user?.id)); }, [user?.id]);
+  const pickAgent = (id: string | null) => { setPickedAgent(id); savePickedAgent(user?.id, id); };
   const [level, setLevel] = useState<Level>(() => readLevel(user?.id));
   useEffect(() => { setLevel(readLevel(user?.id)); }, [user?.id]);
   const changeLevel = (l: Level) => { if (saveLevel(user?.id, l)) setLevel(l); };
@@ -189,7 +194,7 @@ export function AIChatCard() {
       setMessages((current) => [...current, { role: "copilot", text: reply ?? t("file_failed"), fromFile: reply !== null }]);
       return;
     }
-    setMessages((current) => [...current, { role: "user", text }]);
+    { const r = routeAgent(text, pickedAgent); setMessages((current) => [...current, { role: "user", text, agent: { id: r.agentId, switchTo: r.suggestSwitchTo } }]); }
     if (isDeepRequest(text)) {
       const lang = /[א-ת]/.test(text) ? "he" : "en";
       const q = stripTrigger(text);
@@ -315,7 +320,7 @@ export function AIChatCard() {
       {user && <ChatSidebar open={historyOpen} onClose={() => setHistoryOpen(false)} onNew={clearConversation}
         conversations={conversations} onOpenConversation={(id) => void openConversation(id)} onDeleteConversation={(id) => void removeConversation(id)}
         saved={saved} onAskSaved={(q) => void send(q)} onRemoveSaved={(id) => setSaved(removeSaved(user.id, id))}
-        modes={modes} onMode={(prompt) => setQuestion(prompt)} />}
+        modes={modes} onMode={(prompt) => setQuestion(prompt)} agents={AGENTS} pickedAgent={pickedAgent} onPickAgent={pickAgent} />}
       {started && (
         <div className="mb-2 flex justify-end">
           <button type="button" onClick={clearConversation} className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"><RotateCcw className="h-3.5 w-3.5" aria-hidden="true" /><span>{t("copilot_clear")}</span></button>
@@ -328,6 +333,7 @@ export function AIChatCard() {
           return <div key={index} className={message.role === "user" ? "ms-auto w-fit max-w-[85%] rounded-3xl bg-[hsl(221_83%_44%)] px-4 py-2.5 text-sm leading-6 text-white [&_p]:text-white" : "group flex gap-3 text-sm leading-7"}>
             {message.role === "copilot" && <img src="/copilot-avatar.png" alt="" width="36" height="36" className="mt-0.5 h-9 w-9 shrink-0 rounded-xl object-cover ring-1 ring-amber-400/30" />}
             <div className="min-w-0 flex-1">
+            {message.role === "copilot" && (() => { const prev = messages.slice(0, index).reverse().find((m) => m.role === "user"); return prev?.agent ? <ChatAgentTag agentId={prev.agent.id} switchTo={prev.agent.switchTo} onSwitch={pickAgent} /> : null; })()}
             {message.role === "copilot" && message.response ? <ChatLinkedText text={message.text} onAsk={(q) => void send(q)} /> : <p dir={/[א-ת]/.test(message.text) ? "rtl" : "ltr"} className="whitespace-pre-wrap">{message.text}</p>}
             {message.siteCaps && <ChatSiteLaunch capabilities={message.siteCaps} />}
             {message.careerLaunch && <Link to="/career-lab" className="mt-3 inline-block rounded-lg border border-primary px-3 py-2 text-xs font-bold text-primary">{t("career_chat_open")}</Link>}

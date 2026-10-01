@@ -2,6 +2,7 @@ import { createPortal } from "react-dom";
 import { Bookmark, MessageSquarePlus, Trash2, X } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
 import type { ChatConversation } from "@/lib/copilot/chatHistory";
+import { type AgentDef } from "@/lib/agents";
 import type { SavedAnswer } from "@/lib/copilot/savedAnswers";
 
 export interface SidebarMode { id: string; label: string; prompt: string }
@@ -10,6 +11,7 @@ interface Props {
   conversations: ChatConversation[]; onOpenConversation: (id: string) => void; onDeleteConversation: (id: string) => void;
   saved: SavedAnswer[]; onAskSaved: (question: string) => void; onRemoveSaved: (id: string) => void;
   modes: SidebarMode[]; onMode: (prompt: string) => void;
+  agents: AgentDef[]; pickedAgent: string | null; onPickAgent: (id: string | null) => void;
 }
 const head = "px-3 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground";
 /** Optional drawer on the physical left in both languages. Closed by default. Conversations, Saved and starter modes only. */
@@ -26,6 +28,11 @@ export function ChatSidebar(p: Props) {
         </div>
         <div className="flex-1 overflow-y-auto pb-6 [scrollbar-width:thin]" dir={language === "he" ? "rtl" : "ltr"}>
           <button type="button" onClick={() => { p.onNew(); p.onClose(); }} className="mx-3 flex w-[calc(100%-1.5rem)] items-center gap-2 rounded-xl border border-border px-3 py-2 text-sm font-medium hover:bg-muted"><MessageSquarePlus className="h-4 w-4" aria-hidden="true" />{t("copilot_clear")}</button>
+          <p className={head}>{language === "he" ? "סוכנים (ברירות מחדל)" : "Agents (defaults)"}</p>
+          <ul className="px-2">
+            <li><button type="button" aria-pressed={p.pickedAgent === null} onClick={() => p.onPickAgent(null)} className={`flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-start text-sm hover:bg-muted ${p.pickedAgent === null ? "bg-muted font-semibold" : ""}`}><span className="h-2.5 w-2.5 rounded-full bg-muted-foreground/50" aria-hidden="true" />{language === "he" ? "אוטומטי לפי נושא" : "Automatic by topic"}</button></li>
+            {p.agents.map((a) => <li key={a.id}><button type="button" aria-pressed={p.pickedAgent === a.id} onClick={() => p.onPickAgent(a.id)} className={`flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-start text-sm hover:bg-muted ${p.pickedAgent === a.id ? "bg-muted font-semibold" : ""}`}><span className="h-2.5 w-2.5 rounded-full" style={{ background: `hsl(${a.color})` }} aria-hidden="true" />{a.name[language === "he" ? "he" : "en"]}</button></li>)}
+          </ul>
           <p className={head}>{t("sidebar_modes")}</p>
           <ul className="px-2">{p.modes.map((m) => <li key={m.id}><button type="button" onClick={() => { p.onMode(m.prompt); p.onClose(); }} className="w-full truncate rounded-lg px-2 py-1.5 text-start text-sm hover:bg-muted">{m.label}</button></li>)}</ul>
           <p className={head}>{t("sidebar_saved")}</p>
