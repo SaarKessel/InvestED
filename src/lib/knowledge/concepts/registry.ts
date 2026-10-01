@@ -67,3 +67,13 @@ export function relatedConcepts(id: string, limit = 5): ConceptEntry[] {
 }
 
 export function conceptName(c: ConceptEntry, language: "he" | "en"): string { return language === "he" ? c.he : c.en; }
+
+export interface RelatedChip { id: string; label: string; ask: string; }
+/** Related-intelligence chips for a question: neighbours that already have an answer, phrased in the question's language. */
+export function relatedChips(question: string, limit = 4): RelatedChip[] {
+  const he = /[א-ת]/.test(question);
+  const first = findConceptsInText(question, 1)[0];
+  if (!first) return [];
+  return relatedConcepts(first.id, 8).filter((c) => c.explain).slice(0, limit)
+    .map((c) => ({ id: c.id, label: he ? c.he : c.en, ask: he ? `מה זה ${c.he}?` : `What is ${c.en}?` }));
+}

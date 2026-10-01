@@ -2076,5 +2076,6 @@
   "panel_title": "גרפים והסברים",
   "panel_chart_title": "3 חודשים אחרונים",
   "panel_chart_unavailable": "אין כרגע נתוני גרף",
-  "tool_opening": "פותחת כאן את {tool}."
+  "tool_opening": "פותחת כאן את {tool}.",
+  "related_title": "מושגים קשורים"
 }

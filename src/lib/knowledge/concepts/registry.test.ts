@@ -36,3 +36,18 @@ describe("concept registry", () => {
     expect(relatedConcepts("nope")).toEqual([]);
   });
 });
+
+import { relatedChips } from "./registry";
+describe("related chips", () => {
+  it("English question gives English chips that have answers", () => {
+    const chips = relatedChips("What is diversification?");
+    expect(chips.length).toBeGreaterThan(0);
+    for (const c of chips) { expect(c.ask).toMatch(/^What is /); expect(getConcept(c.id)?.explain).toBeTruthy(); }
+  });
+  it("Hebrew question gives Hebrew chips", () => {
+    const chips = relatedChips("מה זה פיזור?");
+    expect(chips.length).toBeGreaterThan(0);
+    for (const c of chips) expect(c.ask).toMatch(/^מה זה /);
+  });
+  it("no concept, no chips", () => expect(relatedChips("hello there")).toEqual([]));
+});
