@@ -29,3 +29,11 @@ export function getProvider(id: string | null | undefined): AIProvider {
   const p = id ? PROVIDERS[id as ProviderId] : undefined;
   return p?.available ? p : id === undefined || id === null ? PROVIDERS[DEFAULT_PROVIDER] : ruleBasedProvider;
 }
+
+import { verifyNumbers } from "../intelligence/verificationEngine";
+/** Second line of defence after the server check: a reworded answer is accepted only when every number in it already appears in the deterministic answer, its facts or the question. */
+export function acceptRephrase(rephrased: string | null, question: string, response: CopilotResponse): string | null {
+  if (!rephrased) return null;
+  const { ok } = verifyNumbers(rephrased, [response.text, JSON.stringify(response), question]);
+  return ok ? rephrased : null;
+}

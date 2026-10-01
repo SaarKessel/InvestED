@@ -15,3 +15,11 @@ describe("AIProvider", () => {
     expect(await PROVIDERS["rule-based"].rephrase("q", "en", {} as never)).toBeNull();
   });
 });
+
+import { acceptRephrase } from "./provider";
+describe("acceptRephrase", () => {
+  const resp = { text: "VOO is at 512.30, up 1.2%.", assets: [{ price: 512.3 }] } as never;
+  it("keeps a rewording whose numbers all come from the deterministic answer", () => { expect(acceptRephrase("VOO sits near 512.30 and rose 1.2%.", "VOO?", resp)).toBe("VOO sits near 512.30 and rose 1.2%."); });
+  it("rejects a rewording that adds a number", () => { expect(acceptRephrase("VOO is 512.30, up 1.2%, target 600.", "VOO?", resp)).toBeNull(); });
+  it("passes null through", () => { expect(acceptRephrase(null, "q", resp)).toBeNull(); });
+});
