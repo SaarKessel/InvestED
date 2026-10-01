@@ -84,3 +84,16 @@ describe("insurance, credit and savings concepts", () => {
     }
   });
 });
+
+describe("more finance topics", () => {
+  it("resolve and have stored explanations in both languages", () => {
+    for (const [q, id] of [["net worth", "net-worth"], ["כרטיס אשראי", "credit-card"], ["משיכת יתר", "overdraft"], ["stop loss", "stop-loss"], ["מיתון", "recession"], ["GDP", "gdp"], ["investment scam", "investment-scam"], ["קצבה", "annuity"]]) {
+      expect(findConcept(q)?.id, q).toBe(id);
+    }
+    for (const id of ["net-worth", "credit-card", "overdraft", "stop-loss", "recession", "gdp", "investment-scam", "annuity"]) {
+      const c = getConcept(id)!;
+      expect(conceptAnswerByLabel(c.explain!, "en"), id).toBeTruthy();
+      expect(conceptAnswerByLabel(c.explain!, "he"), id).toBeTruthy();
+    }
+  });
+});
