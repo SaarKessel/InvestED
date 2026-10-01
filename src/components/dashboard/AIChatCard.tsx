@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { isCareerLaunchRequest } from "@/lib/career/chatRoute";
-import { Check, Clipboard, History, Loader2, LogOut, Mic, Square, RotateCcw, Send, Trash2 } from "lucide-react";
+import { Check, Clipboard, History, Loader2, LogOut, Mic, Square, RotateCcw, Send, Trash2, Volume2, VolumeX } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
 import { ChatAssetCards } from "./ChatAssetCards";
 import { ChatCalculationCard } from "./ChatCalculationCard";
@@ -31,6 +31,7 @@ import { runCalcDesk, type CalcDeskResult } from "@/lib/copilot/calcDesk";
 import { loadDataDesk, resolveDataDesk, type DataDeskResult } from "@/lib/copilot/dataDesk";
 import { ChatStrategyCard } from "./ChatStrategyCard";
 import { ChatStrategyFitCard } from "./ChatStrategyFitCard";
+import { speak, stopSpeaking, unlockSpeech, getSynth, type SpeakResult } from "@/lib/copilot/speechOutput";
 import { appendDictation, getSpeechRecognition, joinTranscript, speechLocale, type SpeechRecognitionLike } from "@/lib/copilot/voiceInput";
 import { useAnalysis } from "@/context/useAnalysis";
 import type { CopilotResponse } from "@/lib/copilotResponse";
@@ -56,6 +57,19 @@ export function AIChatCard() {
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const [listening, setListening] = useState(false);
   const [voiceError, setVoiceError] = useState(false);
+  const [talk, setTalk] = useState(false);
+  const [speakingIdx, setSpeakingIdx] = useState<number | null>(null);
+  const [speechNote, setSpeechNote] = useState<SpeakResult | null>(null);
+  const talkRef = useRef(false); talkRef.current = talk;
+  const canSpeak = !!getSynth();
+  function speakMessage(text: string, index: number | null) {
+    const r = speak(text, () => { setSpeakingIdx(null); if (talkRef.current && SpeechCtor) window.setTimeout(() => { if (talkRef.current) toggleVoiceRef.current?.(); }, 350); });
+    setSpeechNote(r === "started" ? null : r); setSpeakingIdx(r === "started" ? index : null);
+  }
+  const toggleVoiceRef = useRef<(() => void) | null>(null);
+  const sendRef = useRef<((raw: string) => Promise<void>) | null>(null);
+  function toggleTalk() { if (talk) { setTalk(false); stopSpeaking(); setSpeakingIdx(null); recognitionRef.current?.stop(); } else { unlockSpeech(); setTalk(true); if (SpeechCtor && !listening) window.setTimeout(() => toggleVoiceRef.current?.(), 0); } }
+  useEffect(() => () => stopSpeaking(), []);
   useEffect(() => () => recognitionRef.current?.stop(), []);
   function toggleVoice() {
     if (!SpeechCtor) return;
@@ -63,7 +77,7 @@ export function AIChatCard() {
     const rec = new SpeechCtor();
     rec.lang = speechLocale(language); rec.interimResults = false; rec.continuous = false;
     const before = question;
-    rec.onresult = (event) => setQuestion(appendDictation(before, joinTranscript(event.results)));
+    rec.onresult = (event) => { const said = appendDictation(before, joinTranscript(event.results)); setQuestion(said); if (talkRef.current && said.trim()) { setQuestion(""); void sendRef.current?.(said); } };
     rec.onerror = () => { setVoiceError(true); setListening(false); };
     rec.onend = () => setListening(false);
     setVoiceError(false); recognitionRef.current = rec;
@@ -152,6 +166,9 @@ export function AIChatCard() {
     }
   }
 
+  sendRef.current = send; toggleVoiceRef.current = toggleVoice;
+  useEffect(() => { const last = messages[messages.length - 1]; if (talk && last?.role === "copilot" && last.text) speakMessage(last.text, messages.length - 1); // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [messages.length]);
   function clearConversation() { reset(); setMessages([]); setQuestion(""); conversationId.current = null; savedCount.current = 0; }
   async function copyMessage(text: string, index: number) { await navigator.clipboard.writeText(text); setCopied(index); window.setTimeout(() => setCopied(null), 1500); }
 
@@ -219,7 +236,7 @@ export function AIChatCard() {
             {message.siteCaps && <ChatSiteLaunch capabilities={message.siteCaps} />}
             {message.careerLaunch && <Link to="/career-lab" className="mt-3 inline-block rounded-lg border border-primary px-3 py-2 text-xs font-bold text-primary">{t("career_chat_open")}</Link>}
             {!inPanel(index) && visuals(message)}
-            {message.role === "copilot" && <button type="button" onClick={() => copyMessage(message.text, index)} className="mt-2 inline-flex items-center gap-1 text-[11px] text-muted-foreground opacity-70 hover:opacity-100" aria-label={t("copilot_copy")}>{copied === index ? <Check className="h-3 w-3" /> : <Clipboard className="h-3 w-3" />}{copied === index ? t("copilot_copied") : t("copilot_copy")}</button>}
+            {message.role === "copilot" && <button type="button" onClick={() => copyMessage(message.text, index)} className="mt-2 inline-flex items-center gap-1 text-[11px] text-muted-foreground opacity-70 hover:opacity-100" aria-label={t("copilot_copy")}>{copied === index ? <Check className="h-3 w-3" /> : <Clipboard className="h-3 w-3" />}{copied === index ? t("copilot_copied") : t("copilot_copy")}</button>}{message.role === "copilot" && canSpeak && <button type="button" onClick={() => speakingIdx === index ? (stopSpeaking(), setSpeakingIdx(null)) : speakMessage(message.text, index)} className="ms-3 mt-2 inline-flex items-center gap-1 text-[11px] text-muted-foreground opacity-70 hover:opacity-100" aria-label={t(speakingIdx === index ? "speak_stop" : "speak_play")}>{speakingIdx === index ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}{t(speakingIdx === index ? "speak_stop" : "speak_play")}</button>}
             {message.role === "copilot" && message.question && <ChatRelated question={message.question} onAsk={(q) => void send(q)} />}
             {message.role === "copilot" && message.question && <FeedbackButtons question={message.question} knowledgeIds={(message.knowledge ?? []).map((k) => k.id)} lang={response?.language ?? "en"} />}
             </div>
@@ -233,6 +250,7 @@ export function AIChatCard() {
         <form onSubmit={submit} className="welcome-composer flex items-end gap-2 rounded-[1.75rem] border border-border/60 bg-muted/50 p-2.5">
           <ChatToolMenu />
           <textarea rows={1} style={{ scrollbarWidth: "none" }} aria-label={t("copilot_input")} value={question} onChange={(event) => setQuestion(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} placeholder={t("copilot_placeholder")} className="max-h-40 min-h-11 min-w-0 flex-1 resize-none bg-transparent px-3 py-2.5 text-sm outline-none" />
+          {canSpeak && SpeechCtor && <button type="button" onClick={toggleTalk} aria-pressed={talk} aria-label={t(talk ? "talk_stop" : "talk_start")} title={t(talk ? "talk_stop" : "talk_start")} className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${talk ? "bg-primary text-primary-foreground" : "text-primary hover:bg-primary/10"}`}><Volume2 className="h-5 w-5" /></button>}
           {SpeechCtor && <button type="button" onClick={toggleVoice} aria-pressed={listening} aria-label={t(listening ? "voice_stop" : "voice_start")} title={t(listening ? "voice_stop" : "voice_start")} className={`inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${listening ? "animate-pulse bg-primary text-primary-foreground" : "text-primary hover:bg-primary/10"}`}>{listening ? <Square className="h-4 w-4" /> : <Mic className="h-5 w-5" />}</button>}
           <button type="submit" disabled={!question.trim() || isAnalyzing} aria-label={t("copilot_send")} className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground disabled:opacity-40">{isAnalyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4 rtl:-scale-x-100" />}</button>
         </form>
@@ -241,7 +259,7 @@ export function AIChatCard() {
             {["copilot_sugg_1","copilot_sugg_2","copilot_sugg_3","copilot_sugg_4"].map((key) => <li key={key}><button type="button" onClick={() => void send(t(key))} className="welcome-chip rounded-full border border-border/70 px-4 py-2 text-sm text-foreground">{t(key)}</button></li>)}
           </ul>
         )}
-        <p className="mt-3 text-center text-[11px] text-muted-foreground" aria-live="polite">{voiceError ? t("voice_error") : listening ? t("voice_listening") : t("copilot_disclaimer_short")}</p>
+        <p className="mt-3 text-center text-[11px] text-muted-foreground" aria-live="polite">{speechNote === "no_voice" ? t("speak_no_voice") : speechNote === "unsupported" ? t("speak_unsupported") : voiceError ? t("voice_error") : listening ? t("voice_listening") : t("copilot_disclaimer_short")}</p>
         <p className="mt-1 text-center text-[10px] leading-4 text-muted-foreground/80">{t("legal_line_credit")} {t("legal_line_liability")}</p>
       </div>}
     </div>
