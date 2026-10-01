@@ -12,6 +12,8 @@ import { useAuth } from "@/context/useAuth";
 import { createConversation, deleteConversation, listConversations, loadMessages, saveMessage, type ChatConversation } from "@/lib/copilot/chatHistory";
 import { ChatSiteLaunch } from "./ChatSiteLaunch";
 import { ChatCockpit } from "./ChatCockpit";
+import { ChatChartCard } from "./ChatChartCard";
+import { ChatCompareChart } from "./ChatCompareChart";
 import { ChatToolPanel } from "./ChatToolPanel";
 import { ChatToolMenu } from "./ChatToolMenu";
 import { toolForPath } from "./chatTools";
@@ -314,6 +316,7 @@ export function AIChatCard() {
     const response = message.response;
     const assets = response?.assets ?? [];
     return (<>
+            {!wide && assets.length > 0 && <div className="mt-3 space-y-3">{assets.length >= 2 && <ChatCompareChart symbols={[assets[0].symbol, assets[1].symbol]} />}{assets.slice(0, 2).map((a) => <ChatChartCard key={a.symbol} symbol={a.symbol} />)}</div>}
             {message.desk && <ChatDataDesk data={message.desk} />}
             {message.calc && <ChatCalcCard data={message.calc} />}
             {message.symbol && <ChatSymbolCard info={message.symbol} onAsk={(q) => void send(q)} />}
