@@ -94,7 +94,7 @@ function scaled(raw: string | undefined | null, unit?: string | null): number | 
 
 function currencyOf(raw: string | undefined | null): QACurrency | null {
   if (!raw) return null;
-  if (/שקל|ש["״']?ח|₪|\bils\b|\bnis\b/i.test(raw)) return "ILS";
+  if (/שקל|ש["״']?ח|₪|\bils\b|\bnis\b|shekels?/i.test(raw)) return "ILS";
   if (/דולר|\$|\busd\b|dollars?/i.test(raw)) return "USD";
   if (/יורו|€|\beur\b|euros?/i.test(raw)) return "EUR";
   if (/פאונד|£|\bgbp\b|pounds?/i.test(raw)) return "GBP";
@@ -169,7 +169,9 @@ function planHolding(message: string, memory: QAMemory): HoldingRequest | null {
   return null;
 }
 
-function holdingPlan(request: HoldingRequest, lang: QALanguage): QAPlan {
+function holdingPlan(request: HoldingRequest, lang: QALanguage, message = ""): QAPlan {
+  const asked = message.match(/(?:\bin\b|\binto\b|ב-?|ל-?)\s*(Israeli\s+shekels?|shekels?|שקלים|שקל|ש["״']?ח|₪|ILS|NIS|dollars?|דולרים|דולר|USD|euros?|יורו|EUR|pounds?|פאונד|GBP)\s*[?.!]*\s*$/i);
+  const targetCcy = asked ? currencyOf(asked[1]) : null;
   return {
     kind: "holding_valuation",
     async execute(load) {
@@ -192,9 +194,25 @@ function holdingPlan(request: HoldingRequest, lang: QALanguage): QAPlan {
       }
       const ccy = valuation.currency ?? "";
       const stale = asset?.freshness === "stale";
+      let converted = "";
+      if (targetCcy && valuation.currency && targetCcy !== valuation.currency) {
+        const pair = fxSymbolFor(valuation.currency, targetCcy);
+        const fxAsset = pair?.symbol ? await load(pair.symbol) : null;
+        const realFx = !!fxAsset && !fxAsset.isMock && fxAsset.freshness !== "simulated" && fxAsset.price > 0;
+        if (pair && realFx) {
+          const value = pair.divide ? valuation.total / fxAsset!.price : valuation.total * fxAsset!.price;
+          converted = lang === "he"
+            ? ` בשער ${pair.symbol} (${fmt(fxAsset!.price, lang)}) זה כ-${fmt(value, lang)} ${targetCcy}.`
+            : ` At the ${pair.symbol} rate (${fmt(fxAsset!.price, lang)}) that is about ${fmt(value, lang)} ${targetCcy}.`;
+        } else {
+          converted = lang === "he"
+            ? ` ביקשת את הערך ב-${targetCcy}, אבל שער חליפין אמיתי אינו זמין כרגע, ולכן הערך מוצג רק ב-${ccy}.`
+            : ` You asked for ${targetCcy}, but a real exchange rate is unavailable right now, so the value is shown only in ${ccy}.`;
+        }
+      }
       const text = lang === "he"
-        ? `${fmt(valuation.quantity, lang)} מניות ${valuation.symbol} × ${fmt(valuation.price, lang)} ${ccy} = ${fmt(valuation.total, lang)} ${ccy}. זהו שווי שוק נקודתי לפני עמלות ומסים. ${marketNote(lang, stale)} ${EDU.he}`
-        : `${fmt(valuation.quantity, lang)} ${valuation.symbol} shares × ${fmt(valuation.price, lang)} ${ccy} = ${fmt(valuation.total, lang)} ${ccy}. This is a point-in-time market valuation before fees and taxes. ${marketNote(lang, stale)} ${EDU.en}`;
+        ? `${fmt(valuation.quantity, lang)} מניות ${valuation.symbol} × ${fmt(valuation.price, lang)} ${ccy} = ${fmt(valuation.total, lang)} ${ccy}. זהו שווי שוק נקודתי לפני עמלות ומסים.${converted} ${marketNote(lang, stale)} ${EDU.he}`
+        : `${fmt(valuation.quantity, lang)} ${valuation.symbol} shares × ${fmt(valuation.price, lang)} ${ccy} = ${fmt(valuation.total, lang)} ${ccy}. This is a point-in-time market valuation before fees and taxes.${converted} ${marketNote(lang, stale)} ${EDU.en}`;
       return outcome("holding_valuation", text, {
         holdingValuation: valuation,
         assets: asset ? [asset] : [],
@@ -884,7 +902,7 @@ export function planFinancialQA(message: string, lang: QALanguage, memory: QAMem
   const holding = planHolding(message, memory);
   if (holding) {
     if (holding.symbol) memory.holding = holding;
-    return holdingPlan(holding, lang);
+    return holdingPlan(holding, lang, message);
   }
 
   const fx = planFx(message, memory);
