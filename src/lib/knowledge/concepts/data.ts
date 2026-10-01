@@ -1004,7 +1004,7 @@ export const CONCEPT_DATA: ConceptEntry[] = [
    "alpha"
   ],
   "tools": [],
-  "explain": null
+  "explain": "Sharpe Ratio"
  },
  {
   "id": "sortino-ratio",
@@ -1019,7 +1019,7 @@ export const CONCEPT_DATA: ConceptEntry[] = [
    "drawdown"
   ],
   "tools": [],
-  "explain": null
+  "explain": "Sortino Ratio"
  },
  {
   "id": "alpha",
@@ -1035,7 +1035,7 @@ export const CONCEPT_DATA: ConceptEntry[] = [
    "sharpe-ratio"
   ],
   "tools": [],
-  "explain": null
+  "explain": "Alpha"
  },
  {
   "id": "correlation",
@@ -1050,7 +1050,7 @@ export const CONCEPT_DATA: ConceptEntry[] = [
    "beta"
   ],
   "tools": [],
-  "explain": null
+  "explain": "Correlation"
  },
  {
   "id": "benchmark",
@@ -1066,7 +1066,7 @@ export const CONCEPT_DATA: ConceptEntry[] = [
    "sp-500"
   ],
   "tools": [],
-  "explain": null
+  "explain": "Benchmark"
  },
  {
   "id": "portfolio-optimization",
@@ -1084,7 +1084,7 @@ export const CONCEPT_DATA: ConceptEntry[] = [
    "asset-allocation"
   ],
   "tools": [],
-  "explain": null
+  "explain": "Portfolio Optimization"
  },
  {
   "id": "capm",
@@ -1101,7 +1101,7 @@ export const CONCEPT_DATA: ConceptEntry[] = [
    "discount-rate"
   ],
   "tools": [],
-  "explain": null
+  "explain": "CAPM"
  },
  {
   "id": "valuation",
@@ -1119,7 +1119,7 @@ export const CONCEPT_DATA: ConceptEntry[] = [
    "ev-ebitda"
   ],
   "tools": [],
-  "explain": null
+  "explain": "Valuation"
  },
  {
   "id": "dcf",
@@ -1136,7 +1136,7 @@ export const CONCEPT_DATA: ConceptEntry[] = [
    "discount-rate"
   ],
   "tools": [],
-  "explain": null
+  "explain": "DCF"
  },
  {
   "id": "ev-ebitda",
@@ -1152,7 +1152,7 @@ export const CONCEPT_DATA: ConceptEntry[] = [
    "p-e-ratio"
   ],
   "tools": [],
-  "explain": null
+  "explain": "EV/EBITDA"
  },
  {
   "id": "discount-rate",
@@ -1167,7 +1167,7 @@ export const CONCEPT_DATA: ConceptEntry[] = [
    "interest-rate"
   ],
   "tools": [],
-  "explain": null
+  "explain": "Discount Rate"
  },
  {
   "id": "duration",
@@ -1184,7 +1184,7 @@ export const CONCEPT_DATA: ConceptEntry[] = [
    "interest-rate"
   ],
   "tools": [],
-  "explain": null
+  "explain": "Duration"
  },
  {
   "id": "yield",
@@ -1201,7 +1201,7 @@ export const CONCEPT_DATA: ConceptEntry[] = [
    "coupon"
   ],
   "tools": [],
-  "explain": null
+  "explain": "Yield"
  },
  {
   "id": "aml",
@@ -1217,7 +1217,7 @@ export const CONCEPT_DATA: ConceptEntry[] = [
    "compliance"
   ],
   "tools": [],
-  "explain": null
+  "explain": "AML"
  },
  {
   "id": "kyc",
@@ -1232,7 +1232,7 @@ export const CONCEPT_DATA: ConceptEntry[] = [
    "suitability"
   ],
   "tools": [],
-  "explain": null
+  "explain": "KYC"
  },
  {
   "id": "suitability",
@@ -1247,7 +1247,7 @@ export const CONCEPT_DATA: ConceptEntry[] = [
    "risk-tolerance"
   ],
   "tools": [],
-  "explain": null
+  "explain": "Suitability"
  },
  {
   "id": "conflict-of-interest",
@@ -1262,7 +1262,7 @@ export const CONCEPT_DATA: ConceptEntry[] = [
    "compliance"
   ],
   "tools": [],
-  "explain": null
+  "explain": "Conflict of Interest"
  },
  {
   "id": "market-abuse",
@@ -1278,7 +1278,7 @@ export const CONCEPT_DATA: ConceptEntry[] = [
    "compliance"
   ],
   "tools": [],
-  "explain": null
+  "explain": "Market Abuse"
  },
  {
   "id": "compliance",
@@ -1295,7 +1295,7 @@ export const CONCEPT_DATA: ConceptEntry[] = [
    "market-abuse"
   ],
   "tools": [],
-  "explain": null
+  "explain": "Compliance"
  },
  {
   "id": "fundamental-analysis",
@@ -1311,7 +1311,7 @@ export const CONCEPT_DATA: ConceptEntry[] = [
    "p-e-ratio"
   ],
   "tools": [],
-  "explain": null
+  "explain": "Fundamental Analysis"
  },
  {
   "id": "technical-analysis",
@@ -1327,7 +1327,7 @@ export const CONCEPT_DATA: ConceptEntry[] = [
    "volatility"
   ],
   "tools": [],
-  "explain": null
+  "explain": "Technical Analysis"
  },
  {
   "id": "financial-statements",
@@ -1345,7 +1345,7 @@ export const CONCEPT_DATA: ConceptEntry[] = [
    "valuation"
   ],
   "tools": [],
-  "explain": null
+  "explain": "Financial Statements"
  },
  {
   "id": "portfolio-manager",
@@ -1363,7 +1363,7 @@ export const CONCEPT_DATA: ConceptEntry[] = [
   "tools": [
    "/career-lab"
   ],
-  "explain": null
+  "explain": "Portfolio Manager"
  },
  {
   "id": "investment-analyst",
@@ -1382,7 +1382,7 @@ export const CONCEPT_DATA: ConceptEntry[] = [
   "tools": [
    "/career-lab"
   ],
-  "explain": null
+  "explain": "Investment Analyst"
  },
  {"id":"t-bill","en":"T-bill","he":"אג״ח קצרה ממשלתית","aliases":["treasury bill","מק״מ","מקמ","שטר חוב ממשלתי"],"category":"investments","related":["bond","maturity","interest-rate"],"tools":[],"explain":"T-bill"}
 ];

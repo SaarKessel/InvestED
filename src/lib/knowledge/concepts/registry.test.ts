@@ -51,3 +51,23 @@ describe("related chips", () => {
   });
   it("no concept, no chips", () => expect(relatedChips("hello there")).toEqual([]));
 });
+
+import { explainFinancialConcept } from "@/lib/financialEducation";
+describe("every registry concept has a plain answer in both languages", () => {
+  it("answers exist, carry no digits and use short sentences", () => {
+    for (const c of allConcepts()) {
+      for (const lang of ["en", "he"] as const) {
+        const text = conceptAnswerByLabel(c.explain!, lang);
+        expect(text, `${c.id} ${lang}`).toBeTruthy();
+        if (["sharpe-ratio","sortino-ratio","alpha","correlation","benchmark","portfolio-optimization","capm","valuation","dcf","ev-ebitda","discount-rate","duration","yield","aml","kyc","suitability","conflict-of-interest","market-abuse","compliance","fundamental-analysis","technical-analysis","financial-statements","portfolio-manager","investment-analyst"].includes(c.id)) {
+          expect(text!.replace(/S&P 500/g, ""), `${c.id} ${lang} digits`).not.toMatch(/\d/);
+          for (const sentence of text!.split(/[.!?]\s+/)) expect(sentence.split(/\s+/).length, `${c.id} ${lang}: ${sentence}`).toBeLessThanOrEqual(32);
+        }
+      }
+    }
+  });
+  it("the question path reaches the new answers", () => {
+    expect(explainFinancialConcept("מה זה יחס שארפ?", "he")).toContain("שארפ");
+    expect(explainFinancialConcept("what is DCF", "en")).toContain("DCF");
+  });
+});

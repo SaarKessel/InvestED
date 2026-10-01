@@ -27,7 +27,9 @@ interface ConceptEntry {
   en: string;
 }
 
-const CONCEPTS: ConceptEntry[] = [
+import { EXTRA_CONCEPTS } from "./conceptExplanations";
+
+const BASE_CONCEPTS: ConceptEntry[] = [
   {
     patterns: [/קרן\s+נאמנות/i, /mutual\s+fund/i],
     heLabel: "קרן נאמנות",
@@ -570,6 +572,8 @@ const CONCEPTS: ConceptEntry[] = [
     en: "Risk in investing is the chance that the result is different from what you expected, including a loss. There are a few kinds: falling market prices, inflation, interest-rate changes, betting on too few assets, and trouble selling. Spreading your money and a long time horizon reduce risk but do not remove it. Higher possible return usually comes with higher risk.",
   },
 ];
+
+const CONCEPTS: ConceptEntry[] = [...BASE_CONCEPTS, ...EXTRA_CONCEPTS];
 
 
 
