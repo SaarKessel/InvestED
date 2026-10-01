@@ -11,6 +11,7 @@ import { ChatAuthGate } from "./ChatAuthGate";
 import { useAuth } from "@/context/useAuth";
 import { createConversation, deleteConversation, listConversations, loadMessages, saveMessage, type ChatConversation } from "@/lib/copilot/chatHistory";
 import { ChatSiteLaunch } from "./ChatSiteLaunch";
+import { ChatCockpit } from "./ChatCockpit";
 import { ChatToolPanel } from "./ChatToolPanel";
 import { ChatToolMenu } from "./ChatToolMenu";
 import { toolForPath } from "./chatTools";
@@ -344,6 +345,7 @@ export function AIChatCard() {
           <h1 className="mt-6 text-3xl font-semibold tracking-tight sm:text-4xl">{t(user || authLoading ? "copilot_home_title" : "gate_welcome")}</h1>
         </div>
       )}
+      {!started && user && <ChatCockpit saved={saved} onAsk={(q) => void send(q)} />}
       {user && (
         <div className="mb-2 flex items-center justify-between gap-2">
           <button type="button" onClick={() => void toggleHistory()} aria-expanded={historyOpen} className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"><History className="h-3.5 w-3.5" aria-hidden="true" />{t("history_open")}</button>

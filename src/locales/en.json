@@ -2148,5 +2148,18 @@
   "deep_label": "Deep research - {n} topics - educational, from stored knowledge",
   "mode_deep": "Deep research",
   "mode_deep_prompt": "Deep research: ",
-  "deep_missing": "No stored explanation yet for:"
+  "deep_missing": "No stored explanation yet for:",
+  "cockpit_title": "Your cockpit",
+  "cockpit_market": "Market movers",
+  "cockpit_market_off": "Market data is unavailable right now.",
+  "cockpit_loading": "Loading...",
+  "cockpit_market_note": "Read-only. Yahoo Finance, about 15 minutes delayed during market hours.",
+  "cockpit_learning": "Learning",
+  "cockpit_learned": "{n} lessons completed so far.",
+  "cockpit_learned_none": "No lessons completed yet.",
+  "cockpit_learn_prompt": "What should I learn first about investing?",
+  "cockpit_learn_cta": "Suggest next step",
+  "cockpit_saved": "Saved answers",
+  "cockpit_saved_none": "Nothing saved yet. Save an answer to find it here.",
+  "cockpit_agents": "Agents"
 }

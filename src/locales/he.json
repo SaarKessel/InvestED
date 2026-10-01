@@ -2148,5 +2148,18 @@
   "deep_label": "מחקר מעמיק - {n} נושאים - לימודי, מתוך ידע שמור",
   "mode_deep": "מחקר מעמיק",
   "mode_deep_prompt": "מחקר מעמיק: ",
-  "deep_missing": "עדיין אין הסבר שמור עבור:"
+  "deep_missing": "עדיין אין הסבר שמור עבור:",
+  "cockpit_title": "לוח הבקרה שלך",
+  "cockpit_market": "תנועות בשוק",
+  "cockpit_market_off": "נתוני שוק אינם זמינים כרגע.",
+  "cockpit_loading": "טוען...",
+  "cockpit_market_note": "לקריאה בלבד. Yahoo Finance, בעיכוב של כ-15 דקות בשעות המסחר.",
+  "cockpit_learning": "למידה",
+  "cockpit_learned": "הושלמו {n} שיעורים עד כה.",
+  "cockpit_learned_none": "עדיין לא הושלמו שיעורים.",
+  "cockpit_learn_prompt": "מה כדאי ללמוד קודם על השקעות?",
+  "cockpit_learn_cta": "הצע צעד הבא",
+  "cockpit_saved": "תשובות שמורות",
+  "cockpit_saved_none": "עוד לא נשמר דבר. שמרו תשובה כדי למצוא אותה כאן.",
+  "cockpit_agents": "סוכנים"
 }
