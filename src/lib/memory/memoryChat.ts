@@ -4,7 +4,7 @@ import type { MemoryCommand } from "./memoryCommands";
 const T = {
   en: {
     off: "Memory is off, so I saved nothing. Turn it on in the sidebar under Memory, then say it again.",
-    saved: (v: string) => `Saved this note: "${v}". It is stored only for you. Notes are not used to change answers yet. You can export or delete them in the sidebar under Memory.`,
+    saved: (v: string) => `Saved this note: "${v}". It is stored only for you. When a later question matches a note, I show it under the answer. You can export or delete them in the sidebar under Memory.`,
     none: "I have no notes saved.",
     head: (n: number) => `Your saved notes (${n}):`,
     forget: "To delete everything, use Memory, then Delete all my memory, in the sidebar. I do not delete data from a chat message.",
@@ -13,7 +13,7 @@ const T = {
   },
   he: {
     off: "הזיכרון כבוי, לכן לא שמרתי כלום. אפשר להפעיל אותו בסרגל הצד תחת זיכרון ואז לומר שוב.",
-    saved: (v: string) => `שמרתי הערה: "${v}". היא נשמרת רק עבורך. ההערות עדיין לא משנות תשובות. אפשר לייצא או למחוק אותן בסרגל הצד תחת זיכרון.`,
+    saved: (v: string) => `שמרתי הערה: "${v}". היא נשמרת רק עבורך. כששאלה מאוחרת תתאים להערה, אציג אותה מתחת לתשובה. אפשר לייצא או למחוק אותן בסרגל הצד תחת זיכרון.`,
     none: "אין לי הערות שמורות.",
     head: (n: number) => `ההערות השמורות שלך (${n}):`,
     forget: "כדי למחוק הכול: בסרגל הצד, זיכרון, ואז מחיקת כל הזיכרון שלי. אני לא מוחקת נתונים מהודעה בצ'אט.",

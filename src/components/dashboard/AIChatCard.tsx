@@ -32,6 +32,7 @@ import { critique } from "@/lib/intelligence/critique";
 import { describePlan, decompose } from "@/lib/copilot/decompose";
 import { recordTrace } from "@/lib/intelligence/traceStore";
 import { isDeepRequest, runDeepResearch, stepsForLevel, stripTrigger } from "@/lib/copilot/deepResearch";
+import { relevantNotes, recallLine } from "@/lib/memory/noteRecall";
 import { defaultMemoryApi } from "@/lib/memory/memoryApi";
 import { downloadText, printHtml, toCsv, toPrintHtml } from "@/lib/copilot/exportChat";
 import { briefHeader, conceptOfTheDay, isDailyBrief } from "@/lib/copilot/dailyBrief";
@@ -272,8 +273,19 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
       }
     }
     await answerOne(text);
+    await recallNotes(text);
   }
   /** Records route and timing for every answer (deep research records its own, with its self-check). Only a hash of the question is kept. */
+  /** Consent-gated: shows saved notes that match the question, verbatim, after the answer. */
+  async function recallNotes(text: string) {
+    if (!memoryApi) return;
+    try {
+      const data = await memoryApi.exportMemory();
+      if (!data.consent) return;
+      const hit = relevantNotes(text, data.items.filter((i) => i.kind === "note").map((i) => String(i.value)));
+      if (hit.length) setMessages((current) => [...current, { role: "copilot", text: recallLine(hit, language === "he" ? "he" : "en") }]);
+    } catch { /* memory unavailable: say nothing */ }
+  }
   async function answerOne(text: string) {
     if (isDeepRequest(text)) return answerCore(text);
     const plan = planQuestion(text);
