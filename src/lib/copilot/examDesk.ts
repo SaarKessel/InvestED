@@ -1,8 +1,11 @@
 /** Conversational exam: asks a question from the stored quiz bank, grades a reply of 1-3 deterministically. No model involved. */
 import type { QuizQuestion } from "../quizBank";
 
-export interface ExamState { next: number; current: QuizQuestion | null; asked: number; right: number }
-export const newExamState = (): ExamState => ({ next: 0, current: null, asked: 0, right: 0 });
+/** missed: ids of questions answered wrong and not yet answered right. since: fresh questions asked since the last review question. */
+export interface ExamState { next: number; current: QuizQuestion | null; asked: number; right: number; missed: string[]; since: number }
+export const newExamState = (missed: string[] = []): ExamState => ({ next: 0, current: null, asked: 0, right: 0, missed, since: 0 });
+/** A missed question comes back after this many fresh ones. */
+export const REVIEW_AFTER = 2;
 
 const START = /^\s*(?:quiz me|test me|give me a quiz|exam mode|start (?:a )?quiz|next question)\s*[.!?]*\s*$/i;
 const START_HE = /^\s*(?:בחן אותי|בחני אותי|תבחן אותי|תבחני אותי|חידון|מבחן|שאלה הבאה)\s*[.!?]*\s*$/;
@@ -17,11 +20,13 @@ export function parseExamAnswer(text: string, optionCount: number): number | nul
 }
 
 export function askNext(state: ExamState, bank: QuizQuestion[], lang: "en" | "he"): { state: ExamState; text: string } {
-  const q = bank[state.next % bank.length];
-  const head = lang === "he" ? `שאלה ${state.asked + 1}:` : `Question ${state.asked + 1}:`;
+  const due = state.since >= REVIEW_AFTER ? bank.find((b) => state.missed.includes(b.id)) : undefined;
+  const q = due ?? bank[state.next % bank.length];
+  const label = due ? (lang === "he" ? "חזרה על שאלה שפספסתם. " : "Back to one you missed. ") : "";
+  const head = `${label}${lang === "he" ? `שאלה ${state.asked + 1}:` : `Question ${state.asked + 1}:`}`;
   const tail = lang === "he" ? "ענו במספר האפשרות (1, 2 או 3)." : "Reply with the option number (1, 2 or 3).";
   const opts = q.options.map((o, i) => `${i + 1}. ${o}`).join("\n");
-  return { state: { ...state, current: q, next: state.next + 1 }, text: `${head} ${q.question}\n${opts}\n${tail}` };
+  return { state: { ...state, current: q, next: due ? state.next : state.next + 1, since: due ? 0 : state.since + 1 }, text: `${head} ${q.question}\n${opts}\n${tail}` };
 }
 
 export function gradeAnswer(state: ExamState, pick: number, lang: "en" | "he"): { state: ExamState; text: string } {
@@ -31,5 +36,7 @@ export function gradeAnswer(state: ExamState, pick: number, lang: "en" | "he"): 
   const verdict = ok ? (lang === "he" ? "נכון." : "Correct.") : lang === "he" ? `לא מדויק. התשובה הנכונה: ${q.correctIndex + 1}. ${q.options[q.correctIndex]}` : `Not quite. The correct answer is ${q.correctIndex + 1}. ${q.options[q.correctIndex]}`;
   const score = lang === "he" ? `ניקוד: ${right} מתוך ${asked}.` : `Score: ${right} of ${asked}.`;
   const more = lang === "he" ? 'כתבו "שאלה הבאה" להמשך.' : 'Say "next question" to continue.';
-  return { state: { ...state, current: null, asked, right }, text: `${verdict}\n${q.explanation}\n${score} ${more}` };
+  const missed = ok ? state.missed.filter((id) => id !== q.id) : state.missed.includes(q.id) ? state.missed : [...state.missed, q.id];
+  const back = ok ? "" : lang === "he" ? "\nאחזור לשאלה הזו בהמשך." : "\nI will bring this one back later.";
+  return { state: { ...state, current: null, asked, right, missed }, text: `${verdict}\n${q.explanation}${back}\n${score} ${more}` };
 }

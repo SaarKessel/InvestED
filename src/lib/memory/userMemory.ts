@@ -43,3 +43,15 @@ export async function deleteAllMemory(userId: string, db: Db = getSupabase()): P
   if (b.error) throw b.error;
   await setConsent(false, userId, db);
 }
+
+/** Quiz ids the user answered wrong. Reads return nothing when consent is off; writes go through remember(), which refuses without consent. */
+export async function missedQuizIds(db: Db = getSupabase()): Promise<string[]> {
+  if (!(await getConsent(db))) return [];
+  const { data, error } = await db.from("user_memory").select("key").eq("kind", "quiz_missed").limit(200);
+  if (error) throw error;
+  return (data ?? []).map((r: { key: string }) => r.key);
+}
+export async function clearMissedQuiz(id: string, db: Db = getSupabase()): Promise<void> {
+  const { error } = await db.from("user_memory").delete().eq("kind", "quiz_missed").eq("key", id.slice(0, 80));
+  if (error) throw error;
+}

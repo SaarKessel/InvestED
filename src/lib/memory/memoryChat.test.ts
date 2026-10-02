@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from "vitest";
 import { runMemoryCommand } from "./memoryChat";
 import type { MemoryApi } from "./memoryApi";
 
-const api = (over: Partial<MemoryApi> = {}): MemoryApi => ({ getConsent: vi.fn(), setConsent: vi.fn(), deleteAll: vi.fn(), remember: vi.fn().mockResolvedValue(true), exportMemory: vi.fn().mockResolvedValue({ exportedAt: "x", consent: true, items: [{ kind: "note", key: "n1", value: "flat", source: "chat", updated_at: "x" }], savedAnswers: [] }), ...over });
+const api = (over: Partial<MemoryApi> = {}): MemoryApi => ({ getConsent: vi.fn(), setConsent: vi.fn(), deleteAll: vi.fn(), remember: vi.fn().mockResolvedValue(true), missedQuiz: vi.fn().mockResolvedValue([]), noteMissedQuiz: vi.fn().mockResolvedValue(true), clearMissedQuiz: vi.fn().mockResolvedValue(undefined), exportMemory: vi.fn().mockResolvedValue({ exportedAt: "x", consent: true, items: [{ kind: "note", key: "n1", value: "flat", source: "chat", updated_at: "x" }], savedAnswers: [] }), ...over });
 
 describe("runMemoryCommand", () => {
   it("saves a note when consent is on", async () => {

@@ -252,8 +252,10 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
     { const r = routeAgent(text, pickedAgent); setMessages((current) => [...current, { role: "user", text, agent: { id: r.agentId, switchTo: r.suggestSwitchTo } }]); }
     if (isDailyBrief(text)) { const d = new Date(), lang3 = language === "he" ? "he" : "en"; setMessages((current) => [...current, { role: "copilot", text: briefHeader(d, lang3) }]); await send(conceptOfTheDay(d, lang3).ask); await send(lang3 === "he" ? "מובילי השוק" : "market movers"); const a = askNext(examRef.current, buildQuizBank(t), lang3); examRef.current = a.state; setMessages((current) => [...current, { role: "copilot", text: a.text }]); return; }
     { const ex = examRef.current; const pick = ex.current ? parseExamAnswer(text, ex.current.options.length) : null; const lang2 = language === "he" ? "he" : "en";
-      if (ex.current && pick !== null) { const g = gradeAnswer(ex, pick, lang2); examRef.current = g.state; setMessages((current) => [...current, { role: "copilot", text: g.text }]); return; }
-      if (isExamStart(text)) { const a = askNext(ex, buildQuizBank(t), lang2); examRef.current = a.state; setMessages((current) => [...current, { role: "copilot", text: a.text }]); return; } }
+      if (ex.current && pick !== null) { const qid = ex.current.id, was = ex.missed.includes(qid); const g = gradeAnswer(ex, pick, lang2); examRef.current = g.state; setMessages((current) => [...current, { role: "copilot", text: g.text }]);
+        const nowMissed = g.state.missed.includes(qid); if (nowMissed && !was) void memoryApi?.noteMissedQuiz(qid).catch(() => {}); if (!nowMissed && was) void memoryApi?.clearMissedQuiz(qid).catch(() => {}); return; }
+      if (isExamStart(text)) { if (ex.asked === 0 && !ex.current && memoryApi) { const old = await memoryApi.missedQuiz().catch(() => [] as string[]); const known = new Set(buildQuizBank(t).map((b) => b.id)); examRef.current = { ...examRef.current, missed: old.filter((id) => known.has(id)) }; }
+        const a = askNext(examRef.current, buildQuizBank(t), lang2); examRef.current = a.state; setMessages((current) => [...current, { role: "copilot", text: a.text }]); return; } }
     { const mc = parseMemoryCommand(text); if (mc) { const reply = await runMemoryCommand(mc, memoryApi, language === "he" ? "he" : "en"); setMessages((current) => [...current, { role: "copilot", text: reply }]); return; } }
     await dispatch(text);
   }
