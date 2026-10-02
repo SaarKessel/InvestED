@@ -30,12 +30,15 @@ export function unknownLinks(draft: string, sources: string[]): string[] {
 export const FRESH_LIMIT_DAYS: Record<DataState, number | null> = { live: 4, cached: 4, fallback: 4, static: null, calculated: null, synthetic: null };
 export interface Audit { issues: string[]; stale: boolean }
 /** Provenance integrity for one tool result: a source named, data states that claim real data carry a date, and that date is not older than the limit. */
+/** Tools whose data is published on a slower rhythm than daily. 13F: due 45 days after quarter end, so the newest report is at most about 135 days old. */
+export const TOOL_FRESH_LIMIT_DAYS: Partial<Record<string, number>> = { filings: 140 };
+
 export function auditResult(r: ToolResult, now: number = Date.now()): Audit {
   const issues: string[] = [];
   const p = r.provenance;
   if (!p?.source?.en || !p.source.he) issues.push("source missing in one language");
   let stale = false;
-  const limit = FRESH_LIMIT_DAYS[p.state];
+  const limit = FRESH_LIMIT_DAYS[p.state] === null ? null : (TOOL_FRESH_LIMIT_DAYS[r.toolId] ?? FRESH_LIMIT_DAYS[p.state]);
   if (limit !== null) {
     const t = p.asOf ? Date.parse(p.asOf) : NaN;
     if (Number.isNaN(t)) issues.push("real-data state without a date");

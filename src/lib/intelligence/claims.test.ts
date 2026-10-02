@@ -54,3 +54,15 @@ describe("data check line", () => {
     expect(bad.he.replace(/\d|-/g, "")).not.toMatch(/[A-Za-z]{3,}/);
   });
 });
+
+describe("per-tool freshness limit", () => {
+  const mk = (toolId: string, asOf: string) => ({ toolId, value: {}, trust: "DATA", provenance: { source: { en: "SEC", he: "SEC" }, asOf, state: "live" } }) as never;
+  const now = Date.parse("2026-10-02T12:00:00Z");
+  it("a quarterly 13F report from 94 days ago is fresh, but a daily-data tool with the same age is stale", () => {
+    expect(auditResult(mk("filings", "2026-06-30"), now).issues).toEqual([]);
+    expect(auditResult(mk("fx", "2026-06-30"), now).stale).toBe(true);
+  });
+  it("a 13F report older than 140 days is stale", () => {
+    expect(auditResult(mk("filings", "2026-05-01"), now).stale).toBe(true);
+  });
+});
