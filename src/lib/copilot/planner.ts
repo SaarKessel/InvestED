@@ -7,6 +7,7 @@ import { parseMarketEventRequest } from "@/lib/simulator/marketEvents";
 import type { MarketEventInput } from "@/lib/simulator/marketEvents";
 import { runScenario, type ScenarioPart } from "./scenarioDesk";
 import { parseWbRequest, type WbRequest } from "./worldBankDesk";
+import { parseOosRequest, type OosRequest } from "./oosDesk";
 import { parseMacroRequest, type MacroRequest } from "./macroDesk";
 import { parseEtfRequest, type EtfRequest } from "./etfDesk";
 import { parseFilingsRequest, type FilingsRequest } from "./filingsDesk";
@@ -20,10 +21,10 @@ import { TRUST_LABEL } from "@/lib/intelligence/provenance";
 import type { TrustClass } from "@/lib/intelligence/verificationEngine";
 import type { ToolId } from "@/lib/intelligence/tools";
 
-export type Route = "tool" | "career" | "learnpath" | "site" | "calc" | "math" | "fx" | "wb" | "macro" | "filings" | "etf" | "scenario" | "marketsim" | "ledger" | "desk" | "copilot";
+export type Route = "tool" | "career" | "learnpath" | "site" | "calc" | "math" | "fx" | "wb" | "macro" | "filings" | "etf" | "scenario" | "marketsim" | "ledger" | "oos" | "desk" | "copilot";
 export interface Bi { en: string; he: string }
 export interface TraceStep { text: Bi; trust?: TrustClass }
-export interface Plan { /** registry tool ids this route runs, in order */ tools: ToolId[]; route: Route; toolPath?: string; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxRequest; wb?: WbRequest; macro?: MacroRequest; filings?: FilingsRequest; etf?: EtfRequest; ledger?: LedgerRequest; scenario?: ScenarioPart[]; marketsim?: MarketEventInput; desk?: DataDeskKind; trace: TraceStep[] }
+export interface Plan { /** registry tool ids this route runs, in order */ tools: ToolId[]; route: Route; toolPath?: string; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxRequest; wb?: WbRequest; macro?: MacroRequest; filings?: FilingsRequest; etf?: EtfRequest; ledger?: LedgerRequest; oos?: OosRequest; scenario?: ScenarioPart[]; marketsim?: MarketEventInput; desk?: DataDeskKind; trace: TraceStep[] }
 const b = (en: string, he: string): Bi => ({ en, he });
 
 export function planQuestion(text: string): Plan {
@@ -63,6 +64,11 @@ export function planQuestion(text: string): Plan {
   if (scenario) return { tools: ["scenario"], route: "scenario", scenario, trace: [
     { text: b("Found several calculations in one question and split them into parts.", "מצאתי בשאלה כמה חישובים וחילקתי אותם לחלקים.") },
     { text: b("Ran each part through the fixed calculator, loan formula or math parser, in order. A part that cannot be read safely is named and not guessed.", "הרצתי כל חלק במחשבון הקבוע, בנוסחת ההלוואה או במנתח החשבון, לפי הסדר. חלק שאי אפשר לקרוא בבטחה מסומן ולא מנוחש."), trust: "CALCULATION" },
+    { text: b("No model chose or changed any number.", "אף מודל לא בחר או שינה מספר.") }] };
+  const oos = parseOosRequest(text);
+  if (oos) return { tools: ["oos"], route: "oos", oos, trace: [
+    { text: b("Recognized an out-of-sample portfolio check.", "זיהיתי בקשה לבדיקת תיק מחוץ למדגם.") },
+    { text: b("Loaded real daily closes, learned the weights on the first 70% only, and judged them on the last 30% next to equal weight and SPY. Educational simulation, not advice.", "טענתי מחירי סגירה יומיים אמיתיים, למדתי את המשקלים מ-70% הראשונים בלבד ובדקתי אותם על 30% האחרונים לצד משקל שווה ו-SPY. סימולציה לימודית, לא ייעוץ."), trust: "SIMULATION" },
     { text: b("No model chose or changed any number.", "אף מודל לא בחר או שינה מספר.") }] };
   const macro = parseMacroRequest(text);
   if (macro) return { tools: ["macro"], route: "macro", macro, trace: [

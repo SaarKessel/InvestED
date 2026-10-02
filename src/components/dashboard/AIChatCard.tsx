@@ -70,6 +70,7 @@ import { type WbResult } from "@/lib/copilot/worldBankDesk";
 import { type MacroResult } from "@/lib/copilot/macroDesk";
 import { type EtfResult } from "@/lib/copilot/etfDesk";
 import type { LedgerResult } from "@/lib/predictions/ledgerDesk";
+import type { OosDeskResult } from "@/lib/copilot/oosDesk";
 import { type FilingsResult } from "@/lib/copilot/filingsDesk";
 import { type FxResult } from "@/lib/copilot/fxDesk";
 import { type MathDeskResult } from "@/lib/copilot/mathDesk";
@@ -89,7 +90,7 @@ import type { CopilotResponse } from "@/lib/copilotResponse";
 
 /** Minimum BM25 score for a retrieved passage to be shown; weaker matches are noise. */
 const MIN_RETRIEVE_SCORE = 3;
-interface Message { ledger?: LedgerResult | null; retrieved?: Passage[]; prov?: Provenance; agent?: { id: string | null; switchTo?: string }; deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxResult | null; fxFailed?: boolean; symbol?: SymbolInfo; wb?: WbResult | null; filings?: FilingsResult | null; etf?: EtfResult | null; macro?: MacroResult | null; scenario?: ScenarioPart[]; marketsim?: MarketEventResult; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
+interface Message { ledger?: LedgerResult | null; oos?: OosDeskResult | null; retrieved?: Passage[]; prov?: Provenance; agent?: { id: string | null; switchTo?: string }; deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxResult | null; fxFailed?: boolean; symbol?: SymbolInfo; wb?: WbResult | null; filings?: FilingsResult | null; etf?: EtfResult | null; macro?: MacroResult | null; scenario?: ScenarioPart[]; marketsim?: MarketEventResult; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
 
 export function AIChatCard({ workstation = false }: { workstation?: boolean } = {}) {
   const { t, language } = useLanguage();
@@ -448,6 +449,13 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
       const filings = flOut.ok ? flOut.result.value : null;
       const he = /[א-ת]/.test(text);
       setMessages((current) => [...current, { role: "copilot", trace: flOut.ok ? [...trace, { text: dataCheckLine(flOut.result), trust: "ANALYSIS" as const }] : trace, text: filings ? (he ? "הנה ההחזקות כפי שדווחו ל-SEC:" : "Here are the holdings as reported to the SEC:") : (he ? "לא הצלחתי לטעון עכשיו את הדוח מ-SEC, ולכן לא מציגה כלום. נסו שוב בעוד רגע." : "I could not load that filing from the SEC right now, so I am not showing anything. Try again in a moment."), filings, prov: flOut.ok ? flOut.result.provenance : undefined }]);
+      return;
+    }
+    if (plan.oos) {
+      const oosOut = await runTool<OosDeskResult>(plan.tools[0], plan.oos, { agentId: pickedAgent });
+      const oos = oosOut.ok ? oosOut.result.value : null;
+      const he = /[א-ת]/.test(text);
+      setMessages((current) => [...current, { role: "copilot", trace, text: oos ? (he ? "סימולציה לימודית, לא ייעוץ. כך נראית הבדיקה מחוץ למדגם:" : "Educational simulation, not advice. Here is the out-of-sample check:") : (he ? "לא הצלחתי להריץ את הבדיקה עכשיו. נסו שוב בעוד רגע." : "I could not run the check right now. Try again in a moment."), oos, prov: oosOut.ok ? oosOut.result.provenance : undefined }]);
       return;
     }
     if (plan.macro) {

@@ -3,6 +3,7 @@
  * returns a ToolResult (value + trust + provenance). The orchestrator and the chat call tools only
  * through runTool, which also enforces the per-agent allow-list.
  */
+import { loadOos, type OosDeskResult, type OosRequest } from "../copilot/oosDesk";
 import { loadMacro, type MacroRequest, type MacroResult } from "../copilot/macroDesk";
 import { agentMayUse } from "@/lib/agents";
 import { loadFx, type FxRequest, type FxResult } from "@/lib/copilot/fxDesk";
@@ -22,7 +23,7 @@ import { runLedger, type LedgerResult } from "@/lib/predictions/ledgerDesk";
 import type { LedgerRequest } from "@/lib/predictions/ledger";
 import type { TrustClass } from "./verificationEngine";
 
-export type ToolId = "calc" | "math" | "fx" | "wb" | "macro" | "filings" | "etf" | "symbol" | "scenario" | "risk" | "rssnews" | "marketsim" | "ledger";
+export type ToolId = "calc" | "math" | "fx" | "wb" | "macro" | "filings" | "etf" | "symbol" | "scenario" | "risk" | "rssnews" | "marketsim" | "ledger" | "oos";
 export type Domain = "finance" | "market" | "knowledge" | "news";
 export interface ToolSpec { id: ToolId; domain: Domain; title: Bi; trust: TrustClass; network: boolean }
 export type ToolOutcome<T = unknown> = { ok: true; result: ToolResult<T> } | { ok: false; reason: "denied" | "unavailable" | "unknown_tool" };
@@ -41,6 +42,7 @@ export const TOOL_SPECS: Record<ToolId, ToolSpec> = {
   etf: { id: "etf", domain: "market", title: b("ETF holdings (SEC N-PORT)", "החזקות קרן סל (SEC N-PORT)"), trust: "DATA", network: true },
   risk: { id: "risk", domain: "market", title: b("Risk metrics", "מדדי סיכון"), trust: "CALCULATION", network: true },
   ledger: { id: "ledger", domain: "finance", title: b("Prediction ledger and calibration", "רשומת תחזיות וכיול"), trust: "DATA", network: true },
+  oos: { id: "oos", domain: "market", title: b("Out-of-sample portfolio check", "בדיקת תיק מחוץ למדגם"), trust: "SIMULATION", network: true },
   marketsim: { id: "marketsim", domain: "finance", title: b("Market event simulator (invented)", "סימולטור אירועי שוק (מומצא)"), trust: "SIMULATION", network: false },
   rssnews: { id: "rssnews", domain: "news", title: b("Public RSS headlines", "כותרות מ-RSS ציבורי"), trust: "DATA", network: true },
   symbol: { id: "symbol", domain: "knowledge", title: b("Symbol lookup", "חיפוש סימול"), trust: "KNOWLEDGE", network: false },
@@ -86,6 +88,11 @@ const ADAPTERS: Record<ToolId, Adapter> = {
     const v: LedgerResult = await runLedger(req);
     return wrap("ledger", v, { source: b("Your saved calls, settled against Yahoo Finance daily closes", "התחזיות השמורות שלכם, נסגרות מול מחירי סגירה יומיים של Yahoo Finance"), asOf: v.today, state: "live",
       note: b("Educational simulation, not advice. Closes exclude dividends. A call stays open until a completed close on or after its due date exists.", "סימולציה לימודית, לא ייעוץ. מחירי הסגירה ללא דיבידנדים. תחזית נשארת פתוחה עד שיש סגירה שהושלמה בתאריך היעד או אחריו.") });
+  }) as Adapter,
+  oos: (async (req: OosRequest) => {
+    const v: OosDeskResult = await loadOos(req);
+    return wrap("oos", v, { source: b("Yahoo Finance daily closes via the site's market-quote server", "מחירי סגירה יומיים של Yahoo Finance דרך שרת הנתונים של האתר"), asOf: v.outcome.ok ? v.outcome.result.to : undefined, state: "calculated",
+      note: b("Educational simulation, not advice. Weights are learned on the first 70% of real history only and judged on the last 30%. Price returns, no dividends or costs.", "סימולציה לימודית, לא ייעוץ. המשקלים נלמדים רק מ-70% הראשונים של ההיסטוריה האמיתית ונבדקים על 30% האחרונים. תשואות מחיר, בלי דיבידנדים ועלויות.") });
   }) as Adapter,
   rssnews: (async () => {
     const v: RssNewsResult | null = await fetchRssNews();

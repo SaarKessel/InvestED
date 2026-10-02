@@ -18,6 +18,7 @@ import { ChatFxCard } from "./ChatFxCard";
 import { ChatProvenance } from "./ChatProvenance";
 import { ChatMathCard } from "./ChatMathCard";
 import { ChatLedgerCard } from "./ChatLedgerCard";
+import { ChatOosCard } from "./ChatOosCard";
 
 type Props<K> = { data: NonNullable<K> };
 
@@ -35,6 +36,7 @@ export interface ResultCardHost {
   prov?: Provenance;
   math?: React.ComponentProps<typeof ChatMathCard>["data"];
   ledger?: React.ComponentProps<typeof ChatLedgerCard>["data"] | null;
+  oos?: React.ComponentProps<typeof ChatOosCard>["data"] | null;
 }
 
 
@@ -55,6 +57,7 @@ const RESULT_CARDS: Record<ResultKey, Renderer> = {
   prov: ((prov: Props<ResultCardHost["prov"]>["data"]) => <ChatProvenance prov={prov} />) as unknown as Renderer,
   math: ((data: Props<ResultCardHost["math"]>["data"]) => <ChatMathCard data={data} />) as unknown as Renderer,
   ledger: ((data: Props<ResultCardHost["ledger"]>["data"]) => <ChatLedgerCard data={data} />) as unknown as Renderer,
+  oos: ((data: Props<ResultCardHost["oos"]>["data"]) => <ChatOosCard data={data} />) as unknown as Renderer,
 };
 
 
