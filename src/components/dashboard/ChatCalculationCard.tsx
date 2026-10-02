@@ -10,6 +10,7 @@ function money(value: number, currency: string): string {
 
 export function ChatCalculationCard({ projection }: { projection: Projection }) {
   const { t } = useLanguage();
+  if (!(projection.totalContributed > 0 || projection.finalBalance > 0)) return null;
   const years = projection.series.length > 0 ? projection.series[projection.series.length - 1].year : 0;
   const rows: [string, string][] = [
     [t("copilot_calc_contributed"), money(projection.totalContributed, projection.currency)],

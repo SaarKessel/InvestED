@@ -105,6 +105,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
   const [dismissedPanel, setDismissedPanel] = useState<number | null>(null);
   const [copied, setCopied] = useState<number | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const endRef = useRef<HTMLDivElement>(null);
   const SpeechCtor = getSpeechRecognition();
   const recognitionRef = useRef<SpeechRecognitionLike | null>(null);
   const [listening, setListening] = useState(false);
@@ -228,7 +229,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
   async function removeConversation(id: string) {
     try { await deleteConversation(id); setConversations((c) => c.filter((x) => x.id !== id)); if (conversationId.current === id) clearConversation(); } catch { /* ignore */ }
   }
-  useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }); }, [messages, isAnalyzing]);
+  useEffect(() => { endRef.current?.scrollIntoView({ block: "end", behavior: "smooth" }); }, [messages, isAnalyzing]);
 
   const exportable = () => messages.filter((m) => m.text).map((m) => ({ role: m.role, text: m.text }));
   function exportCsv() { downloadText("invested-chat.csv", "text/csv;charset=utf-8", toCsv(exportable(), language === "he" ? "he" : "en")); }
@@ -260,7 +261,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
     if (!isDeepRequest(text)) {
       const d = decompose(text);
       if (shouldOrchestrate(text, d, planQuestion(text).route)) {
-        const he = /[א-ת]/.test(text);
+        const he = language === "he";
         const outcomes = await runPlan(d.tasks, async (task) => {
           setMessages((current) => [...current, { role: "copilot", text: `${he ? "משימה" : "Task"} ${task.index + 1}/${d.tasks.length}: ${task.text}` }]);
           await answerOne(task.text);
@@ -499,6 +500,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
         })}
         {toolOpen && !workstation && <ChatToolPanel />}
         {(isAnalyzing || fileBusy) && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />{t("copilot_working")}</div>}
+        <div ref={endRef} className="scroll-mb-48" aria-hidden="true" />
       </div>
       {talk && <VoiceOrb accent={(() => { const last = [...messages].reverse().find((m) => m.role === "user"); return getAgent(last?.agent?.id ?? pickedAgent)?.color ?? null; })()} state={speakingIdx !== null ? "speaking" : isAnalyzing ? "thinking" : listening ? "listening" : "idle"} onClose={toggleTalk} onTapOrb={() => { if (speakingIdx !== null) { stopSpeaking(); setSpeakingIdx(null); } else toggleVoice(); }} note={speechNote === "no_voice" ? t("speak_no_voice") : speechNote === "unsupported" ? t("speak_unsupported") : voiceNote} code={voiceError ? voiceCode : null} trace={voiceTrace} />}
       {!user && !authLoading && <ChatAuthGate />}
