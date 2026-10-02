@@ -110,6 +110,7 @@ export function StockSimulator() {
               ),
 
             contribution: scenario.contribution,
+            startDate: scenario.startDate ?? undefined,
 
           });
 
