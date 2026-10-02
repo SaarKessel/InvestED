@@ -22,6 +22,7 @@ import { useLanguage } from "@/context/languageContext";
 import { useEmbedded } from "@/components/layout/embed";
 import { formatCurrency, calculatorGoalLabel } from "@/lib/format";
 import { CURRENCIES, DEFAULT_CURRENCY } from "@/lib/currencies";
+import { ShowYourWork } from "@/components/scratchpad/ShowYourWork";
 
 export default function CalculatorPage() {
   const { t, language } = useLanguage();
@@ -463,6 +464,7 @@ export default function CalculatorPage() {
           </div>
         )}
         <div className="mt-8"><DcfCard /></div>
+        <div className="mt-8 px-4 pb-8 md:px-0"><ShowYourWork /></div>
       </main>
     </div>
   );
