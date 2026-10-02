@@ -137,7 +137,7 @@ export default async function handler(_req: NewsRequest, res: NewsResponse) {
       feedProvider: "yahoo_finance_search",
       cacheTtlSeconds: CACHE_TTL_MS / 1000,
       staleWhileRevalidateSeconds: 1800,
-      items: events.map((event) => ({
+      items: events.map(({ summary: _providerSummary, ...event }) => ({
         ...event,
         eventLabel: { he: eventTypeLabel(event.eventType, "he"), en: eventTypeLabel(event.eventType, "en") },
         keyFacts: { he: buildKeyFacts(event, "he"), en: buildKeyFacts(event, "en") },
