@@ -9,6 +9,10 @@
       "destination": "/api/system?fn=copy-13f"
     },
     {
+      "source": "/api/persona-facts",
+      "destination": "/api/system?fn=persona-facts"
+    },
+    {
       "source": "/api/health",
       "destination": "/api/system?fn=health"
     },
