@@ -649,7 +649,9 @@ function peCalc(message: string, lang: QALanguage): QAPlan | null {
 
 function inflationCalc(message: string, lang: QALanguage): QAPlan | null {
   if (!/אינפלציה|inflation|ערך\s+ריאלי|כוח\s+קנייה|real\s+value|purchasing\s+power/i.test(message)) return null;
-  const amtM = message.match(new RegExp(AMOUNT_RE, "i"));
+  // A number followed by a year word is the horizon, never the amount.
+  const amtM = [...message.matchAll(new RegExp(AMOUNT_RE, "gi"))]
+    .find((m) => !/^\s*(?:שנים|שנה|years?)\b/i.test(message.slice((m.index ?? 0) + m[0].length)));
   const yM = message.match(/(\d{1,2})\s*(?:שנים|שנה|years?)/i);
   const pctM = message.match(new RegExp(PCT, "i"));
   const amount = scaled(amtM?.[1], amtM?.[2]);
