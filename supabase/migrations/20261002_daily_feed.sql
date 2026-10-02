@@ -11,3 +11,6 @@ create table if not exists public.daily_feed (
 alter table public.daily_feed enable row level security;
 drop policy if exists "daily_feed_read" on public.daily_feed;
 create policy "daily_feed_read" on public.daily_feed for select to anon, authenticated using (true);
+
+grant select, insert, update on public.daily_feed to service_role;
+grant select on public.daily_feed to anon, authenticated;
