@@ -13,6 +13,10 @@
       "destination": "/api/system?fn=sec-nport"
     },
     {
+      "source": "/api/research-brief",
+      "destination": "/api/system?fn=research-brief"
+    },
+    {
       "source": "/api/news-sentiment",
       "destination": "/api/system?fn=news-sentiment"
     },

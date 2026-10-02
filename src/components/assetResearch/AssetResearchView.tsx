@@ -6,6 +6,7 @@ import { fetchMarketAssetBySymbol } from "@/lib/marketData";
 import { researchAsset, type AssetResearch } from "@/lib/research/assetResearchEngine";
 import { useAnalysis } from "@/context/useAnalysis";
 import { indicatorLabel, researchCodeLabel } from "@/lib/research/researchLabels";
+import { ScenarioBriefSection } from "./ScenarioBriefSection";
 import { ResearchHistoryChart } from "./ResearchHistoryChart";
 
 const unavailable = (language: string) => language === "he" ? "הנתונים אינם זמינים" : "Data unavailable";
@@ -40,6 +41,7 @@ export function AssetResearchView() {
         <div className="rounded-2xl border border-border bg-card p-5"><h3 className="mb-4 text-lg font-bold">{t("research_indicators")}</h3><dl className="space-y-3">{Object.entries(research.indicators).map(([key,item])=><div key={key} className="flex items-center justify-between border-b border-border pb-2"><dt className="uppercase text-xs font-bold">{indicatorLabel(key, language)}</dt><dd dir="ltr">{item.status === "available" ? typeof item.value === "object" ? (item.value as { macd: number }).macd : item.value : unavailable(language)}</dd></div>)}</dl></div>
       </section>
       <section className="grid gap-4 md:grid-cols-2"><div className="rounded-2xl border border-border bg-card p-5"><h3 className="font-bold">{t("research_fundamentals")}</h3><p className="mt-2 text-sm text-muted-foreground">{unavailable(language)}. {t("research_no_fundamentals_provider")}</p></div><div className="rounded-2xl border border-border bg-card p-5"><h3 className="font-bold">{t("research_news")}</h3><p className="mt-2 text-sm text-muted-foreground">{unavailable(language)}. {t("research_no_news_provider")}</p></div></section>
+      <ScenarioBriefSection key={research.symbol} research={research} />
       <section className="rounded-2xl border border-primary/20 bg-primary/5 p-5"><h3 className="flex items-center gap-2 font-bold"><Bot className="h-5 w-5" />{t("research_ai")}</h3><p className="mt-2 text-sm text-muted-foreground">{t("research_ai_boundary")}</p><div className="mt-4 flex flex-wrap gap-3"><button onClick={ask} className="rounded-xl bg-primary px-4 py-2 font-bold text-primary-foreground">{t("research_ask")}</button><button onClick={() => setQuery(`${research.symbol} vs `)} className="inline-flex items-center gap-2 rounded-xl border border-border px-4 py-2 font-bold"><GitCompareArrows className="h-4 w-4" />{t("research_compare")}</button></div>{aiText && <p className="mt-4 rounded-xl bg-background p-4 text-sm leading-7" aria-live="polite">{aiText}</p>}</section>
     </>}
   </div>;

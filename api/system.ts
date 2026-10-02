@@ -4,6 +4,7 @@
 import healthHandler from "../src/lib/api/healthHandler.js";
 import newsSentimentHandler from "../src/lib/api/newsSentimentHandler.js";
 import nportHandler from "../src/lib/api/nportHandler.js";
+import researchBriefHandler from "../src/lib/api/researchBriefHandler.js";
 import sec13fHandler from "../src/lib/api/sec13fHandler.js";
 
 type Req = { query?: Record<string, string | string[] | undefined>; method?: string; body?: unknown; headers?: Record<string, string | string[] | undefined> };
@@ -14,6 +15,7 @@ export default async function handler(req: Req, res: Res) {
   if (fn === "health") return healthHandler(req, res);
   if (fn === "sec-13f") return sec13fHandler(req, res);
   if (fn === "sec-nport") return nportHandler(req, res);
+  if (fn === "research-brief") return researchBriefHandler(req, res);
   if (fn === "news-sentiment") return newsSentimentHandler(req, res);
   res.status(404).json({ error: "unknown_function" });
 }

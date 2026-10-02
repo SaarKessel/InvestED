@@ -43,3 +43,4 @@
 - Project: https://github.com/AI4Finance-Foundation/FinGPT
 - License: MIT
 - Use: the idea of rating news headlines positive / negative / neutral. InvestED uses its single Gemini layer on the headline text only, validates every rating, and labels it "AI estimate" in the UI (src/lib/news/sentiment.ts).
+- Also used for: the positives / concerns / outlook layout of the research scenario brief (src/lib/research/scenarioBrief.ts). It is educational scenario analysis and never a price prediction.
