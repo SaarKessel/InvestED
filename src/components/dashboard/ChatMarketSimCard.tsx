@@ -3,7 +3,7 @@ import type { MarketEventResult } from "@/lib/simulator/marketEvents";
 
 const KEY_MONTHS = (n: number) => [0, Math.round(n * 0.25), Math.round(n * 0.5), Math.round(n * 0.75), n];
 
-/** The only surface for the invented market simulator. The label is shown at the top, inside the chart and at the bottom, in both languages, and the colours differ from every real-data card. */
+/** The only surface for the invented market simulator. The label is shown at the top, inside the chart and at the bottom, in the active language, and the colours differ from every real-data card. */
 export function ChatMarketSimCard({ data }: { data: MarketEventResult }) {
   const { language } = useLanguage();
   const he = language === "he";
@@ -17,8 +17,7 @@ export function ChatMarketSimCard({ data }: { data: MarketEventResult }) {
   const line = pts.map((p) => `${x(p.month).toFixed(1)},${y(p.level).toFixed(1)}`).join(" ");
   const Banner = ({ id }: { id: string }) => (
     <div role="note" data-testid={id} className="rounded-lg border-2 border-dashed border-amber-500 bg-amber-500/15 px-3 py-2 text-center font-extrabold text-amber-700 dark:text-amber-300">
-      <p dir="rtl" lang="he" className={he ? "text-base" : "text-xs"}>{data.label.he}</p>
-      <p dir="ltr" lang="en" className={he ? "text-xs" : "text-base"}>{data.label.en}</p>
+      <p dir={he ? "rtl" : "ltr"} lang={he ? "he" : "en"} className="text-base">{he ? data.label.he : data.label.en}</p>
     </div>
   );
   return (
@@ -27,7 +26,7 @@ export function ChatMarketSimCard({ data }: { data: MarketEventResult }) {
       <p className="text-sm font-bold">{data.title[l]} · <span className="font-normal text-muted-foreground">{data.index[l]}</span></p>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" role="img" aria-label={`${data.label[l]}. ${data.title[l]}`}>
         <rect x="0" y="0" width={W} height={H} fill="none" stroke="currentColor" strokeOpacity="0.2" strokeDasharray="4 3" />
-        <text x={W / 2} y={H / 2} textAnchor="middle" fontSize="15" fontWeight="800" fill="currentColor" opacity="0.1" transform={`rotate(-12 ${W / 2} ${H / 2})`}>{data.label.he} · {data.label.en}</text>
+        <text x={W / 2} y={H / 2} textAnchor="middle" fontSize="15" fontWeight="800" fill="currentColor" opacity="0.1" transform={`rotate(-12 ${W / 2} ${H / 2})`}>{he ? data.label.he : data.label.en}</text>
         <polyline points={line} fill="none" stroke="#d97706" strokeWidth="2.5" strokeDasharray="6 3" />
       </svg>
       <table className="w-full text-xs">
