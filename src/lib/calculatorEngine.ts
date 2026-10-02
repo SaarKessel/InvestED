@@ -558,7 +558,8 @@ function detectInitialAmount(text: string): number {
 // ---------------------------------------------------------------------------
 
 function detectMonthlyContribution(
-  text: string
+  text: string,
+  retirementIncomeGoal: number | null = null
 ): number {
   const normalized = normalizeText(text);
 
@@ -610,12 +611,20 @@ function detectMonthlyContribution(
       continue;
     }
 
-    return Math.round(
+    const amount = Math.round(
       parseAmount(
         value,
         match[2] ?? ""
       )
     );
+
+    // The retirement-income goal ("הכנסה של 10000 בחודש") is a monthly amount
+    // too, but it is what the user wants to receive, not what they deposit.
+    if (retirementIncomeGoal !== null && amount === retirementIncomeGoal) {
+      continue;
+    }
+
+    return amount;
   }
 
   return 0;
@@ -1396,11 +1405,11 @@ export function analyzeFinancialScenario(
   const initialInvestmentSpecified =
     detectInitialAmountSpecified(text);
 
-  const monthlyContribution =
-    Math.max(0, detectMonthlyContribution(text));
-
   const targetMonthlyIncome =
     detectTargetMonthlyIncome(text);
+
+  const monthlyContribution =
+    Math.max(0, detectMonthlyContribution(text, targetMonthlyIncome));
 
   const explicitAnnualReturnPct =
     detectExplicitAnnualReturnPct(text);
