@@ -69,6 +69,7 @@ import { type ScenarioPart } from "@/lib/copilot/scenarioDesk";
 import { type WbResult } from "@/lib/copilot/worldBankDesk";
 import { type MacroResult } from "@/lib/copilot/macroDesk";
 import { type EtfResult } from "@/lib/copilot/etfDesk";
+import type { LedgerResult } from "@/lib/predictions/ledgerDesk";
 import { type FilingsResult } from "@/lib/copilot/filingsDesk";
 import { type FxResult } from "@/lib/copilot/fxDesk";
 import { type MathDeskResult } from "@/lib/copilot/mathDesk";
@@ -88,7 +89,7 @@ import type { CopilotResponse } from "@/lib/copilotResponse";
 
 /** Minimum BM25 score for a retrieved passage to be shown; weaker matches are noise. */
 const MIN_RETRIEVE_SCORE = 3;
-interface Message { retrieved?: Passage[]; prov?: Provenance; agent?: { id: string | null; switchTo?: string }; deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxResult | null; fxFailed?: boolean; symbol?: SymbolInfo; wb?: WbResult | null; filings?: FilingsResult | null; etf?: EtfResult | null; macro?: MacroResult | null; scenario?: ScenarioPart[]; marketsim?: MarketEventResult; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
+interface Message { ledger?: LedgerResult | null; retrieved?: Passage[]; prov?: Provenance; agent?: { id: string | null; switchTo?: string }; deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxResult | null; fxFailed?: boolean; symbol?: SymbolInfo; wb?: WbResult | null; filings?: FilingsResult | null; etf?: EtfResult | null; macro?: MacroResult | null; scenario?: ScenarioPart[]; marketsim?: MarketEventResult; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
 
 export function AIChatCard({ workstation = false }: { workstation?: boolean } = {}) {
   const { t, language } = useLanguage();
@@ -427,6 +428,13 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
       const simOut = await runTool<MarketEventResult>(plan.tools[0], plan.marketsim, { agentId: pickedAgent });
       const sim = simOut.ok ? simOut.result.value : null;
       setMessages((current) => [...current, { role: "copilot", trace, text: sim ? (/[א-ת]/.test(text) ? "תרחיש לימודי, לא נתונים אמיתיים. זו הדמיה של אירוע שוק מומצא על מדד דמיוני:" : "Educational scenario, not real data. This is a simulation of an invented market event on a fictional index:") : (/[א-ת]/.test(text) ? "לא הצלחתי להריץ את התרחיש המומצא." : "I could not run the invented scenario."), marketsim: sim ?? undefined, prov: simOut.ok ? simOut.result.provenance : undefined }]);
+      return;
+    }
+    if (plan.ledger) {
+      const ldOut = await runTool<LedgerResult>(plan.tools[0], plan.ledger, { agentId: pickedAgent });
+      const ledger = ldOut.ok ? ldOut.result.value : null;
+      const he = /[א-ת]/.test(text);
+      setMessages((current) => [...current, { role: "copilot", trace, text: ledger ? (he ? "רשומת התחזיות שלכם. סימולציה לימודית, לא ייעוץ:" : "Your prediction ledger. Educational simulation, not advice:") : (he ? "לא הצלחתי לפתוח את רשומת התחזיות עכשיו. נסו שוב בעוד רגע." : "I could not open the prediction ledger right now. Try again in a moment."), ledger, prov: ldOut.ok ? ldOut.result.provenance : undefined }]);
       return;
     }
     if (plan.wb) {

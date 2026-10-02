@@ -10,6 +10,8 @@ import { parseWbRequest, type WbRequest } from "./worldBankDesk";
 import { parseMacroRequest, type MacroRequest } from "./macroDesk";
 import { parseEtfRequest, type EtfRequest } from "./etfDesk";
 import { parseFilingsRequest, type FilingsRequest } from "./filingsDesk";
+import { planLedgerRequest } from "@/lib/predictions/ledgerDesk";
+import type { LedgerRequest } from "@/lib/predictions/ledger";
 import { parseFxRequest, type FxRequest } from "./fxDesk";
 import { runMathDesk, type MathDeskResult } from "./mathDesk";
 import { runCalcDesk, type CalcDeskResult } from "./calcDesk";
@@ -18,10 +20,10 @@ import { TRUST_LABEL } from "@/lib/intelligence/provenance";
 import type { TrustClass } from "@/lib/intelligence/verificationEngine";
 import type { ToolId } from "@/lib/intelligence/tools";
 
-export type Route = "tool" | "career" | "learnpath" | "site" | "calc" | "math" | "fx" | "wb" | "macro" | "filings" | "etf" | "scenario" | "marketsim" | "desk" | "copilot";
+export type Route = "tool" | "career" | "learnpath" | "site" | "calc" | "math" | "fx" | "wb" | "macro" | "filings" | "etf" | "scenario" | "marketsim" | "ledger" | "desk" | "copilot";
 export interface Bi { en: string; he: string }
 export interface TraceStep { text: Bi; trust?: TrustClass }
-export interface Plan { /** registry tool ids this route runs, in order */ tools: ToolId[]; route: Route; toolPath?: string; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxRequest; wb?: WbRequest; macro?: MacroRequest; filings?: FilingsRequest; etf?: EtfRequest; scenario?: ScenarioPart[]; marketsim?: MarketEventInput; desk?: DataDeskKind; trace: TraceStep[] }
+export interface Plan { /** registry tool ids this route runs, in order */ tools: ToolId[]; route: Route; toolPath?: string; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxRequest; wb?: WbRequest; macro?: MacroRequest; filings?: FilingsRequest; etf?: EtfRequest; ledger?: LedgerRequest; scenario?: ScenarioPart[]; marketsim?: MarketEventInput; desk?: DataDeskKind; trace: TraceStep[] }
 const b = (en: string, he: string): Bi => ({ en, he });
 
 export function planQuestion(text: string): Plan {
@@ -36,6 +38,11 @@ export function planQuestion(text: string): Plan {
   if (marketsim) return { tools: ["marketsim"], route: "marketsim", marketsim, trace: [
     { text: b("Recognized a request to simulate an invented market event.", "זיהיתי בקשה לדמות אירוע שוק מומצא.") },
     { text: b("Ran a fixed teaching simulator on a fictional index. Educational scenario, not real data: nothing here comes from a market feed.", "הרצתי סימולטור לימודי קבוע על מדד דמיוני. תרחיש לימודי, לא נתונים אמיתיים: דבר כאן לא בא מהזנת שוק."), trust: "SIMULATION" },
+    { text: b("No model chose or changed any number.", "אף מודל לא בחר או שינה מספר.") }] };
+  const ledger = planLedgerRequest(text);
+  if (ledger) return { tools: ["ledger"], route: "ledger", ledger, trace: [
+    { text: b("Recognized a prediction call or a request for your calibration.", "זיהיתי תחזית או בקשה לצפות בכיול שלכם.") },
+    { text: b("Saved the call with the last real closing price and settled due calls against real daily closes. Nothing was estimated or filled in.", "שמרתי את התחזית עם מחיר הסגירה האמיתי האחרון וסגרתי תחזיות שהגיע זמנן מול מחירי סגירה יומיים אמיתיים. דבר לא הוערך ולא הושלם."), trust: "DATA" },
     { text: b("No model chose or changed any number.", "אף מודל לא בחר או שינה מספר.") }] };
   const fx = parseFxRequest(text);
   if (fx) return { tools: ["fx"], route: "fx", fx, trace: [

@@ -18,9 +18,11 @@ import { runScenario, type ScenarioPart } from "@/lib/copilot/scenarioDesk";
 import { loadRisk, type RiskDeskResult } from "@/lib/risk/riskDesk";
 import { TOOLS as ENGINES } from "./toolRegistry";
 import type { Bi, ToolResult } from "./envelope";
+import { runLedger, type LedgerResult } from "@/lib/predictions/ledgerDesk";
+import type { LedgerRequest } from "@/lib/predictions/ledger";
 import type { TrustClass } from "./verificationEngine";
 
-export type ToolId = "calc" | "math" | "fx" | "wb" | "macro" | "filings" | "etf" | "symbol" | "scenario" | "risk" | "rssnews" | "marketsim";
+export type ToolId = "calc" | "math" | "fx" | "wb" | "macro" | "filings" | "etf" | "symbol" | "scenario" | "risk" | "rssnews" | "marketsim" | "ledger";
 export type Domain = "finance" | "market" | "knowledge" | "news";
 export interface ToolSpec { id: ToolId; domain: Domain; title: Bi; trust: TrustClass; network: boolean }
 export type ToolOutcome<T = unknown> = { ok: true; result: ToolResult<T> } | { ok: false; reason: "denied" | "unavailable" | "unknown_tool" };
@@ -38,6 +40,7 @@ export const TOOL_SPECS: Record<ToolId, ToolSpec> = {
   filings: { id: "filings", domain: "market", title: b("Institutional holdings (SEC 13F)", "החזקות מוסדיות (SEC 13F)"), trust: "DATA", network: true },
   etf: { id: "etf", domain: "market", title: b("ETF holdings (SEC N-PORT)", "החזקות קרן סל (SEC N-PORT)"), trust: "DATA", network: true },
   risk: { id: "risk", domain: "market", title: b("Risk metrics", "מדדי סיכון"), trust: "CALCULATION", network: true },
+  ledger: { id: "ledger", domain: "finance", title: b("Prediction ledger and calibration", "רשומת תחזיות וכיול"), trust: "DATA", network: true },
   marketsim: { id: "marketsim", domain: "finance", title: b("Market event simulator (invented)", "סימולטור אירועי שוק (מומצא)"), trust: "SIMULATION", network: false },
   rssnews: { id: "rssnews", domain: "news", title: b("Public RSS headlines", "כותרות מ-RSS ציבורי"), trust: "DATA", network: true },
   symbol: { id: "symbol", domain: "knowledge", title: b("Symbol lookup", "חיפוש סימול"), trust: "KNOWLEDGE", network: false },
@@ -78,6 +81,11 @@ const ADAPTERS: Record<ToolId, Adapter> = {
     const v: MarketEventResult = simulateMarketEvent(req);
     return wrap("marketsim", v, { source: b("Fixed teaching simulator on a fictional index", "סימולטור לימודי קבוע על מדד דמיוני"), state: "synthetic",
       note: b(`${MARKET_SIM_LABEL.en}. The path is invented and deterministic. It is not a forecast and not market data.`, `${MARKET_SIM_LABEL.he}. המסלול מומצא ודטרמיניסטי. זו לא תחזית ולא נתוני שוק.`) });
+  }) as Adapter,
+  ledger: (async (req: LedgerRequest) => {
+    const v: LedgerResult = await runLedger(req);
+    return wrap("ledger", v, { source: b("Your saved calls, settled against Yahoo Finance daily closes", "התחזיות השמורות שלכם, נסגרות מול מחירי סגירה יומיים של Yahoo Finance"), asOf: v.today, state: "live",
+      note: b("Educational simulation, not advice. Closes exclude dividends. A call stays open until a completed close on or after its due date exists.", "סימולציה לימודית, לא ייעוץ. מחירי הסגירה ללא דיבידנדים. תחזית נשארת פתוחה עד שיש סגירה שהושלמה בתאריך היעד או אחריו.") });
   }) as Adapter,
   rssnews: (async () => {
     const v: RssNewsResult | null = await fetchRssNews();

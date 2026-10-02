@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/api/closes",
+      "destination": "/api/system?fn=closes"
+    },
+    {
       "source": "/api/health",
       "destination": "/api/system?fn=health"
     },

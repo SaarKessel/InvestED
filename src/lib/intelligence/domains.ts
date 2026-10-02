@@ -11,7 +11,7 @@ export interface DomainSpec { id: DomainId; title: Bi; status: "wired" | "bounda
 const b = (en: string, he: string): Bi => ({ en, he });
 
 export const DOMAINS: Record<DomainId, DomainSpec> = {
-  financial: { id: "financial", title: b("Financial", "פיננסי"), status: "wired", tools: ["calc", "math", "scenario", "marketsim"], servedBy: "copilot calc, math and scenario desks, plus the invented-scenario market simulator" },
+  financial: { id: "financial", title: b("Financial", "פיננסי"), status: "wired", tools: ["calc", "math", "scenario", "marketsim", "ledger"], servedBy: "copilot calc, math and scenario desks, plus the invented-scenario market simulator" },
   market: { id: "market", title: b("Market", "שוק"), status: "wired", tools: ["fx", "wb", "macro", "filings", "etf", "symbol"], servedBy: "FX, World Bank, SEC 13F holdings and symbol desks" },
   research: { id: "research", title: b("Research", "מחקר"), status: "boundary", tools: [], servedBy: "Deep Research (bounded, not web research)" },
   news: { id: "news", title: b("News", "חדשות"), status: "wired", tools: ["rssnews"], servedBy: "public RSS headlines (central banks and regulators), unavailable when feeds fail" },
