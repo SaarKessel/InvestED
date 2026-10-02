@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { moneyWeightedReturn, type CashFlow } from "@/lib/lessons/moneyWeighted";
-import { Edu, inputCls, Num, parseNum, Section } from "./shared";
+import { Edu, Num, Section } from "./shared";
+import { inputCls, parseNum } from "./sharedUtil";
 
 interface Row { date: string; amount: string }
 export function MoneyWeightedLesson({ he }: { he: boolean }) {

@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { calibrate, MIN_FORECASTS } from "@/lib/lessons/calibration";
 import { circuitBreaker, HUMILITY_STREAK, shouldShowHumility, trailingMisses } from "@/lib/lessons/humility";
-import { Edu, inputCls, Num, parseNum, Section } from "./shared";
+import { Edu, Num, Section } from "./shared";
+import { inputCls, parseNum } from "./sharedUtil";
 
 interface Row { p: string; outcome: "" | "1" | "0" }
 const rowOk = (r: Row) => { const p = parseNum(r.p); return p !== null && p >= 0 && p <= 100 && r.outcome !== ""; };

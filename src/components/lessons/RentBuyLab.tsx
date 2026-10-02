@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { rentVsBuy, sensitivity, validateInputs, RENT_BUY_FIELDS, type RentBuyInputs } from "@/lib/lessons/rentVsBuy";
-import { Edu, Num, parseNum, Section } from "./shared";
+import { Edu, Num, Section } from "./shared";
+import { parseNum } from "./sharedUtil";
 
 const LABELS: Record<keyof RentBuyInputs, [string, string]> = {
   homePrice: ["Home price", "מחיר הדירה"], downPayment: ["Down payment", "הון עצמי"], mortgageRatePct: ["Mortgage rate, % a year", "ריבית משכנתא, % בשנה"],

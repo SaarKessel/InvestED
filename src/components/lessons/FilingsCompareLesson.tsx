@@ -1,7 +1,8 @@
 import { useState } from "react";
 import type { Comparison } from "@/lib/sec/thirteenFCompare";
 import { formatUsd } from "@/lib/copilot/filingsDesk";
-import { Edu, inputCls, Section } from "./shared";
+import { Edu, Section } from "./shared";
+import { inputCls } from "./sharedUtil";
 
 const PRESETS: [string, string, string][] = [["Berkshire Hathaway", "ברקשייר האת'אווי", "0001067983"], ["Bridgewater Associates", "ברידג'ווטר", "0001350694"], ["Pershing Square", "פרשינג סקוור", "0001336528"]];
 type State = { kind: "idle" } | { kind: "loading" } | { kind: "error"; code: string } | { kind: "ok"; data: Comparison };
