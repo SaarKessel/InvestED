@@ -9,14 +9,16 @@ import { loadWb, type WbRequest, type WbResult } from "@/lib/copilot/worldBankDe
 import { lookupSymbol, type SymbolInfo } from "@/lib/copilot/symbolDesk";
 import { runMathDesk, type MathDeskResult } from "@/lib/copilot/mathDesk";
 import { runCalcDesk, type CalcDeskResult } from "@/lib/copilot/calcDesk";
+import { simulateMarketEvent, MARKET_SIM_LABEL, type MarketEventInput, type MarketEventResult } from "@/lib/simulator/marketEvents";
+import { fetchRssNews, type RssNewsResult } from "@/lib/news/rssClient";
 import { runScenario, type ScenarioPart } from "@/lib/copilot/scenarioDesk";
 import { loadRisk, type RiskDeskResult } from "@/lib/risk/riskDesk";
 import { TOOLS as ENGINES } from "./toolRegistry";
 import type { Bi, ToolResult } from "./envelope";
 import type { TrustClass } from "./verificationEngine";
 
-export type ToolId = "calc" | "math" | "fx" | "wb" | "symbol" | "scenario" | "risk";
-export type Domain = "finance" | "market" | "knowledge";
+export type ToolId = "calc" | "math" | "fx" | "wb" | "symbol" | "scenario" | "risk" | "rssnews" | "marketsim";
+export type Domain = "finance" | "market" | "knowledge" | "news";
 export interface ToolSpec { id: ToolId; domain: Domain; title: Bi; trust: TrustClass; network: boolean }
 export type ToolOutcome<T = unknown> = { ok: true; result: ToolResult<T> } | { ok: false; reason: "denied" | "unavailable" | "unknown_tool" };
 
@@ -30,6 +32,8 @@ export const TOOL_SPECS: Record<ToolId, ToolSpec> = {
   fx: { id: "fx", domain: "market", title: b("Currency conversion", "המרת מטבע"), trust: "DATA", network: true },
   wb: { id: "wb", domain: "market", title: b("Country statistics", "נתוני מדינה"), trust: "DATA", network: true },
   risk: { id: "risk", domain: "market", title: b("Risk metrics", "מדדי סיכון"), trust: "CALCULATION", network: true },
+  marketsim: { id: "marketsim", domain: "finance", title: b("Market event simulator (invented)", "סימולטור אירועי שוק (מומצא)"), trust: "SIMULATION", network: false },
+  rssnews: { id: "rssnews", domain: "news", title: b("Public RSS headlines", "כותרות מ-RSS ציבורי"), trust: "DATA", network: true },
   symbol: { id: "symbol", domain: "knowledge", title: b("Symbol lookup", "חיפוש סימול"), trust: "KNOWLEDGE", network: false },
 };
 
@@ -46,6 +50,16 @@ const ADAPTERS: Record<ToolId, Adapter> = {
     const v: WbResult | null = await loadWb(req);
     return v && wrap("wb", v, { source: b("The World Bank: World Development Indicators", "הבנק העולמי: World Development Indicators"), license: "CC BY 4.0", asOf: v.lastUpdated || undefined, state: "live",
       note: b("Yearly data, published with a delay.", "נתונים שנתיים שמתפרסמים באיחור.") });
+  }) as Adapter,
+  marketsim: (async (req: MarketEventInput) => {
+    const v: MarketEventResult = simulateMarketEvent(req);
+    return wrap("marketsim", v, { source: b("Fixed teaching simulator on a fictional index", "סימולטור לימודי קבוע על מדד דמיוני"), state: "synthetic",
+      note: b(`${MARKET_SIM_LABEL.en}. The path is invented and deterministic. It is not a forecast and not market data.`, `${MARKET_SIM_LABEL.he}. המסלול מומצא ודטרמיניסטי. זו לא תחזית ולא נתוני שוק.`) });
+  }) as Adapter,
+  rssnews: (async () => {
+    const v: RssNewsResult | null = await fetchRssNews();
+    return v && v.available && wrap("rssnews", v, { source: b("Public RSS feeds: Federal Reserve, SEC, ECB, Bank of England", "הזנות RSS ציבוריות: הפדרל ריזרב, ה-SEC, הבנק המרכזי האירופי, בנק אנגליה"), asOf: v.fetchedAt, state: "live",
+      note: b("Headlines and links only, each with its publisher and publication time. Feed text is treated as data and never run. Official announcements, not market prices.", "כותרות וקישורים בלבד, כל אחת עם המפרסם ושעת הפרסום. טקסט ההזנה מטופל כנתונים ולא מורץ. הודעות רשמיות, לא מחירי שוק.") });
   }) as Adapter,
   symbol: (async (sym: string) => {
     const v: SymbolInfo | null = await lookupSymbol(sym);

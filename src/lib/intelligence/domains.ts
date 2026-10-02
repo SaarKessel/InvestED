@@ -11,10 +11,10 @@ export interface DomainSpec { id: DomainId; title: Bi; status: "wired" | "bounda
 const b = (en: string, he: string): Bi => ({ en, he });
 
 export const DOMAINS: Record<DomainId, DomainSpec> = {
-  financial: { id: "financial", title: b("Financial", "פיננסי"), status: "wired", tools: ["calc", "math", "scenario"], servedBy: "copilot calc, math and scenario desks" },
+  financial: { id: "financial", title: b("Financial", "פיננסי"), status: "wired", tools: ["calc", "math", "scenario", "marketsim"], servedBy: "copilot calc, math and scenario desks, plus the invented-scenario market simulator" },
   market: { id: "market", title: b("Market", "שוק"), status: "wired", tools: ["fx", "wb", "symbol"], servedBy: "FX, World Bank and symbol desks" },
   research: { id: "research", title: b("Research", "מחקר"), status: "boundary", tools: [], servedBy: "Deep Research (bounded, not web research)" },
-  news: { id: "news", title: b("News", "חדשות"), status: "boundary", tools: [], servedBy: "news cards in the market window" },
+  news: { id: "news", title: b("News", "חדשות"), status: "wired", tools: ["rssnews"], servedBy: "public RSS headlines (central banks and regulators), unavailable when feeds fail" },
   portfolio: { id: "portfolio", title: b("Portfolio", "תיק"), status: "boundary", tools: [], servedBy: "read-only market panels; no portfolio engine yet" },
   risk: { id: "risk", title: b("Risk", "סיכון"), status: "wired", tools: ["risk"], servedBy: "risk metrics engine: volatility, worst drop and beta from real daily closes, plus the risk agent" },
   learning: { id: "learning", title: b("Learning", "למידה"), status: "boundary", tools: [], servedBy: "level tracks and learn paths" },

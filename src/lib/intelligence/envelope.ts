@@ -4,7 +4,7 @@
  */
 import type { TrustClass } from "./verificationEngine";
 
-export type DataState = "live" | "cached" | "fallback" | "static" | "calculated";
+export type DataState = "live" | "cached" | "fallback" | "static" | "calculated" | "synthetic";
 export interface Bi { en: string; he: string }
 export interface Provenance {
   source: Bi;
@@ -26,4 +26,5 @@ export const STATE_LABEL: Record<DataState, Bi> = {
   fallback: { en: "Fallback", he: "גיבוי" },
   static: { en: "Stored list", he: "רשימה שמורה" },
   calculated: { en: "Calculated", he: "מחושב" },
+  synthetic: { en: "Invented scenario", he: "תרחיש מומצא" },
 };

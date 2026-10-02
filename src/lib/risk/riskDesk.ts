@@ -68,7 +68,7 @@ const sgn = (x: number, d = 1) => `${x < 0 ? "-" : x > 0 ? "+" : ""}${Math.abs(x
 const STATE_TEXT: Record<DataState, Bi> = {
   live: { en: "latest provider data (a few minutes old at most)", he: "הנתונים העדכניים ביותר מהספק (בני דקות ספורות לכל היותר)" },
   cached: { en: "cached or older provider data", he: "נתוני ספק ממטמון או ישנים יותר" },
-  fallback: { en: "fallback data", he: "נתוני גיבוי" }, static: { en: "stored list", he: "רשימה שמורה" }, calculated: { en: "calculated", he: "מחושב" },
+  fallback: { en: "fallback data", he: "נתוני גיבוי" }, static: { en: "stored list", he: "רשימה שמורה" }, calculated: { en: "calculated", he: "מחושב" }, synthetic: { en: "invented scenario", he: "תרחיש מומצא" },
 };
 
 export function formatRisk(r: RiskDeskResult, lang: "en" | "he"): string {

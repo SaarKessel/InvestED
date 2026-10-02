@@ -64,6 +64,8 @@ import { getAgent, readPickedAgent, routeAgent, savePickedAgent, AGENTS } from "
 import { ChatSymbolCard } from "./ChatSymbolCard";
 import { parseSymbolQuestion, type SymbolInfo } from "@/lib/copilot/symbolDesk";
 import { ChatScenarioCard } from "./ChatScenarioCard";
+import type { MarketEventResult } from "@/lib/simulator/marketEvents";
+import { ChatMarketSimCard } from "./ChatMarketSimCard";
 import { type ScenarioPart } from "@/lib/copilot/scenarioDesk";
 import { ChatWbCard } from "./ChatWbCard";
 import { type WbResult } from "@/lib/copilot/worldBankDesk";
@@ -86,7 +88,7 @@ import type { CopilotResponse } from "@/lib/copilotResponse";
 
 /** Minimum BM25 score for a retrieved passage to be shown; weaker matches are noise. */
 const MIN_RETRIEVE_SCORE = 3;
-interface Message { retrieved?: Passage[]; prov?: Provenance; agent?: { id: string | null; switchTo?: string }; deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxResult | null; fxFailed?: boolean; symbol?: SymbolInfo; wb?: WbResult | null; scenario?: ScenarioPart[]; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
+interface Message { retrieved?: Passage[]; prov?: Provenance; agent?: { id: string | null; switchTo?: string }; deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxResult | null; fxFailed?: boolean; symbol?: SymbolInfo; wb?: WbResult | null; scenario?: ScenarioPart[]; marketsim?: MarketEventResult; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
 
 export function AIChatCard({ workstation = false }: { workstation?: boolean } = {}) {
   const { t, language } = useLanguage();
@@ -398,6 +400,12 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
       setMessages((current) => [...current, { role: "copilot", trace, text: language === "he" ? "חילקתי את השאלה לחלקים והנה כל חישוב:" : "I split your question into parts. Here is each calculation:", scenario: plan.scenario, prov: scOut.ok ? scOut.result.provenance : undefined }]);
       return;
     }
+    if (plan.marketsim) {
+      const simOut = await runTool<MarketEventResult>(plan.tools[0], plan.marketsim, { agentId: pickedAgent });
+      const sim = simOut.ok ? simOut.result.value : null;
+      setMessages((current) => [...current, { role: "copilot", trace, text: sim ? (language === "he" ? "תרחיש לימודי, לא נתונים אמיתיים. זו הדמיה של אירוע שוק מומצא על מדד דמיוני:" : "Educational scenario, not real data. This is a simulation of an invented market event on a fictional index:") : (language === "he" ? "לא הצלחתי להריץ את התרחיש המומצא." : "I could not run the invented scenario."), marketsim: sim ?? undefined, prov: simOut.ok ? simOut.result.provenance : undefined }]);
+      return;
+    }
     if (plan.wb) {
       const wbOut = await runTool<WbResult>(plan.tools[0], plan.wb, { agentId: pickedAgent });
       const wb = wbOut.ok ? wbOut.result.value : null;
@@ -461,6 +469,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
             {message.calc && <ChatCalcCard data={message.calc} />}
             {message.symbol && <ChatSymbolCard info={message.symbol} onAsk={(q) => void send(q)} />}
             {message.scenario && <ChatScenarioCard parts={message.scenario} />}
+            {message.marketsim && <ChatMarketSimCard data={message.marketsim} />}
             {message.wb && <ChatWbCard data={message.wb} />}
             {message.fx && <ChatFxCard data={message.fx} />}
             {message.prov && <ChatProvenance prov={message.prov} />}
