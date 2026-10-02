@@ -23,6 +23,7 @@ import {
 import { fetchMarketAssetBySymbol } from "@/lib/marketData";
 import type { StrategyId } from "@/types";
 import { StrategyAskCopilot } from "./StrategyAskCopilot";
+import { StrategyPerformancePanel } from "./StrategyPerformancePanel";
 
 type MarketState =
   | { status: "idle" }
@@ -232,6 +233,8 @@ export function StrategyDetail({ strategyId }: { strategyId: StrategyId }) {
             </div>
           )}
         </section>
+
+        <StrategyPerformancePanel strategyId={strategyId} />
 
         <p className="rounded-xl border border-warning/30 bg-warning/5 p-3 text-xs leading-6 text-muted-foreground">
           {explanation.disclaimer}

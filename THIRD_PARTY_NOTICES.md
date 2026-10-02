@@ -18,3 +18,13 @@
 - Service: https://data.worldbank.org , API at api.worldbank.org
 - License: Creative Commons Attribution 4.0 (CC BY 4.0), attribution shown on every card
 - Use: yearly country statistics in chat (inflation, GDP growth, unemployment).
+
+## Vibe-Trading (ideas only, no code copied)
+- Project: https://github.com/HKUDS/Vibe-Trading
+- License: MIT
+- Use: concepts of ordered data-source fallback by failure risk with symbol-to-market routing (src/lib/market/marketRouting.ts) and the choice of backtest metrics (src/lib/backtest/performance.ts). Reimplemented in TypeScript.
+
+## FinRL (concepts only, no code copied)
+- Project: https://github.com/AI4Finance-Foundation/FinRL
+- License: MIT
+- Use: the discipline of a chronological train/test split in the Strategy Lab historical performance panel. InvestED does the opposite of FinRL's default data handling: missing values are never back-filled or zero-filled, they are dropped, counted and labeled unavailable.
