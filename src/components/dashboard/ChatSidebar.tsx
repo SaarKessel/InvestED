@@ -55,8 +55,8 @@ export function ChatSidebar(p: Props) {
             <section aria-label={language === "he" ? "ייצוא" : "Export"} className="px-3 pb-2">
               <p className={head}>{language === "he" ? "ייצוא שיחה" : "Export chat"}</p>
               <div className="flex gap-2">
-                {p.onExportCsv && <button type="button" onClick={p.onExportCsv} className="flex-1 rounded-lg border border-border px-2 py-1.5 text-sm hover:bg-muted">CSV</button>}
-                {p.onExportPdf && <button type="button" onClick={p.onExportPdf} className="flex-1 rounded-lg border border-border px-2 py-1.5 text-sm hover:bg-muted">{language === "he" ? "PDF (הדפסה)" : "PDF (print)"}</button>}
+                {p.onExportCsv && <button type="button" onClick={() => { p.onClose(); p.onExportCsv?.(); }} className="flex-1 rounded-lg border border-border px-2 py-1.5 text-sm hover:bg-muted">CSV</button>}
+                {p.onExportPdf && <button type="button" onClick={() => { p.onClose(); p.onExportPdf?.(); }} className="flex-1 rounded-lg border border-border px-2 py-1.5 text-sm hover:bg-muted">{language === "he" ? "PDF (הדפסה)" : "PDF (print)"}</button>}
               </div>
             </section>
           )}

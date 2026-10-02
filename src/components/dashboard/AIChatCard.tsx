@@ -472,7 +472,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
       )}
       {!started && user && !workstation && <ChatCockpit saved={saved} onAsk={(q) => void send(q)} />}
       {user && (
-        <div className="mb-2 flex items-center justify-between gap-2">
+        <div className={`mb-2 flex items-center justify-between gap-2${workstation ? " sticky top-0 z-20 bg-background py-1" : ""}`}>
           <button type="button" onClick={() => void toggleHistory()} aria-expanded={historyOpen} className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"><History className="h-3.5 w-3.5" aria-hidden="true" />{t("history_open")}</button>
           <button type="button" onClick={() => { clearConversation(); void signOut(); }} className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"><LogOut className="h-3.5 w-3.5" aria-hidden="true" />{t("auth_sign_out")}</button>
         </div>
