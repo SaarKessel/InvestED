@@ -12,7 +12,7 @@ import { useAuth } from "@/context/useAuth";
 import { createConversation, deleteConversation, listConversations, loadMessages, saveMessage, type ChatConversation } from "@/lib/copilot/chatHistory";
 import { ChatSiteLaunch } from "./ChatSiteLaunch";
 import { ChatCockpit } from "./ChatCockpit";
-import { ChatProvenance } from "./ChatProvenance";
+import { ToolResultCards } from "./resultCards";
 import { runTool } from "@/lib/intelligence/tools";
 import type { Provenance } from "@/lib/intelligence/envelope";
 import { ChatChartCard } from "./ChatChartCard";
@@ -56,22 +56,14 @@ import { readLevel, saveLevel, setActiveLevel, type Level } from "@/lib/copilot/
 import { ChatSidePanel } from "./ChatSidePanel";
 import { hasVisuals, useWide } from "./chatPanelState";
 import { resolveSiteIntent, SITE_CAPABILITIES, type SiteCapability } from "@/lib/copilot/siteCapabilities";
-import { ChatDataDesk } from "./ChatDataDesk";
-import { ChatCalcCard } from "./ChatCalcCard";
-import { ChatMathCard } from "./ChatMathCard";
 import { ChatDepth } from "./ChatDepth";
 import { depthSections } from "@/lib/copilot/depth";
 import { ChatAgentTag } from "./ChatAgentTag";
 import { getAgent, readPickedAgent, routeAgent, savePickedAgent, AGENTS } from "@/lib/agents";
-import { ChatSymbolCard } from "./ChatSymbolCard";
 import { parseSymbolQuestion, type SymbolInfo } from "@/lib/copilot/symbolDesk";
-import { ChatScenarioCard } from "./ChatScenarioCard";
 import type { MarketEventResult } from "@/lib/simulator/marketEvents";
-import { ChatMarketSimCard } from "./ChatMarketSimCard";
 import { type ScenarioPart } from "@/lib/copilot/scenarioDesk";
-import { ChatWbCard } from "./ChatWbCard";
 import { type WbResult } from "@/lib/copilot/worldBankDesk";
-import { ChatFxCard } from "./ChatFxCard";
 import { type FxResult } from "@/lib/copilot/fxDesk";
 import { type MathDeskResult } from "@/lib/copilot/mathDesk";
 import { ChatLearnPath } from "./ChatLearnPath";
@@ -480,15 +472,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
     return (<>
             {!wide && assets.length > 0 && <div className="mt-3 space-y-3">{assets.length >= 2 && <ChatCompareChart symbols={[assets[0].symbol, assets[1].symbol]} />}{assets.slice(0, 2).map((a) => <ChatChartCard key={a.symbol} symbol={a.symbol} />)}</div>}
             <LanguageOverride language={questionLang(message)}>
-            {message.desk && <ChatDataDesk data={message.desk} />}
-            {message.calc && <ChatCalcCard data={message.calc} />}
-            {message.symbol && <ChatSymbolCard info={message.symbol} onAsk={(q) => void send(q)} />}
-            {message.scenario && <ChatScenarioCard parts={message.scenario} />}
-            {message.marketsim && <ChatMarketSimCard data={message.marketsim} />}
-            {message.wb && <ChatWbCard data={message.wb} />}
-            {message.fx && <ChatFxCard data={message.fx} />}
-            {message.prov && <ChatProvenance prov={message.prov} />}
-            {message.math && <ChatMathCard data={message.math} />}
+            <ToolResultCards message={message} onAsk={(q) => void send(q)} />
             </LanguageOverride>
             {message.retrieved && message.retrieved.length > 0 && (
               <div className="mt-2 rounded-xl border border-border/70 bg-muted/30 p-3 text-xs leading-6" data-testid="retrieved-passages">
