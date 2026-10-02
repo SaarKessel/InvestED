@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Loader2, TrendingUp } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
+import { reasonText } from "@/lib/backtest/reasonText";
 import { fetchMarketAssetBySymbol } from "@/lib/marketData";
 import type { Metric, PerformanceReport } from "@/lib/backtest/performance";
 import type { FactorSnapshot } from "@/lib/market/factors";
@@ -19,7 +20,7 @@ function fmt(metric: Metric, suffix = ""): { text: string; missing: boolean; rea
 }
 
 function Row({ label, metric, suffix }: { label: string; metric: Metric; suffix?: string }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const f = fmt(metric, suffix);
   return (
     <div className="flex items-start justify-between gap-3 border-b border-border/50 py-1 text-xs last:border-0">
@@ -27,7 +28,7 @@ function Row({ label, metric, suffix }: { label: string; metric: Metric; suffix?
       <dd className="text-end font-semibold" dir="ltr">
         {f.missing ? (
           <span className="font-normal text-muted-foreground" dir="auto">
-            {t("slab_perf_unavailable", "unavailable: {reason}").replace("{reason}", f.reason ?? "")}
+            {t("slab_perf_unavailable", "unavailable: {reason}").replace("{reason}", reasonText(f.reason ?? "", language))}
           </span>
         ) : (
           f.text
@@ -38,13 +39,13 @@ function Row({ label, metric, suffix }: { label: string; metric: Metric; suffix?
 }
 
 function Report({ title, report }: { title: string; report: Metric<PerformanceReport> }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   if (report.status === "unavailable") {
     return (
       <div className="rounded-xl border border-border bg-muted/40 p-3">
         <p className="mb-1 text-xs font-bold">{title}</p>
         <p className="text-xs text-muted-foreground">
-          {t("slab_perf_unavailable", "unavailable: {reason}").replace("{reason}", report.reason)}
+          {t("slab_perf_unavailable", "unavailable: {reason}").replace("{reason}", reasonText(report.reason, language))}
         </p>
       </div>
     );
