@@ -72,7 +72,8 @@ const ISSUE_TEXT: Array<{ re: RegExp; en: string; he: string }> = [
 /** One trace line about a live-data tool result: what the audit found, or that it passed. Bilingual, built from fixed text and the result's own date. */
 export function dataCheckLine(r: ToolResult, now: number = Date.now()): { en: string; he: string } {
   const a = auditResult(r, now);
-  if (!a.issues.length) return { en: `Data check passed: source named, dated${r.provenance.asOf ? ` (as of ${r.provenance.asOf})` : ""}, within the freshness limit.`, he: `בדיקת נתונים עברה: המקור מצוין, מתוארך${r.provenance.asOf ? ` (נכון ל-${r.provenance.asOf})` : ""} ובתוך גבול הטריות.` };
+  const day = r.provenance.asOf?.slice(0, 10);
+  if (!a.issues.length) return { en: `Data check passed: source named, dated${day ? ` (as of ${day})` : ""}, within the freshness limit.`, he: `בדיקת נתונים עברה: המקור מצוין, מתוארך${day ? ` (נכון ל-${day})` : ""} ובתוך גבול הטריות.` };
   const words = a.issues.map((i) => ISSUE_TEXT.find((t) => t.re.test(i)));
   return { en: `Data check found: ${words.map((w) => w?.en ?? "an unexplained issue").join("; ")}.`, he: `בדיקת נתונים מצאה: ${words.map((w) => w?.he ?? "בעיה לא מוסברת").join("; ")}.` };
 }
