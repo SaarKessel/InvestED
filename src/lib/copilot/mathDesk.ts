@@ -16,10 +16,31 @@ const WORDS: [RegExp, string][] = [
   [/(?<=[\d)]\s*)[×x✕](?=\s*[\d(.])/gi, "*"], [/×|✕/g, "*"], [/÷/g, "/"], [/\*\*/g, "^"], [/[−–]/g, "-"], [/[=?؟]/g, " "], [/[$€£₪]/g, ""],
 ];
 
+/** Remove thousands separators ("1,000") but keep commas that separate function arguments ("fv(6,10,500,1000)"). */
+function stripGroupCommas(s: string): string {
+  let out = "";
+  let depthInCall = 0;
+  const stack: boolean[] = [];
+  for (let i = 0; i < s.length; i++) {
+    const c = s[i];
+    if (c === "(") {
+      const isCall = /[a-z]\s*$/i.test(s.slice(0, i));
+      stack.push(isCall);
+      if (isCall) depthInCall++;
+    } else if (c === ")") {
+      if (stack.pop()) depthInCall--;
+    } else if (c === "," && depthInCall === 0 && /\d$/.test(out) && /^\d{3}(?!\d)/.test(s.slice(i + 1))) {
+      continue;
+    }
+    out += c;
+  }
+  return out;
+}
+
 function normalize(raw: string): string {
   let s = ` ${raw} `;
   for (const [re, to] of WORDS) s = s.replace(re, to);
-  s = s.replace(/(\d),(?=\d{3}(?!\d))/g, "$1");
+  s = stripGroupCommas(s);
   s = s.replace(/(\d+(?:\.\d+)?)\s*%\s*(?:of|מ)\s*/gi, "($1/100)*");
   s = s.replace(/(\d+(?:\.\d+)?)\s*%/g, "($1/100)");
   s = s.replace(/(\d+(?:\.\d+)?)\s*([kmb])\b/gi, (_m, n: string, u: string) => `(${n}*${{ k: 1e3, m: 1e6, b: 1e9 }[u.toLowerCase() as "k"]})`);
