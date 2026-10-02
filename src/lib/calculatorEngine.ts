@@ -163,46 +163,46 @@ function detectCurrency(text: string): string {
   const normalized = text.toLowerCase();
 
   if (
-    normalized.includes("usd") ||
+    /\busd\b/.test(normalized) ||
     normalized.includes("$") ||
-    normalized.includes("dollar") ||
+    /\bdollars?\b/.test(normalized) ||
     normalized.includes("דולר") ||
-    normalized.includes(" dollar")
+    /\bdollars?\b/.test(normalized)
   ) {
     return "USD";
   }
 
   if (
-    normalized.includes("eur") ||
+    /\beur\b/.test(normalized) ||
     normalized.includes("€") ||
-    normalized.includes("euro") ||
+    /\beuros?\b/.test(normalized) ||
     normalized.includes("יורו") ||
-    normalized.includes(" euro")
+    /\beuros?\b/.test(normalized)
   ) {
     return "EUR";
   }
 
   if (
-    normalized.includes("gbp") ||
+    /\bgbp\b/.test(normalized) ||
     normalized.includes("£") ||
-    normalized.includes("pound") ||
+    /\bpounds?\b/.test(normalized) ||
     normalized.includes("לIRA") ||
     normalized.includes("פאונד") ||
-    normalized.includes(" pound")
+    /\bpounds?\b/.test(normalized)
   ) {
     return "GBP";
   }
 
   if (
-    normalized.includes("jpy") ||
+    /\bjpy\b/.test(normalized) ||
     normalized.includes("¥") ||
-    normalized.includes("yen")
+    /\byen\b/.test(normalized)
   ) {
     return "JPY";
   }
 
   if (
-    normalized.includes("cad") ||
+    /\bcad\b/.test(normalized) ||
     normalized.includes("c$") ||
     normalized.includes("canadian") ||
     normalized.includes("קנדי")
@@ -211,7 +211,7 @@ function detectCurrency(text: string): string {
   }
 
   if (
-    normalized.includes("aud") ||
+    /\baud\b/.test(normalized) ||
     normalized.includes("a$") ||
     normalized.includes("australian") ||
     normalized.includes("אוסטרלי")
@@ -220,7 +220,7 @@ function detectCurrency(text: string): string {
   }
 
   if (
-    normalized.includes("chf") ||
+    /\bchf\b/.test(normalized) ||
     normalized.includes("swiss") ||
     normalized.includes("שוויצרי")
   ) {
