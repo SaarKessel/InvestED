@@ -13,8 +13,9 @@
 //  - contains advice, forecast or verdict language (buy / sell / hold / target / will rise ...),
 //  - is not in the requested script.
 // A card with no usable bull and bear argument is not shown at all.
-// The advice-guard below is deliberately small and self-contained; swap it for the shared guard when that lands.
+// The shared advice guard (copilot/adviceGuard) runs first; the stricter debate-specific patterns below run on top of it.
 // ---------------------------------------------------------------------------
+import { checkAdvice } from "../copilot/adviceGuard.js";
 import type { BriefFacts } from "./scenarioBrief.js";
 
 export interface Debate { bull: string[]; bear: string[]; risk: string; changeMyMind: string[] }
@@ -63,7 +64,7 @@ export function guardContext(facts: BriefFacts, language: "he" | "en"): GuardCon
 export function lineIsSafe(raw: unknown, ctx: GuardContext, needsFact: boolean): raw is string {
   if (typeof raw !== "string") return false;
   const s = raw.trim();
-  if (!s || s.length > 240 || ADVICE.test(s) || ADVICE_HE.test(s)) return false;
+  if (!s || s.length > 240 || ADVICE.test(s) || ADVICE_HE.test(s) || !checkAdvice(s).ok) return false;
   if (FOREIGN_SCRIPT.test(s) && !FOREIGN_SCRIPT.test(ctx.factsText)) return false;
   if (ctx.language === "he" && !HEBREW.test(s)) return false;
   if (ctx.language === "en" && HEBREW.test(s)) return false;

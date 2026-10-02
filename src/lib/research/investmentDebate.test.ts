@@ -48,3 +48,12 @@ describe("fetchDebate", () => {
     expect(r).toBeNull();
   });
 });
+
+describe("shared advice guard is applied", () => {
+  it("rejects what checkAdvice rejects", async () => {
+    const { checkAdvice } = await import("../copilot/adviceGuard");
+    const line = "You should put 50% of your savings in it given RSI(14) is 62.40.";
+    expect(checkAdvice(line).ok).toBe(false);
+    expect(lineIsSafe(line, guardContext(facts, "en"), true)).toBe(false);
+  });
+});
