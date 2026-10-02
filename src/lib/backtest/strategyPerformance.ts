@@ -4,6 +4,7 @@
 // missing history are reported as unavailable; nothing is substituted.
 
 import type { CandleDatum } from "../../types/index.js";
+import { computeFactors, type FactorSnapshot } from "../market/factors.js";
 import { getStrategy } from "../strategy/strategyEngine.js";
 import {
   computePerformance,
@@ -27,6 +28,7 @@ export interface StrategyPerformance {
   dataSource: string;
   performance: Metric<PerformanceReport>;
   trainTest: Metric<TrainTestReport>;
+  factors: FactorSnapshot;
 }
 
 export function benchmarkFor(symbol: string): string {
@@ -67,6 +69,7 @@ export async function loadStrategyPerformance(
       dataSource: asset.dataSource ?? "unknown",
       performance: computePerformance(asset.history, options),
       trainTest: computeTrainTestPerformance(asset.history, { ...options, trainFraction: 0.7 }),
+      factors: computeFactors(asset.history),
     },
   };
 }

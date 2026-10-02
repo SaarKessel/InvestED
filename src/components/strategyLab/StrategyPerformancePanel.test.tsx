@@ -51,6 +51,7 @@ describe("StrategyPerformancePanel", () => {
     await mountAndLoad();
     const text = container.textContent ?? "";
     expect(text).toMatch(/Sharpe|שארפ/);
+    expect(text).toMatch(/Bollinger|בולינגר/);
     expect(text).toMatch(/yahoo finance/);
     expect(fetchMock).toHaveBeenCalledWith(expect.any(String), "10y", undefined, { allowSimulated: false });
   });

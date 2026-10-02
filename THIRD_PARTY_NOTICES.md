@@ -28,3 +28,8 @@
 - Project: https://github.com/AI4Finance-Foundation/FinRL
 - License: MIT
 - Use: the discipline of a chronological train/test split in the Strategy Lab historical performance panel. InvestED does the opposite of FinRL's default data handling: missing values are never back-filled or zero-filled, they are dropped, counted and labeled unavailable.
+
+## Microsoft Qlib (formula ideas only, no code copied)
+- Project: https://github.com/microsoft/qlib
+- License: Apache License 2.0 (see the project's NOTICE)
+- Use: the candlestick-body and range-position factor definitions in src/lib/market/factors.ts were re-written from their standard definitions.

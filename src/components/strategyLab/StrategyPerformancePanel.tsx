@@ -3,6 +3,7 @@ import { Loader2, TrendingUp } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
 import { fetchMarketAssetBySymbol } from "@/lib/marketData";
 import type { Metric, PerformanceReport } from "@/lib/backtest/performance";
+import type { FactorSnapshot } from "@/lib/market/factors";
 import { loadStrategyPerformance, type StrategyPerformance } from "@/lib/backtest/strategyPerformance";
 
 type State =
@@ -87,6 +88,28 @@ function Report({ title, report }: { title: string; report: Metric<PerformanceRe
   );
 }
 
+function Factors({ factors }: { factors: FactorSnapshot }) {
+  const { t } = useLanguage();
+  const bollinger: Metric = factors.bollinger20.status === "computed"
+    ? (factors.bollinger20.value.percentB === null ? { status: "unavailable", reason: "Zero band width" } : { status: "computed", value: factors.bollinger20.value.percentB })
+    : factors.bollinger20;
+  return (
+    <div className="rounded-xl border border-border bg-muted/40 p-3">
+      <p className="mb-1 text-xs font-bold">{t("slab_factor_title", "Classic price factors (latest)")}</p>
+      <dl>
+        <Row label={t("slab_factor_roc20", "20-period change")} metric={factors.rateOfChange20} />
+        <Row label={t("slab_factor_mom", "12-1 month momentum")} metric={factors.momentum12m1} />
+        <Row label={t("slab_factor_rev", "5-period reversal")} metric={factors.shortTermReversal5} />
+        <Row label={t("slab_factor_sma", "Price vs. 20-period average")} metric={factors.priceToSma20} />
+        <Row label={t("slab_factor_boll", "Bollinger %B (20)")} metric={bollinger} />
+        <Row label={t("slab_factor_range", "Position in 14-period range")} metric={factors.rangePosition14} />
+        <Row label={t("slab_factor_atr", "Average true range (14, % of price)")} metric={factors.atrPercent14} />
+        <Row label={t("slab_factor_vol", "Volume vs. 20-period average")} metric={factors.volumeRatio20} />
+      </dl>
+    </div>
+  );
+}
+
 export function StrategyPerformancePanel({ strategyId }: { strategyId: string }) {
   const { t } = useLanguage();
   const [state, setState] = useState<State>({ status: "idle" });
@@ -140,6 +163,7 @@ export function StrategyPerformancePanel({ strategyId }: { strategyId: string })
               <Report title={t("slab_perf_out_sample", "Out-of-sample")} report={state.data.trainTest.value.outOfSample} />
             </div>
           )}
+          <Factors factors={state.data.factors} />
           <p className="text-[11px] text-muted-foreground">{t("slab_perf_rf", "Sharpe assumes a 0% risk-free rate.")}</p>
           <p className="text-[11px] text-muted-foreground">
             {t("slab_perf_notice", "Past performance only. Based on real prices from {source}.").replace(
