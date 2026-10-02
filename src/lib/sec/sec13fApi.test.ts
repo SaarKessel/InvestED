@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import handler from "../../../api/sec-13f";
+import handler from "../api/sec13fHandler";
 
 function run(query: Record<string, string>) {
   const headers: Record<string, string> = {};

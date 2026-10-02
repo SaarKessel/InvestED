@@ -10,7 +10,7 @@
 // Usage: GET /api/sec-13f?cik=1067983&top=25
 // ---------------------------------------------------------------------------
 
-import { createTtlCache } from "../src/lib/market/cache.js";
+import { createTtlCache } from "../market/cache.js";
 import {
   cleanCik,
   fetchLatest13F,
@@ -19,7 +19,7 @@ import {
   ThirteenFParseError,
   type Latest13F,
   type SecFetch,
-} from "../src/lib/sec/thirteenF.js";
+} from "../sec/thirteenF.js";
 
 interface Req {
   query?: Record<string, string | string[] | undefined>;

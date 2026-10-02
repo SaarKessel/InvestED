@@ -1,6 +1,14 @@
 {
   "rewrites": [
     {
+      "source": "/api/health",
+      "destination": "/api/system?fn=health"
+    },
+    {
+      "source": "/api/sec-13f",
+      "destination": "/api/system?fn=sec-13f"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }
