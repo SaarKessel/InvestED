@@ -26,3 +26,4 @@ drop policy if exists "own predictions" on public.predictions;
 create policy "own predictions" on public.predictions for all to authenticated
   using (user_id = auth.uid()) with check (user_id = auth.uid());
 revoke all on public.predictions from anon;
+grant select, insert, update, delete on public.predictions to authenticated;
