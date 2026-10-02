@@ -12,6 +12,8 @@ import { useAuth } from "@/context/useAuth";
 import { createConversation, deleteConversation, listConversations, loadMessages, saveMessage, type ChatConversation } from "@/lib/copilot/chatHistory";
 import { ChatSiteLaunch } from "./ChatSiteLaunch";
 import { ChatCockpit } from "./ChatCockpit";
+import { isOfficialNewsQuestion, formatRssNews } from "@/lib/news/newsAsk";
+import type { RssNewsResult } from "@/lib/news/rssClient";
 import { ToolResultCards } from "./resultCards";
 import { runTool } from "@/lib/intelligence/tools";
 import type { Provenance } from "@/lib/intelligence/envelope";
@@ -294,6 +296,21 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
       recordTrace({ at: Date.now(), route: plan.route, tools: plan.tools, ms: Date.now() - started, ok, failedChecks: ok ? [] : ["error"], live: "none", question: text });
     }
   }
+  /** Official announcements from the allow-listed public RSS feeds, through the rssnews tool with a trace and data check. */
+  async function answerNews(text: string): Promise<boolean> {
+    if (!isOfficialNewsQuestion(text) || tickersIn(text).length > 0) return false;
+    const out = await runTool<RssNewsResult>("rssnews", undefined, { agentId: pickedAgent });
+    if (!out.ok && out.reason === "denied") return false;
+    const lang = /[א-ת]/.test(text) ? "he" : "en";
+    const trace: TraceStep[] = [
+      { text: { en: "Recognized a question about official announcements.", he: "זיהיתי שאלה על הודעות רשמיות." } },
+      { text: out.ok ? { en: "Read the public RSS feeds of the Federal Reserve, SEC, ECB and Bank of England through the site server. Only headlines, links, publishers and times are kept.", he: "קראתי את הזנות ה-RSS הציבוריות של הפדרל ריזרב, ה-SEC, הבנק המרכזי האירופי ובנק אנגליה דרך שרת האתר. נשמרים רק כותרות, קישורים, מפרסמים ושעות." } : { en: "The public RSS feeds did not answer, so no headlines are shown.", he: "הזנות ה-RSS הציבוריות לא ענו, ולכן לא מוצגות כותרות." } },
+      { text: { en: "No model wrote or changed any headline.", he: "אף מודל לא כתב או שינה כותרת." } },
+      ...(out.ok ? [{ text: dataCheckLine(out.result), trust: "ANALYSIS" as const }] : []),
+    ];
+    setMessages((current) => [...current, { role: "copilot", text: formatRssNews(out.ok ? out.result.value : null, lang), trace, question: text }]);
+    return true;
+  }
   /** Real risk numbers for named tickers. Returns false when nothing applies, so the normal path continues. */
   async function answerRisk(text: string, viaAgent: boolean): Promise<boolean> {
     const named = viaAgent ? tickersIn(text) : parseRiskRequest(text);
@@ -319,6 +336,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
     const agentReq = parseAgentRequest(text);
     if (agentReq && agentReq.agent.id === "risk" && await answerRisk(agentReq.question, true)) return;
     if (!agentReq && await answerRisk(text, false)) return;
+    if (!agentReq && await answerNews(text)) return;
     if (agentReq) {
       const lang = /[א-ת]/.test(agentReq.question) ? "he" : "en";
       const result = agentReq.agent.run(agentReq.question, lang);
