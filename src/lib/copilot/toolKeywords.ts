@@ -17,6 +17,7 @@ const KEYWORDS: Record<string, { en: string[]; he: string[] }> = {
   "/markets": { en: ["markets", "watchlist", "market overview"], he: ["שווקים", "רשימת מעקב", "מעקב מניות"] },
   "/research": { en: ["research", "asset research"], he: ["מחקר", "מחקר נכסים"] },
   "/news": { en: ["news", "headlines"], he: ["חדשות", "כותרות"] },
+  "/link-lab": { en: ["link lab", "link sandbox", "suspicious link", "suspicious links", "phishing"], he: ["מעבדת קישורים", "קישור חשוד", "קישורים חשודים", "פישינג"] },
   "/dashboard": { en: ["dashboard", "my results"], he: ["דשבורד", "לוח בקרה", "התוצאות שלי"] },
   "/overview": { en: ["overview"], he: ["סקירה"] },
   "/data-controls": { en: ["my data", "data controls", "data"], he: ["הנתונים שלי", "בקרת נתונים"] },
