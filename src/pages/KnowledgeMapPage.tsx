@@ -27,7 +27,7 @@ export default function KnowledgeMapPage() {
         <div className="mt-6 flex flex-wrap gap-2" role="group" aria-label={he ? "קטגוריות" : "Categories"}>
           {["all", ...Object.keys(stats.byCategory)].map((c) => (
             <button key={c} type="button" aria-pressed={category === c} onClick={() => setCategory(c)} className="rounded-full border px-3 py-1 text-sm aria-pressed:bg-primary aria-pressed:text-primary-foreground">
-              {c === "all" ? (he ? "הכול" : "All") : c} {c !== "all" && <span className="opacity-70">({stats.byCategory[c]})</span>}
+              {c === "all" ? (he ? "הכול" : "All") : (he ? (CATEGORY_HE[c] ?? c) : c)} {c !== "all" && <span className="opacity-70">({stats.byCategory[c]})</span>}
             </button>
           ))}
         </div>
@@ -64,3 +64,7 @@ export default function KnowledgeMapPage() {
     </Layout>
   );
 }
+
+const CATEGORY_HE: Record<string, string> = {
+  personal: "אישי", investments: "השקעות", portfolio: "תיק", analysis: "ניתוח", finance: "פיננסים", regulation: "רגולציה", markets: "שווקים", careers: "קריירה",
+};

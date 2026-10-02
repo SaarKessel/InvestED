@@ -20,7 +20,7 @@ export default function IntelligenceDashboardPage() {
           {d.domains.map((x) => (
             <li key={x.id} className={card}>
               <p className="font-semibold">{x.title[he ? "he" : "en"]} <span className="text-xs font-normal text-muted-foreground">· {x.status === "wired" ? (he ? "מחובר" : "wired") : (he ? "גבול בלבד, עדיין אין מנוע" : "boundary only, no engine yet")}</span></p>
-              <p className="mt-1 text-xs text-muted-foreground" dir="ltr">{x.servedBy}</p>
+              <p className="mt-1 text-xs text-muted-foreground" dir={he ? "rtl" : "ltr"}>{he ? (SERVED_HE[x.id] ?? x.servedBy) : x.servedBy}</p>
             </li>
           ))}
         </ul>
@@ -58,3 +58,13 @@ export default function IntelligenceDashboardPage() {
     </Layout>
   );
 }
+
+const SERVED_HE: Record<string, string> = {
+  financial: "מחשבון, חישובי מתמטיקה ותרחישים בצ׳אט",
+  market: "שערי מטבע, נתוני הבנק העולמי וחיפוש סימולים",
+  research: "מחקר מעמיק (תחום מוגבל, לא חיפוש ברשת)",
+  news: "כרטיסי חדשות בחלון השוק",
+  portfolio: "לוחות שוק לקריאה בלבד; עוד אין מנוע תיק",
+  risk: "כרטיסי הוראה בלבד; עוד אין מנוע סיכון",
+  learning: "מסלולי רמה ומסלולי למידה",
+};
