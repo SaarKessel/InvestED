@@ -53,3 +53,8 @@
 - ECB: https://data.ecb.europa.eu , main refinancing operations rate, queried directly from the browser (the API allows CORS).
 - IMF: https://www.imf.org/external/datamapper/api/ , World Economic Outlook figures through a fixed-allowlist pass-through (/api/imf-weo). Estimates and projections are labeled in the UI. Source attribution is shown on the card.
 - The World Bank desk already existed (CC BY 4.0). FRED was intentionally not used because it needs a key.
+
+## trading-signals
+- Project: https://github.com/bennycode/trading-signals
+- License: MIT (verified in the installed package, version 8.3.0)
+- Use: indicator series (RSI, SMA, EMA, MACD) for the Strategy Lab rule builder (src/lib/algo/indicatorSeries.ts). Zero runtime dependencies.

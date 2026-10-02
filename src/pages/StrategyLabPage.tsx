@@ -6,6 +6,7 @@ import { useLanguage } from "@/context/languageContext";
 import { StrategyExplorer } from "@/components/strategyLab/StrategyExplorer";
 import { StrategyDetail } from "@/components/strategyLab/StrategyDetail";
 import { StrategyCompare } from "@/components/strategyLab/StrategyCompare";
+import { RuleBuilderPanel } from "@/components/strategyLab/RuleBuilderPanel";
 import type { StrategyId } from "@/types";
 
 /**
@@ -83,6 +84,8 @@ export default function StrategyLabPage() {
             <StrategyDetail strategyId={selectedId} />
           </div>
         )}
+
+        <RuleBuilderPanel />
 
         <p className="mt-8 rounded-xl border border-border bg-muted/40 p-4 text-xs leading-6 text-muted-foreground">
           {t("slab_disclaimer")}
