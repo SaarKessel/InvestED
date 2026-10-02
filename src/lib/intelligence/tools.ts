@@ -140,7 +140,7 @@ const ADAPTERS: Record<ToolId, Adapter> = {
   }) as Adapter,
 };
 
-export const isToolId = (id: string): id is ToolId => id in TOOL_SPECS;
+export const isToolId = (id: string): id is ToolId => Object.prototype.hasOwnProperty.call(TOOL_SPECS, id);
 
 /** The only way to run a tool. Checks the agent allow-list first; a missing result is "unavailable", never a guess. */
 export async function runTool<T = unknown>(id: string, input: unknown, ctx: { agentId?: string | null } = {}): Promise<ToolOutcome<T>> {
