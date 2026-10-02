@@ -73,6 +73,16 @@ export function detectTargetAmount(text: string): number {
     );
   }
 
+  // Number words: "שני מיליון" is two million, not the one-million default below
+  const wordMillion = cleanedText.match(
+    /(שניים|שני|שתי|שלושה|ארבעה|חמישה|שישה|שבעה|שמונה|תשעה|עשרה)\s*(?:מיליון|מליון)/
+  );
+
+  if (wordMillion) {
+    const words: Record<string, number> = { שניים: 2, שני: 2, שתי: 2, שלושה: 3, ארבעה: 4, חמישה: 5, שישה: 6, שבעה: 7, שמונה: 8, תשעה: 9, עשרה: 10 };
+    amount = Math.max(amount, words[wordMillion[1]] * 1_000_000);
+  }
+
   // "מיליון" without number
   if (
     /(?:מיליון|מליון)/.test(cleanedText) &&
