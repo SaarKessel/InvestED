@@ -30,7 +30,7 @@ describe("summarizeDividends", () => {
     expect(r.trailingYieldPct).toBe(0.52);
     expect(r.estimate?.perYear).toBe(4);
     expect(r.estimate?.annualPerShare).toBe(1.04);
-    expect(r.estimate?.nextDateApprox! > "2026-10-02").toBe(true);
+    expect((r.estimate?.nextDateApprox ?? "") > "2026-10-02").toBe(true);
     expect(r.stopped).toBe(false);
   });
   it("withholds the estimate when payments look stopped", () => {
