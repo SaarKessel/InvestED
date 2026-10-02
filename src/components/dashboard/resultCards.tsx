@@ -11,6 +11,7 @@ import { ChatSymbolCard } from "./ChatSymbolCard";
 import { ChatScenarioCard } from "./ChatScenarioCard";
 import { ChatMarketSimCard } from "./ChatMarketSimCard";
 import { ChatWbCard } from "./ChatWbCard";
+import { ChatFilingsCard } from "./ChatFilingsCard";
 import { ChatFxCard } from "./ChatFxCard";
 import { ChatProvenance } from "./ChatProvenance";
 import { ChatMathCard } from "./ChatMathCard";
@@ -24,6 +25,7 @@ export interface ResultCardHost {
   scenario?: React.ComponentProps<typeof ChatScenarioCard>["parts"];
   marketsim?: React.ComponentProps<typeof ChatMarketSimCard>["data"];
   wb?: React.ComponentProps<typeof ChatWbCard>["data"] | null;
+  filings?: React.ComponentProps<typeof ChatFilingsCard>["data"] | null;
   fx?: React.ComponentProps<typeof ChatFxCard>["data"] | null;
   prov?: Provenance;
   math?: React.ComponentProps<typeof ChatMathCard>["data"];
@@ -40,6 +42,7 @@ const RESULT_CARDS: Record<ResultKey, Renderer> = {
   scenario: ((parts: Props<ResultCardHost["scenario"]>["data"]) => <ChatScenarioCard parts={parts} />) as unknown as Renderer,
   marketsim: ((data: Props<ResultCardHost["marketsim"]>["data"]) => <ChatMarketSimCard data={data} />) as unknown as Renderer,
   wb: ((data: Props<ResultCardHost["wb"]>["data"]) => <ChatWbCard data={data} />) as unknown as Renderer,
+  filings: ((data: Props<ResultCardHost["filings"]>["data"]) => <ChatFilingsCard data={data} />) as unknown as Renderer,
   fx: ((data: Props<ResultCardHost["fx"]>["data"]) => <ChatFxCard data={data} />) as unknown as Renderer,
   prov: ((prov: Props<ResultCardHost["prov"]>["data"]) => <ChatProvenance prov={prov} />) as unknown as Renderer,
   math: ((data: Props<ResultCardHost["math"]>["data"]) => <ChatMathCard data={data} />) as unknown as Renderer,

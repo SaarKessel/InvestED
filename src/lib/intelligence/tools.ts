@@ -6,6 +6,7 @@
 import { agentMayUse } from "@/lib/agents";
 import { loadFx, type FxRequest, type FxResult } from "@/lib/copilot/fxDesk";
 import { loadWb, type WbRequest, type WbResult } from "@/lib/copilot/worldBankDesk";
+import { loadFilings, type FilingsRequest, type FilingsResult } from "@/lib/copilot/filingsDesk";
 import { lookupSymbol, type SymbolInfo } from "@/lib/copilot/symbolDesk";
 import { runMathDesk, type MathDeskResult } from "@/lib/copilot/mathDesk";
 import { runCalcDesk, type CalcDeskResult } from "@/lib/copilot/calcDesk";
@@ -17,7 +18,7 @@ import { TOOLS as ENGINES } from "./toolRegistry";
 import type { Bi, ToolResult } from "./envelope";
 import type { TrustClass } from "./verificationEngine";
 
-export type ToolId = "calc" | "math" | "fx" | "wb" | "symbol" | "scenario" | "risk" | "rssnews" | "marketsim";
+export type ToolId = "calc" | "math" | "fx" | "wb" | "filings" | "symbol" | "scenario" | "risk" | "rssnews" | "marketsim";
 export type Domain = "finance" | "market" | "knowledge" | "news";
 export interface ToolSpec { id: ToolId; domain: Domain; title: Bi; trust: TrustClass; network: boolean }
 export type ToolOutcome<T = unknown> = { ok: true; result: ToolResult<T> } | { ok: false; reason: "denied" | "unavailable" | "unknown_tool" };
@@ -31,6 +32,7 @@ export const TOOL_SPECS: Record<ToolId, ToolSpec> = {
   scenario: { id: "scenario", domain: "finance", title: b("Scenario splitter", "מפצל תרחישים"), trust: "CALCULATION", network: false },
   fx: { id: "fx", domain: "market", title: b("Currency conversion", "המרת מטבע"), trust: "DATA", network: true },
   wb: { id: "wb", domain: "market", title: b("Country statistics", "נתוני מדינה"), trust: "DATA", network: true },
+  filings: { id: "filings", domain: "market", title: b("Institutional holdings (SEC 13F)", "החזקות מוסדיות (SEC 13F)"), trust: "DATA", network: true },
   risk: { id: "risk", domain: "market", title: b("Risk metrics", "מדדי סיכון"), trust: "CALCULATION", network: true },
   marketsim: { id: "marketsim", domain: "finance", title: b("Market event simulator (invented)", "סימולטור אירועי שוק (מומצא)"), trust: "SIMULATION", network: false },
   rssnews: { id: "rssnews", domain: "news", title: b("Public RSS headlines", "כותרות מ-RSS ציבורי"), trust: "DATA", network: true },
@@ -50,6 +52,11 @@ const ADAPTERS: Record<ToolId, Adapter> = {
     const v: WbResult | null = await loadWb(req);
     return v && wrap("wb", v, { source: b("The World Bank: World Development Indicators", "הבנק העולמי: World Development Indicators"), license: "CC BY 4.0", asOf: v.lastUpdated || undefined, state: "live",
       note: b("Yearly data, published with a delay.", "נתונים שנתיים שמתפרסמים באיחור.") });
+  }) as Adapter,
+  filings: (async (req: FilingsRequest) => {
+    const v: FilingsResult | null = await loadFilings(req);
+    return v && wrap("filings", v, { source: b("SEC EDGAR: Form 13F-HR information table", "SEC EDGAR: טבלת המידע של טופס 13F-HR"), asOf: v.reportDate, state: "live",
+      note: b("As reported by the manager, up to 45 days after quarter end. Long positions in US-listed securities only. Not a live portfolio and not advice.", "כפי שדווח על ידי המנהל, עד 45 יום אחרי סוף הרבעון. רק פוזיציות לונג בניירות אמריקאיים. לא תיק חי ולא ייעוץ.") });
   }) as Adapter,
   marketsim: (async (req: MarketEventInput) => {
     const v: MarketEventResult = simulateMarketEvent(req);

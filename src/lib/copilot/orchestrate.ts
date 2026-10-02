@@ -10,7 +10,7 @@ export const TASK_TIMEOUT_MS = 30_000;
 /** Routes whose answer is a fixed engine result. A question mixing these with other parts gains from running part by part. */
 const ENGINE_ROUTES: Route[] = ["fx", "calc", "math", "wb", "desk"];
 /** Routes that already take the whole question, so splitting it would only duplicate or break them. */
-const WHOLE_ROUTES: Route[] = ["tool", "career", "learnpath", "site", "scenario", "marketsim"];
+const WHOLE_ROUTES: Route[] = ["tool", "career", "learnpath", "site", "scenario", "marketsim", "filings"];
 
 /** True when the question should run as an ordered plan: several parts, at least one engine part, and no route that must see the whole text. */
 export function shouldOrchestrate(question: string, d: Decomposition = decompose(question), wholeRoute?: Route): boolean {

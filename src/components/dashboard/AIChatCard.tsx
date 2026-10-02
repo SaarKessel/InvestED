@@ -66,6 +66,7 @@ import { parseSymbolQuestion, type SymbolInfo } from "@/lib/copilot/symbolDesk";
 import type { MarketEventResult } from "@/lib/simulator/marketEvents";
 import { type ScenarioPart } from "@/lib/copilot/scenarioDesk";
 import { type WbResult } from "@/lib/copilot/worldBankDesk";
+import { type FilingsResult } from "@/lib/copilot/filingsDesk";
 import { type FxResult } from "@/lib/copilot/fxDesk";
 import { type MathDeskResult } from "@/lib/copilot/mathDesk";
 import { ChatLearnPath } from "./ChatLearnPath";
@@ -84,7 +85,7 @@ import type { CopilotResponse } from "@/lib/copilotResponse";
 
 /** Minimum BM25 score for a retrieved passage to be shown; weaker matches are noise. */
 const MIN_RETRIEVE_SCORE = 3;
-interface Message { retrieved?: Passage[]; prov?: Provenance; agent?: { id: string | null; switchTo?: string }; deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxResult | null; fxFailed?: boolean; symbol?: SymbolInfo; wb?: WbResult | null; scenario?: ScenarioPart[]; marketsim?: MarketEventResult; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
+interface Message { retrieved?: Passage[]; prov?: Provenance; agent?: { id: string | null; switchTo?: string }; deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxResult | null; fxFailed?: boolean; symbol?: SymbolInfo; wb?: WbResult | null; filings?: FilingsResult | null; scenario?: ScenarioPart[]; marketsim?: MarketEventResult; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
 
 export function AIChatCard({ workstation = false }: { workstation?: boolean } = {}) {
   const { t, language } = useLanguage();
@@ -429,6 +430,13 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
       const wbOut = await runTool<WbResult>(plan.tools[0], plan.wb, { agentId: pickedAgent });
       const wb = wbOut.ok ? wbOut.result.value : null;
       setMessages((current) => [...current, { role: "copilot", trace, text: wb ? (/[א-ת]/.test(text) ? "הנה הנתון:" : "Here is the statistic:") : (/[א-ת]/.test(text) ? "לא הצלחתי לטעון עכשיו את הנתון מהבנק העולמי, ולכן לא מציגה כלום. נסו שוב בעוד רגע." : "I could not load that statistic from the World Bank right now, so I am not showing anything. Try again in a moment."), wb, prov: wbOut.ok ? wbOut.result.provenance : undefined }]);
+      return;
+    }
+    if (plan.filings) {
+      const flOut = await runTool<FilingsResult>(plan.tools[0], plan.filings, { agentId: pickedAgent });
+      const filings = flOut.ok ? flOut.result.value : null;
+      const he = /[א-ת]/.test(text);
+      setMessages((current) => [...current, { role: "copilot", trace: flOut.ok ? [...trace, { text: dataCheckLine(flOut.result), trust: "ANALYSIS" as const }] : trace, text: filings ? (he ? "הנה ההחזקות כפי שדווחו ל-SEC:" : "Here are the holdings as reported to the SEC:") : (he ? "לא הצלחתי לטעון עכשיו את הדוח מ-SEC, ולכן לא מציגה כלום. נסו שוב בעוד רגע." : "I could not load that filing from the SEC right now, so I am not showing anything. Try again in a moment."), filings, prov: flOut.ok ? flOut.result.provenance : undefined }]);
       return;
     }
     if (plan.fx) {
