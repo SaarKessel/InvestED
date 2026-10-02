@@ -25,7 +25,7 @@ export function WalkForwardView({ history, strategy, options }: { history: Candl
       ) : (
         <>
           <table className="w-full text-xs" dir="ltr">
-            <thead><tr className="text-start text-muted-foreground"><th>{t("wf_col_part", "Part")}</th><th>{t("wf_col_return", "Return")}</th><th>Sharpe</th><th>{t("wf_col_trades", "Trades")}</th></tr></thead>
+            <thead><tr className="text-start text-muted-foreground"><th>{t("wf_col_part", "Part")}</th><th>{t("wf_col_return", "Return")}</th><th>{t("wf_col_sharpe", "Sharpe")}</th><th>{t("wf_col_trades", "Trades")}</th></tr></thead>
             <tbody>
               <tr><td>{t("wf_in", "In-sample")}</td><td>{ret(wf.value.inSample)}</td><td>{sharpe(wf.value.inSample)}</td><td>{wf.value.inSampleTrades}</td></tr>
               <tr><td>{t("wf_out", "Out-of-sample")} ({wf.value.splitDate}+)</td><td>{ret(wf.value.outOfSample)}</td><td>{sharpe(wf.value.outOfSample)}</td><td>{wf.value.outOfSampleTrades}</td></tr>
@@ -36,7 +36,7 @@ export function WalkForwardView({ history, strategy, options }: { history: Candl
               <thead><tr className="text-start text-muted-foreground"><th>{t("wf_col_window", "Window")}</th><th>{t("wf_col_return", "Return")}</th><th>{t("slab_perf_mdd", "Max drawdown")}</th><th>{t("wf_col_trades", "Trades")}</th></tr></thead>
               <tbody>
                 {wf.value.windows.map((w) => (
-                  <tr key={w.startDate}><td>{w.startDate} to {w.endDate}</td><td>{num(w.returnPct)}%</td><td>{num(w.maxDrawdownPct)}%</td><td>{w.trades}</td></tr>
+                  <tr key={w.startDate}><td><bdi>{w.startDate} {t("wf_date_range", "to")} {w.endDate}</bdi></td><td>{num(w.returnPct)}%</td><td>{num(w.maxDrawdownPct)}%</td><td>{w.trades}</td></tr>
                 ))}
               </tbody>
             </table>

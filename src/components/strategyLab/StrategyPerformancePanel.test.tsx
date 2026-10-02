@@ -52,7 +52,7 @@ describe("StrategyPerformancePanel", () => {
     const text = container.textContent ?? "";
     expect(text).toMatch(/Sharpe|שארפ/);
     expect(text).toMatch(/Bollinger|בולינגר/);
-    expect(text).toMatch(/yahoo finance/);
+    expect(text).toMatch(/Yahoo Finance/i);
     expect(fetchMock).toHaveBeenCalledWith(expect.any(String), "10y", undefined, { allowSimulated: false });
   });
 

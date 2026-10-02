@@ -3,6 +3,7 @@ import { Loader2, TrendingUp } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
 import { reasonText } from "@/lib/backtest/reasonText";
 import { fetchMarketAssetBySymbol } from "@/lib/marketData";
+import { researchCodeLabel } from "@/lib/research/researchLabels";
 import type { Metric, PerformanceReport } from "@/lib/backtest/performance";
 import type { FactorSnapshot } from "@/lib/market/factors";
 import { loadStrategyPerformance, type StrategyPerformance } from "@/lib/backtest/strategyPerformance";
@@ -140,7 +141,7 @@ function RiskBlock({ risk, portfolio }: Pick<StrategyPerformance, "risk" | "port
 }
 
 export function StrategyPerformancePanel({ strategyId }: { strategyId: string }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [state, setState] = useState<State>({ status: "idle" });
 
   async function load() {
@@ -198,7 +199,7 @@ export function StrategyPerformancePanel({ strategyId }: { strategyId: string })
           <p className="text-[11px] text-muted-foreground">
             {t("slab_perf_notice", "Past performance only. Based on real prices from {source}.").replace(
               "{source}",
-              state.data.dataSource.replace("_", " ")
+              researchCodeLabel("source", state.data.dataSource as "alpha_vantage" | "yahoo_finance" | "mock", language)
             )}
           </p>
         </div>

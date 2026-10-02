@@ -42,6 +42,11 @@ function normalize(text: string): string {
 /** The tool path a bare keyword points to, or null when the text is a normal question. */
 export function resolveToolKeyword(text: string): string | null {
   const t = normalize(text);
+  // This named lab intent is often phrased as a full scenario with numbers;
+  // route it before generic intent parsing can mistake "מול" / "vs" for asset comparison.
+  const rentVsBuy = /\b(?:rent(?:ing)?\b.{0,60}\b(?:vs\.?|versus|or)\b.{0,60}\bbuy(?:ing)?\b|buy(?:ing)?\b.{0,60}\b(?:vs\.?|versus|or)\b.{0,60}\brent(?:ing)?\b)/i.test(text)
+    || /שכירות.{0,40}(?:מול|או|לעומת).{0,40}קנ(?:ייה|יה)|לשכור.{0,24}(?:או|מול|לעומת).{0,24}לקנות/i.test(text);
+  if (rentVsBuy) return "/money-lessons";
   if (!t) return null;
   for (const [path, k] of Object.entries(KEYWORDS)) {
     if ([...k.en, ...k.he].some((word) => word.toLowerCase() === t)) return path;

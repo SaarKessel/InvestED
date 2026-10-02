@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Loader2, Cpu } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
 import { fetchMarketAssetBySymbol } from "@/lib/marketData";
+import { researchCodeLabel } from "@/lib/research/researchLabels";
 import { explainRule } from "@/lib/algo/explain";
 import { ReportCardView } from "./ReportCardView";
 import { PaperTrading, WalkForwardView } from "./WalkForwardView";
@@ -124,7 +125,7 @@ function Result({ state }: { state: Extract<State, { status: "ready" }> }) {
       <p className="text-xs text-muted-foreground" dir="auto">
         {t("rule_summary", "{symbol}: {entries} entry signals and {exits} exit signals over {bars} days of real history (source: {source}). The first {warm} days are warm-up.")
           .replace("{symbol}", state.symbol).replace("{entries}", String(counts.entries)).replace("{exits}", String(counts.exits))
-          .replace("{bars}", String(state.run.bars.length)).replace("{source}", state.source).replace("{warm}", String(state.run.warmupBars))}
+          .replace("{bars}", String(state.run.bars.length)).replace("{source}", researchCodeLabel("source", state.source as "alpha_vantage" | "yahoo_finance" | "mock", lang)).replace("{warm}", String(state.run.warmupBars))}
       </p>
       {rules.map(({ side, r }, i) => {
         const ex = explainRule(r);

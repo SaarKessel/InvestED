@@ -39,6 +39,11 @@ describe("RuleBuilderPanel", () => {
     expect(container.textContent).toContain("כרטיס דוח בדיקה היסטורית");
     expect(container.textContent).toContain("למה האסטרטגיה שלי הפסידה");
     expect(container.textContent).toContain("לא ייעוץ");
+    expect(container.textContent).not.toContain("yahoo_finance");
+    expect(container.textContent).toContain("Yahoo Finance");
+    expect(container.textContent).toContain("מדד שארפ");
+    expect(container.textContent).toContain(" עד ");
+    expect(container.textContent).not.toContain(" to ");
   });
   it("refuses simulated history and shows unavailable instead", async () => {
     fetchMock.mockResolvedValue({ history: days(200), dataSource: "mock", isMock: true });

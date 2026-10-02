@@ -19,6 +19,15 @@ describe("planner routes", () => {
   });
 });
 
+describe("rent-versus-buy routing", () => {
+  it("opens the money lesson lab before the generic comparison route", () => {
+    const p = planQuestion("שכירות מול קנייה של דירה ב-2,000,000 שקל, שכירות 6,000 בחודש");
+    expect(p.route).toBe("tool");
+    expect(p.toolPath).toBe("/money-lessons");
+    expect(planQuestion("rent vs buy a home for 6000/month rent").toolPath).toBe("/money-lessons");
+  });
+});
+
 describe("math route", () => {
   it("routes plain arithmetic to the math desk and leaves questions alone", () => {
     expect(planQuestion("1000*1.07^10").route).toBe("math");

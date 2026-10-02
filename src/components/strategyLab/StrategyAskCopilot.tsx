@@ -2,6 +2,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { Loader2, Send, Sparkles } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
 import { useAnalysis } from "@/context/useAnalysis";
+import { researchCodeLabel } from "@/lib/research/researchLabels";
 
 interface Message {
   role: "user" | "copilot";
@@ -15,7 +16,7 @@ interface Message {
  * are routed to the Strategy Engine by the conversation layer.
  */
 export function StrategyAskCopilot({ strategyName }: { strategyName: string }) {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { askCopilot, isAnalyzing } = useAnalysis();
   const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -34,7 +35,7 @@ export function StrategyAskCopilot({ strategyName }: { strategyName: string }) {
       const response = turn.response;
       const showsProvenance = /(?:Source:|מקור:)/i.test(response.text);
       const provenance = response.dataSources.length && !showsProvenance
-        ? `${response.dataSources.join(", ")} · ${response.dataFreshness.join(", ")}`
+        ? `${response.dataSources.map((source) => researchCodeLabel("source", source, language)).join(", ")} · ${response.dataFreshness.join(", ")}`
         : undefined;
       setMessages((current) => [...current, { role: "copilot", text: response.text, meta: provenance }]);
     } catch {

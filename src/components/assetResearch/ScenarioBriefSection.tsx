@@ -18,7 +18,7 @@ export function ScenarioBriefSection({ research }: { research: AssetResearch }) 
       const n = await fetchNews();
       if (n.available) headlines = n.items.filter((i) => i.symbols.includes(research.symbol)).map((i) => ({ title: i.title, publishedAt: i.publishedAt }));
     } catch { /* news stays unavailable and is listed as such */ }
-    const facts = buildBriefFacts(research, headlines);
+    const facts = buildBriefFacts(research, headlines, language === "he" ? "he" : "en");
     const brief = await fetchScenarioBrief(facts, language === "he" ? "he" : "en");
     setState({ facts, brief });
     setBusy(false);

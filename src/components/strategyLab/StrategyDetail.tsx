@@ -21,6 +21,7 @@ import {
   type StrategyMarketExample,
 } from "@/lib/strategy/strategyEngine";
 import { fetchMarketAssetBySymbol } from "@/lib/marketData";
+import { researchCodeLabel } from "@/lib/research/researchLabels";
 import type { StrategyId } from "@/types";
 import { StrategyAskCopilot } from "./StrategyAskCopilot";
 import { StrategyPerformancePanel } from "./StrategyPerformancePanel";
@@ -220,7 +221,7 @@ export function StrategyDetail({ strategyId }: { strategyId: StrategyId }) {
                       <>
                         <span>{example.price?.toFixed(2)} ({example.changePercent === null ? t("slab_market_change_unavailable", "day change unavailable") : `${example.changePercent.toFixed(2)}%`})</span>
                         <span className="block text-[10px] text-muted-foreground">
-                          {example.dataSource?.replace("_", " ")} · {t(`copilot_freshness_${example.freshness ?? "unavailable"}`, example.freshness ?? "unavailable")}
+                          {researchCodeLabel("source", example.dataSource as "alpha_vantage" | "yahoo_finance" | "mock" | undefined, lang)} · {t(`copilot_freshness_${example.freshness ?? "unavailable"}`, example.freshness ?? "unavailable")}
                         </span>
                       </>
                     ) : (

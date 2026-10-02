@@ -64,7 +64,7 @@ export function ReportCardView({ card }: { card: ReportCard }) {
           <Row label={t("card_exposure", "Days in the market")} metric={{ status: "computed", value: card.sim.exposurePct }} suffix="%" />
           <Row label={t("card_costs", "Costs paid")} metric={{ status: "computed", value: card.sim.totalCosts }} />
           {vol && volVals.length > 0 ? (
-            <Row label={t("card_rvol", "Rolling 30-day volatility (min to max)")} metric={{ status: "computed", value: `${Math.min(...volVals)} to ${Math.max(...volVals)}%` as unknown as number }} />
+            <Row label={t("card_rvol", "Rolling 30-day volatility (min to max)")} metric={{ status: "computed", value: `${Math.min(...volVals)}% ${t("card_range_separator", "to")} ${Math.max(...volVals)}%` as unknown as number }} />
           ) : (
             <Row label={t("card_rvol", "Rolling 30-day volatility (min to max)")} metric={card.rollingVol as Metric} />
           )}

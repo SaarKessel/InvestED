@@ -20,7 +20,7 @@ export function InvestmentDebateSection({ research }: { research: AssetResearch 
       const n = await fetchNews();
       if (n.available) headlines = n.items.filter((i) => i.symbols.includes(research.symbol)).map((i) => ({ title: i.title, publishedAt: i.publishedAt }));
     } catch { /* news stays unavailable and is listed as such */ }
-    const facts = buildBriefFacts(research, headlines);
+    const facts = buildBriefFacts(research, headlines, he ? "he" : "en");
     setState({ facts, debate: await fetchDebate(facts, he ? "he" : "en") });
     setBusy(false);
   }

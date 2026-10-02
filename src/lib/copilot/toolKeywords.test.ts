@@ -12,6 +12,15 @@ describe("menu items are chat keywords", () => {
     expect(resolveToolKeyword("פתח מחשבון")).toBe("/calculator");
     expect(resolveToolKeyword("open the calculator")).toBe("/calculator");
   });
+  it("opens the rent-vs-buy lab for complete Hebrew and English scenarios", () => {
+    for (const phrase of [
+      "שכירות מול קנייה של דירה ב-2,000,000 שקל, שכירות 6,000 בחודש",
+      "שכירות לעומת קניה",
+      "rent vs buy a home",
+      "renting versus buying with 2000000 purchase price",
+      "should I buy or rent?",
+    ]) expect(resolveToolKeyword(phrase)).toBe("/money-lessons");
+  });
   it("leaves real questions to the answer engine", () => {
     expect(resolveToolKeyword("what is the news about NVDA")).toBeNull();
     expect(resolveToolKeyword("how does a loan work")).toBeNull();

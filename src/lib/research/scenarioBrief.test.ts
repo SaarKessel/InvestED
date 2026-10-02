@@ -25,6 +25,15 @@ describe("facts", () => {
     expect(f.unavailable.join("|")).toMatch(/news/);
     expect(f.lines.join("|")).not.toMatch(/SMA20 is/);
   });
+  it("localizes committee evidence in Hebrew without changing its measured values", () => {
+    const f = buildBriefFacts(mkResearch(30), [], "he");
+    expect(f.lines).toContain("מחיר אחרון 150.00 USD.");
+    expect(f.lines).toContain("שינוי יומי 1.35%.");
+    expect(f.lines).toContain("מדד RSI (14): 61.20.");
+    expect(f.lines).toContain("SMA50: 140.00 (המחיר מעל לממוצע).");
+    expect(f.lines.join(" ")).not.toMatch(/Last price|Daily change|RSI\(14\) is|price is above/);
+    expect(f.unavailable.join(" ")).toContain("נתונים פיננסיים בסיסיים");
+  });
   it("includes headlines when present", () => {
     const f = buildBriefFacts(mkResearch(30), [{ title: "NVIDIA launches chip", publishedAt: "2026-09-30T10:00:00Z" }]);
     expect(f.lines.some((l) => l.includes("NVIDIA launches chip"))).toBe(true);

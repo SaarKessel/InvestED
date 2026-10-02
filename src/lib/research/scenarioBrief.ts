@@ -35,25 +35,34 @@ export function moveOver(history: AssetResearch["history"], n: number): number |
 }
 
 /** The only facts the brief may use. Every line is computed from fetched data; missing inputs are listed, not filled. */
-export function buildBriefFacts(research: AssetResearch, headlines: BriefHeadline[]): BriefFacts {
+export function buildBriefFacts(research: AssetResearch, headlines: BriefHeadline[], language: "he" | "en" = "en"): BriefFacts {
   const lines: string[] = [];
-  const unavailable: string[] = ["basic financials (no reliable provider)"];
-  lines.push(`Last price ${fmt(research.quote.price)} ${research.quote.currency ?? ""}.`.replace("  ", " "));
-  if (research.quote.changeKnown) lines.push(`Daily change ${fmt(research.quote.changePercent)}%.`); else unavailable.push("daily change (no previous close)");
+  const he = language === "he";
+  const unavailable: string[] = [he ? "נתונים פיננסיים בסיסיים (אין מקור אמין)" : "basic financials (no reliable provider)"];
+  const currency = research.quote.currency ? ` ${research.quote.currency}` : "";
+  lines.push(he ? `מחיר אחרון ${fmt(research.quote.price)}${currency}.` : `Last price ${fmt(research.quote.price)}${currency}.`);
+  if (research.quote.changeKnown) lines.push(he ? `שינוי יומי ${fmt(research.quote.changePercent)}%.` : `Daily change ${fmt(research.quote.changePercent)}%.`);
+  else unavailable.push(he ? "שינוי יומי (אין מחיר סגירה קודם)" : "daily change (no previous close)");
   for (const [n, label] of [[5, "5 observations"], [20, "20 observations"], [60, "60 observations"]] as const) {
     const m = moveOver(research.history, n);
-    if (m === null) unavailable.push(`move over ${label} (history too short)`); else lines.push(`Move over the last ${label}: ${fmt(m)}%.`);
+    if (m === null) unavailable.push(he ? `תנועה ב-${label === "5 observations" ? 5 : label === "20 observations" ? 20 : 60} תצפיות (היסטוריה קצרה מדי)` : `move over ${label} (history too short)`);
+    else lines.push(he ? `תנועה ב-${n} התצפיות האחרונות: ${fmt(m)}%.` : `Move over the last ${label}: ${fmt(m)}%.`);
   }
   const i = research.indicators;
-  if (i.rsi14.status === "available") lines.push(`RSI(14) is ${fmt(i.rsi14.value as number)}.`); else unavailable.push("RSI(14)");
-  if (i.volatilityPct.status === "available") lines.push(`Volatility is ${fmt(i.volatilityPct.value as number)}%.`); else unavailable.push("volatility");
+  if (i.rsi14.status === "available") lines.push(he ? `מדד RSI (14): ${fmt(i.rsi14.value as number)}.` : `RSI(14) is ${fmt(i.rsi14.value as number)}.`);
+  else unavailable.push(he ? "מדד RSI (14)" : "RSI(14)");
+  if (i.volatilityPct.status === "available") lines.push(he ? `תנודתיות: ${fmt(i.volatilityPct.value as number)}%.` : `Volatility is ${fmt(i.volatilityPct.value as number)}%.`);
+  else unavailable.push(he ? "תנודתיות" : "volatility");
   for (const [k, label] of [["sma20", "SMA20"], ["sma50", "SMA50"]] as const) {
     const v = i[k];
-    if (v.status === "available") lines.push(`${label} is ${fmt(v.value as number)} (price is ${research.quote.price >= (v.value as number) ? "above" : "below"} it).`); else unavailable.push(label);
+    if (v.status === "available") {
+      const above = research.quote.price >= (v.value as number);
+      lines.push(he ? `${label}: ${fmt(v.value as number)} (המחיר ${above ? "מעל" : "מתחת"} לממוצע).` : `${label} is ${fmt(v.value as number)} (price is ${above ? "above" : "below"} it).`);
+    } else unavailable.push(label);
   }
   const hl = headlines.slice(0, 5);
-  if (hl.length === 0) unavailable.push("news (no recent headline names this symbol)");
-  hl.forEach((h) => lines.push(`Headline (${h.publishedAt.slice(0, 10)}): ${h.title}`));
+  if (hl.length === 0) unavailable.push(he ? "חדשות (אין כותרת עדכנית על הסימול)" : "news (no recent headline names this symbol)");
+  hl.forEach((h) => lines.push(he ? `כותרת (${h.publishedAt.slice(0, 10)}): ${h.title}` : `Headline (${h.publishedAt.slice(0, 10)}): ${h.title}`));
   return { symbol: research.symbol, name: research.name, lines, unavailable };
 }
 

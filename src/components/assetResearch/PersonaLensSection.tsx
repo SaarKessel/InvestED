@@ -3,11 +3,13 @@ import { Check, Minus, X } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
 import type { AssetResearch } from "@/lib/research/assetResearchEngine";
 import { buildLenses, type Lens, type LensDerived, type PersonaFacts, type Status } from "@/lib/research/personaLens";
+import { personaValueLabel } from "./personaLabels";
 
 type State = { status: "idle" | "loading" | "unavailable" } | { status: "ready"; facts: PersonaFacts; lenses: Lens[]; derived: LensDerived };
 
 const NAMES = { buffett: { en: "Buffett-style", he: "בסגנון באפט" }, graham: { en: "Graham-style", he: "בסגנון גרהם" }, lynch: { en: "Lynch-style", he: "בסגנון לינץ'" } } as const;
 const MARK: Record<Status, { icon: typeof Check; en: string; he: string }> = { pass: { icon: Check, en: "pass", he: "עובר" }, fail: { icon: X, en: "fail", he: "נכשל" }, unavailable: { icon: Minus, en: "unavailable", he: "לא זמין" }, judgment: { icon: Minus, en: "your judgment", he: "שיקול דעת שלכם" } };
+
 
 /** Three textbook checklists on SEC annual filings. Missing data shows "unavailable", never a made-up number. Educational checklist, not advice. */
 export function PersonaLensSection({ research }: { research: AssetResearch }) {
@@ -40,7 +42,7 @@ export function PersonaLensSection({ research }: { research: AssetResearch }) {
               <p className="text-sm font-bold">{NAMES[lens.persona][l]} <span className="font-normal text-muted-foreground" dir="ltr">({lens.passed}/{lens.checked})</span></p>
               <ul className="mt-1 space-y-1 text-xs">
                 {lens.criteria.map((c) => { const M = MARK[c.status]; return (
-                  <li key={c.id} className="flex items-start gap-2"><M.icon className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden /><span><b>{c.label[l]}</b> ({c.rule[l]}): <span dir="ltr">{c.value ?? ""}</span> <span className="text-muted-foreground">{M[l]}</span></span></li>
+                  <li key={c.id} className="flex items-start gap-2"><M.icon className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden /><span><b>{c.label[l]}</b> ({c.rule[l]}): <span dir="ltr">{personaValueLabel(c.value, l)}</span> <span className="text-muted-foreground">{M[l]}</span></span></li>
                 ); })}
               </ul>
             </div>
