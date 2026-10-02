@@ -174,7 +174,9 @@ export function extractAssets(text: string): string[] {
   for (const stock of SP500_STOCKS) {
     let earliest = -1;
     for (const keyword of stock.keywords) {
-      const idx = lower.indexOf(keyword.toLowerCase());
+      const kw = keyword.toLowerCase();
+      // Latin keywords must be whole words ("meta" is not "metals"); Hebrew keywords take prefixes, so they stay substrings.
+      const idx = /^[a-z0-9 .&'-]+$/.test(kw) ? lower.search(new RegExp(`(?<![a-z0-9])${kw.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}(?![a-z0-9])`)) : lower.indexOf(kw);
       if (idx !== -1 && (earliest === -1 || idx < earliest)) {
         earliest = idx;
       }
