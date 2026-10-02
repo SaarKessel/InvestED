@@ -28,7 +28,7 @@ const nextFrom = (ids: string[], keep: (c: ConceptEntry) => boolean, lang: "he" 
   return out;
 };
 
-const RISK_LIMITS: Bi = { en: "I explain risk concepts from stored text. I do not measure your portfolio's risk, use live prices, or say what you should buy or sell.", he: "אני מסביר מושגי סיכון מטקסט שמור. אני לא מודד את הסיכון של התיק שלך, לא משתמש במחירים חיים ולא אומר מה כדאי לקנות או למכור." };
+const RISK_LIMITS: Bi = { en: "I explain risk concepts from stored text. When you name a ticker, I calculate volatility, worst drop and beta from about a year of real daily closes. I do not measure your own portfolio, predict prices, or say what you should buy or sell.", he: "אני מסביר מושגי סיכון מטקסט שמור. כשנוקבים בסימול, אני מחשב תנודתיות, ירידה מקסימלית ובטא מכשנה של מחירי סגירה אמיתיים. אני לא מודד את התיק האישי שלך, לא מנבא מחירים ולא אומר מה כדאי לקנות או למכור." };
 const LEARN_LIMITS: Bi = { en: "I pick the next topics from the links between stored concepts. I do not test you, track your progress or grade answers. The Learning Hub does that.", he: "אני בוחר את הנושאים הבאים לפי הקשרים בין מושגים שמורים. אני לא בוחן אותך, לא עוקב אחרי ההתקדמות ולא מדרג תשובות. מרכז הלמידה עושה את זה." };
 
 const riskAgent: SuperAgent = {

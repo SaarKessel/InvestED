@@ -25,6 +25,7 @@ import { ChatRelated } from "./ChatRelated";
 import { ChatAlsoAsked } from "./ChatAlsoAsked";
 import { ChatTrace } from "./ChatTrace";
 import { formatAgentResult, parseAgentRequest } from "@/lib/intelligence/superAgents";
+import { formatRisk, knownTickers, parseRiskRequest, tickersIn, BENCHMARK, type RiskDeskResult } from "@/lib/risk/riskDesk";
 import { runPlan, shouldOrchestrate } from "@/lib/copilot/orchestrate";
 import { planQuestion } from "@/lib/copilot/planner";
 import { retrieve, type Passage } from "@/lib/search/retrieve";
@@ -297,8 +298,30 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
       recordTrace({ at: Date.now(), route: plan.route, tools: plan.tools, ms: Date.now() - started, ok, failedChecks: ok ? [] : ["error"], live: "none", question: text });
     }
   }
+  /** Real risk numbers for named tickers. Returns false when nothing applies, so the normal path continues. */
+  async function answerRisk(text: string, viaAgent: boolean): Promise<boolean> {
+    const named = viaAgent ? tickersIn(text) : parseRiskRequest(text);
+    if (!named || named.length === 0) return false;
+    const tickers = await knownTickers(named);
+    if (tickers.length === 0) return false;
+    const lang = /[א-ת]/.test(text) ? "he" : "en";
+    const out = await runTool<RiskDeskResult>("risk", tickers, { agentId: pickedAgent });
+    if (!out.ok && out.reason === "denied") return false;
+    const value: RiskDeskResult = out.ok ? out.result.value : { items: tickers.map((symbol) => ({ symbol, unavailable: true as const })), benchmark: BENCHMARK };
+    const live = out.ok ? out.result.provenance.state : null;
+    const trace: TraceStep[] = [
+      { text: { en: `Recognized a risk question about ${tickers.join(", ")}.`, he: `זיהיתי שאלת סיכון על ${tickers.join(", ")}.` } },
+      { text: out.ok ? { en: `Took about a year of daily closes from Yahoo Finance through the site server (${live === "live" ? "latest data" : "cached or older data"}) and ${BENCHMARK} as the benchmark for beta.`, he: `לקחתי כשנה של מחירי סגירה יומיים מ-Yahoo Finance דרך שרת האתר (${live === "live" ? "נתונים עדכניים" : "נתונים ממטמון או ישנים"}) ואת ${BENCHMARK} כמדד ייחוס לבטא.` } : { en: "No real price data came back, so nothing was calculated.", he: "לא חזרו נתוני מחיר אמיתיים, ולכן לא חושב דבר." }, trust: "DATA" },
+      { text: { en: "Volatility, worst drop and beta were calculated by fixed code. No model wrote these numbers.", he: "תנודתיות, ירידה מקסימלית ובטא חושבו בקוד קבוע. אף מודל לא כתב את המספרים." }, trust: "CALCULATION" },
+    ];
+    setMessages((current) => [...current, { role: "copilot", text: formatRisk(value, lang), trace, question: text }]);
+    return true;
+  }
+
   async function answerCore(text: string) {
     const agentReq = parseAgentRequest(text);
+    if (agentReq && agentReq.agent.id === "risk" && await answerRisk(agentReq.question, true)) return;
+    if (!agentReq && await answerRisk(text, false)) return;
     if (agentReq) {
       const lang = /[א-ת]/.test(agentReq.question) ? "he" : "en";
       const result = agentReq.agent.run(agentReq.question, lang);

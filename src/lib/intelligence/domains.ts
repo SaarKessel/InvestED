@@ -16,7 +16,7 @@ export const DOMAINS: Record<DomainId, DomainSpec> = {
   research: { id: "research", title: b("Research", "מחקר"), status: "boundary", tools: [], servedBy: "Deep Research (bounded, not web research)" },
   news: { id: "news", title: b("News", "חדשות"), status: "boundary", tools: [], servedBy: "news cards in the market window" },
   portfolio: { id: "portfolio", title: b("Portfolio", "תיק"), status: "boundary", tools: [], servedBy: "read-only market panels; no portfolio engine yet" },
-  risk: { id: "risk", title: b("Risk", "סיכון"), status: "boundary", tools: [], servedBy: "teaching cards only; no risk engine yet" },
+  risk: { id: "risk", title: b("Risk", "סיכון"), status: "wired", tools: ["risk"], servedBy: "risk metrics engine: volatility, worst drop and beta from real daily closes, plus the risk agent" },
   learning: { id: "learning", title: b("Learning", "למידה"), status: "boundary", tools: [], servedBy: "level tracks and learn paths" },
 };
 

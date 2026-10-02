@@ -10,11 +10,12 @@ import { lookupSymbol, type SymbolInfo } from "@/lib/copilot/symbolDesk";
 import { runMathDesk, type MathDeskResult } from "@/lib/copilot/mathDesk";
 import { runCalcDesk, type CalcDeskResult } from "@/lib/copilot/calcDesk";
 import { runScenario, type ScenarioPart } from "@/lib/copilot/scenarioDesk";
+import { loadRisk, type RiskDeskResult } from "@/lib/risk/riskDesk";
 import { TOOLS as ENGINES } from "./toolRegistry";
 import type { Bi, ToolResult } from "./envelope";
 import type { TrustClass } from "./verificationEngine";
 
-export type ToolId = "calc" | "math" | "fx" | "wb" | "symbol" | "scenario";
+export type ToolId = "calc" | "math" | "fx" | "wb" | "symbol" | "scenario" | "risk";
 export type Domain = "finance" | "market" | "knowledge";
 export interface ToolSpec { id: ToolId; domain: Domain; title: Bi; trust: TrustClass; network: boolean }
 export type ToolOutcome<T = unknown> = { ok: true; result: ToolResult<T> } | { ok: false; reason: "denied" | "unavailable" | "unknown_tool" };
@@ -28,6 +29,7 @@ export const TOOL_SPECS: Record<ToolId, ToolSpec> = {
   scenario: { id: "scenario", domain: "finance", title: b("Scenario splitter", "מפצל תרחישים"), trust: "CALCULATION", network: false },
   fx: { id: "fx", domain: "market", title: b("Currency conversion", "המרת מטבע"), trust: "DATA", network: true },
   wb: { id: "wb", domain: "market", title: b("Country statistics", "נתוני מדינה"), trust: "DATA", network: true },
+  risk: { id: "risk", domain: "market", title: b("Risk metrics", "מדדי סיכון"), trust: "CALCULATION", network: true },
   symbol: { id: "symbol", domain: "knowledge", title: b("Symbol lookup", "חיפוש סימול"), trust: "KNOWLEDGE", network: false },
 };
 
@@ -49,6 +51,14 @@ const ADAPTERS: Record<ToolId, Adapter> = {
     const v: SymbolInfo | null = await lookupSymbol(sym);
     return v && wrap("symbol", v, { source: b("FinanceDatabase (MIT license), static list", "FinanceDatabase (רישיון MIT), רשימה סטטית"), license: "MIT", state: "static",
       note: b("Names and types only, no prices. The list can lag the real company.", "שמות וסוגים בלבד, בלי מחירים. הרשימה יכולה לפגר אחרי החברה האמיתית.") });
+  }) as Adapter,
+  risk: (async (symbols: string[]) => {
+    const v: RiskDeskResult = await loadRisk(symbols);
+    const ok = v.items.filter((i) => !i.unavailable);
+    if (ok.length === 0) return null;
+    const allLive = ok.every((i) => !i.unavailable && i.state === "live");
+    return wrap("risk", v, { source: b("Yahoo Finance daily closes via the site's market-quote server", "מחירי סגירה יומיים של Yahoo Finance דרך שרת הנתונים של האתר"), asOf: ok[0].unavailable ? undefined : ok[0].asOf ?? undefined, state: allLive ? "live" : "cached",
+      note: b("Computed from about a year of past prices. Describes the past, not the future. Tickers without real price data are listed as unavailable, never estimated.", "מחושב מכשנה של מחירי עבר. מתאר את העבר, לא את העתיד. סימולים בלי נתוני מחיר אמיתיים מסומנים כלא זמינים, לא מוערכים.") });
   }) as Adapter,
   math: (async (text: string) => {
     const v: MathDeskResult | null = runMathDesk(text);
