@@ -252,7 +252,7 @@ function detectAssetClass(text: string): string {
     normalized.includes("s&p") ||
     normalized.includes("sp500") ||
     normalized.includes("s&p500") ||
-    normalized.includes("s and p") ||
+    /\bs\s+and\s+p\b/.test(normalized) ||
     normalized.includes("אס אנד פי") ||
     normalized.includes("סנופי")
   ) {
@@ -270,8 +270,7 @@ function detectAssetClass(text: string): string {
   if (
     normalized.includes("אגח") ||
     normalized.includes("אג״ח") ||
-    normalized.includes("bonds") ||
-    normalized.includes("bond")
+    /\bbonds?\b/.test(normalized)
   ) {
     return "bonds";
   }
