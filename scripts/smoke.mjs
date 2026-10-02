@@ -27,6 +27,7 @@ await check("/api/news-feeds is available with https links only", async () => {
   const r = await get("/api/news-feeds"); need(r.status === 200 && r.json?.available === true, `available=${r.json?.available}`);
   need((r.json.items || []).every((i) => /^https:/.test(i.url)), "non-https link"); return `${r.json.items.length} items`;
 });
+await check("/api/health reports every provider", async () => { const r = await get("/api/health"); need(r.status === 200 && Array.isArray(r.json?.checks) && r.json.checks.length >= 5, `status ${r.status}`); const down = r.json.checks.filter((c) => !c.ok).map((c) => `${c.name}: ${c.detail}`); need(down.length === 0, `down: ${down.join("; ")}`); return `${r.json.checks.length} providers ok`; });
 await check("cron endpoint refuses without the secret", async () => { const r = await get("/api/cron/daily-feed"); need(r.status === 401, `status ${r.status}`); return "401"; });
 await check("daily_feed rows are publicly readable but not writable", async () => {
   const url = "https://yltbcsmkpjosyovsvtmn.supabase.co/rest/v1/daily_feed";
