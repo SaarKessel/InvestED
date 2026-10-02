@@ -91,8 +91,8 @@
 .terminal-session-tabs { display:flex; gap:2px; overflow:auto; min-height:42px; border-bottom:1px solid hsl(var(--border)); background:hsl(var(--terminal-surface)); padding:0 12px; }
 .terminal-session { display:flex; align-items:center; gap:4px; border-bottom:2px solid transparent; }
 .terminal-session[data-active="true"] { border-color:hsl(var(--primary)); background:hsl(var(--primary)/.05); }
-.terminal-session [role="tab"] { white-space:nowrap; padding:10px 12px; font-size:11px; color:hsl(var(--muted-foreground)); }
-.terminal-session[data-active="true"] [role="tab"] { color:hsl(var(--foreground)); }
+.terminal-session [aria-pressed] { white-space:nowrap; padding:10px 12px; font-size:11px; color:hsl(var(--muted-foreground)); }
+.terminal-session[data-active="true"] [aria-pressed] { color:hsl(var(--foreground)); }
 .terminal-tab-close { min-width:24px; min-height:28px; display:grid; place-items:center; color:hsl(var(--muted-foreground)); }
 .terminal-workspace { min-width:0; overflow:auto; padding:20px; flex:1; }
 .terminal-workspace .chat-tool-panel { border-radius:10px; background:hsl(var(--terminal-surface)); }
@@ -156,7 +156,7 @@
 /* Session controls and commands only orchestrate existing workspaces. */
 .terminal-session-rail {display:flex;min-width:0;border-bottom:1px solid hsl(var(--border));background:hsl(var(--terminal-surface));}
 .terminal-session-rail .terminal-session-tabs {flex:1;border:0;}
-.terminal-session [role="tab"] {display:flex;align-items:center;gap:4px;}
+.terminal-session [aria-pressed] {display:flex;align-items:center;gap:4px;}
 .terminal-dialog-backdrop {position:fixed;inset:0;z-index:100;background:rgb(0 0 0/.5);display:flex;justify-content:center;align-items:flex-start;padding:12vh 16px 24px;}
 .terminal-dialog {width:min(600px,100%);max-height:75dvh;overflow:auto;background:hsl(var(--terminal-surface));border:1px solid hsl(var(--border));border-radius:12px;box-shadow:0 16px 64px rgb(0 0 0/.3);}
 .terminal-dialog>header {display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid hsl(var(--border));font-size:14px;font-weight:600;}
@@ -189,7 +189,7 @@
  .terminal-workspace-column {overflow:hidden;}
  .terminal-workspace {overflow:auto;overscroll-behavior:contain;}
  .terminal-workspace :is(.chat-tool-panel,.terminal-panel) {scroll-margin-top:12px;}
- .terminal-session [role="tab"] {min-height:44px;}
+ .terminal-session [aria-pressed] {min-height:44px;}
  .terminal-tab-close {min-width:44px;}
  .terminal-mobile-bottom {grid-row:4;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid hsl(var(--border));padding:4px 4px calc(4px + env(safe-area-inset-bottom));background:hsl(var(--terminal-surface));}
  .terminal-mobile-bottom button {display:flex;flex-direction:column;gap:4px;align-items:center;justify-content:center;min-height:52px;border-radius:6px;font-size:10px;color:hsl(var(--muted-foreground));}
@@ -207,3 +207,8 @@
  .terminal-dialog-backdrop {z-index:100;}
  .terminal-workspace .chat-tool-panel>div:first-child button {min-height:44px;min-width:44px;}
 }
+
+html:not(.dark) .terminal-topbar .font-display {color:#8c631b;}
+
+/* Tooltip series text must retain AA contrast in both terminal themes. */
+.terminal-shell .recharts-tooltip-item {color:hsl(var(--foreground)) !important;}
