@@ -20,7 +20,7 @@
 // client owns the (labeled) development mock fallback.
 //
 // Usage: GET /api/market-quote?symbols=VOO,AAPL&range=3mo
-//   range: 3mo (default) | 1y | 10y
+//   range: 3mo (default, daily) | 1y (daily) | 5y (daily, ~1,250 bars) | 10y (MONTHLY bars)
 // ---------------------------------------------------------------------------
 
 import type { CandleDatum, MarketAsset } from "../src/types/index.js";
@@ -129,7 +129,7 @@ export default async function handler(req: MarketQuoteRequest, res: MarketQuoteR
   const rangeRaw = Array.isArray(rangeParam) ? rangeParam[0] : rangeParam;
   const range = rangeRaw === undefined ? "3mo" : rangeRaw;
   if (!isHistoryRange(range)) {
-    res.status(400).json({ error: "range חייב להיות אחד מ: 3mo, 1y, 10y" });
+    res.status(400).json({ error: "range חייב להיות אחד מ: 3mo, 1y, 5y, 10y" });
     return;
   }
 

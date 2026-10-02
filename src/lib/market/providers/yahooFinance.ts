@@ -74,6 +74,8 @@ function rangeToRequest(range: HistoryRange): { range: string; interval: string 
   switch (range) {
     case "10y":
       return { range: "10y", interval: "1mo" };
+    case "5y":
+      return { range: "5y", interval: "1d" };
     case "1y":
       return { range: "1y", interval: "1d" };
     case "3mo":

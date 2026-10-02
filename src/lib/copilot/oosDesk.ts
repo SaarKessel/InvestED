@@ -26,7 +26,8 @@ export function parseOosRequest(text: string): OosRequest | null {
 }
 
 type Loader = (symbol: string) => Promise<MarketAsset | null>;
-const defaultLoader: Loader = (s) => fetchMarketAssetBySymbol(s, "10y", undefined, { allowSimulated: false });
+// 5y = about 1,250 DAILY bars. "10y" is only ~121 monthly bars, which can never reach the daily minimum in outOfSample.ts.
+export const defaultLoader: Loader = (s) => fetchMarketAssetBySymbol(s, "5y", undefined, { allowSimulated: false });
 
 const usable = (a: MarketAsset | null): a is MarketAsset => !!a && a.isMock !== true && a.dataSource !== "mock" && Array.isArray(a.history) && a.history.length > 0;
 

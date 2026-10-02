@@ -15,9 +15,9 @@ import type {
 
 export type MarketProviderId = Extract<MarketDataSource, "alpha_vantage" | "yahoo_finance">;
 
-export type HistoryRange = "3mo" | "1y" | "10y";
+export type HistoryRange = "3mo" | "1y" | "5y" | "10y";
 
-export const HISTORY_RANGES: HistoryRange[] = ["3mo", "1y", "10y"];
+export const HISTORY_RANGES: HistoryRange[] = ["3mo", "1y", "5y", "10y"];
 
 export function isHistoryRange(value: unknown): value is HistoryRange {
   return typeof value === "string" && (HISTORY_RANGES as string[]).includes(value);

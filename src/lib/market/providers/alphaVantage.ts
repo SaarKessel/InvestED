@@ -156,6 +156,8 @@ function rangeToHistoryRequest(range: HistoryRange): { fn: string; seriesKey: "T
   switch (range) {
     case "10y":
       return { fn: "TIME_SERIES_MONTHLY", seriesKey: "Monthly Time Series", limit: 121 };
+    case "5y":
+      return { fn: "TIME_SERIES_DAILY", seriesKey: "Time Series (Daily)", outputsize: "full", limit: 1260 };
     case "1y":
       return { fn: "TIME_SERIES_DAILY", seriesKey: "Time Series (Daily)", outputsize: "full", limit: 366 };
     case "3mo":
