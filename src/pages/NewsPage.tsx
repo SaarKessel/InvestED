@@ -5,6 +5,7 @@ import { OfficialFeedsSection } from "@/components/news/OfficialFeedsSection";
 import { NewsCard } from "@/components/news/NewsCard";
 import { useLanguage } from "@/context/languageContext";
 import { fetchNews, type NewsResult } from "@/lib/newsClient";
+import { fetchHeadlineSentiment, type SentimentItem } from "@/lib/news/sentiment";
 import { shouldRefreshNews } from "@/lib/newsRefresh";
 
 export default function NewsPage() {
@@ -12,6 +13,7 @@ export default function NewsPage() {
   const [result, setResult] = useState<NewsResult | null>(null);
   const [failed, setFailed] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [tones, setTones] = useState<Map<string, SentimentItem> | null>(null);
 
   const resultRef = useRef<NewsResult | null>(null);
   const loadingRef = useRef(false);
@@ -32,6 +34,13 @@ export default function NewsPage() {
         setRefreshing(false);
       });
   }, []);
+
+  useEffect(() => {
+    if (!result?.available) return;
+    let live = true;
+    fetchHeadlineSentiment(result.items, language === "he" ? "he" : "en").then((m) => { if (live) setTones(m); });
+    return () => { live = false; };
+  }, [result, language]);
 
   useEffect(() => {
     load();
@@ -90,7 +99,7 @@ export default function NewsPage() {
         {result && result.available && (
           <div className="grid gap-5 md:grid-cols-2">
             {result.items.map((item) => (
-              <NewsCard key={item.id} item={item} />
+              <NewsCard key={item.id} item={item} tone={tones?.get(item.id)} />
             ))}
           </div>
         )}

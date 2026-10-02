@@ -2,8 +2,9 @@ import { ExternalLink, Newspaper, Tag } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/primitives";
 import { useLanguage } from "@/context/languageContext";
 import type { NewsItem } from "@/lib/newsClient";
+import type { SentimentItem } from "@/lib/news/sentiment";
 
-export function NewsCard({ item, compact = false }: { item: NewsItem; compact?: boolean }) {
+export function NewsCard({ item, compact = false, tone }: { item: NewsItem; compact?: boolean; tone?: SentimentItem }) {
   const { t, language } = useLanguage();
   const lang = language === "he" ? "he" : "en";
   const implications = item.implications[lang];
@@ -41,6 +42,16 @@ export function NewsCard({ item, compact = false }: { item: NewsItem; compact?: 
             <ExternalLink className="mt-1 h-3.5 w-3.5 shrink-0 opacity-0 transition-opacity group-hover:opacity-100" />
           </span>
         </a>
+
+        {tone && (
+          <p className="mt-2 text-xs leading-5 text-muted-foreground" data-testid="news-ai-tone">
+            <span className="me-1.5 rounded-full border border-border px-2 py-0.5 font-bold text-foreground">
+              {t("news_ai_tone_label")}: {t(`news_ai_tone_${tone.tone}`)}
+            </span>
+            {tone.reason}
+            <span className="block text-[11px]">{t("news_ai_tone_note")}</span>
+          </p>
+        )}
 
         {item.symbols.length > 0 && (
           <div className="mt-3 flex flex-wrap gap-1.5">
