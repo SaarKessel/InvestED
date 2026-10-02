@@ -30,6 +30,10 @@ export default function IntelligenceDashboardPage() {
           {d.agents.map((a) => <li key={a.id} className="rounded-full border px-3 py-1 text-sm" style={{ borderColor: `hsl(${a.color})` }}>{a.name[he ? "he" : "en"]}</li>)}
         </ul>
 
+        <h2 className="mt-8 text-xl font-bold">{he ? "סוכנים מומחים" : "Specialist agents"}</h2>
+        <p className="mt-1 text-sm text-muted-foreground">{he ? "מופעלים בכתיבת שם הסוכן ונקודתיים בצ׳אט. עובדים רק על ידע שמור, בלי נתונים חיים." : "Start one by typing its name and a colon in the chat. They use stored knowledge only, no live data."}</p>
+        <ul className="mt-3 flex flex-wrap gap-2" data-testid="dash-super-agents">{d.superAgents.map((a) => <li key={a.id} className="rounded-full border px-3 py-1 text-sm">{a.title[he ? "he" : "en"]}</li>)}</ul>
+
         <h2 className="mt-8 text-xl font-bold">{he ? "ידע" : "Knowledge"}</h2>
         <dl className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4" data-testid="dash-knowledge">
           <div className={card}><dt className="text-xs text-muted-foreground">{he ? "מושגים" : "Concepts"}</dt><dd className="text-2xl font-bold">{d.knowledge.concepts}</dd></div>

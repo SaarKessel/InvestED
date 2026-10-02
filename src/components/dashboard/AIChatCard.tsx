@@ -24,6 +24,7 @@ import { openingLine } from "@/lib/copilot/toolKeywords";
 import { ChatRelated } from "./ChatRelated";
 import { ChatAlsoAsked } from "./ChatAlsoAsked";
 import { ChatTrace } from "./ChatTrace";
+import { formatAgentResult, parseAgentRequest } from "@/lib/intelligence/superAgents";
 import { runPlan, shouldOrchestrate } from "@/lib/copilot/orchestrate";
 import { planQuestion } from "@/lib/copilot/planner";
 import { retrieve, type Passage } from "@/lib/search/retrieve";
@@ -282,6 +283,17 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
     }
   }
   async function answerCore(text: string) {
+    const agentReq = parseAgentRequest(text);
+    if (agentReq) {
+      const lang = /[א-ת]/.test(agentReq.question) ? "he" : "en";
+      const result = agentReq.agent.run(agentReq.question, lang);
+      const trace: TraceStep[] = [
+        { text: { en: `Handed the question to the ${agentReq.agent.title.en.toLowerCase()}.`, he: `העברתי את השאלה ל${agentReq.agent.title.he}.` } },
+        { text: { en: "Took stored explanations and links between stored concepts. No web, no live data, no model.", he: "לקחתי הסברים שמורים וקשרים בין מושגים שמורים. בלי רשת, בלי נתונים חיים ובלי מודל." }, trust: "EDUCATIONAL" },
+      ];
+      setMessages((current) => [...current, { role: "copilot", text: formatAgentResult(result, lang), trace, question: agentReq.question }]);
+      return;
+    }
     if (isDeepRequest(text)) {
       const lang = /[א-ת]/.test(text) ? "he" : "en";
       const q = stripTrigger(text);

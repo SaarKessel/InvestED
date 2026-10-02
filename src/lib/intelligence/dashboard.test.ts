@@ -15,6 +15,7 @@ describe("buildDashboard", () => {
     expect(k.withText + k.withoutText).toBe(k.concepts);
     expect(k.brokenLinks).toBe(0);
   });
+  it("lists the runnable specialist agents", () => { expect(buildDashboard([]).superAgents.map((a) => a.id)).toEqual(["risk", "learning"]); });
   it("lists the topic agents", () => { expect(buildDashboard([]).agents.length).toBeGreaterThanOrEqual(4); });
   it("ranks routes and reports empty health as no data", () => {
     expect(buildDashboard([]).health.okRate).toBeNull();

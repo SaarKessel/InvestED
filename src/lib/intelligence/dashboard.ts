@@ -1,5 +1,6 @@
 /** Super Intelligence dashboard data: one read-only snapshot of what the system has, what is wired, and how recent answers went. Nothing here is computed by a model, and a boundary-only domain is reported as such. */
 import { DOMAINS, type DomainSpec } from "./domains";
+import { SUPER_AGENTS } from "./superAgents";
 import { AGENTS } from "@/lib/agents";
 import { graphStats } from "@/lib/knowledge/graph";
 import { loadTraces, summarize, type TraceEntry } from "./traceStore";
@@ -7,6 +8,8 @@ import { loadTraces, summarize, type TraceEntry } from "./traceStore";
 export interface DashboardSnapshot {
   domains: DomainSpec[];
   wiredDomains: number;
+  /** runnable specialist agents */
+  superAgents: Array<{ id: string; title: { en: string; he: string } }>;
   agents: Array<{ id: string; name: { en: string; he: string }; color: string }>;
   knowledge: { concepts: number; withText: number; withoutText: number; categories: number; isolated: number; brokenLinks: number };
   health: ReturnType<typeof summarize>;
@@ -21,6 +24,7 @@ export function buildDashboard(traces: TraceEntry[] = loadTraces()): DashboardSn
   return {
     domains,
     wiredDomains: domains.filter((d) => d.status === "wired").length,
+    superAgents: Object.values(SUPER_AGENTS).map((a) => ({ id: a.id, title: a.title })),
     agents: AGENTS.map((a) => ({ id: a.id, name: a.name, color: a.color })),
     knowledge: { concepts: g.nodes, withText: g.withText, withoutText: g.nodes - g.withText, categories: Object.keys(g.byCategory).length, isolated: g.isolated.length, brokenLinks: g.brokenLinks.length },
     health,
