@@ -41,9 +41,17 @@ Core educational answers, scenario calculations and conversation context are det
 
 The chat plans each question with `src/lib/intelligence/router.ts` (one entry: the planner for desks, then the intent stage for plain answers). Desks are deterministic and run through one tool registry (`src/lib/intelligence/tools.ts`), each result carrying its source, license, as-of date and a live, cached, calculated or stored state. Desks: calculator, math, scenario splitter, ECB currency conversion (Frankfurter), World Bank country statistics (CC BY 4.0), symbol lookup (FinanceDatabase, MIT), market movers and Deep Research over stored knowledge only. Four agents (investing, insurance, loans and credit, savings and pension) are declarative registry entries. Domain interfaces (`domains.ts`) name Financial and Market as wired; Research, News, Portfolio, Risk and Learning are declared boundaries without engines. `src/lib/characterization.test.ts` pins the routing of 105 questions in Hebrew and English. Architecture audit and phase plan: `docs/architecture/INVESTED_2030_AUDIT.md`. Hebrew strings awaiting review: `docs/HEBREW_REVIEW.md`.
 
+### Memory (consent first)
+
+Signed-in users can turn on memory in the chat sidebar. It is off by default. Three Supabase tables (`memory_consent`, `user_memory`, `saved_answers`, migration `supabase/migrations/20261002_memory.sql`) have row level security so a user sees only their own rows, and a memory row can only be written while consent is on. The sidebar has export (JSON) and delete-all. No cron job, no service-role key, and nothing in the app writes memory yet: the panel and the policies come first.
+
+### Terminal workspace
+
+The presentation layer is a dark-first workstation shell (`src/components/terminal`, `src/styles/terminal.css`): design tokens and primitives, provenance badges, a persistent navigation shell, a strict markets watchlist (device-local, no simulated prices), a command center (Ctrl/Cmd K), device-local session shortcuts and mobile full-screen workspaces. It changes presentation only; engines, data and auth are untouched.
+
 ### Privacy
 
-The released product has no authentication, billing, cloud profile database or external notification delivery. Local data controls are available at `/data-controls`. Read the in-product Privacy and Terms pages before using the product.
+Chat history, memory and the knowledge feed use Supabase with row level security when the user signs in; most other data (analysis, learning progress, games, watchlist, session shortcuts) stays in the browser. There is no billing or external notification delivery. Local data controls are available at `/data-controls`. Read the in-product Privacy and Terms pages before using the product.
 
 ## Routes
 
