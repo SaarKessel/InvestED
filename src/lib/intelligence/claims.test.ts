@@ -66,3 +66,12 @@ describe("per-tool freshness limit", () => {
     expect(auditResult(mk("filings", "2026-05-01"), now).stale).toBe(true);
   });
 });
+
+describe("etf freshness", () => {
+  it("an N-PORT report 94 days old passes, 200 days old is stale", () => {
+    const mk = (asOf: string) => ({ toolId: "etf", value: {}, trust: "DATA", provenance: { source: { en: "SEC", he: "SEC" }, asOf, state: "live" } }) as never;
+    const now = Date.parse("2026-10-02T12:00:00Z");
+    expect(auditResult(mk("2026-06-30"), now).issues).toEqual([]);
+    expect(auditResult(mk("2026-03-15"), now).stale).toBe(true);
+  });
+});

@@ -30,8 +30,8 @@ export function unknownLinks(draft: string, sources: string[]): string[] {
 export const FRESH_LIMIT_DAYS: Record<DataState, number | null> = { live: 4, cached: 4, fallback: 4, static: null, calculated: null, synthetic: null };
 export interface Audit { issues: string[]; stale: boolean }
 /** Provenance integrity for one tool result: a source named, data states that claim real data carry a date, and that date is not older than the limit. */
-/** Tools whose data is published on a slower rhythm than daily. 13F: due 45 days after quarter end, so the newest report is at most about 135 days old. */
-export const TOOL_FRESH_LIMIT_DAYS: Partial<Record<string, number>> = { filings: 140 };
+/** Tools whose data is published on a slower rhythm than daily. 13F: due 45 days after quarter end, so the newest report is at most about 135 days old. N-PORT (etf): public about 60 days after quarter end, at most about 150 days old. */
+export const TOOL_FRESH_LIMIT_DAYS: Partial<Record<string, number>> = { filings: 140, etf: 160 };
 
 export function auditResult(r: ToolResult, now: number = Date.now()): Audit {
   const issues: string[] = [];
