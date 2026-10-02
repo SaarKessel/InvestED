@@ -148,11 +148,11 @@ export function RoadmapCard({
         ...base.slice(2),
         {
           ...base[0],
-          title: `${localized(base[0]?.title, language) ?? t("learning_default_title", "Basics")} (${t("learning_optional_refresh", "Optional refresh")})`,
+          title: `${localized(base[0]?.title, language) ?? t("learning_default_title", "Basics")} ${t("learning_optional_refresh", "(Optional refresh)")}`,
         },
         {
           ...base[1],
-          title: `${localized(base[1]?.title, language) ?? t("learning_default_title", "Basics")} (${t("learning_optional_refresh", "Optional refresh")})`,
+          title: `${localized(base[1]?.title, language) ?? t("learning_default_title", "Basics")} ${t("learning_optional_refresh", "(Optional refresh)")}`,
         },
       ];
     }
