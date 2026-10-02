@@ -124,7 +124,7 @@ export function parseLedgerRequest(text: string, resolveSymbol: (q: string) => s
   const direction: Direction | null = up === down ? null : up ? "up" : "down";
   let symbol: string | null = null;
   for (const token of text.match(/[A-Za-z][A-Za-z0-9.-]{0,9}|[\u0590-\u05FF]{2,12}/g) ?? []) {
-    if (/^(predict|prediction|will|the|up|down|in|days|day|weeks|week|months|month|my|call|thesis|bet|rise|fall|drop|go|goes|higher|lower|chance|sure|confident|percent|to|by|beat|spy)$/i.test(token)) continue;
+    if (/^(i|im|am|is|it|its|a|an|and|or|of|on|for|with|that|this|think|believe|stock|share|shares|price|predict|prediction|will|the|up|down|in|days|day|weeks|week|months|month|my|call|thesis|bet|rise|fall|drop|go|goes|higher|lower|chance|sure|confident|percent|to|by|beat|spy)$/i.test(token)) continue;
     const r = resolveSymbol(token);
     if (r) { symbol = r; break; }
   }

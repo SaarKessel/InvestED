@@ -56,6 +56,10 @@ describe("scores", () => {
 });
 
 describe("parsing and validation", () => {
+  it("does not read the pronoun I as a ticker (live bug: 'I predict AAPL ...' resolved to symbol I)", () => {
+    const anyUpper = (q: string) => (/^[A-Za-z]{1,5}$/.test(q) ? q.toUpperCase() : null);
+    expect(parseLedgerRequest("I predict AAPL goes up in 30 days, 70% sure", anyUpper)).toMatchObject({ kind: "create", input: { symbol: "AAPL" } });
+  });
   it("reads a full call", () => {
     const r = parseLedgerRequest("Prediction: AAPL goes up in 30 days, 70% sure, services growth", resolve);
     expect(r).toMatchObject({ kind: "create", input: { symbol: "AAPL", direction: "up", confidence: 70, horizonDays: 30 } });
