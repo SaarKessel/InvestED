@@ -132,13 +132,23 @@ async function getText(fetchSec: SecFetch, url: string): Promise<string> {
   return response.text();
 }
 
-export async function fetchLatest13F(cikInput: string, fetchSec: SecFetch, options: { topN?: number } = {}): Promise<Latest13F> {
-  const cik = cleanCik(cikInput);
-  if (!cik) throw new No13FError("Invalid CIK");
-  const submissions = JSON.parse(await getText(fetchSec, `https://data.sec.gov/submissions/CIK${cik}.json`)) as SubmissionsJson;
-  const latest = pickLatest13F(submissions);
-  if (!latest) throw new No13FError("No 13F-HR filing found for this filer");
+interface FilingMeta { accessionNumber: string; form: string; filingDate: string; reportDate: string }
 
+/** Original 13F-HR filings (not amendments, which can be partial), newest first, one per report date. */
+export function pickOriginal13Fs(submissions: SubmissionsJson, limit = 2): FilingMeta[] {
+  const recent = submissions.filings?.recent;
+  if (!recent?.form || !recent.accessionNumber) return [];
+  const out: FilingMeta[] = [];
+  for (let i = 0; i < recent.form.length && out.length < limit; i++) {
+    if (recent.form[i] !== "13F-HR") continue;
+    const reportDate = recent.reportDate?.[i] ?? "";
+    if (out.some((f) => f.reportDate === reportDate)) continue;
+    out.push({ accessionNumber: recent.accessionNumber[i], form: recent.form[i], filingDate: recent.filingDate?.[i] ?? "", reportDate });
+  }
+  return out;
+}
+
+async function loadFiling(cik: string, managerName: string, latest: FilingMeta, fetchSec: SecFetch, topN: number): Promise<Latest13F> {
   const cikNumber = String(Number(cik));
   const folder = latest.accessionNumber.replace(/-/g, "");
   const base = `https://www.sec.gov/Archives/edgar/data/${cikNumber}/${folder}`;
@@ -160,15 +170,30 @@ export async function fetchLatest13F(cikInput: string, fetchSec: SecFetch, optio
   const holdings = rows
     .map((r) => ({ ...r, weightPct: total > 0 ? Number(((r.valueUsd / total) * 100).toFixed(2)) : 0 }))
     .sort((a, b) => b.valueUsd - a.valueUsd)
-    .slice(0, options.topN ?? 25);
+    .slice(0, topN);
 
-  return {
-    cik,
-    managerName: submissions.name ?? "",
-    ...latest,
-    reportedTotalValueUsd,
-    reportedEntryCount,
-    holdings,
-    sourceUrl: `${base}/${infoName}`,
-  };
+  return { cik, managerName, ...latest, reportedTotalValueUsd, reportedEntryCount, holdings, sourceUrl: `${base}/${infoName}` };
+}
+
+export async function fetchLatest13F(cikInput: string, fetchSec: SecFetch, options: { topN?: number } = {}): Promise<Latest13F> {
+  const cik = cleanCik(cikInput);
+  if (!cik) throw new No13FError("Invalid CIK");
+  const submissions = JSON.parse(await getText(fetchSec, `https://data.sec.gov/submissions/CIK${cik}.json`)) as SubmissionsJson;
+  const latest = pickLatest13F(submissions);
+  if (!latest) throw new No13FError("No 13F-HR filing found for this filer");
+  return loadFiling(cik, submissions.name ?? "", latest, fetchSec, options.topN ?? 25);
+}
+
+/** The two most recent original 13F-HR filings (different quarters), full tables. Throws No13FError if fewer than two exist. */
+export async function fetchTwo13Fs(cikInput: string, fetchSec: SecFetch): Promise<{ current: Latest13F; previous: Latest13F }> {
+  const cik = cleanCik(cikInput);
+  if (!cik) throw new No13FError("Invalid CIK");
+  const submissions = JSON.parse(await getText(fetchSec, `https://data.sec.gov/submissions/CIK${cik}.json`)) as SubmissionsJson;
+  const [cur, prev] = pickOriginal13Fs(submissions, 2);
+  if (!cur || !prev) throw new No13FError("Fewer than two original 13F-HR filings found");
+  const [current, previous] = await Promise.all([
+    loadFiling(cik, submissions.name ?? "", cur, fetchSec, Number.MAX_SAFE_INTEGER),
+    loadFiling(cik, submissions.name ?? "", prev, fetchSec, Number.MAX_SAFE_INTEGER),
+  ]);
+  return { current, previous };
 }

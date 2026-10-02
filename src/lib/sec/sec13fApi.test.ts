@@ -46,3 +46,17 @@ describe("/api/sec-13f", () => {
     expect(r.status).toBe(404);
   });
 });
+
+describe("/api/sec-13f?compare=1", () => {
+  it("answers 404 when the filer has fewer than two 13F-HR filings", async () => {
+    const subs = JSON.stringify({ name: "X", filings: { recent: { form: ["13F-HR"], accessionNumber: ["0001-26-1"], filingDate: ["d"], reportDate: ["2026-03-31"] } } });
+    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: true, status: 200, text: async () => subs })));
+    const r = await run({ cik: "999002", compare: "1" });
+    expect(r.status).toBe(404);
+  });
+  it("maps SEC outage to 503", async () => {
+    vi.stubGlobal("fetch", vi.fn(async () => ({ ok: false, status: 500, text: async () => "" })));
+    const r = await run({ cik: "999003", compare: "1" });
+    expect(r.status).toBe(503);
+  });
+});
