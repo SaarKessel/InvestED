@@ -67,7 +67,7 @@ export default function LearnPage() {
           <Card className="border-primary/20 bg-card/90 shadow-xl">
             <CardContent className="p-6">
               <div className="flex items-center justify-between"><span className="text-sm font-bold">{t("learn_progress")}</span><span className="text-2xl font-extrabold text-primary">{progress}%</span></div>
-              <Progress value={progress} className="mt-3" />
+              <Progress value={progress} label={t("learn_progress")} className="mt-3" />
               <p className="mt-4 text-xs leading-6 text-muted-foreground"><LockKeyhole className="me-1 inline h-3.5 w-3.5" />{t("learn_local_note")}</p>
             </CardContent>
           </Card>

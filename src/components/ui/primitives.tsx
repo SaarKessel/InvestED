@@ -247,14 +247,21 @@ export function Badge({
 export function Progress({
   value,
   className,
+  label,
 }: {
   value: number;
   className?: string;
+  label?: string;
 }) {
-  const safeValue = Math.min(100, Math.max(0, value));
+  const safeValue = Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : 0;
 
   return (
     <div
+      role="progressbar"
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={safeValue}
+      aria-label={label}
       className={cn(
         "h-3 w-full overflow-hidden rounded-full bg-muted",
         className
