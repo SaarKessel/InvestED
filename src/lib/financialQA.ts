@@ -433,7 +433,9 @@ function percentCalc(message: string, lang: QALanguage): QAPlan | null {
   // "כמה זה 15% מ-80,000?" / "what is 15% of 80,000?"
   m = message.match(new RegExp(`${PCT}\\s*(?:מ(?:ן)?[\\s־-]*|של\\s+|of\\s+)${NUM}\\s*${UNIT}(?:\\s*${CCY_WORD})?`, "i"));
   if (m) {
-    const pct = parseNum(m[1]);
+    // A leading minus ("-10% of 500") belongs to the percentage; a hyphen in a range ("5-10%") does not.
+    const negative = /(?:^|[\s(])[-\u2212]\s*$/.test(message.slice(0, m.index ?? 0));
+    const pct = parseNum(m[1]) === null ? null : (negative ? -1 : 1) * (parseNum(m[1]) as number);
     const base = scaled(m[2], m[3]);
     const ccy = currencyOf(m[4]);
     if (pct !== null && base) {
