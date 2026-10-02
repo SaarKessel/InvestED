@@ -14,7 +14,8 @@ describe("rentVsBuy", () => {
   it("rejects missing or impossible inputs instead of defaulting", () => {
     expect(rentVsBuy({ ...base, homePrice: 0 })).toBeNull();
     expect(rentVsBuy({ ...base, downPayment: 2_000_000 })).toBeNull();
-    const { years: _y, ...partial } = base;
+    const partial: Partial<typeof base> = { ...base };
+    delete partial.years;
     expect(validateInputs(partial)).toBe(false);
     expect(rentVsBuy({ ...base, investReturnPct: NaN })).toBeNull();
   });
