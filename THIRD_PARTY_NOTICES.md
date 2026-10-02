@@ -58,3 +58,7 @@
 - Project: https://github.com/bennycode/trading-signals
 - License: MIT (verified in the installed package, version 8.3.0)
 - Use: indicator series (RSI, SMA, EMA, MACD) for the Strategy Lab rule builder (src/lib/algo/indicatorSeries.ts). Zero runtime dependencies.
+
+## Literacy tools: concept credits (no code copied)
+- Fake-News-Detector (MIT): the idea of separating claims by how well they can be checked. InvestED's news worksheet is deterministic, headline-only and gives no true/false verdict.
+- Fraud_detection_using_ML and THEOREMX1.0: concepts only, no code, data or models used. The suspicious-link lab reads link text with fixed rules and teaches what to look for. It never opens or fetches the link.
