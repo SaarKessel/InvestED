@@ -72,6 +72,7 @@ import { type EtfResult } from "@/lib/copilot/etfDesk";
 import type { LedgerResult } from "@/lib/predictions/ledgerDesk";
 import type { OosDeskResult } from "@/lib/copilot/oosDesk";
 import type { CopyFundResult } from "@/lib/copilot/copyFundDesk";
+import { type DividendResult } from "@/lib/copilot/dividendDesk";
 import { type FilingsResult } from "@/lib/copilot/filingsDesk";
 import { type FxResult } from "@/lib/copilot/fxDesk";
 import { type MathDeskResult } from "@/lib/copilot/mathDesk";
@@ -91,7 +92,7 @@ import type { CopilotResponse } from "@/lib/copilotResponse";
 
 /** Minimum BM25 score for a retrieved passage to be shown; weaker matches are noise. */
 const MIN_RETRIEVE_SCORE = 3;
-interface Message { ledger?: LedgerResult | null; copyfund?: CopyFundResult | null; oos?: OosDeskResult | null; retrieved?: Passage[]; prov?: Provenance; agent?: { id: string | null; switchTo?: string }; deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxResult | null; fxFailed?: boolean; symbol?: SymbolInfo; wb?: WbResult | null; filings?: FilingsResult | null; etf?: EtfResult | null; macro?: MacroResult | null; scenario?: ScenarioPart[]; marketsim?: MarketEventResult; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
+interface Message { ledger?: LedgerResult | null; dividends?: DividendResult | null; copyfund?: CopyFundResult | null; oos?: OosDeskResult | null; retrieved?: Passage[]; prov?: Provenance; agent?: { id: string | null; switchTo?: string }; deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxResult | null; fxFailed?: boolean; symbol?: SymbolInfo; wb?: WbResult | null; filings?: FilingsResult | null; etf?: EtfResult | null; macro?: MacroResult | null; scenario?: ScenarioPart[]; marketsim?: MarketEventResult; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
 
 export function AIChatCard({ workstation = false }: { workstation?: boolean } = {}) {
   const { t, language } = useLanguage();
@@ -471,6 +472,13 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
       const macro = macroOut.ok ? macroOut.result.value : null;
       const he = /[א-ת]/.test(text);
       setMessages((current) => [...current, { role: "copilot", trace: macroOut.ok ? [...trace, { text: dataCheckLine(macroOut.result), trust: "ANALYSIS" as const }] : trace, text: macro ? (he ? "הנה הנתון מהמקור הרשמי:" : "Here is the figure from the official source:") : (he ? "לא הצלחתי לטעון עכשיו את הנתון מהמקור הרשמי, ולכן לא מציגה כלום. נסו שוב בעוד רגע." : "I could not load that figure from the official source right now, so I am not showing anything. Try again in a moment."), macro, prov: macroOut.ok ? macroOut.result.provenance : undefined }]);
+      return;
+    }
+    if (plan.dividends) {
+      const divOut = await runTool<DividendResult>(plan.tools[0], plan.dividends, { agentId: pickedAgent });
+      const dividends = divOut.ok ? divOut.result.value : null;
+      const he = /[א-ת]/.test(text);
+      setMessages((current) => [...current, { role: "copilot", trace: divOut.ok ? [...trace, { text: dataCheckLine(divOut.result), trust: "ANALYSIS" as const }] : trace, text: dividends ? (he ? "הנה הדיבידנדים ששולמו בפועל, ובנפרד הערכה למה שצפוי:" : "Here are the dividends actually paid, and separately an estimate of what to expect:") : (he ? "לא הצלחתי לטעון עכשיו נתוני דיבידנד לסימול הזה, ולכן לא מציגה כלום. בדקו את הסימול ונסו שוב." : "I could not load dividend data for that symbol right now, so I am not showing anything. Check the ticker and try again."), dividends, prov: divOut.ok ? divOut.result.provenance : undefined }]);
       return;
     }
     if (plan.etf) {

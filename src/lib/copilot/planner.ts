@@ -11,6 +11,7 @@ import { parseOosRequest, type OosRequest } from "./oosDesk";
 import { parseMacroRequest, type MacroRequest } from "./macroDesk";
 import { parseEtfRequest, type EtfRequest } from "./etfDesk";
 import { parseCopyFundRequest, type CopyFundRequest } from "./copyFundDesk";
+import { parseDividendRequest, type DividendRequest } from "./dividendDesk";
 import { parseFilingsRequest, type FilingsRequest } from "./filingsDesk";
 import { planLedgerRequest } from "@/lib/predictions/ledgerDesk";
 import type { LedgerRequest } from "@/lib/predictions/ledger";
@@ -22,10 +23,10 @@ import { TRUST_LABEL } from "@/lib/intelligence/provenance";
 import type { TrustClass } from "@/lib/intelligence/verificationEngine";
 import type { ToolId } from "@/lib/intelligence/tools";
 
-export type Route = "tool" | "career" | "learnpath" | "site" | "calc" | "math" | "fx" | "wb" | "macro" | "filings" | "etf" | "scenario" | "marketsim" | "ledger" | "oos" | "copyfund" | "desk" | "copilot";
+export type Route = "tool" | "career" | "learnpath" | "site" | "calc" | "math" | "fx" | "wb" | "macro" | "filings" | "etf" | "dividends" | "scenario" | "marketsim" | "ledger" | "oos" | "copyfund" | "desk" | "copilot";
 export interface Bi { en: string; he: string }
 export interface TraceStep { text: Bi; trust?: TrustClass }
-export interface Plan { /** registry tool ids this route runs, in order */ tools: ToolId[]; route: Route; toolPath?: string; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxRequest; wb?: WbRequest; macro?: MacroRequest; filings?: FilingsRequest; etf?: EtfRequest; ledger?: LedgerRequest; oos?: OosRequest; copyfund?: CopyFundRequest; scenario?: ScenarioPart[]; marketsim?: MarketEventInput; desk?: DataDeskKind; trace: TraceStep[] }
+export interface Plan { /** registry tool ids this route runs, in order */ tools: ToolId[]; route: Route; toolPath?: string; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxRequest; wb?: WbRequest; macro?: MacroRequest; filings?: FilingsRequest; etf?: EtfRequest; dividends?: DividendRequest; ledger?: LedgerRequest; oos?: OosRequest; copyfund?: CopyFundRequest; scenario?: ScenarioPart[]; marketsim?: MarketEventInput; desk?: DataDeskKind; trace: TraceStep[] }
 const b = (en: string, he: string): Bi => ({ en, he });
 
 export function planQuestion(text: string): Plan {
@@ -60,6 +61,11 @@ export function planQuestion(text: string): Plan {
   if (filings) return { tools: ["filings"], route: "filings", filings, trace: [
     { text: b("Recognized a question about an institutional manager's holdings.", "זיהיתי שאלה על החזקות של מנהל מוסדי.") },
     { text: b("Loaded the manager's latest Form 13F from SEC EDGAR and showed the top holdings exactly as reported, with the report date. 13F is delayed and long-only.", "טענתי את טופס 13F האחרון של המנהל מ-SEC EDGAR והצגתי את ההחזקות הגדולות בדיוק כפי שדווחו, עם תאריך הדוח. 13F מתפרסם באיחור וכולל רק פוזיציות לונג."), trust: "DATA" },
+    { text: b("No model chose or changed any number.", "אף מודל לא בחר או שינה מספר.") }] };
+  const dividends = parseDividendRequest(text);
+  if (dividends) return { tools: ["dividends"], route: "dividends", dividends, trace: [
+    { text: b("Recognized a question about dividends.", "זיהיתי שאלה על דיבידנדים.") },
+    { text: b("Loaded the list of dividends actually paid from Yahoo Finance public chart data and summed the last 12 months. The expected figure is an estimate from the last payment and its frequency, not a declared payout.", "טענתי את רשימת הדיבידנדים ששולמו בפועל מנתוני הגרף הציבוריים של Yahoo Finance וסכמתי את 12 החודשים האחרונים. הנתון הצפוי הוא הערכה לפי התשלום האחרון והתדירות, לא סכום שהוכרז."), trust: "DATA" },
     { text: b("No model chose or changed any number.", "אף מודל לא בחר או שינה מספר.") }] };
   const etf = parseEtfRequest(text);
   if (etf) return { tools: ["etf"], route: "etf", etf, trace: [

@@ -17,6 +17,10 @@
       "destination": "/api/system?fn=health"
     },
     {
+      "source": "/api/dividends",
+      "destination": "/api/system?fn=dividends"
+    },
+    {
       "source": "/api/sec-13f",
       "destination": "/api/system?fn=sec-13f"
     },

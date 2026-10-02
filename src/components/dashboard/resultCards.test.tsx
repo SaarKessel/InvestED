@@ -6,8 +6,8 @@ import { ToolResultCards } from "./resultCards";
 import { RESULT_KEYS } from "./resultKeys";
 
 describe("result card registry", () => {
-  it("covers the fifteen approved result types", () => {
-    expect([...RESULT_KEYS].sort()).toEqual(["calc", "copyfund", "desk", "etf", "filings", "fx", "ledger", "macro", "marketsim", "math", "oos", "prov", "scenario", "symbol", "wb"]);
+  it("covers the sixteen approved result types", () => {
+    expect([...RESULT_KEYS].sort()).toEqual(["calc", "copyfund", "desk", "dividends", "etf", "filings", "fx", "ledger", "macro", "marketsim", "math", "oos", "prov", "scenario", "symbol", "wb"]);
   });
   it("renders nothing when the message has no structured result", () => {
     expect(renderToStaticMarkup(<LanguageProvider><ToolResultCards message={{}} onAsk={() => {}} /></LanguageProvider>)).toBe("");

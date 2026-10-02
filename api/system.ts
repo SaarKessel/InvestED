@@ -4,6 +4,7 @@
 import closesHandler from "../src/lib/api/closesHandler.js";
 import copy13fHandler from "../src/lib/api/copy13fHandler.js";
 import personaFactsHandler from "../src/lib/api/personaFactsHandler.js";
+import dividendHandler from "../src/lib/api/dividendHandler.js";
 import healthHandler from "../src/lib/api/healthHandler.js";
 import imfHandler from "../src/lib/api/imfHandler.js";
 import newsSentimentHandler from "../src/lib/api/newsSentimentHandler.js";
@@ -25,5 +26,6 @@ export default async function handler(req: Req, res: Res) {
   if (fn === "imf-weo") return imfHandler(req, res);
   if (fn === "research-brief") return researchBriefHandler(req, res);
   if (fn === "news-sentiment") return newsSentimentHandler(req, res);
+  if (fn === "dividends") return dividendHandler(req, res);
   res.status(404).json({ error: "unknown_function" });
 }

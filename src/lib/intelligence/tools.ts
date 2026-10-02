@@ -11,6 +11,7 @@ import { loadFx, type FxRequest, type FxResult } from "@/lib/copilot/fxDesk";
 import { loadWb, type WbRequest, type WbResult } from "@/lib/copilot/worldBankDesk";
 import { loadFilings, type FilingsRequest, type FilingsResult } from "@/lib/copilot/filingsDesk";
 import { loadEtf, type EtfRequest, type EtfResult } from "@/lib/copilot/etfDesk";
+import { loadDividends, type DividendRequest, type DividendResult } from "@/lib/copilot/dividendDesk";
 import { lookupSymbol, type SymbolInfo } from "@/lib/copilot/symbolDesk";
 import { runMathDesk, type MathDeskResult } from "@/lib/copilot/mathDesk";
 import { runCalcDesk, type CalcDeskResult } from "@/lib/copilot/calcDesk";
@@ -24,7 +25,7 @@ import { runLedger, type LedgerResult } from "@/lib/predictions/ledgerDesk";
 import type { LedgerRequest } from "@/lib/predictions/ledger";
 import type { TrustClass } from "./verificationEngine";
 
-export type ToolId = "calc" | "math" | "fx" | "wb" | "macro" | "filings" | "etf" | "symbol" | "scenario" | "risk" | "rssnews" | "marketsim" | "ledger" | "oos" | "copyfund";
+export type ToolId = "calc" | "math" | "fx" | "wb" | "macro" | "filings" | "etf" | "symbol" | "scenario" | "risk" | "rssnews" | "marketsim" | "ledger" | "oos" | "copyfund" | "dividends";
 export type Domain = "finance" | "market" | "knowledge" | "news";
 export interface ToolSpec { id: ToolId; domain: Domain; title: Bi; trust: TrustClass; network: boolean }
 export type ToolOutcome<T = unknown> = { ok: true; result: ToolResult<T> } | { ok: false; reason: "denied" | "unavailable" | "unknown_tool" };
@@ -41,6 +42,7 @@ export const TOOL_SPECS: Record<ToolId, ToolSpec> = {
   macro: { id: "macro", domain: "market", title: b("ECB rate and IMF outlook", "ריבית ה-ECB ותחזית ה-IMF"), trust: "DATA", network: true },
   filings: { id: "filings", domain: "market", title: b("Institutional holdings (SEC 13F)", "החזקות מוסדיות (SEC 13F)"), trust: "DATA", network: true },
   etf: { id: "etf", domain: "market", title: b("ETF holdings (SEC N-PORT)", "החזקות קרן סל (SEC N-PORT)"), trust: "DATA", network: true },
+  dividends: { id: "dividends", domain: "market", title: b("Dividends (paid history and estimate)", "דיבידנדים (היסטוריה והערכה)"), trust: "DATA", network: true },
   risk: { id: "risk", domain: "market", title: b("Risk metrics", "מדדי סיכון"), trust: "CALCULATION", network: true },
   ledger: { id: "ledger", domain: "finance", title: b("Prediction ledger and calibration", "רשומת תחזיות וכיול"), trust: "DATA", network: true },
   oos: { id: "oos", domain: "market", title: b("Out-of-sample portfolio check", "בדיקת תיק מחוץ למדגם"), trust: "SIMULATION", network: true },
@@ -80,6 +82,11 @@ const ADAPTERS: Record<ToolId, Adapter> = {
     const v: EtfResult | null = await loadEtf(req);
     return v && wrap("etf", v, { source: b("SEC EDGAR: fund Form N-PORT", "SEC EDGAR: טופס N-PORT של הקרן"), asOf: v.reportDate, state: "live",
       note: b("As reported by the fund. Only quarter-end reports are public, about 60 days after quarter end, so the holdings can be months old. Not advice.", "כפי שדווח על ידי הקרן. רק דוחות סוף רבעון פומביים, כ-60 יום אחרי הרבעון, ולכן ההחזקות עשויות להיות בנות חודשים. לא ייעוץ.") });
+  }) as Adapter,
+  dividends: (async (req: DividendRequest) => {
+    const v: DividendResult | null = await loadDividends(req);
+    return v && wrap("dividends", v, { source: b("Yahoo Finance public chart data (dividend events)", "Yahoo Finance, נתוני גרף ציבוריים (אירועי דיבידנד)"), asOf: v.asOf, state: "live",
+      note: b("Paid amounts are real past data. The expected figure is an estimate from the last payment and its frequency, not a declared payout. Companies can raise, cut or stop a dividend. Not advice.", "הסכומים ששולמו הם נתוני עבר אמיתיים. הנתון הצפוי הוא הערכה לפי התשלום האחרון והתדירות, לא סכום שהוכרז. חברות יכולות להעלות, להוריד או להפסיק דיבידנד. לא ייעוץ.") });
   }) as Adapter,
   marketsim: (async (req: MarketEventInput) => {
     const v: MarketEventResult = simulateMarketEvent(req);
