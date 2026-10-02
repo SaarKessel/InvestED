@@ -9,6 +9,7 @@ import healthHandler from "../src/lib/api/healthHandler.js";
 import imfHandler from "../src/lib/api/imfHandler.js";
 import newsSentimentHandler from "../src/lib/api/newsSentimentHandler.js";
 import nportHandler from "../src/lib/api/nportHandler.js";
+import researchDebateHandler from "../src/lib/api/researchDebateHandler.js";
 import researchBriefHandler from "../src/lib/api/researchBriefHandler.js";
 import sec13fHandler from "../src/lib/api/sec13fHandler.js";
 
@@ -25,6 +26,7 @@ export default async function handler(req: Req, res: Res) {
   if (fn === "sec-nport") return nportHandler(req, res);
   if (fn === "imf-weo") return imfHandler(req, res);
   if (fn === "research-brief") return researchBriefHandler(req, res);
+  if (fn === "research-debate") return researchDebateHandler(req, res);
   if (fn === "news-sentiment") return newsSentimentHandler(req, res);
   if (fn === "dividends") return dividendHandler(req, res);
   res.status(404).json({ error: "unknown_function" });

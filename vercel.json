@@ -37,6 +37,10 @@
       "destination": "/api/system?fn=research-brief"
     },
     {
+      "source": "/api/research-debate",
+      "destination": "/api/system?fn=research-debate"
+    },
+    {
       "source": "/api/news-sentiment",
       "destination": "/api/system?fn=news-sentiment"
     },
