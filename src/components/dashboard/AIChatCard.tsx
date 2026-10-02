@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { isCareerLaunchRequest } from "@/lib/career/chatRoute";
 import { Check, Clipboard, History, Loader2, LogOut, Mic, Square, RotateCcw, Volume2, VolumeX, ArrowUp, Paperclip } from "lucide-react";
-import { useLanguage } from "@/context/languageContext";
+import { useLanguage, LanguageOverride } from "@/context/languageContext";
 import { ChatAssetCards } from "./ChatAssetCards";
 import { ChatCalculationCard } from "./ChatCalculationCard";
 import { ChatComparisonTable } from "./ChatComparisonTable";
@@ -469,11 +469,17 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
   const panelIndex = wide ? messages.reduce((acc, m, i) => (m.role === "copilot" && hasVisuals(m) ? i : acc), -1) : -1;
   const panelOpen = panelIndex >= 0 && dismissedPanel !== panelIndex;
   const inPanel = (index: number) => panelOpen && index === panelIndex;
+  /** Language of the question that produced this answer (Hebrew letters = Hebrew). */
+  const questionLang = (message: Message): "he" | "en" => {
+    for (let i = messages.indexOf(message) - 1; i >= 0; i--) if (messages[i].role === "user") return /[א-ת]/.test(messages[i].text) ? "he" : "en";
+    return language === "he" ? "he" : "en";
+  };
   const visuals = (message: Message) => {
     const response = message.response;
     const assets = response?.assets ?? [];
     return (<>
             {!wide && assets.length > 0 && <div className="mt-3 space-y-3">{assets.length >= 2 && <ChatCompareChart symbols={[assets[0].symbol, assets[1].symbol]} />}{assets.slice(0, 2).map((a) => <ChatChartCard key={a.symbol} symbol={a.symbol} />)}</div>}
+            <LanguageOverride language={questionLang(message)}>
             {message.desk && <ChatDataDesk data={message.desk} />}
             {message.calc && <ChatCalcCard data={message.calc} />}
             {message.symbol && <ChatSymbolCard info={message.symbol} onAsk={(q) => void send(q)} />}
@@ -483,6 +489,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
             {message.fx && <ChatFxCard data={message.fx} />}
             {message.prov && <ChatProvenance prov={message.prov} />}
             {message.math && <ChatMathCard data={message.math} />}
+            </LanguageOverride>
             {message.retrieved && message.retrieved.length > 0 && (
               <div className="mt-2 rounded-xl border border-border/70 bg-muted/30 p-3 text-xs leading-6" data-testid="retrieved-passages">
                 <p className="font-semibold">{t("retrieved_lead")}</p>
@@ -544,7 +551,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
             {message.role === "copilot" && <button type="button" onClick={() => copyMessage(message.text, index)} className="mt-2 inline-flex items-center gap-1 text-[11px] text-muted-foreground opacity-70 hover:opacity-100" aria-label={t("copilot_copy")}>{copied === index ? <Check className="h-3 w-3" /> : <Clipboard className="h-3 w-3" />}{copied === index ? t("copilot_copied") : t("copilot_copy")}</button>}{message.role === "copilot" && canSpeak && <button type="button" onClick={() => speakingIdx === index ? (stopSpeaking(), setSpeakingIdx(null)) : speakMessage(message.text, index)} className="ms-3 mt-2 inline-flex items-center gap-1 text-[11px] text-muted-foreground opacity-70 hover:opacity-100" aria-label={t(speakingIdx === index ? "speak_stop" : "speak_play")}>{speakingIdx === index ? <VolumeX className="h-3 w-3" /> : <Volume2 className="h-3 w-3" />}{t(speakingIdx === index ? "speak_stop" : "speak_play")}</button>}
             {message.deep && <p className="mt-2 text-[11px] font-semibold uppercase tracking-wide text-[#B8862B] dark:text-[#E0B253]">{t("deep_label").replace("{n}", String(message.deep.steps))}</p>}
             {message.role === "copilot" && level !== "basic" && <ChatDepth sections={depthSections(level, { calc: message.calc, desk: message.desk, assets: message.response?.assets, question: message.question, math: message.math, fx: message.fx, wb: message.wb, symbol: message.symbol, scenario: message.scenario })} />}
-            {message.role === "copilot" && message.trace && <ChatTrace steps={message.trace} />}
+            {message.role === "copilot" && message.trace && <LanguageOverride language={questionLang(message)}><ChatTrace steps={message.trace} /></LanguageOverride>}
             {message.role === "copilot" && message.question && user && <button type="button" onClick={() => setSaved(toggleSaved(user.id, message.question!, message.text))} aria-pressed={isSaved(saved, message.question, message.text)} className="mt-2 ms-3 inline-flex items-center gap-1 text-[11px] text-muted-foreground opacity-70 hover:opacity-100">{isSaved(saved, message.question, message.text) ? t("saved_done") : t("saved_do")}</button>}
             {message.fromFile && <p className="mt-2 text-[11px] text-muted-foreground">{t("file_label")}</p>}
             {message.role === "copilot" && message.question && <ChatAlsoAsked question={message.question} answer={message.text} />}

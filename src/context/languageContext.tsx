@@ -69,3 +69,19 @@ export function useLanguage(): LanguageContextValue {
 
   return context;
 }
+
+/** Renders children in a fixed language (e.g. the language of the question) regardless of the UI language. */
+export function LanguageOverride({ language, children }: { language: AppLanguage; children: React.ReactNode }) {
+  const outer = useLanguage();
+  const value = useMemo<LanguageContextValue>(() => {
+    if (outer.language === language) return outer;
+    const dict = dictionaries[language] ?? dictionaries.he;
+    return { ...outer, language, dir: language === "he" ? "rtl" : "ltr", t: (key, fallback) => (key in dict ? dict[key] : (fallback ?? key)) };
+  }, [outer, language]);
+  if (outer.language === language) return <>{children}</>;
+  return (
+    <LanguageContext.Provider value={value}>
+      <div dir={value.dir}>{children}</div>
+    </LanguageContext.Provider>
+  );
+}
