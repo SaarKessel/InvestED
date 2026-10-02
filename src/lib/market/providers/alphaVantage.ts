@@ -48,6 +48,8 @@ function asRecord(value: unknown): RawRecord | null {
 
 function parseNumberField(value: unknown): number | null {
   if (typeof value !== "string" && typeof value !== "number") return null;
+  // Number("") is 0: a blank field is missing data, never a real zero.
+  if (typeof value === "string" && value.trim() === "") return null;
   const parsed = Number(String(value).replace(/%$/, ""));
   return Number.isFinite(parsed) ? parsed : null;
 }
