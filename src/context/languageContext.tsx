@@ -16,6 +16,8 @@ export interface LanguageContextValue {
   t: (key: string, fallback?: string) => string;
 }
 
+const has = (dict: Record<string, string>, key: string): boolean => Object.prototype.hasOwnProperty.call(dict, key);
+
 const dictionaries: Record<AppLanguage, Record<string, string>> = {
   he: heLocale,
   en: enLocale,
@@ -38,7 +40,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     const currentDict = dictionaries[language] ?? dictionaries.he;
 
     const t = (key: string, fallback?: string): string => {
-      if (currentDict && key in currentDict) {
+      if (currentDict && has(currentDict, key)) {
         return currentDict[key];
       }
       return fallback ?? key;
@@ -76,7 +78,7 @@ export function LanguageOverride({ language, children }: { language: AppLanguage
   const value = useMemo<LanguageContextValue>(() => {
     if (outer.language === language) return outer;
     const dict = dictionaries[language] ?? dictionaries.he;
-    return { ...outer, language, dir: language === "he" ? "rtl" : "ltr", t: (key, fallback) => (key in dict ? dict[key] : (fallback ?? key)) };
+    return { ...outer, language, dir: language === "he" ? "rtl" : "ltr", t: (key, fallback) => (has(dict, key) ? dict[key] : (fallback ?? key)) };
   }, [outer, language]);
   if (outer.language === language) return <>{children}</>;
   return (
