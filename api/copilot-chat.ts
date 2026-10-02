@@ -29,6 +29,7 @@ import {
   rephraseIntroducesNoNewFacts,
   resolveGeminiConfig,
 } from "../src/lib/copilot/gatewayPrompt.js";
+import { applyAdviceGuard } from "../src/lib/copilot/adviceGuard.js";
 
 interface CopilotChatRequest {
   method?: string;
@@ -97,6 +98,12 @@ export default async function handler(req: CopilotChatRequest, res: CopilotChatR
     // no symbol or number beyond the validated answer and fact set.
     if (!rephraseIntroducesNoNewFacts(payload.answer, payload.facts, text)) {
       return res.status(200).json({ fallback: true, reason: "fact_mismatch" });
+    }
+    // Deterministic advice guard: no buy/sell directives, personalized sizing or guaranteed returns.
+    const guard = applyAdviceGuard(text);
+    if (guard.guarded) {
+      console.warn("advice_guard_rejection", JSON.stringify({ violations: guard.violations }));
+      return res.status(200).json({ text: guard.text, guarded: true });
     }
     return res.status(200).json({ text });
   } catch {
