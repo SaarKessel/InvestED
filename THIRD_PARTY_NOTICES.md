@@ -44,3 +44,7 @@
 - License: MIT
 - Use: the idea of rating news headlines positive / negative / neutral. InvestED uses its single Gemini layer on the headline text only, validates every rating, and labels it "AI estimate" in the UI (src/lib/news/sentiment.ts).
 - Also used for: the positives / concerns / outlook layout of the research scenario brief (src/lib/research/scenarioBrief.ts). It is educational scenario analysis and never a price prediction.
+
+## FinceptTerminal (concepts only, no code read or copied)
+- Project: https://github.com/Fincept-Corporation/FinceptTerminal (its license does not allow reuse of the code, so none was used)
+- Use: only the idea of offering DCF, VaR, Sharpe and portfolio-optimization tools. They were written from standard textbook formulas: Gordon-growth DCF, empirical and normal VaR with expected shortfall (Acklam inverse-normal approximation), and long-only minimum-variance weights via projected gradient (simplex projection after Duchi et al., 2008). See src/lib/analytics/.

@@ -5,9 +5,13 @@
 
 import type { CandleDatum } from "../../types/index.js";
 import { computeFactors, type FactorSnapshot } from "../market/factors.js";
+import { computeVar, periodReturns, type VarReport } from "../analytics/risk.js";
+import { minVarianceReport, type MinVarianceReport } from "../analytics/portfolio.js";
 import { getStrategy } from "../strategy/strategyEngine.js";
 import {
+  cleanSeries,
   computePerformance,
+  detectPeriodsPerYear,
   computeTrainTestPerformance,
   type Metric,
   type PerformanceReport,
@@ -29,6 +33,10 @@ export interface StrategyPerformance {
   performance: Metric<PerformanceReport>;
   trainTest: Metric<TrainTestReport>;
   factors: FactorSnapshot;
+  /** One-period historical VaR / expected shortfall at 95%. */
+  risk: Metric<VarReport>;
+  /** In-sample minimum-variance weights across the strategy example assets (real history only). */
+  portfolio: Metric<MinVarianceReport>;
 }
 
 export function benchmarkFor(symbol: string): string {
@@ -60,6 +68,10 @@ export async function loadStrategyPerformance(
   ]);
   if (!asset) return { status: "unavailable", reason: `Real price history for ${symbol} is unavailable` };
 
+  const clean = cleanSeries(asset.history);
+  const risk = computeVar(periodReturns(clean.points.map((x) => x.close)), 95);
+  const portfolio = await loadPortfolio(strategy.exampleAssets.slice(0, 4), asset, symbol, fetchAsset);
+
   const options = benchmark ? { benchmark: benchmark.history } : {};
   return {
     status: "computed",
@@ -70,6 +82,22 @@ export async function loadStrategyPerformance(
       performance: computePerformance(asset.history, options),
       trainTest: computeTrainTestPerformance(asset.history, { ...options, trainFraction: 0.7 }),
       factors: computeFactors(asset.history),
+      risk,
+      portfolio,
     },
   };
+}
+
+async function loadPortfolio(symbols: string[], first: HistoryAsset, firstSymbol: string, fetchAsset: HistoryFetcher): Promise<Metric<MinVarianceReport>> {
+  if (symbols.length < 2) return { status: "unavailable", reason: "This strategy has fewer than two example assets" };
+  const loaded = await Promise.all(symbols.map(async (s) => [s, s === firstSymbol ? first : await realHistory(fetchAsset, s)] as const));
+  const series: Record<string, { date: string; close: number }[]> = {};
+  const missing: string[] = [];
+  for (const [s, a] of loaded) {
+    if (a) series[s] = cleanSeries(a.history).points; else missing.push(s);
+  }
+  if (Object.keys(series).length < 2) return { status: "unavailable", reason: `Real price history is unavailable for ${missing.join(", ")}` };
+  const ppy = detectPeriodsPerYear(cleanSeries(first.history).quality.medianGapDays);
+  if (ppy === null) return { status: "unavailable", reason: "Observation frequency could not be determined" };
+  return minVarianceReport(series, ppy);
 }

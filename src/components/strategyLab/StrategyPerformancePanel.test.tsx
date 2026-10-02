@@ -56,6 +56,15 @@ describe("StrategyPerformancePanel", () => {
     expect(fetchMock).toHaveBeenCalledWith(expect.any(String), "10y", undefined, { allowSimulated: false });
   });
 
+  it("shows VaR and min-variance blocks from real history, labeled as past/in-sample", async () => {
+    fetchMock.mockImplementation(async (symbol: string) => ({ history: weekly(300).map((p, i) => ({ ...p, close: p.close * (1 + 0.01 * Math.sin(i * (symbol.length + 1))) })), dataSource: "yahoo_finance", isMock: false }));
+    await mountAndLoad();
+    const block = container.querySelector('[data-testid="slab-risk"]');
+    expect(block).not.toBeNull();
+    expect(block?.textContent).toMatch(/VaR/);
+    expect(block?.textContent).toMatch(/%/);
+  });
+
   it("shows an honest error and no numbers when real history is unavailable", async () => {
     fetchMock.mockResolvedValue(null);
     await mountAndLoad();

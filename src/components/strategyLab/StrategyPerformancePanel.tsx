@@ -111,6 +111,34 @@ function Factors({ factors }: { factors: FactorSnapshot }) {
   );
 }
 
+function RiskBlock({ risk, portfolio }: Pick<StrategyPerformance, "risk" | "portfolio">) {
+  const { t, language } = useLanguage();
+  const un = (reason: string) => t("slab_perf_unavailable", "unavailable: {reason}").replace("{reason}", reasonText(reason, language));
+  return (
+    <div className="rounded-xl border border-border bg-muted/40 p-3" data-testid="slab-risk">
+      <p className="mb-1 text-xs font-bold">{t("slab_risk_title", "Value at Risk (one period, 95%)")}</p>
+      {risk.status === "computed" ? (
+        <dl>
+          <Row label={t("slab_risk_hist", "Historical VaR")} metric={{ status: "computed", value: Number(risk.value.historicalVarPct.toFixed(2)) }} suffix="%" />
+          <Row label={t("slab_risk_es", "Expected shortfall")} metric={{ status: "computed", value: Number(risk.value.expectedShortfallPct.toFixed(2)) }} suffix="%" />
+          <Row label={t("slab_risk_param", "Parametric VaR (normal)")} metric={risk.value.parametricVarPct.status === "computed" ? { status: "computed", value: Number(risk.value.parametricVarPct.value.toFixed(2)) } : risk.value.parametricVarPct} suffix="%" />
+        </dl>
+      ) : <p className="text-xs text-muted-foreground">{un(risk.reason)}</p>}
+      <p className="mt-1 text-[10px] text-muted-foreground">{t("slab_risk_note", "Past one-period loss levels from real returns. Not a forecast and not a loss limit.")}</p>
+      <p className="mb-1 mt-3 text-xs font-bold">{t("slab_port_title", "Minimum-variance weights (in-sample)")}</p>
+      {portfolio.status === "computed" ? (
+        <>
+          <dl>
+            {portfolio.value.symbols.map((s, i) => <Row key={s} label={s} metric={{ status: "computed", value: Number((portfolio.value.weights[i] * 100).toFixed(1)) }} suffix="%" />)}
+            <Row label={t("slab_port_vol", "Volatility, minimum variance vs. equal weight")} metric={{ status: "computed", value: `${portfolio.value.minVolPct.toFixed(2)}% / ${portfolio.value.equalWeightVolPct.toFixed(2)}%` as unknown as number }} />
+          </dl>
+          <p className="mt-1 text-[10px] text-muted-foreground">{t("slab_port_note", "Weights fitted to past data on {dates} common dates ({dropped} dates missing in some asset were dropped, none filled). Illustration of the method, not an allocation to hold.").replace("{dates}", String(portfolio.value.dates)).replace("{dropped}", String(portfolio.value.dropped))}</p>
+        </>
+      ) : <p className="text-xs text-muted-foreground">{un(portfolio.reason)}</p>}
+    </div>
+  );
+}
+
 export function StrategyPerformancePanel({ strategyId }: { strategyId: string }) {
   const { t } = useLanguage();
   const [state, setState] = useState<State>({ status: "idle" });
@@ -165,6 +193,7 @@ export function StrategyPerformancePanel({ strategyId }: { strategyId: string })
             </div>
           )}
           <Factors factors={state.data.factors} />
+          <RiskBlock risk={state.data.risk} portfolio={state.data.portfolio} />
           <p className="text-[11px] text-muted-foreground">{t("slab_perf_rf", "Sharpe assumes a 0% risk-free rate.")}</p>
           <p className="text-[11px] text-muted-foreground">
             {t("slab_perf_notice", "Past performance only. Based on real prices from {source}.").replace(

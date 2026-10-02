@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { DcfCard } from "@/components/calculator/DcfCard";
 import { Link } from "react-router-dom";
 import {
   analyzeFinancialScenarioWithProjection,
@@ -461,6 +462,7 @@ export default function CalculatorPage() {
             </div>
           </div>
         )}
+        <div className="mt-8"><DcfCard /></div>
       </main>
     </div>
   );
