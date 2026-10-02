@@ -54,7 +54,7 @@ export function RuleBuilderPanel() {
     if (!sym) { setState({ status: "error", reason: t("rule_err_symbol", "Enter a symbol") }); return; }
     setState({ status: "loading" });
     try {
-      const asset = await fetchMarketAssetBySymbol(sym, "10y", undefined, { allowSimulated: false });
+      const asset = await fetchMarketAssetBySymbol(sym, "5y", undefined, { allowSimulated: false });
       if (!asset || asset.isMock || asset.dataSource === "mock" || asset.history.length < 2) {
         setState({ status: "error", reason: t("rule_err_data", "Real price history is unavailable right now.") });
         return;

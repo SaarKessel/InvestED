@@ -33,7 +33,7 @@ describe("RuleBuilderPanel", () => {
   it("shows explained rules, signal counts and the disclaimer from real history", async () => {
     fetchMock.mockResolvedValue({ history: days(200), dataSource: "yahoo_finance", isMock: false });
     await run();
-    expect(fetchMock).toHaveBeenCalledWith("SPY", "10y", undefined, { allowSimulated: false });
+    expect(fetchMock).toHaveBeenCalledWith("SPY", "5y", undefined, { allowSimulated: false });
     expect(container.textContent).toContain("אותות כניסה");
     expect(container.textContent).toContain("RSI(14)");
     expect(container.textContent).toContain("כרטיס דוח בדיקה היסטורית");
@@ -59,5 +59,8 @@ describe("RuleBuilderPanel bundle 3", () => {
     await act(async () => { start.click(); });
     expect(JSON.parse(localStorage.getItem("invested_algo_paper_v1")!)).toHaveLength(1);
     expect(container.textContent).toContain("SPY");
+    const check = [...container.querySelectorAll("button")].find((button) => button.textContent?.includes("בדיקה"))!;
+    await act(async () => { check.click(); });
+    expect(fetchMock).toHaveBeenLastCalledWith("SPY", "5y", undefined, { allowSimulated: false });
   });
 });

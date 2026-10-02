@@ -14,6 +14,10 @@ const RULES: Array<[RegExp, (m: RegExpMatchArray) => string]> = [
   [/^Real price history is unavailable for (.+)$/, (m) => `היסטוריית מחירים אמיתית אינה זמינה עבור ${m[1]}`],
   [/^Observation frequency could not be determined$/, () => "לא ניתן לקבוע את תדירות התצפיות"],
   [/^Zero band width$/, () => "רוחב הרצועה אפס"],
+  [/^Zero volatility$/, () => "אין תנודתיות"],
+  [/^No negative periods$/, () => "לא היו תקופות עם תשואה שלילית"],
+  [/^No completed trades$/, () => "לא הושלמו עסקאות"],
+  [/^Needs a computed CAGR and a non-zero drawdown$/, () => "נדרשים שיעור צמיחה שנתי מחושב וירידה מרבית שאינה אפס"],
 ];
 
 export function reasonText(reason: string, language: string): string {

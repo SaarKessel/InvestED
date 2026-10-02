@@ -70,7 +70,7 @@ export function PaperTrading({ symbol, history, strategy, options }: { symbol: s
   async function check(run: PaperRun) {
     setLive((l) => ({ ...l, [run.id]: t("paper_checking", "Checking...") }));
     try {
-      const asset = await fetchMarketAssetBySymbol(run.symbol, "10y", undefined, { allowSimulated: false });
+      const asset = await fetchMarketAssetBySymbol(run.symbol, "5y", undefined, { allowSimulated: false });
       if (!asset || asset.isMock || asset.dataSource === "mock") throw new Error("no data");
       const s = evaluatePaperRun(run, asset.history);
       const text = s.status === "waiting"
