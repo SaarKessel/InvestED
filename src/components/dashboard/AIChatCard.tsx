@@ -24,6 +24,9 @@ import { openingLine } from "@/lib/copilot/toolKeywords";
 import { ChatRelated } from "./ChatRelated";
 import { ChatAlsoAsked } from "./ChatAlsoAsked";
 import { ChatTrace } from "./ChatTrace";
+import { runPlan, shouldOrchestrate } from "@/lib/copilot/orchestrate";
+import { planQuestion } from "@/lib/copilot/planner";
+import { retrieve, type Passage } from "@/lib/search/retrieve";
 import { critique } from "@/lib/intelligence/critique";
 import { describePlan, decompose } from "@/lib/copilot/decompose";
 import { recordTrace } from "@/lib/intelligence/traceStore";
@@ -78,7 +81,9 @@ import { appendDictation, getSpeechRecognition, joinTranscript, speechLocale, vo
 import { useAnalysis } from "@/context/useAnalysis";
 import type { CopilotResponse } from "@/lib/copilotResponse";
 
-interface Message { prov?: Provenance; agent?: { id: string | null; switchTo?: string }; deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxResult | null; fxFailed?: boolean; symbol?: SymbolInfo; wb?: WbResult | null; scenario?: ScenarioPart[]; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
+/** Minimum BM25 score for a retrieved passage to be shown; weaker matches are noise. */
+const MIN_RETRIEVE_SCORE = 3;
+interface Message { retrieved?: Passage[]; prov?: Provenance; agent?: { id: string | null; switchTo?: string }; deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxResult | null; fxFailed?: boolean; symbol?: SymbolInfo; wb?: WbResult | null; scenario?: ScenarioPart[]; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
 
 export function AIChatCard({ workstation = false }: { workstation?: boolean } = {}) {
   const { t, language } = useLanguage();
@@ -247,6 +252,26 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
       if (ex.current && pick !== null) { const g = gradeAnswer(ex, pick, lang2); examRef.current = g.state; setMessages((current) => [...current, { role: "copilot", text: g.text }]); return; }
       if (isExamStart(text)) { const a = askNext(ex, buildQuizBank(t), lang2); examRef.current = a.state; setMessages((current) => [...current, { role: "copilot", text: a.text }]); return; } }
     { const mc = parseMemoryCommand(text); if (mc) { const reply = await runMemoryCommand(mc, memoryApi, language === "he" ? "he" : "en"); setMessages((current) => [...current, { role: "copilot", text: reply }]); return; } }
+    await dispatch(text);
+  }
+  /** Long questions with an engine part run as an ordered plan; everything else is answered as one question. */
+  async function dispatch(text: string) {
+    if (!isDeepRequest(text)) {
+      const d = decompose(text);
+      if (shouldOrchestrate(text, d, planQuestion(text).route)) {
+        const he = /[א-ת]/.test(text);
+        const outcomes = await runPlan(d.tasks, async (task) => {
+          setMessages((current) => [...current, { role: "copilot", text: `${he ? "משימה" : "Task"} ${task.index + 1}/${d.tasks.length}: ${task.text}` }]);
+          await answerOne(task.text);
+        });
+        const bad = outcomes.filter((o) => o.status !== "done");
+        if (bad.length) setMessages((current) => [...current, { role: "copilot", text: he ? `לא הושלמו ${bad.length} משימות: ${bad.map((o) => o.task.index + 1).join(", ")}.` : `${bad.length} task(s) did not finish: ${bad.map((o) => o.task.index + 1).join(", ")}.` }]);
+        return;
+      }
+    }
+    await answerOne(text);
+  }
+  async function answerOne(text: string) {
     if (isDeepRequest(text)) {
       const lang = /[א-ת]/.test(text) ? "he" : "en";
       const q = stripTrigger(text);
@@ -347,7 +372,10 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
         knowledge = await searchKnowledge(text);
         if (!knowledge.length) void recordGap(text, turn.response.language, "no_hit");
       }
-      setMessages((current) => [...current, { role: "copilot", trace, text: turn.response.text, response: turn.response, question: text, knowledge }]);
+      const asked = turn.response.language === "he" ? "he" : "en";
+      const mainText = turn.response.text;
+      const retrieved = wantsKnowledgeLookup(turn.response.intent) && !knowledge.length ? retrieve(text, asked, 3).filter((r) => r.score >= MIN_RETRIEVE_SCORE && !mainText.includes(r.text.slice(0, 30))).slice(0, 2) : [];
+      setMessages((current) => [...current, { role: "copilot", trace, text: turn.response.text, response: turn.response, question: text, knowledge, retrieved }]);
     } catch {
       setMessages((current) => [...current, { role: "copilot", text: t("copilot_error") }]);
     }
@@ -377,6 +405,12 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
             {message.fx && <ChatFxCard data={message.fx} />}
             {message.prov && <ChatProvenance prov={message.prov} />}
             {message.math && <ChatMathCard data={message.math} />}
+            {message.retrieved && message.retrieved.length > 0 && (
+              <div className="mt-2 rounded-xl border border-border/70 bg-muted/30 p-3 text-xs leading-6" data-testid="retrieved-passages">
+                <p className="font-semibold">{t("retrieved_lead")}</p>
+                {message.retrieved.map((r) => <p key={r.id}><span className="font-medium">{r.label}: </span>{r.text}</p>)}
+              </div>
+            )}
             {message.knowledge && message.knowledge.length > 0 && <ChatKnowledge items={message.knowledge} />}
             {message.learnPath && <ChatLearnPath />}
             {response?.toolResult && <div className="mt-3 rounded-lg border border-border/70 bg-background/70 p-2.5 text-xs"><p className="font-semibold">{t("copilot_verified_calculation")}</p>{response.toolResult.formula && <p className="mt-1 font-mono" dir="ltr">{response.toolResult.formula}</p>}{response.toolResult.assumptions.length > 0 && <p className="mt-1 text-muted-foreground">{t("copilot_assumptions")}: {response.toolResult.assumptions.join(" · ")}</p>}</div>}

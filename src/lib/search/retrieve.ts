@@ -4,7 +4,8 @@ import { conceptAnswerByLabel } from "@/lib/financialEducation";
 
 export interface Passage { id: string; label: string; text: string; score: number }
 interface Doc { id: string; en: string; he: string; text: { en: string; he: string }; tokens: Record<"en" | "he", string[]> }
-const tok = (s: string) => normalizeTerm(s).split(" ").filter((w) => w.length > 2);
+const STOP = new Set("the and for are was what how why when who does did can you your about tell me this that with from have has not but today now please explain mean means מהי מהו מה איך למה מתי האם על של את זה זאת הוא היא יש אני אתה".split(" "));
+const tok = (s: string) => normalizeTerm(s).split(" ").filter((w) => w.length > 2 && !STOP.has(w));
 let cache: Doc[] | null = null;
 function docs(): Doc[] {
   if (cache) return cache;
@@ -25,14 +26,14 @@ export function retrieve(question: string, lang: "he" | "en", limit = 3): Passag
   for (const w of q) df.set(w, all.filter((d) => d.tokens[lang].includes(w)).length);
   const out: Passage[] = [];
   for (const d of all) {
-    const t = d.tokens[lang]; let score = 0;
+    const t = d.tokens[lang]; let score = 0; let matched = 0;
     for (const w of q) {
       const f = t.filter((x) => x === w).length;
-      if (!f) continue;
+      if (!f) continue; matched++;
       const n = df.get(w) ?? 0;
       score += Math.log(1 + (all.length - n + 0.5) / (n + 0.5)) * ((f * (K1 + 1)) / (f + K1 * (1 - B + (B * t.length) / avg)));
     }
-    if (score > 0) out.push({ id: d.id, label: lang === "he" ? d.he : d.en, text: d.text[lang], score });
+    if (score > 0 && (matched >= 2 || q.length === 1)) out.push({ id: d.id, label: lang === "he" ? d.he : d.en, text: d.text[lang], score });
   }
   return out.sort((a, b) => b.score - a.score || a.id.localeCompare(b.id)).slice(0, limit);
 }
