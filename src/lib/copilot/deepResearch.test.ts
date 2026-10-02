@@ -42,4 +42,10 @@ describe("level depth", () => {
     const none = await runDeepResearch("diversification and inflation", "en", () => undefined, async () => null);
     expect(none.text).not.toContain("Scope:");
   });
+  it("returns the per-step plan, and a failed rewording leaves a partial plan with the stored text", async () => {
+    const fb = await runDeepResearch("diversification and inflation", "en", () => undefined, async () => null);
+    expect(fb.plan.at(-1)).toMatchObject({ id: "reword", state: "failed" });
+    expect(fb.plan.slice(0, -1).every((p) => p.state === "done")).toBe(true);
+    expect(fb.text.length).toBeGreaterThan(20);
+  });
 });

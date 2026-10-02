@@ -33,6 +33,7 @@ import { critique } from "@/lib/intelligence/critique";
 import { describePlan, decompose } from "@/lib/copilot/decompose";
 import { recordTrace } from "@/lib/intelligence/traceStore";
 import { isDeepRequest, runDeepResearch, stepsForLevel, stripTrigger } from "@/lib/copilot/deepResearch";
+import { describeRun } from "@/lib/copilot/plan";
 import { relevantNotes, recallLine } from "@/lib/memory/noteRecall";
 import { defaultMemoryApi } from "@/lib/memory/memoryApi";
 import { downloadText, printHtml, toCsv, toPrintHtml } from "@/lib/copilot/exportChat";
@@ -345,6 +346,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
         { text: { en: `Split the question into ${result.steps.length} known topics (max ${stepsForLevel(level)} on this level) and took the stored explanation for each, one after the other.`, he: `פיצלתי את השאלה ל-${result.steps.length} נושאים מוכרים (עד ${stepsForLevel(level)} ברמה הזו) ולקחתי לכל אחד את ההסבר השמור, בזה אחר זה.` }, trust: "EDUCATIONAL" },
         { text: result.reworded ? { en: "A free AI model reworded the joined text. The server rejected any new number or ticker.", he: "מודל AI חינמי ניסח מחדש את הטקסט המחובר. השרת פוסל כל מספר או סימול חדש." } : { en: "No AI rewording this time. The stored text is shown as written.", he: "בלי ניסוח מחדש הפעם. הטקסט השמור מוצג כפי שנכתב." }, trust: "ANALYSIS" },
         { text: { en: describePlan(decompose(q), "en"), he: describePlan(decompose(q), "he") }, trust: "EDUCATIONAL" },
+        { text: describeRun(result.plan), trust: "EDUCATIONAL" },
       ];
       const review = result.text ? critique(result.text, { sources: result.steps.map((st) => ({ label: st.label, text: st.text })), lang, missingTopics: result.missing }) : null;
       if (review) trace.push({ text: review.ok ? { en: "Self-check passed: numbers match the sources, no advice or guarantee wording, language matches.", he: "בדיקה עצמית עברה: המספרים תואמים למקורות, אין ניסוח של ייעוץ או הבטחה, והשפה תואמת." } : { en: `Self-check flagged: ${review.failed.map((c) => c.note.en).join(" ")}`, he: `הבדיקה העצמית סימנה: ${review.failed.map((c) => c.note.he).join(" ")}` }, trust: "ANALYSIS" });

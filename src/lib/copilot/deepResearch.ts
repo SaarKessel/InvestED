@@ -3,6 +3,7 @@ import { findConceptsInText } from "@/lib/knowledge/concepts/registry";
 import { conceptAnswerByLabel } from "@/lib/financialEducation";
 import { toolHints } from "./multiPart";
 import { MAX_ANSWER_LENGTH } from "./gatewayPrompt";
+import { runSteps, type PlanStep, type StepRecord } from "./plan";
 
 export const MAX_STEPS = 4;
 /** Steps per level track: deeper tracks chain more stored explanations. Fixed numbers, no model involved. */
@@ -32,7 +33,7 @@ export function buildBrief(steps: ResearchStep[], question: string, lang: "he" |
 export function missingTopics(question: string, lang: "he" | "en"): string[] {
   return findConceptsInText(question, 8).filter((c) => !c.explain).slice(0, 4).map((c) => (lang === "he" ? c.he : c.en));
 }
-export interface DeepResult { text: string; steps: ResearchStep[]; reworded: boolean; missing: string[] }
+export interface DeepResult { text: string; steps: ResearchStep[]; reworded: boolean; missing: string[]; /** per-step state of the plan that produced this answer */ plan: StepRecord[] }
 export async function runDeepResearch(
   question: string, lang: "he" | "en", onStep: (done: number, total: number, label: string) => void,
   rephrase: (q: string, brief: string) => Promise<string | null> = defaultRephrase(lang),
@@ -40,11 +41,18 @@ export async function runDeepResearch(
 ): Promise<DeepResult> {
   const steps = planResearch(question, lang, level ? stepsForLevel(level) : MAX_STEPS);
   const missing = missingTopics(question, lang);
-  for (let i = 0; i < steps.length; i++) onStep(i + 1, steps.length, steps[i].label);
-  if (!steps.length) return { text: "", steps, reworded: false, missing };
-  const brief = buildBrief(steps, question, lang, level === "senior" || level === "professional");
-  const text = await rephrase(question, brief);
-  return text ? { text, steps, reworded: true, missing } : { text: brief, steps, reworded: false, missing };
+  if (!steps.length) return { text: "", steps, reworded: false, missing, plan: [] };
+  let finished = 0;
+  const plan: PlanStep[] = steps.map((st) => ({ id: st.id, label: st.label, run: async () => { onStep(++finished, steps.length, st.label); return st; } }));
+  plan.push({
+    id: "reword", label: "reword", dependsOn: steps.map((x) => x.id),
+    run: async () => { const t = await rephrase(question, buildBrief(steps, question, lang, level === "senior" || level === "professional")); if (!t) throw new Error("no rewording"); return t; },
+  });
+  const run = await runSteps(plan);
+  const done = steps.filter((x) => run.values[x.id]);
+  const brief = buildBrief(done, question, lang, level === "senior" || level === "professional");
+  const text = run.values.reword as string | undefined;
+  return text ? { text, steps, reworded: true, missing, plan: run.steps } : { text: brief, steps, reworded: false, missing, plan: run.steps };
 }
 function defaultRephrase(lang: "he" | "en") {
   return async (question: string, brief: string): Promise<string | null> => {
