@@ -13,7 +13,7 @@ interface Props {
   conversations: ChatConversation[]; onOpenConversation: (id: string) => void; onDeleteConversation: (id: string) => void;
   saved: SavedAnswer[]; onAskSaved: (question: string) => void; onRemoveSaved: (id: string) => void;
   modes: SidebarMode[]; onMode: (prompt: string) => void;
-  memoryApi?: MemoryApi; agents: AgentDef[]; pickedAgent: string | null; onPickAgent: (id: string | null) => void;
+  memoryApi?: MemoryApi; onExportCsv?: () => void; onExportPdf?: () => void; agents: AgentDef[]; pickedAgent: string | null; onPickAgent: (id: string | null) => void;
 }
 const head = "px-3 pb-1 pt-4 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground";
 /** Optional drawer on the physical left in both languages. Closed by default. Conversations, Saved and starter modes only. */
@@ -50,6 +50,15 @@ export function ChatSidebar(p: Props) {
               <li key={c.id} className="flex items-center gap-1">
                 <button type="button" onClick={() => { p.onOpenConversation(c.id); p.onClose(); }} className="min-w-0 flex-1 truncate rounded-lg px-2 py-1.5 text-start text-sm hover:bg-muted">{c.title || "..."}</button>
                 <button type="button" aria-label={t("history_delete")} onClick={() => p.onDeleteConversation(c.id)} className="shrink-0 rounded-lg p-1.5 text-muted-foreground hover:text-destructive"><Trash2 className="h-3.5 w-3.5" aria-hidden="true" /></button></li>))}</ul>
+          )}
+          {(p.onExportCsv || p.onExportPdf) && (
+            <section aria-label={language === "he" ? "ייצוא" : "Export"} className="px-3 pb-2">
+              <p className={head}>{language === "he" ? "ייצוא שיחה" : "Export chat"}</p>
+              <div className="flex gap-2">
+                {p.onExportCsv && <button type="button" onClick={p.onExportCsv} className="flex-1 rounded-lg border border-border px-2 py-1.5 text-sm hover:bg-muted">CSV</button>}
+                {p.onExportPdf && <button type="button" onClick={p.onExportPdf} className="flex-1 rounded-lg border border-border px-2 py-1.5 text-sm hover:bg-muted">{language === "he" ? "PDF (הדפסה)" : "PDF (print)"}</button>}
+              </div>
+            </section>
           )}
           {p.memoryApi && <MemoryPanel api={p.memoryApi} />}
         </div>

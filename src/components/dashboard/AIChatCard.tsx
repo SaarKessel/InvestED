@@ -26,6 +26,12 @@ import { ChatAlsoAsked } from "./ChatAlsoAsked";
 import { ChatTrace } from "./ChatTrace";
 import { isDeepRequest, runDeepResearch, stepsForLevel, stripTrigger } from "@/lib/copilot/deepResearch";
 import { defaultMemoryApi } from "@/lib/memory/memoryApi";
+import { downloadText, printHtml, toCsv, toPrintHtml } from "@/lib/copilot/exportChat";
+import { briefHeader, conceptOfTheDay, isDailyBrief } from "@/lib/copilot/dailyBrief";
+import { askNext, gradeAnswer, isExamStart, newExamState, parseExamAnswer } from "@/lib/copilot/examDesk";
+import { buildQuizBank } from "@/lib/quizBank";
+import { parseMemoryCommand } from "@/lib/memory/memoryCommands";
+import { runMemoryCommand } from "@/lib/memory/memoryChat";
 import { ChatSidebar, type SidebarMode } from "./ChatSidebar";
 import { isSaved, loadSaved, removeSaved, toggleSaved, type SavedAnswer } from "@/lib/copilot/savedAnswers";
 import { ChatLinkedText } from "./ChatLinkedText";
@@ -45,7 +51,7 @@ import { ChatMathCard } from "./ChatMathCard";
 import { ChatDepth } from "./ChatDepth";
 import { depthSections } from "@/lib/copilot/depth";
 import { ChatAgentTag } from "./ChatAgentTag";
-import { readPickedAgent, routeAgent, savePickedAgent, AGENTS } from "@/lib/agents";
+import { getAgent, readPickedAgent, routeAgent, savePickedAgent, AGENTS } from "@/lib/agents";
 import { ChatSymbolCard } from "./ChatSymbolCard";
 import { parseSymbolQuestion, type SymbolInfo } from "@/lib/copilot/symbolDesk";
 import { ChatScenarioCard } from "./ChatScenarioCard";
@@ -77,6 +83,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
   const navigate = useNavigate();
   const toolOpen = toolForPath(useLocation().pathname) !== null;
   const { user, loading: authLoading, signOut } = useAuth();
+  const examRef = useRef(newExamState());
   const memoryApi = useMemo(() => (user ? defaultMemoryApi(user.id) : undefined), [user]);
   const conversationId = useRef<string | null>(null);
   const savedCount = useRef(0);
@@ -214,6 +221,9 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
   }
   useEffect(() => { scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }); }, [messages, isAnalyzing]);
 
+  const exportable = () => messages.filter((m) => m.text).map((m) => ({ role: m.role, text: m.text }));
+  function exportCsv() { downloadText("invested-chat.csv", "text/csv;charset=utf-8", toCsv(exportable(), language === "he" ? "he" : "en")); }
+  function exportPdf() { const he = language === "he"; printHtml(toPrintHtml(exportable(), he ? "he" : "en", he ? "שיחה עם InvestED+" : "InvestED+ conversation", he ? "יוצא מהמסך. לא ייעוץ השקעות." : "Exported from the screen. Not investment advice.")); }
   function submit(event: FormEvent) { event.preventDefault(); void send(question); }
   async function send(raw: string) {
     const text = raw.trim();
@@ -229,6 +239,11 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
       return;
     }
     { const r = routeAgent(text, pickedAgent); setMessages((current) => [...current, { role: "user", text, agent: { id: r.agentId, switchTo: r.suggestSwitchTo } }]); }
+    if (isDailyBrief(text)) { const d = new Date(), lang3 = language === "he" ? "he" : "en"; setMessages((current) => [...current, { role: "copilot", text: briefHeader(d, lang3) }]); await send(conceptOfTheDay(d, lang3).ask); await send(lang3 === "he" ? "מובילי השוק" : "market movers"); const a = askNext(examRef.current, buildQuizBank(t), lang3); examRef.current = a.state; setMessages((current) => [...current, { role: "copilot", text: a.text }]); return; }
+    { const ex = examRef.current; const pick = ex.current ? parseExamAnswer(text, ex.current.options.length) : null; const lang2 = language === "he" ? "he" : "en";
+      if (ex.current && pick !== null) { const g = gradeAnswer(ex, pick, lang2); examRef.current = g.state; setMessages((current) => [...current, { role: "copilot", text: g.text }]); return; }
+      if (isExamStart(text)) { const a = askNext(ex, buildQuizBank(t), lang2); examRef.current = a.state; setMessages((current) => [...current, { role: "copilot", text: a.text }]); return; } }
+    { const mc = parseMemoryCommand(text); if (mc) { const reply = await runMemoryCommand(mc, memoryApi, language === "he" ? "he" : "en"); setMessages((current) => [...current, { role: "copilot", text: reply }]); return; } }
     if (isDeepRequest(text)) {
       const lang = /[א-ת]/.test(text) ? "he" : "en";
       const q = stripTrigger(text);
@@ -333,7 +348,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
   sendRef.current = send; toggleVoiceRef.current = toggleVoice;
   useEffect(() => { const last = messages[messages.length - 1]; if (talk && last?.role === "copilot" && last.text) speakMessage(last.text, messages.length - 1); // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [messages.length]);
-  function clearConversation() { reset(); setMessages([]); setQuestion(""); conversationId.current = null; savedCount.current = 0; }
+  function clearConversation() { examRef.current = newExamState(); reset(); setMessages([]); setQuestion(""); conversationId.current = null; savedCount.current = 0; }
   async function copyMessage(text: string, index: number) { await navigator.clipboard.writeText(text); setCopied(index); window.setTimeout(() => setCopied(null), 1500); }
 
   const wideViewport = useWide();
@@ -388,7 +403,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
       {user && <ChatSidebar open={historyOpen} onClose={() => setHistoryOpen(false)} onNew={clearConversation}
         conversations={conversations} onOpenConversation={(id) => void openConversation(id)} onDeleteConversation={(id) => void removeConversation(id)}
         saved={saved} onAskSaved={(q) => void send(q)} onRemoveSaved={(id) => setSaved(removeSaved(user.id, id))}
-        modes={modes} onMode={(prompt) => setQuestion(prompt)} memoryApi={memoryApi} agents={AGENTS} pickedAgent={pickedAgent} onPickAgent={pickAgent} />}
+        modes={modes} onMode={(prompt) => setQuestion(prompt)} memoryApi={memoryApi} onExportCsv={messages.length ? exportCsv : undefined} onExportPdf={messages.length ? exportPdf : undefined} agents={AGENTS} pickedAgent={pickedAgent} onPickAgent={pickAgent} />}
       {started && (
         <div className="mb-2 flex justify-end">
           <button type="button" onClick={clearConversation} className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"><RotateCcw className="h-3.5 w-3.5" aria-hidden="true" /><span>{t("copilot_clear")}</span></button>
@@ -421,7 +436,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
         {toolOpen && !workstation && <ChatToolPanel />}
         {(isAnalyzing || fileBusy) && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />{t("copilot_working")}</div>}
       </div>
-      {talk && <VoiceOrb state={speakingIdx !== null ? "speaking" : isAnalyzing ? "thinking" : listening ? "listening" : "idle"} onClose={toggleTalk} onTapOrb={() => { if (speakingIdx !== null) { stopSpeaking(); setSpeakingIdx(null); } else toggleVoice(); }} note={speechNote === "no_voice" ? t("speak_no_voice") : speechNote === "unsupported" ? t("speak_unsupported") : voiceNote} code={voiceError ? voiceCode : null} trace={voiceTrace} />}
+      {talk && <VoiceOrb accent={(() => { const last = [...messages].reverse().find((m) => m.role === "user"); return getAgent(last?.agent?.id ?? pickedAgent)?.color ?? null; })()} state={speakingIdx !== null ? "speaking" : isAnalyzing ? "thinking" : listening ? "listening" : "idle"} onClose={toggleTalk} onTapOrb={() => { if (speakingIdx !== null) { stopSpeaking(); setSpeakingIdx(null); } else toggleVoice(); }} note={speechNote === "no_voice" ? t("speak_no_voice") : speechNote === "unsupported" ? t("speak_unsupported") : voiceNote} code={voiceError ? voiceCode : null} trace={voiceTrace} />}
       {!user && !authLoading && <ChatAuthGate />}
       {user && <div className={started ? "sticky bottom-0 bg-background/90 pb-3 pt-2 backdrop-blur" : ""}>
         {consentAsk && !consented && (

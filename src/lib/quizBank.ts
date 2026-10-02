@@ -10,7 +10,11 @@ export interface QuizQuestion {
 
 export function useQuizBank(): QuizQuestion[] {
   const { t } = useLanguage();
+  return buildQuizBank(t);
+}
 
+/** Pure builder so the chat exam desk and the quiz page share one question list. */
+export function buildQuizBank(t: (key: string) => string): QuizQuestion[] {
   return [
     {
       id: "q1",

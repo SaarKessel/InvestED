@@ -400,12 +400,12 @@
 
 /* Voice orb: cloudy sphere (blobs drift inside a clipped circle). Motion shows state, not volume. */
 .orb-wrap { position:relative; width:min(78vw,22rem); height:min(78vw,22rem); }
-.orb-core { position:absolute; inset:12%; border-radius:9999px; overflow:hidden; isolation:isolate; background:radial-gradient(circle at 50% 70%, #1d4ed8 0%, #0f2a6b 55%, #0a1330 100%); box-shadow:0 0 70px 6px rgba(59,130,246,.38), inset 0 0 40px rgba(255,255,255,.12); transition:transform .3s ease; }
+.orb-core { position:absolute; inset:12%; border-radius:9999px; overflow:hidden; isolation:isolate; background:radial-gradient(circle at 50% 70%, hsl(var(--orb-accent, 224 76% 48%)) 0%, hsl(var(--orb-accent, 224 76% 48%) / .45) 55%, #0a1330 100%); box-shadow:0 0 70px 6px hsl(var(--orb-accent, 217 91% 60%) / .38), inset 0 0 40px rgba(255,255,255,.12); transition:transform .3s ease; }
 .orb-blob { position:absolute; border-radius:9999px; filter:blur(22px); opacity:.9; }
 .orb-blob.b1 { width:70%; height:60%; left:-10%; top:-10%; background:#e8f1ff; animation:orb-drift1 9s ease-in-out infinite; }
-.orb-blob.b2 { width:60%; height:55%; right:-12%; top:25%; background:#3b82f6; animation:orb-drift2 7s ease-in-out infinite; }
+.orb-blob.b2 { width:60%; height:55%; right:-12%; top:25%; background:hsl(var(--orb-accent, 217 91% 60%)); animation:orb-drift2 7s ease-in-out infinite; }
 .orb-blob.b3 { width:45%; height:40%; left:20%; bottom:-12%; background:#E0B253; opacity:.55; animation:orb-drift1 11s ease-in-out infinite reverse; }
-.orb-halo { position:absolute; inset:0; border-radius:9999px; background:radial-gradient(circle, rgba(59,130,246,.30) 0%, rgba(224,178,83,.08) 55%, transparent 72%); }
+.orb-halo { position:absolute; inset:0; border-radius:9999px; background:radial-gradient(circle, hsl(var(--orb-accent, 217 91% 60%) / .30) 0%, rgba(224,178,83,.08) 55%, transparent 72%); }
 .orb-core.orb-idle { animation:orb-breathe 4.5s ease-in-out infinite; }
 .orb-core.orb-listening { animation:orb-breathe 2.4s ease-in-out infinite; }
 .orb-core.orb-thinking .orb-blob { animation-duration:2.2s; }

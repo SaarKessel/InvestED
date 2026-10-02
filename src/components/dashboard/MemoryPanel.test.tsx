@@ -12,7 +12,7 @@ beforeEach(() => { setLanguagePreference("en"); container = document.createEleme
 afterEach(() => { act(() => root.unmount()); container.remove(); });
 const flush = () => act(async () => { await Promise.resolve(); await Promise.resolve(); });
 function api(over: Partial<MemoryApi> = {}): MemoryApi {
-  return { getConsent: vi.fn().mockResolvedValue(false), setConsent: vi.fn().mockResolvedValue(undefined), exportMemory: vi.fn().mockResolvedValue({ exportedAt: "x", consent: false, items: [], savedAnswers: [] }), deleteAll: vi.fn().mockResolvedValue(undefined), ...over };
+  return { getConsent: vi.fn().mockResolvedValue(false), setConsent: vi.fn().mockResolvedValue(undefined), exportMemory: vi.fn().mockResolvedValue({ exportedAt: "x", consent: false, items: [], savedAnswers: [] }), deleteAll: vi.fn().mockResolvedValue(undefined), remember: vi.fn().mockResolvedValue(true), ...over };
 }
 async function mount(a: MemoryApi) { act(() => root.render(<LanguageProvider><MemoryPanel api={a} /></LanguageProvider>)); await flush(); }
 
