@@ -48,3 +48,8 @@
 ## FinceptTerminal (concepts only, no code read or copied)
 - Project: https://github.com/Fincept-Corporation/FinceptTerminal (its license does not allow reuse of the code, so none was used)
 - Use: only the idea of offering DCF, VaR, Sharpe and portfolio-optimization tools. They were written from standard textbook formulas: Gordon-growth DCF, empirical and normal VaR with expected shortfall (Acklam inverse-normal approximation), and long-only minimum-variance weights via projected gradient (simplex projection after Duchi et al., 2008). See src/lib/analytics/.
+
+## ECB Data Portal and IMF DataMapper (official data, no key)
+- ECB: https://data.ecb.europa.eu , main refinancing operations rate, queried directly from the browser (the API allows CORS).
+- IMF: https://www.imf.org/external/datamapper/api/ , World Economic Outlook figures through a fixed-allowlist pass-through (/api/imf-weo). Estimates and projections are labeled in the UI. Source attribution is shown on the card.
+- The World Bank desk already existed (CC BY 4.0). FRED was intentionally not used because it needs a key.

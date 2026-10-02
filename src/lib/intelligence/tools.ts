@@ -3,6 +3,7 @@
  * returns a ToolResult (value + trust + provenance). The orchestrator and the chat call tools only
  * through runTool, which also enforces the per-agent allow-list.
  */
+import { loadMacro, type MacroRequest, type MacroResult } from "../copilot/macroDesk";
 import { agentMayUse } from "@/lib/agents";
 import { loadFx, type FxRequest, type FxResult } from "@/lib/copilot/fxDesk";
 import { loadWb, type WbRequest, type WbResult } from "@/lib/copilot/worldBankDesk";
@@ -19,7 +20,7 @@ import { TOOLS as ENGINES } from "./toolRegistry";
 import type { Bi, ToolResult } from "./envelope";
 import type { TrustClass } from "./verificationEngine";
 
-export type ToolId = "calc" | "math" | "fx" | "wb" | "filings" | "etf" | "symbol" | "scenario" | "risk" | "rssnews" | "marketsim";
+export type ToolId = "calc" | "math" | "fx" | "wb" | "macro" | "filings" | "etf" | "symbol" | "scenario" | "risk" | "rssnews" | "marketsim";
 export type Domain = "finance" | "market" | "knowledge" | "news";
 export interface ToolSpec { id: ToolId; domain: Domain; title: Bi; trust: TrustClass; network: boolean }
 export type ToolOutcome<T = unknown> = { ok: true; result: ToolResult<T> } | { ok: false; reason: "denied" | "unavailable" | "unknown_tool" };
@@ -33,6 +34,7 @@ export const TOOL_SPECS: Record<ToolId, ToolSpec> = {
   scenario: { id: "scenario", domain: "finance", title: b("Scenario splitter", "מפצל תרחישים"), trust: "CALCULATION", network: false },
   fx: { id: "fx", domain: "market", title: b("Currency conversion", "המרת מטבע"), trust: "DATA", network: true },
   wb: { id: "wb", domain: "market", title: b("Country statistics", "נתוני מדינה"), trust: "DATA", network: true },
+  macro: { id: "macro", domain: "market", title: b("ECB rate and IMF outlook", "ריבית ה-ECB ותחזית ה-IMF"), trust: "DATA", network: true },
   filings: { id: "filings", domain: "market", title: b("Institutional holdings (SEC 13F)", "החזקות מוסדיות (SEC 13F)"), trust: "DATA", network: true },
   etf: { id: "etf", domain: "market", title: b("ETF holdings (SEC N-PORT)", "החזקות קרן סל (SEC N-PORT)"), trust: "DATA", network: true },
   risk: { id: "risk", domain: "market", title: b("Risk metrics", "מדדי סיכון"), trust: "CALCULATION", network: true },
@@ -54,6 +56,13 @@ const ADAPTERS: Record<ToolId, Adapter> = {
     const v: WbResult | null = await loadWb(req);
     return v && wrap("wb", v, { source: b("The World Bank: World Development Indicators", "הבנק העולמי: World Development Indicators"), license: "CC BY 4.0", asOf: v.lastUpdated || undefined, state: "live",
       note: b("Yearly data, published with a delay.", "נתונים שנתיים שמתפרסמים באיחור.") });
+  }) as Adapter,
+  macro: (async (req: MacroRequest) => {
+    const v: MacroResult | null = await loadMacro(req);
+    if (!v) return null;
+    return v.kind === "ecb_rate"
+      ? wrap("macro", v, { source: b("European Central Bank: ECB Data Portal", "הבנק המרכזי האירופי: ECB Data Portal"), asOf: v.rate.latest.date, state: "live", note: b("Policy rate decisions change rarely, so the latest value can be weeks or months old. Not advice.", "החלטות ריבית משתנות לעיתים רחוקות, ולכן הערך האחרון יכול להיות בן שבועות או חודשים. לא ייעוץ.") })
+      : wrap("macro", v, { source: b("IMF DataMapper: World Economic Outlook", "קרן המטבע הבינלאומית: World Economic Outlook"), asOf: v.retrievedOn, state: "live", note: b("Recent years are IMF estimates and projections, labeled on the card. Not reported data and not an InvestED forecast.", "שנים אחרונות הן הערכות והקרנות של ה-IMF ומסומנות בכרטיס. לא נתונים שדווחו ולא תחזית של InvestED.") });
   }) as Adapter,
   filings: (async (req: FilingsRequest) => {
     const v: FilingsResult | null = await loadFilings(req);

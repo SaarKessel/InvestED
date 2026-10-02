@@ -13,6 +13,10 @@
       "destination": "/api/system?fn=sec-nport"
     },
     {
+      "source": "/api/imf-weo",
+      "destination": "/api/system?fn=imf-weo"
+    },
+    {
       "source": "/api/research-brief",
       "destination": "/api/system?fn=research-brief"
     },
