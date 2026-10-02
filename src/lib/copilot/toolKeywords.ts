@@ -20,6 +20,7 @@ const KEYWORDS: Record<string, { en: string[]; he: string[] }> = {
   "/dashboard": { en: ["dashboard", "my results"], he: ["דשבורד", "לוח בקרה", "התוצאות שלי"] },
   "/overview": { en: ["overview"], he: ["סקירה"] },
   "/data-controls": { en: ["my data", "data controls", "data"], he: ["הנתונים שלי", "בקרת נתונים"] },
+  "/intelligence": { en: ["intelligence center", "intelligence dashboard", "super intelligence"], he: ["מרכז הבינה", "מרכז בינה"] },
   "/knowledge-map": { en: ["knowledge map", "concept map"], he: ["מפת ידע", "מפת מושגים"] },
   "/system-health": { en: ["system health", "observability"], he: ["בריאות המערכת", "ניטור המערכת"] },
   "/knowledge": { en: ["knowledge", "knowledge desk"], he: ["ידע", "מאגר ידע"] },

@@ -7,6 +7,7 @@ import { LanguageProvider } from "@/context/languageContext";
 import { recordTrace } from "@/lib/intelligence/traceStore";
 import { resolveToolKeyword } from "@/lib/copilot/toolKeywords";
 import KnowledgeMapPage from "./KnowledgeMapPage";
+import DashPage from "./IntelligenceDashboardPage";
 import SystemHealthPage from "./SystemHealthPage";
 vi.mock("@/components/layout/Navbar", () => ({ Navbar: () => null }));
 vi.mock("@/components/layout/Footer", () => ({ Footer: () => null }));
@@ -37,7 +38,22 @@ for (const language of ["he", "en"] as const) {
     expect(container.querySelector("[data-testid=health-empty]")).not.toBeNull();
   });
 }
+for (const language of ["he", "en"] as const) {
+  it(`${language} intelligence center: one main and h1, honest domain list, health empty then filled`, () => {
+    render(language, DashPage);
+    expect(container.querySelectorAll("main")).toHaveLength(1);
+    expect(container.querySelectorAll("h1")).toHaveLength(1);
+    expect(container.querySelectorAll("[data-testid=dash-domains] li").length).toBeGreaterThanOrEqual(7);
+    expect(container.textContent).toMatch(language === "he" ? /גבול בלבד/ : /boundary only/);
+    expect(container.querySelector("[data-testid=dash-health-empty]")).not.toBeNull();
+    act(() => root.unmount()); root = createRoot(container);
+    recordTrace({ at: 1, route: "calc", tools: [], ms: 9, ok: true, failedChecks: [], live: "none", question: "q" });
+    render(language, DashPage);
+    expect(container.querySelector("[data-testid=dash-health]")).not.toBeNull();
+  });
+}
 it("keywords reach the new pages without the shorter knowledge keyword winning", () => {
   expect(resolveToolKeyword("open the knowledge map")).toBe("/knowledge-map");
   expect(resolveToolKeyword("show system health")).toBe("/system-health");
+  expect(resolveToolKeyword("open the intelligence center")).toBe("/intelligence");
 });
