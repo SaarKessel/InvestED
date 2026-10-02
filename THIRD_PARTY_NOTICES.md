@@ -33,3 +33,8 @@
 - Project: https://github.com/microsoft/qlib
 - License: Apache License 2.0 (see the project's NOTICE)
 - Use: the candlestick-body and range-position factor definitions in src/lib/market/factors.ts were re-written from their standard definitions.
+
+## SEC EDGAR (Form 13F)
+- Service: https://www.sec.gov/edgar , data.sec.gov submissions API and EDGAR archives
+- Terms: public US government data, free, no key. Requests carry a descriptive User-Agent with a contact address as the SEC requires (override with SEC_USER_AGENT).
+- Use: read-only latest 13F-HR holdings of an institutional manager (api/sec-13f.ts). Values are shown exactly as reported, with the filing date and a link to the filing. 13F is delayed, long-only and not a live portfolio.
