@@ -271,7 +271,17 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
     }
     await answerOne(text);
   }
+  /** Records route and timing for every answer (deep research records its own, with its self-check). Only a hash of the question is kept. */
   async function answerOne(text: string) {
+    if (isDeepRequest(text)) return answerCore(text);
+    const plan = planQuestion(text);
+    const started = Date.now();
+    let ok = true;
+    try { await answerCore(text); } catch (e) { ok = false; throw e; } finally {
+      recordTrace({ at: Date.now(), route: plan.route, tools: plan.tools, ms: Date.now() - started, ok, failedChecks: ok ? [] : ["error"], live: "none", question: text });
+    }
+  }
+  async function answerCore(text: string) {
     if (isDeepRequest(text)) {
       const lang = /[א-ת]/.test(text) ? "he" : "en";
       const q = stripTrigger(text);
