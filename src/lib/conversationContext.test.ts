@@ -333,3 +333,12 @@ describe("Phase 3C regression — existing behavior unchanged", () => {
     expect(again).toEqual(scenario);
   });
 });
+
+import { extractAssets as extractAssetsWordBoundary } from "./conversationContext";
+
+describe("extractAssets whole-word English keywords", () => {
+  it("does not read META inside other words", () => {
+    expect(extractAssetsWordBoundary("metals and metadata")).toEqual([]);
+    expect(extractAssetsWordBoundary("meta stock")).toEqual(["META"]);
+  });
+});

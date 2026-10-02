@@ -22,3 +22,13 @@ describe("buildRetirementPlan", () => {
     expect(plan.recommendations.length).toBeGreaterThan(0);
   });
 });
+
+import { detectTargetAmount } from "./goalEngine";
+
+describe("detectTargetAmount Hebrew number words", () => {
+  it("reads two and three million, keeps the one-million default", () => {
+    expect(detectTargetAmount("אני רוצה שני מיליון")).toBe(2_000_000);
+    expect(detectTargetAmount("שלושה מיליון")).toBe(3_000_000);
+    expect(detectTargetAmount("מיליון")).toBe(1_000_000);
+  });
+});
