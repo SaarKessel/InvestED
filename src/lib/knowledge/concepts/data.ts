@@ -1,8 +1,10 @@
 // Generated from the existing explanation library plus registry-only entries.
 // `explain` points at the existing concept answer (by its English label); null = no explanation text yet.
+import { CLASSIC_CONCEPTS } from "../content/classics";
 import type { ConceptEntry } from "./types";
 
 export const CONCEPT_DATA: ConceptEntry[] = [
+ ...CLASSIC_CONCEPTS,
  {
   "id": "mutual-fund",
   "en": "Mutual fund",

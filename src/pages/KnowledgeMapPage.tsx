@@ -42,7 +42,7 @@ export default function KnowledgeMapPage() {
             {selected && (
               <div className="space-y-4 text-sm">
                 <h2 className="text-xl font-bold">{name(selected)}</h2>
-                <p className="leading-6">{info ? info.text : (he ? "עדיין אין הסבר שמור למושג הזה." : "No stored explanation for this concept yet.")}</p>
+                <p className="whitespace-pre-wrap break-words leading-6">{info ? info.text : (he ? "עדיין אין הסבר שמור למושג הזה." : "No stored explanation for this concept yet.")}</p>
                 <div>
                   <h3 className="font-semibold">{he ? "מושגים קרובים" : "Nearby concepts"}</h3>
                   {near.length === 0 ? <p className="text-muted-foreground">{he ? "אין קישורים." : "No links."}</p> : (

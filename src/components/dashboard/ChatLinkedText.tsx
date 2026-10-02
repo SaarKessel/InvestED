@@ -14,7 +14,7 @@ export function ChatLinkedText({ text, onAsk }: { text: string; onAsk: (q: strin
   const preview = peek && peek !== open ? termExplanation(peek, lang) : null;
   return (
     <>
-      <p dir={he ? "rtl" : "ltr"} className="whitespace-pre-wrap">
+      <p dir={he ? "rtl" : "ltr"} className="whitespace-pre-wrap break-words">
         {segments.map((s, i) => s.id
           ? <button key={i} type="button" onClick={() => setOpen(open === s.id ? null : s.id!)} onMouseEnter={() => setPeek(s.id!)} onMouseLeave={() => setPeek(null)} onFocus={() => setPeek(s.id!)} onBlur={() => setPeek(null)} aria-expanded={open === s.id} className="underline decoration-dotted decoration-primary/60 underline-offset-4 hover:text-primary">{s.text}</button>
           : <span key={i}>{s.text}</span>)}
@@ -27,7 +27,7 @@ export function ChatLinkedText({ text, onAsk }: { text: string; onAsk: (q: strin
       {info && (
         <div dir={he ? "rtl" : "ltr"} className="mt-2 rounded-xl border border-border/70 bg-muted/30 p-3 text-xs leading-6" data-testid="term-explanation">
           <p className="font-semibold">{info.label}</p>
-          <p>{info.text}</p>
+          <p className="whitespace-pre-wrap break-words">{info.text}</p>
           <button type="button" onClick={() => onAsk(he ? `מה זה ${info.label}?` : `What is ${info.label}?`)} className="mt-1 font-medium text-primary hover:underline">{((he ? heLocale : enLocale) as Record<string, string>).term_more}</button>
         </div>
       )}

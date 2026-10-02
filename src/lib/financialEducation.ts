@@ -27,6 +27,7 @@ interface ConceptEntry {
   en: string;
 }
 
+import { CLASSIC_EXPLANATIONS } from "./knowledge/content/classics";
 import { EXTRA_CONCEPTS } from "./conceptExplanations";
 
 const BASE_CONCEPTS: ConceptEntry[] = [
@@ -573,7 +574,7 @@ const BASE_CONCEPTS: ConceptEntry[] = [
   },
 ];
 
-const CONCEPTS: ConceptEntry[] = [...BASE_CONCEPTS, ...EXTRA_CONCEPTS];
+const CONCEPTS: ConceptEntry[] = [...CLASSIC_EXPLANATIONS, ...BASE_CONCEPTS, ...EXTRA_CONCEPTS];
 
 
 
