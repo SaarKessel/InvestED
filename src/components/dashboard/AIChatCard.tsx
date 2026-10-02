@@ -370,7 +370,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
           { text: { en: "Recognized a question about a ticker.", he: "זיהיתי שאלה על סימול." } },
           { text: { en: "Looked it up in a static list built from FinanceDatabase. It holds names and types, not prices.", he: "חיפשתי ברשימה סטטית שנבנתה מ-FinanceDatabase. היא כוללת שמות וסוגים, בלי מחירים." }, trust: "KNOWLEDGE" },
           { text: { en: "No model wrote this.", he: "אף מודל לא כתב את זה." } }];
-        setMessages((current) => [...current, { role: "copilot", trace, text: language === "he" ? `${info.symbol} הוא ${info.kind === "equity" ? "סימול של מניה" : "סימול של קרן סל או קרן"}:` : `${info.symbol} is ${info.kind === "equity" ? "a stock" : "an ETF or fund"}:`, symbol: info, prov: symOut.result.provenance }]);
+        setMessages((current) => [...current, { role: "copilot", trace, text: /[א-ת]/.test(text) ? `${info.symbol} הוא ${info.kind === "equity" ? "סימול של מניה" : "סימול של קרן סל או קרן"}:` : `${info.symbol} is ${info.kind === "equity" ? "a stock" : "an ETF or fund"}:`, symbol: info, prov: symOut.result.provenance }]);
         return;
       }
     }
@@ -401,35 +401,35 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
     const calcOut = plan.calc ? await runTool<CalcDeskResult>(plan.tools[0], text, { agentId: pickedAgent }) : null;
     const calc = calcOut && calcOut.ok ? calcOut.result.value : (plan.calc ?? null);
     if (calc) {
-      setMessages((current) => [...current, { role: "copilot", trace, text: t("calc_lead"), calc, prov: calcOut && calcOut.ok ? calcOut.result.provenance : undefined }]);
+      setMessages((current) => [...current, { role: "copilot", trace, text: /[א-ת]/.test(text) ? "הנה התחזית מהמשפט שלך." : "Here is the projection from your sentence.", calc, prov: calcOut && calcOut.ok ? calcOut.result.provenance : undefined }]);
       return;
     }
     if (plan.scenario) {
       const scOut = await runTool(plan.tools[0], text, { agentId: pickedAgent });
-      setMessages((current) => [...current, { role: "copilot", trace, text: language === "he" ? "חילקתי את השאלה לחלקים והנה כל חישוב:" : "I split your question into parts. Here is each calculation:", scenario: plan.scenario, prov: scOut.ok ? scOut.result.provenance : undefined }]);
+      setMessages((current) => [...current, { role: "copilot", trace, text: /[א-ת]/.test(text) ? "חילקתי את השאלה לחלקים והנה כל חישוב:" : "I split your question into parts. Here is each calculation:", scenario: plan.scenario, prov: scOut.ok ? scOut.result.provenance : undefined }]);
       return;
     }
     if (plan.marketsim) {
       const simOut = await runTool<MarketEventResult>(plan.tools[0], plan.marketsim, { agentId: pickedAgent });
       const sim = simOut.ok ? simOut.result.value : null;
-      setMessages((current) => [...current, { role: "copilot", trace, text: sim ? (language === "he" ? "תרחיש לימודי, לא נתונים אמיתיים. זו הדמיה של אירוע שוק מומצא על מדד דמיוני:" : "Educational scenario, not real data. This is a simulation of an invented market event on a fictional index:") : (language === "he" ? "לא הצלחתי להריץ את התרחיש המומצא." : "I could not run the invented scenario."), marketsim: sim ?? undefined, prov: simOut.ok ? simOut.result.provenance : undefined }]);
+      setMessages((current) => [...current, { role: "copilot", trace, text: sim ? (/[א-ת]/.test(text) ? "תרחיש לימודי, לא נתונים אמיתיים. זו הדמיה של אירוע שוק מומצא על מדד דמיוני:" : "Educational scenario, not real data. This is a simulation of an invented market event on a fictional index:") : (/[א-ת]/.test(text) ? "לא הצלחתי להריץ את התרחיש המומצא." : "I could not run the invented scenario."), marketsim: sim ?? undefined, prov: simOut.ok ? simOut.result.provenance : undefined }]);
       return;
     }
     if (plan.wb) {
       const wbOut = await runTool<WbResult>(plan.tools[0], plan.wb, { agentId: pickedAgent });
       const wb = wbOut.ok ? wbOut.result.value : null;
-      setMessages((current) => [...current, { role: "copilot", trace, text: wb ? (language === "he" ? "הנה הנתון:" : "Here is the statistic:") : (language === "he" ? "לא הצלחתי לטעון עכשיו את הנתון מהבנק העולמי, ולכן לא מציגה כלום. נסו שוב בעוד רגע." : "I could not load that statistic from the World Bank right now, so I am not showing anything. Try again in a moment."), wb, prov: wbOut.ok ? wbOut.result.provenance : undefined }]);
+      setMessages((current) => [...current, { role: "copilot", trace, text: wb ? (/[א-ת]/.test(text) ? "הנה הנתון:" : "Here is the statistic:") : (/[א-ת]/.test(text) ? "לא הצלחתי לטעון עכשיו את הנתון מהבנק העולמי, ולכן לא מציגה כלום. נסו שוב בעוד רגע." : "I could not load that statistic from the World Bank right now, so I am not showing anything. Try again in a moment."), wb, prov: wbOut.ok ? wbOut.result.provenance : undefined }]);
       return;
     }
     if (plan.fx) {
       const fxOut = await runTool<FxResult>(plan.tools[0], plan.fx, { agentId: pickedAgent });
       const fx = fxOut.ok ? fxOut.result.value : null;
-      setMessages((current) => [...current, { role: "copilot", trace: fxOut.ok ? [...trace, { text: dataCheckLine(fxOut.result), trust: "ANALYSIS" as const }] : trace, text: fx ? (language === "he" ? "הנה ההמרה:" : "Here is the conversion:") : (language === "he" ? "לא הצלחתי לטעון עכשיו את שער היחס, ולכן לא המרתי. נסו שוב בעוד רגע." : "I could not load the reference rate right now, so I did not convert anything. Try again in a moment."), fx, prov: fxOut.ok ? fxOut.result.provenance : undefined }]);
+      setMessages((current) => [...current, { role: "copilot", trace: fxOut.ok ? [...trace, { text: dataCheckLine(fxOut.result), trust: "ANALYSIS" as const }] : trace, text: fx ? (/[א-ת]/.test(text) ? "הנה ההמרה:" : "Here is the conversion:") : (/[א-ת]/.test(text) ? "לא הצלחתי לטעון עכשיו את שער היחס, ולכן לא המרתי. נסו שוב בעוד רגע." : "I could not load the reference rate right now, so I did not convert anything. Try again in a moment."), fx, prov: fxOut.ok ? fxOut.result.provenance : undefined }]);
       return;
     }
     if (plan.math) {
       const mOut = await runTool(plan.tools[0], text, { agentId: pickedAgent });
-      setMessages((current) => [...current, { role: "copilot", trace, text: language === "he" ? "הנה החישוב:" : "Here is the calculation:", math: plan.math, prov: mOut.ok ? mOut.result.provenance : undefined }]);
+      setMessages((current) => [...current, { role: "copilot", trace, text: /[א-ת]/.test(text) ? "הנה החישוב:" : "Here is the calculation:", math: plan.math, prov: mOut.ok ? mOut.result.provenance : undefined }]);
       return;
     }
     const deskKind = plan.desk ?? null;
