@@ -403,9 +403,15 @@ function fxPlan(request: { amount: number; from: QACurrency; to: QACurrency }, l
 // Pure deterministic calculations
 // ---------------------------------------------------------------------------
 
+/** True when the number at `index` is the operand of an earlier "of" ("20% of 50 plus 10%"): that is a longer expression, not "50 plus 10%". */
+function followsOf(message: string, index: number | undefined): boolean {
+  return /(?:\bof|\bשל|(?:^|\s)מ(?:ן)?[\s־-]*)\s*$/i.test(message.slice(0, index ?? 0));
+}
+
 function percentCalc(message: string, lang: QALanguage): QAPlan | null {
   // "80,000 פלוס 15%" / "80,000 plus 15%"
   let m = message.match(new RegExp(`${NUM}\\s*${UNIT}\\s*(?:פלוס|ועוד|plus)\\s*${PCT}`, "i"));
+  if (m && followsOf(message, m.index)) return null;
   if (m) {
     const base = scaled(m[1], m[2]);
     const pct = parseNum(m[3]);
@@ -419,6 +425,7 @@ function percentCalc(message: string, lang: QALanguage): QAPlan | null {
   }
   // "80,000 פחות 15%" / "80,000 minus 15%" (discount)
   m = message.match(new RegExp(`${NUM}\\s*${UNIT}\\s*(?:מינוס|פחות|minus|less)\\s*${PCT}`, "i"));
+  if (m && followsOf(message, m.index)) return null;
   if (m) {
     const base = scaled(m[1], m[2]);
     const pct = parseNum(m[3]);
