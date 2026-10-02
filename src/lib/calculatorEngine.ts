@@ -1314,9 +1314,25 @@ function detectExplicitAnnualReturnPct(
     /ב-?(\d+(?:\.\d+)?)\s*%\s*(?=ל?-?\s*\d+\s*(?:שנה|שנים)|למשך|במשך|בעוד)/i
   ];
 
-  for (const pattern of patterns) {
-    const match = normalized.match(pattern);
+  // Bare English rates ("at 6%", "assuming 8%", "6 percent", "6% a year"). A
+  // percentage that follows inflation, fee, tax or withdrawal wording is not a return.
+  const NOT_A_RETURN = /(?:inflation|fees?|tax(?:es)?|withdraw(?:al)?s?|expense|cost)\W+(?:\w+\W+){0,3}$/i;
+  const bareEnglish = [
+    /\b(?:at|assuming|assume|assumes|growing at|grows at|earning|earns)\s+(\d+(?:\.\d+)?)\s*(?:%|percent)/gi,
+    /(\d+(?:\.\d+)?)\s*(?:%|percent)\s*(?:a\s+year|per\s+year|annually|yearly)/gi,
+  ];
+  const bare: RegExpMatchArray[] = [];
+  for (const re of bareEnglish) {
+    for (const m of normalized.matchAll(re)) {
+      if (!NOT_A_RETURN.test(normalized.slice(0, m.index ?? 0))) bare.push(m);
+    }
+  }
+  bare.sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
 
+  for (const match of [
+    ...patterns.map((pattern) => normalized.match(pattern)),
+    ...bare,
+  ]) {
     if (!match) {
       continue;
     }
