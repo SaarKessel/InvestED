@@ -21,14 +21,8 @@
 // Vercel's own counters. POST /api/copilot-chat
 // ---------------------------------------------------------------------------
 
-import {
-  buildGeminiRequest,
-  GEMINI_API_BASE,
-  normalizeGatewayPayload,
-  parseGeminiResponse,
-  rephraseIntroducesNoNewFacts,
-  resolveGeminiConfig,
-} from "../src/lib/copilot/gatewayPrompt.js";
+import { GEMINI_API_BASE, normalizeGatewayPayload, resolveGeminiConfig } from "../src/lib/copilot/gatewayPrompt.js";
+import { buildStructuredRequest, parseStructuredResponse, verifyStructuredAnswer } from "../src/lib/copilot/structuredAnswer.js";
 import { applyAdviceGuard } from "../src/lib/copilot/adviceGuard.js";
 
 interface CopilotChatRequest {
@@ -84,7 +78,7 @@ export default async function handler(req: CopilotChatRequest, res: CopilotChatR
     const response = await fetch(`${GEMINI_API_BASE}/${config.model}:generateContent`, {
       method: "POST",
       headers: { "x-goog-api-key": config.apiKey, "Content-Type": "application/json" },
-      body: JSON.stringify(buildGeminiRequest(payload)),
+      body: JSON.stringify(buildStructuredRequest(payload)),
       signal: AbortSignal.timeout(GATEWAY_TIMEOUT_MS),
     });
     if (!response.ok) {
@@ -92,13 +86,11 @@ export default async function handler(req: CopilotChatRequest, res: CopilotChatR
       // expected operating states, not errors: the deterministic answer stands.
       return res.status(200).json({ fallback: true, reason: `gemini_${response.status}` });
     }
-    const text = parseGeminiResponse(await response.json());
-    if (!text) return res.status(200).json({ fallback: true, reason: "empty_completion" });
-    // The model ASKED to preserve facts is not enough: verify it introduced
-    // no symbol or number beyond the validated answer and fact set.
-    if (!rephraseIntroducesNoNewFacts(payload.answer, payload.facts, text)) {
-      return res.status(200).json({ fallback: true, reason: "fact_mismatch" });
-    }
+    // Gemini is held to a JSON schema (text + numbers used). Every number it
+    // quotes must trace to the validated answer or fact set, or we fall back.
+    const verdict = verifyStructuredAnswer(payload, parseStructuredResponse(await response.json()));
+    if (!verdict.ok) return res.status(200).json({ fallback: true, reason: verdict.reason });
+    const text = verdict.text;
     // Deterministic advice guard: no buy/sell directives, personalized sizing or guaranteed returns.
     const guard = applyAdviceGuard(text);
     if (guard.guarded) {
