@@ -43,7 +43,8 @@ function decodeEntities(s: string): string {
       const code = e[1].toLowerCase() === "x" ? parseInt(e.slice(2), 16) : parseInt(e.slice(1), 10);
       return Number.isFinite(code) && code > 31 && code < 0x110000 ? String.fromCodePoint(code) : " ";
     }
-    return NAMED[e.toLowerCase()] ?? m;
+    const k = e.toLowerCase();
+    return Object.prototype.hasOwnProperty.call(NAMED, k) ? NAMED[k] : m;
   });
 }
 
