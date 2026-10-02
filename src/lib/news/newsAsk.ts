@@ -2,7 +2,7 @@ import type { RssNewsItem, RssNewsResult } from "./rssClient";
 
 /** Questions about official announcements or the latest headlines (not about one named company). */
 const EN = /\b(official (news|announcements?|statements?)|central bank (news|announcements?)|latest (market |financial |official )?(news|headlines|announcements?)|(fed|federal reserve|ecb|sec|bank of england) (news|announcements?|statements?|press)|what('?s| is) new (at|from|with) the (fed|ecb|sec))\b/i;
-const HE = /(הודעות רשמיות|הודעה רשמית|חדשות רשמיות|חדשות הבנק המרכזי|חדשות מהפד|הודעות הפד|הודעות הבנק המרכזי|כותרות אחרונות|חדשות אחרונות|מה חדש בפד)/;
+const HE = /(הודעות\s+ה?רשמיות|הודעה\s+ה?רשמית|חדשות\s+ה?רשמיות|חדשות הבנק המרכזי|חדשות מהפד|הודעות הפד|הודעות הבנק המרכזי|כותרות אחרונות|חדשות אחרונות|מה חדש בפד)/;
 
 export function isOfficialNewsQuestion(text: string): boolean {
   return EN.test(text) || HE.test(text);
