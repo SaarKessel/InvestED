@@ -605,7 +605,7 @@ export function MarketDataCard({
                     aria-label={t("market_data_history_aria", "{asset} historical chart, {count} observations from {start} to {end}." )
                       .replace("{asset}", active.symbol)
                       .replace("{count}", String(chartMode === "candle" ? Math.min(active.history.length, 45) : active.history.length))
-                      .replace("{start}", (chartMode === "candle" ? active.history.at(-45) : active.history[0])?.date ?? "")
+                      .replace("{start}", (chartMode === "candle" ? active.history.slice(-45)[0] : active.history[0])?.date ?? "")
                       .replace("{end}", active.history.at(-1)?.date ?? "")}
                   >
 
