@@ -5,6 +5,10 @@
       "destination": "/api/system?fn=closes"
     },
     {
+      "source": "/api/copy-13f",
+      "destination": "/api/system?fn=copy-13f"
+    },
+    {
       "source": "/api/health",
       "destination": "/api/system?fn=health"
     },

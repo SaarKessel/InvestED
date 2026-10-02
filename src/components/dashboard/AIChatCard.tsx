@@ -71,6 +71,7 @@ import { type MacroResult } from "@/lib/copilot/macroDesk";
 import { type EtfResult } from "@/lib/copilot/etfDesk";
 import type { LedgerResult } from "@/lib/predictions/ledgerDesk";
 import type { OosDeskResult } from "@/lib/copilot/oosDesk";
+import type { CopyFundResult } from "@/lib/copilot/copyFundDesk";
 import { type FilingsResult } from "@/lib/copilot/filingsDesk";
 import { type FxResult } from "@/lib/copilot/fxDesk";
 import { type MathDeskResult } from "@/lib/copilot/mathDesk";
@@ -90,7 +91,7 @@ import type { CopilotResponse } from "@/lib/copilotResponse";
 
 /** Minimum BM25 score for a retrieved passage to be shown; weaker matches are noise. */
 const MIN_RETRIEVE_SCORE = 3;
-interface Message { ledger?: LedgerResult | null; oos?: OosDeskResult | null; retrieved?: Passage[]; prov?: Provenance; agent?: { id: string | null; switchTo?: string }; deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxResult | null; fxFailed?: boolean; symbol?: SymbolInfo; wb?: WbResult | null; filings?: FilingsResult | null; etf?: EtfResult | null; macro?: MacroResult | null; scenario?: ScenarioPart[]; marketsim?: MarketEventResult; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
+interface Message { ledger?: LedgerResult | null; copyfund?: CopyFundResult | null; oos?: OosDeskResult | null; retrieved?: Passage[]; prov?: Provenance; agent?: { id: string | null; switchTo?: string }; deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxResult | null; fxFailed?: boolean; symbol?: SymbolInfo; wb?: WbResult | null; filings?: FilingsResult | null; etf?: EtfResult | null; macro?: MacroResult | null; scenario?: ScenarioPart[]; marketsim?: MarketEventResult; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
 
 export function AIChatCard({ workstation = false }: { workstation?: boolean } = {}) {
   const { t, language } = useLanguage();
@@ -456,6 +457,13 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
       const oos = oosOut.ok ? oosOut.result.value : null;
       const he = /[א-ת]/.test(text);
       setMessages((current) => [...current, { role: "copilot", trace, text: oos ? (he ? "סימולציה לימודית, לא ייעוץ. כך נראית הבדיקה מחוץ למדגם:" : "Educational simulation, not advice. Here is the out-of-sample check:") : (he ? "לא הצלחתי להריץ את הבדיקה עכשיו. נסו שוב בעוד רגע." : "I could not run the check right now. Try again in a moment."), oos, prov: oosOut.ok ? oosOut.result.provenance : undefined }]);
+      return;
+    }
+    if (plan.copyfund) {
+      const cfOut = await runTool<CopyFundResult>(plan.tools[0], plan.copyfund, { agentId: pickedAgent });
+      const copyfund = cfOut.ok ? cfOut.result.value : null;
+      const he = /[א-ת]/.test(text);
+      setMessages((current) => [...current, { role: "copilot", trace, text: copyfund ? (he ? "סימולציה לימודית, לא ייעוץ. כך היה נראה ההעתקה של ה-13F:" : "Educational simulation, not advice. Here is how copying the 13F would have looked:") : (he ? "לא הצלחתי לטעון עכשיו את הדוח או את המחירים, ולכן לא מציגה כלום. נסו שוב בעוד רגע." : "I could not load the filing or the prices right now, so I am not showing anything. Try again in a moment."), copyfund, prov: cfOut.ok ? cfOut.result.provenance : undefined }]);
       return;
     }
     if (plan.macro) {

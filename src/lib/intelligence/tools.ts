@@ -4,6 +4,7 @@
  * through runTool, which also enforces the per-agent allow-list.
  */
 import { loadOos, type OosDeskResult, type OosRequest } from "../copilot/oosDesk";
+import { loadCopyFund, type CopyFundRequest, type CopyFundResult } from "../copilot/copyFundDesk";
 import { loadMacro, type MacroRequest, type MacroResult } from "../copilot/macroDesk";
 import { agentMayUse } from "@/lib/agents";
 import { loadFx, type FxRequest, type FxResult } from "@/lib/copilot/fxDesk";
@@ -23,7 +24,7 @@ import { runLedger, type LedgerResult } from "@/lib/predictions/ledgerDesk";
 import type { LedgerRequest } from "@/lib/predictions/ledger";
 import type { TrustClass } from "./verificationEngine";
 
-export type ToolId = "calc" | "math" | "fx" | "wb" | "macro" | "filings" | "etf" | "symbol" | "scenario" | "risk" | "rssnews" | "marketsim" | "ledger" | "oos";
+export type ToolId = "calc" | "math" | "fx" | "wb" | "macro" | "filings" | "etf" | "symbol" | "scenario" | "risk" | "rssnews" | "marketsim" | "ledger" | "oos" | "copyfund";
 export type Domain = "finance" | "market" | "knowledge" | "news";
 export interface ToolSpec { id: ToolId; domain: Domain; title: Bi; trust: TrustClass; network: boolean }
 export type ToolOutcome<T = unknown> = { ok: true; result: ToolResult<T> } | { ok: false; reason: "denied" | "unavailable" | "unknown_tool" };
@@ -43,6 +44,7 @@ export const TOOL_SPECS: Record<ToolId, ToolSpec> = {
   risk: { id: "risk", domain: "market", title: b("Risk metrics", "מדדי סיכון"), trust: "CALCULATION", network: true },
   ledger: { id: "ledger", domain: "finance", title: b("Prediction ledger and calibration", "רשומת תחזיות וכיול"), trust: "DATA", network: true },
   oos: { id: "oos", domain: "market", title: b("Out-of-sample portfolio check", "בדיקת תיק מחוץ למדגם"), trust: "SIMULATION", network: true },
+  copyfund: { id: "copyfund", domain: "market", title: b("Copy-the-fund 13F lesson", "שיעור: העתקת קרן לפי 13F"), trust: "SIMULATION", network: true },
   marketsim: { id: "marketsim", domain: "finance", title: b("Market event simulator (invented)", "סימולטור אירועי שוק (מומצא)"), trust: "SIMULATION", network: false },
   rssnews: { id: "rssnews", domain: "news", title: b("Public RSS headlines", "כותרות מ-RSS ציבורי"), trust: "DATA", network: true },
   symbol: { id: "symbol", domain: "knowledge", title: b("Symbol lookup", "חיפוש סימול"), trust: "KNOWLEDGE", network: false },
@@ -93,6 +95,11 @@ const ADAPTERS: Record<ToolId, Adapter> = {
     const v: OosDeskResult = await loadOos(req);
     return wrap("oos", v, { source: b("Yahoo Finance daily closes via the site's market-quote server", "מחירי סגירה יומיים של Yahoo Finance דרך שרת הנתונים של האתר"), asOf: v.outcome.ok ? v.outcome.result.to : undefined, state: "calculated",
       note: b("Educational simulation, not advice. Weights are learned on the first 70% of real history only and judged on the last 30%. Price returns, no dividends or costs.", "סימולציה לימודית, לא ייעוץ. המשקלים נלמדים רק מ-70% הראשונים של ההיסטוריה האמיתית ונבדקים על 30% האחרונים. תשואות מחיר, בלי דיבידנדים ועלויות.") });
+  }) as Adapter,
+  copyfund: (async (req: CopyFundRequest) => {
+    const v: CopyFundResult | null = await loadCopyFund(req);
+    return v && wrap("copyfund", v, { source: b("SEC EDGAR Form 13F-HR and company tickers, with Yahoo Finance daily closes", "SEC EDGAR טופס 13F-HR ורשימת סימולים, עם מחירי סגירה יומיים של Yahoo Finance"), asOf: v.reportDate, state: "live",
+      note: b("Educational simulation, not advice. Filings lag up to 45 days, long US equities only, a missing position is not a confirmed sale, and no execution prices are inferred.", "סימולציה לימודית, לא ייעוץ. הדוחות מתפרסמים באיחור של עד 45 יום, רק מניות אמריקאיות בלונג, החזקה שנעלמה איננה מכירה מאושרת, ולא מנחשים מחירי ביצוע.") });
   }) as Adapter,
   rssnews: (async () => {
     const v: RssNewsResult | null = await fetchRssNews();

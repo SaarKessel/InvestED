@@ -19,6 +19,7 @@ import { ChatProvenance } from "./ChatProvenance";
 import { ChatMathCard } from "./ChatMathCard";
 import { ChatLedgerCard } from "./ChatLedgerCard";
 import { ChatOosCard } from "./ChatOosCard";
+import { ChatCopyFundCard } from "./ChatCopyFundCard";
 
 type Props<K> = { data: NonNullable<K> };
 
@@ -37,6 +38,7 @@ export interface ResultCardHost {
   math?: React.ComponentProps<typeof ChatMathCard>["data"];
   ledger?: React.ComponentProps<typeof ChatLedgerCard>["data"] | null;
   oos?: React.ComponentProps<typeof ChatOosCard>["data"] | null;
+  copyfund?: React.ComponentProps<typeof ChatCopyFundCard>["data"] | null;
 }
 
 
@@ -58,6 +60,7 @@ const RESULT_CARDS: Record<ResultKey, Renderer> = {
   math: ((data: Props<ResultCardHost["math"]>["data"]) => <ChatMathCard data={data} />) as unknown as Renderer,
   ledger: ((data: Props<ResultCardHost["ledger"]>["data"]) => <ChatLedgerCard data={data} />) as unknown as Renderer,
   oos: ((data: Props<ResultCardHost["oos"]>["data"]) => <ChatOosCard data={data} />) as unknown as Renderer,
+  copyfund: ((data: Props<ResultCardHost["copyfund"]>["data"]) => <ChatCopyFundCard data={data} />) as unknown as Renderer,
 };
 
 

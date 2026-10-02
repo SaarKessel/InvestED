@@ -10,6 +10,7 @@ import { parseWbRequest, type WbRequest } from "./worldBankDesk";
 import { parseOosRequest, type OosRequest } from "./oosDesk";
 import { parseMacroRequest, type MacroRequest } from "./macroDesk";
 import { parseEtfRequest, type EtfRequest } from "./etfDesk";
+import { parseCopyFundRequest, type CopyFundRequest } from "./copyFundDesk";
 import { parseFilingsRequest, type FilingsRequest } from "./filingsDesk";
 import { planLedgerRequest } from "@/lib/predictions/ledgerDesk";
 import type { LedgerRequest } from "@/lib/predictions/ledger";
@@ -21,10 +22,10 @@ import { TRUST_LABEL } from "@/lib/intelligence/provenance";
 import type { TrustClass } from "@/lib/intelligence/verificationEngine";
 import type { ToolId } from "@/lib/intelligence/tools";
 
-export type Route = "tool" | "career" | "learnpath" | "site" | "calc" | "math" | "fx" | "wb" | "macro" | "filings" | "etf" | "scenario" | "marketsim" | "ledger" | "oos" | "desk" | "copilot";
+export type Route = "tool" | "career" | "learnpath" | "site" | "calc" | "math" | "fx" | "wb" | "macro" | "filings" | "etf" | "scenario" | "marketsim" | "ledger" | "oos" | "copyfund" | "desk" | "copilot";
 export interface Bi { en: string; he: string }
 export interface TraceStep { text: Bi; trust?: TrustClass }
-export interface Plan { /** registry tool ids this route runs, in order */ tools: ToolId[]; route: Route; toolPath?: string; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxRequest; wb?: WbRequest; macro?: MacroRequest; filings?: FilingsRequest; etf?: EtfRequest; ledger?: LedgerRequest; oos?: OosRequest; scenario?: ScenarioPart[]; marketsim?: MarketEventInput; desk?: DataDeskKind; trace: TraceStep[] }
+export interface Plan { /** registry tool ids this route runs, in order */ tools: ToolId[]; route: Route; toolPath?: string; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxRequest; wb?: WbRequest; macro?: MacroRequest; filings?: FilingsRequest; etf?: EtfRequest; ledger?: LedgerRequest; oos?: OosRequest; copyfund?: CopyFundRequest; scenario?: ScenarioPart[]; marketsim?: MarketEventInput; desk?: DataDeskKind; trace: TraceStep[] }
 const b = (en: string, he: string): Bi => ({ en, he });
 
 export function planQuestion(text: string): Plan {
@@ -49,6 +50,11 @@ export function planQuestion(text: string): Plan {
   if (fx) return { tools: ["fx"], route: "fx", fx, trace: [
     { text: b("Recognized a currency conversion.", "זיהיתי בקשה להמרת מטבע.") },
     { text: b("Loaded the European Central Bank daily reference rate and multiplied. It is a daily reference rate, not a live trading quote.", "טענתי את שער היחס היומי של הבנק המרכזי האירופי וכפלתי. זהו שער יחס יומי, לא שער מסחר חי."), trust: "DATA" },
+    { text: b("No model chose or changed any number.", "אף מודל לא בחר או שינה מספר.") }] };
+  const copyfund = parseCopyFundRequest(text);
+  if (copyfund) return { tools: ["copyfund"], route: "copyfund", copyfund, trace: [
+    { text: b("Recognized a question about copying an institutional manager's 13F.", "זיהיתי שאלה על העתקת 13F של מנהל מוסדי.") },
+    { text: b("Loaded the latest 13F from SEC EDGAR, matched names to tickers only when exactly one fit, and priced them with real daily closes against SPY. The 45-day filing lag and the limits of 13F are shown. Educational simulation, not advice.", "טענתי את ה-13F האחרון מ-SEC EDGAR, התאמתי שמות לסימולים רק כשהתאים בדיוק אחד, ותמחרתי במחירי סגירה יומיים אמיתיים מול SPY. מוצגים עיכוב ההגשה של 45 יום ומגבלות ה-13F. סימולציה לימודית, לא ייעוץ."), trust: "SIMULATION" },
     { text: b("No model chose or changed any number.", "אף מודל לא בחר או שינה מספר.") }] };
   const filings = parseFilingsRequest(text);
   if (filings) return { tools: ["filings"], route: "filings", filings, trace: [

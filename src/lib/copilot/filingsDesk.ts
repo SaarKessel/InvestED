@@ -27,6 +27,18 @@ const MANAGERS: { cik: string; re: RegExp; name: { en: string; he: string } }[] 
 
 const ASKS_HOLDINGS = /13-?f\b|\bholdings?\b|\bpositions?\b|what (?:does|did|do) .{1,60}?\b(?:own|hold|buy|bought|holding)\b|החזקות|מה (?:יש|מחזיק|מחזיקה|קנה|קנתה|הוא מחזיק)|במה (?:מחזיק|מחזיקה|השקיע|השקיעה)/i;
 
+/** The known manager a question names, or null. Shared with the copy-the-fund desk. */
+export function findManager(text: string): FilingsRequest | null {
+  const cikMatch = text.match(/\bcik\b\D{0,3}(\d{4,10})\b/i);
+  if (cikMatch) {
+    const cik = cikMatch[1].padStart(10, "0");
+    const known = MANAGERS.find((m) => m.cik === cik);
+    return { cik, managerName: known?.name ?? { en: `CIK ${Number(cik)}`, he: `CIK ${Number(cik)}` } };
+  }
+  const m = MANAGERS.find((x) => x.re.test(text));
+  return m ? { cik: m.cik, managerName: m.name } : null;
+}
+
 export function parseFilingsRequest(text: string): FilingsRequest | null {
   if (text.length > 140 || !ASKS_HOLDINGS.test(text)) return null;
   const cikMatch = text.match(/\bcik\b\D{0,3}(\d{4,10})\b/i);
