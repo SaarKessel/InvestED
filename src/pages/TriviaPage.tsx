@@ -43,7 +43,7 @@ export default function TriviaPage() {
   const [step, setStep] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [answers, setAnswers] = useState<AnsweredQuestion[]>([]);
-  const [best, setBest] = useState<QuizBestScore | null>(null);
+  const [best, setBest] = useState<QuizBestScore | null>(() => getBestQuizScore(5));
 
   const current = questions[step] ?? null;
   const score = useMemo(
