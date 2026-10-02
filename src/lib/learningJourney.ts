@@ -6,6 +6,8 @@ export interface LearningDiagnostic {
   level: LearningLevel;
   goal: LearningGoal;
   minutesPerWeek: 30 | 60 | 120;
+  /** Topics the learner ticked as already clear (drives the recommended path). Absent on older saves. */
+  knownTopics?: string[];
   completedAt: string;
 }
 

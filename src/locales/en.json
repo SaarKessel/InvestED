@@ -2254,5 +2254,21 @@
   "compare_title": "Compared, both start at 100",
   "compare_unavailable": "no comparison data available right now",
   "compare_note": "Rebased to 100 on the first shared date, past performance only",
-  "terminal_markets": "Markets & watchlist"
+  "terminal_markets": "Markets & watchlist",
+  "learn_topics_title": "Which of these do you already feel sure about?",
+  "learn_topics_hint": "Tick the clear ones. The rest go into your path.",
+  "learn_topic_basics": "Stocks, bonds and ETFs",
+  "learn_topic_risk": "Risk vs. return",
+  "learn_topic_emergency": "Emergency fund",
+  "learn_topic_compound": "Compound interest",
+  "learn_topic_fees": "Fees and commissions",
+  "learn_topic_diversification": "Diversification",
+  "learn_topic_valuation": "Valuation",
+  "learn_rec_title": "Your recommended order",
+  "learn_rec_none": "You ticked every topic at your level. Move on to practice and simulation.",
+  "learn_rec_why_unchecked": "not ticked yet",
+  "learn_rec_why_goal": "fits your goal",
+  "learn_rec_why_quiz": "your quiz score suggests a review",
+  "learn_rec_more": "{n} more topics will come after these.",
+  "learn_rec_ask": "Ask the Copilot about the first topic"
 }

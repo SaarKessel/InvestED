@@ -6,6 +6,8 @@ import { Badge, Button, Card, CardContent, Progress } from "@/components/ui/prim
 import { useLanguage } from "@/context/languageContext";
 import { cn } from "@/lib/utils";
 import { type LearningGoal, type LearningJourneyState, type LearningLevel, type JourneyStepId, journeyProgress, nextJourneyStep, readLearningJourney, saveLearningJourney } from "@/lib/learningJourney";
+import { PATH_TOPICS, type TopicId } from "@/lib/learningPath";
+import { RecommendedPath } from "@/components/learn/RecommendedPath";
 import { getBestQuizScore } from "@/lib/quizProgressStorage";
 import { getCurrentSimulation } from "@/lib/simulation/simulationStorage";
 
@@ -16,6 +18,7 @@ export default function LearnPage() {
   const [level, setLevel] = useState<LearningLevel>("foundation");
   const [goal, setGoal] = useState<LearningGoal>("confidence");
   const [minutes, setMinutes] = useState<30 | 60 | 120>(60);
+  const [known, setKnown] = useState<TopicId[]>([]);
   const quiz = getBestQuizScore(5);
   const simulation = getCurrentSimulation();
   const progress = journeyProgress(state);
@@ -35,7 +38,7 @@ export default function LearnPage() {
   }
 
   function finishDiagnostic() {
-    update({ diagnostic: { level, goal, minutesPerWeek: minutes, completedAt: new Date().toISOString() }, completedSteps: [], reflection: "", updatedAt: "" });
+    update({ diagnostic: { level, goal, minutesPerWeek: minutes, knownTopics: known, completedAt: new Date().toISOString() }, completedSteps: [], reflection: "", updatedAt: "" });
   }
 
   function toggleStep(step: JourneyStepId) {
@@ -82,10 +85,14 @@ export default function LearnPage() {
             <Choice title={t("learn_diag_goal")} value={goal} onChange={(v) => setGoal(v as LearningGoal)} options={[["confidence",t("learn_goal_confidence")],["portfolio",t("learn_goal_portfolio")],["analysis",t("learn_goal_analysis")]]} />
             <Choice title={t("learn_diag_time")} value={String(minutes)} onChange={(v) => setMinutes(Number(v) as 30|60|120)} options={[["30",t("learn_time_30")],["60",t("learn_time_60")],["120",t("learn_time_120")]]} />
           </div>
+          <fieldset className="mt-8"><legend className="text-sm font-bold">{t("learn_topics_title")}</legend><p className="mt-1 text-xs text-muted-foreground">{t("learn_topics_hint")}</p>
+            <div className="mt-3 flex flex-wrap gap-2">{PATH_TOPICS.map((topic) => { const on = known.includes(topic.id); return <label key={topic.id} className={cn("flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-sm", on ? "border-primary bg-primary/10 font-semibold" : "border-border")}><input type="checkbox" className="sr-only" checked={on} onChange={() => setKnown(on ? known.filter((id) => id !== topic.id) : [...known, topic.id])} />{on && <Check className="h-4 w-4" aria-hidden />}{t(`learn_topic_${topic.id}`)}</label>; })}</div>
+          </fieldset>
           <Button size="lg" className="mt-8 w-full sm:w-auto" onClick={finishDiagnostic}>{t("learn_build_path")}<ChevronRight className="h-4 w-4" /></Button>
         </CardContent>
       </Card> : <>
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"><div><p className="text-xs font-bold uppercase tracking-wider text-primary">{t("learn_path_eyebrow")}</p><h2 className="mt-2 text-3xl font-extrabold">{t(`learn_path_${state.diagnostic.goal}`)}</h2><p className="mt-2 text-sm text-muted-foreground">{t("learn_path_schedule").replace("{minutes}", String(state.diagnostic.minutesPerWeek))}</p></div><Button variant="outline" size="sm" onClick={() => update({ diagnostic: null, completedSteps: [], reflection: "", updatedAt: "" })}><RotateCcw className="h-4 w-4" />{t("learn_redo")}</Button></div>
+        <RecommendedPath diagnostic={state.diagnostic} quiz={quiz} />
         <div className="grid gap-5 lg:grid-cols-2">{plan.map((item, index) => { const done=state.completedSteps.includes(item.id); const current=next===item.id; const Icon=item.icon; return <Card key={item.id} className={cn("relative overflow-hidden",current&&"border-primary/50 shadow-lg",done&&"bg-primary/[.035]")}><CardContent className="p-6"><div className="flex items-start gap-4"><div className={cn("flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl",done?"bg-primary text-white":"bg-primary/10 text-primary")}>{done?<Check className="h-5 w-5"/>:<Icon className="h-5 w-5"/>}</div><div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><span className="text-xs font-bold text-muted-foreground">{t("learn_stage")} {index+2}/5</span>{current&&<Badge>{t("learn_next")}</Badge>}{done&&<Badge variant="success">{t("learn_done")}</Badge>}</div><h3 className="mt-2 text-xl font-bold">{item.title}</h3><p className="mt-2 text-sm leading-7 text-muted-foreground">{item.text}</p><div className="mt-5 flex flex-wrap gap-2"><Link to={item.href}><Button size="sm">{item.action}<ChevronRight className="h-4 w-4" /></Button></Link><Button size="sm" variant="outline" onClick={()=>toggleStep(item.id)}>{done?t("learn_mark_not_done"):t("learn_mark_done")}</Button></div></div></div></CardContent></Card>})}</div>
         <Card className="mt-6 border-primary/20 bg-gradient-to-br from-primary/10 via-card to-card"><CardContent className="p-6 md:p-8"><div className="flex items-start gap-4"><div className="rounded-2xl bg-primary/10 p-3 text-primary"><BrainCircuit className="h-6 w-6" /></div><div><div className="flex flex-wrap items-center gap-2"><h2 className="text-xl font-extrabold">{t("learn_coach_title")}</h2><Badge variant="outline">{t("learn_evidence_badge")}</Badge></div><p className="mt-3 max-w-3xl text-sm leading-7 text-muted-foreground">{insight}</p><p className="mt-3 text-xs text-muted-foreground">{t("learn_feedback_scope")}</p></div></div></CardContent></Card>
         {progress===100&&<Card className="mt-6 border-primary bg-primary text-white"><CardContent className="flex flex-col items-start gap-4 p-6 sm:flex-row sm:items-center"><Trophy className="h-9 w-9"/><div className="flex-1"><h2 className="text-xl font-extrabold text-white">{t("learn_cycle_complete_title")}</h2><p className="mt-1 text-sm text-white/80">{t("learn_cycle_complete_text")}</p></div><Button variant="secondary" onClick={()=>update({...state,completedSteps:[]})}>{t("learn_new_cycle")}</Button></CardContent></Card>}

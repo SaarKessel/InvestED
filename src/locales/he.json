@@ -2254,5 +2254,21 @@
   "compare_title": "השוואה, שניהם מתחילים ב-100",
   "compare_unavailable": "אין כרגע נתוני השוואה זמינים",
   "compare_note": "מנורמל ל-100 בתאריך המשותף הראשון, ביצועי עבר בלבד",
-  "terminal_markets": "שווקים ורשימת מעקב"
+  "terminal_markets": "שווקים ורשימת מעקב",
+  "learn_topics_title": "באילו מאלה אתם כבר בטוחים?",
+  "learn_topics_hint": "סמנו את מה שברור לכם. השאר ייכנס למסלול.",
+  "learn_topic_basics": "מניות, אג״ח וקרנות סל",
+  "learn_topic_risk": "סיכון מול תשואה",
+  "learn_topic_emergency": "קרן חירום",
+  "learn_topic_compound": "ריבית דריבית",
+  "learn_topic_fees": "דמי ניהול ועמלות",
+  "learn_topic_diversification": "פיזור השקעות",
+  "learn_topic_valuation": "הערכת שווי",
+  "learn_rec_title": "הסדר המומלץ בשבילכם",
+  "learn_rec_none": "סימנתם את כל הנושאים ברמה שלכם. אפשר להמשיך לתרגול ולסימולציה.",
+  "learn_rec_why_unchecked": "עוד לא סומן",
+  "learn_rec_why_goal": "מתאים למטרה שלכם",
+  "learn_rec_why_quiz": "תוצאת השאלון מרמזת על חזרה",
+  "learn_rec_more": "עוד {n} נושאים יבואו אחרי אלה.",
+  "learn_rec_ask": "שאלו את ה-Copilot על הנושא הראשון"
 }
