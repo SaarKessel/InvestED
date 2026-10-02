@@ -35,6 +35,7 @@ import { createAlphaVantageProvider } from "../src/lib/market/providers/alphaVan
 import { createYahooFinanceProvider } from "../src/lib/market/providers/yahooFinance.js";
 import { isHistoryRange } from "../src/lib/market/providers/types.js";
 import { createProviderRouter } from "../src/lib/market/router.js";
+import { createProviderHealth } from "../src/lib/market/marketRouting.js";
 
 // Minimal structural types for the Vercel request/response objects.
 interface MarketQuoteRequest {
@@ -53,6 +54,7 @@ const yahooHistoryCache=createTtlCache<CandleDatum[]>({ttlMs:HISTORY_CACHE_TTL_M
 const yahooUnavailableCache=createTtlCache<UnavailableAsset>({ttlMs:15*60*1000});
 let yahooCooldownUntil=0;
 const yahooInFlight=new Map<string,Promise<MarketAsset|UnavailableAsset>>();
+const providerHealth = createProviderHealth();
 const MAX_SYMBOLS = 8;
 const SYMBOL_PATTERN = /^[A-Z0-9.\-^=]{1,10}$/;
 
@@ -83,7 +85,7 @@ function buildService(yahooOnly=false) {
   providers.push(createYahooFinanceProvider());
 
   return createMarketDataService({
-    router: createProviderRouter(providers),
+    router: createProviderRouter(providers, { health: providerHealth }),
     quoteCache:yahooOnly?yahooQuoteCache:quoteCache,
     historyCache:yahooOnly?yahooHistoryCache:historyCache,
   });
