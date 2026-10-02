@@ -9,6 +9,10 @@
       "destination": "/api/system?fn=sec-13f"
     },
     {
+      "source": "/api/sec-nport",
+      "destination": "/api/system?fn=sec-nport"
+    },
+    {
       "source": "/(.*)",
       "destination": "/index.html"
     }

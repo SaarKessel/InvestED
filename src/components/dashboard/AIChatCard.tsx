@@ -66,6 +66,7 @@ import { parseSymbolQuestion, type SymbolInfo } from "@/lib/copilot/symbolDesk";
 import type { MarketEventResult } from "@/lib/simulator/marketEvents";
 import { type ScenarioPart } from "@/lib/copilot/scenarioDesk";
 import { type WbResult } from "@/lib/copilot/worldBankDesk";
+import { type EtfResult } from "@/lib/copilot/etfDesk";
 import { type FilingsResult } from "@/lib/copilot/filingsDesk";
 import { type FxResult } from "@/lib/copilot/fxDesk";
 import { type MathDeskResult } from "@/lib/copilot/mathDesk";
@@ -85,7 +86,7 @@ import type { CopilotResponse } from "@/lib/copilotResponse";
 
 /** Minimum BM25 score for a retrieved passage to be shown; weaker matches are noise. */
 const MIN_RETRIEVE_SCORE = 3;
-interface Message { retrieved?: Passage[]; prov?: Provenance; agent?: { id: string | null; switchTo?: string }; deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxResult | null; fxFailed?: boolean; symbol?: SymbolInfo; wb?: WbResult | null; filings?: FilingsResult | null; scenario?: ScenarioPart[]; marketsim?: MarketEventResult; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
+interface Message { retrieved?: Passage[]; prov?: Provenance; agent?: { id: string | null; switchTo?: string }; deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxResult | null; fxFailed?: boolean; symbol?: SymbolInfo; wb?: WbResult | null; filings?: FilingsResult | null; etf?: EtfResult | null; scenario?: ScenarioPart[]; marketsim?: MarketEventResult; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
 
 export function AIChatCard({ workstation = false }: { workstation?: boolean } = {}) {
   const { t, language } = useLanguage();
@@ -437,6 +438,13 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
       const filings = flOut.ok ? flOut.result.value : null;
       const he = /[א-ת]/.test(text);
       setMessages((current) => [...current, { role: "copilot", trace: flOut.ok ? [...trace, { text: dataCheckLine(flOut.result), trust: "ANALYSIS" as const }] : trace, text: filings ? (he ? "הנה ההחזקות כפי שדווחו ל-SEC:" : "Here are the holdings as reported to the SEC:") : (he ? "לא הצלחתי לטעון עכשיו את הדוח מ-SEC, ולכן לא מציגה כלום. נסו שוב בעוד רגע." : "I could not load that filing from the SEC right now, so I am not showing anything. Try again in a moment."), filings, prov: flOut.ok ? flOut.result.provenance : undefined }]);
+      return;
+    }
+    if (plan.etf) {
+      const etfOut = await runTool<EtfResult>(plan.tools[0], plan.etf, { agentId: pickedAgent });
+      const etf = etfOut.ok ? etfOut.result.value : null;
+      const he = /[א-ת]/.test(text);
+      setMessages((current) => [...current, { role: "copilot", trace: etfOut.ok ? [...trace, { text: dataCheckLine(etfOut.result), trust: "ANALYSIS" as const }] : trace, text: etf ? (he ? "הנה ההחזקות כפי שהקרן דיווחה ל-SEC:" : "Here are the holdings as the fund reported them to the SEC:") : (he ? "לא מצאתי דוח החזקות של SEC עבור הקרן הזו, או שהוא לא נטען עכשיו, ולכן לא מציגה כלום. קרנות מסוימות, כמו SPY, לא מגישות דוח כזה." : "I could not find or load an SEC holdings report for that fund, so I am not showing anything. Some funds, such as SPY, file no such report."), etf, prov: etfOut.ok ? etfOut.result.provenance : undefined }]);
       return;
     }
     if (plan.fx) {

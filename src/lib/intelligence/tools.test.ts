@@ -64,9 +64,9 @@ describe("one vocabulary", () => {
     }
     expect(planQuestion("open the calculator").tools).toEqual([]);
   });
-  it("the catalogue lists the ten desks and the eight intent-stage engines with no duplicate ids", () => {
+  it("the catalogue lists the eleven desks and the eight intent-stage engines with no duplicate ids", () => {
     const c = toolCatalog();
-    expect(c.filter((x) => x.kind === "desk")).toHaveLength(10);
+    expect(c.filter((x) => x.kind === "desk")).toHaveLength(11);
     expect(c.filter((x) => x.kind === "engine")).toHaveLength(8);
     expect(new Set(c.map((x) => x.id)).size).toBe(c.length);
   });

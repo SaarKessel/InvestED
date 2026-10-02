@@ -7,6 +7,7 @@ import { agentMayUse } from "@/lib/agents";
 import { loadFx, type FxRequest, type FxResult } from "@/lib/copilot/fxDesk";
 import { loadWb, type WbRequest, type WbResult } from "@/lib/copilot/worldBankDesk";
 import { loadFilings, type FilingsRequest, type FilingsResult } from "@/lib/copilot/filingsDesk";
+import { loadEtf, type EtfRequest, type EtfResult } from "@/lib/copilot/etfDesk";
 import { lookupSymbol, type SymbolInfo } from "@/lib/copilot/symbolDesk";
 import { runMathDesk, type MathDeskResult } from "@/lib/copilot/mathDesk";
 import { runCalcDesk, type CalcDeskResult } from "@/lib/copilot/calcDesk";
@@ -18,7 +19,7 @@ import { TOOLS as ENGINES } from "./toolRegistry";
 import type { Bi, ToolResult } from "./envelope";
 import type { TrustClass } from "./verificationEngine";
 
-export type ToolId = "calc" | "math" | "fx" | "wb" | "filings" | "symbol" | "scenario" | "risk" | "rssnews" | "marketsim";
+export type ToolId = "calc" | "math" | "fx" | "wb" | "filings" | "etf" | "symbol" | "scenario" | "risk" | "rssnews" | "marketsim";
 export type Domain = "finance" | "market" | "knowledge" | "news";
 export interface ToolSpec { id: ToolId; domain: Domain; title: Bi; trust: TrustClass; network: boolean }
 export type ToolOutcome<T = unknown> = { ok: true; result: ToolResult<T> } | { ok: false; reason: "denied" | "unavailable" | "unknown_tool" };
@@ -33,6 +34,7 @@ export const TOOL_SPECS: Record<ToolId, ToolSpec> = {
   fx: { id: "fx", domain: "market", title: b("Currency conversion", "המרת מטבע"), trust: "DATA", network: true },
   wb: { id: "wb", domain: "market", title: b("Country statistics", "נתוני מדינה"), trust: "DATA", network: true },
   filings: { id: "filings", domain: "market", title: b("Institutional holdings (SEC 13F)", "החזקות מוסדיות (SEC 13F)"), trust: "DATA", network: true },
+  etf: { id: "etf", domain: "market", title: b("ETF holdings (SEC N-PORT)", "החזקות קרן סל (SEC N-PORT)"), trust: "DATA", network: true },
   risk: { id: "risk", domain: "market", title: b("Risk metrics", "מדדי סיכון"), trust: "CALCULATION", network: true },
   marketsim: { id: "marketsim", domain: "finance", title: b("Market event simulator (invented)", "סימולטור אירועי שוק (מומצא)"), trust: "SIMULATION", network: false },
   rssnews: { id: "rssnews", domain: "news", title: b("Public RSS headlines", "כותרות מ-RSS ציבורי"), trust: "DATA", network: true },
@@ -57,6 +59,11 @@ const ADAPTERS: Record<ToolId, Adapter> = {
     const v: FilingsResult | null = await loadFilings(req);
     return v && wrap("filings", v, { source: b("SEC EDGAR: Form 13F-HR information table", "SEC EDGAR: טבלת המידע של טופס 13F-HR"), asOf: v.reportDate, state: "live",
       note: b("As reported by the manager, up to 45 days after quarter end. Long positions in US-listed securities only. Not a live portfolio and not advice.", "כפי שדווח על ידי המנהל, עד 45 יום אחרי סוף הרבעון. רק פוזיציות לונג בניירות אמריקאיים. לא תיק חי ולא ייעוץ.") });
+  }) as Adapter,
+  etf: (async (req: EtfRequest) => {
+    const v: EtfResult | null = await loadEtf(req);
+    return v && wrap("etf", v, { source: b("SEC EDGAR: fund Form N-PORT", "SEC EDGAR: טופס N-PORT של הקרן"), asOf: v.reportDate, state: "live",
+      note: b("As reported by the fund. Only quarter-end reports are public, about 60 days after quarter end, so the holdings can be months old. Not advice.", "כפי שדווח על ידי הקרן. רק דוחות סוף רבעון פומביים, כ-60 יום אחרי הרבעון, ולכן ההחזקות עשויות להיות בנות חודשים. לא ייעוץ.") });
   }) as Adapter,
   marketsim: (async (req: MarketEventInput) => {
     const v: MarketEventResult = simulateMarketEvent(req);
