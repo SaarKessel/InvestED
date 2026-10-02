@@ -3,6 +3,7 @@ import { Newspaper, RefreshCw } from "lucide-react";
 import { Layout, DisclaimerBanner } from "@/components/layout/Layout";
 import { OfficialFeedsSection } from "@/components/news/OfficialFeedsSection";
 import { NewsCard } from "@/components/news/NewsCard";
+import { EvidenceWorksheetPanel } from "@/components/literacy/EvidenceWorksheet";
 import { useLanguage } from "@/context/languageContext";
 import { fetchNews, type NewsResult } from "@/lib/newsClient";
 import { fetchHeadlineSentiment, type SentimentItem } from "@/lib/news/sentiment";
@@ -85,6 +86,8 @@ export default function NewsPage() {
             )}
           </button>
         </div>
+
+        <EvidenceWorksheetPanel />
 
         {!result && !failed && (
           <p className="py-16 text-center text-sm text-muted-foreground">{t("news_loading")}</p>

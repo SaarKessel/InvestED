@@ -1,4 +1,6 @@
-import { ExternalLink, Newspaper, Tag } from "lucide-react";
+import { useState } from "react";
+import { ClipboardCheck, ExternalLink, Newspaper, Tag } from "lucide-react";
+import { EvidenceWorksheet } from "@/components/literacy/EvidenceWorksheet";
 import { Card, CardContent } from "@/components/ui/primitives";
 import { useLanguage } from "@/context/languageContext";
 import type { NewsItem } from "@/lib/newsClient";
@@ -7,6 +9,7 @@ import type { SentimentItem } from "@/lib/news/sentiment";
 export function NewsCard({ item, compact = false, tone }: { item: NewsItem; compact?: boolean; tone?: SentimentItem }) {
   const { t, language } = useLanguage();
   const lang = language === "he" ? "he" : "en";
+  const [worksheetOpen, setWorksheetOpen] = useState(false);
   const implications = item.implications[lang];
   const keyFacts = item.keyFacts[lang];
   const published = new Date(item.publishedAt).toLocaleString(lang === "he" ? "he-IL" : "en-US", {
@@ -94,6 +97,14 @@ export function NewsCard({ item, compact = false, tone }: { item: NewsItem; comp
             )}
           </div>
         )}
+
+        <div className="mt-3">
+          <button type="button" aria-expanded={worksheetOpen} onClick={() => setWorksheetOpen((v) => !v)} className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline">
+            <ClipboardCheck className="h-3.5 w-3.5" />
+            {lang === "he" ? "דף ראיות לכותרת" : "Evidence worksheet"}
+          </button>
+          {worksheetOpen && <div className="mt-2"><EvidenceWorksheet headline={item.title} /></div>}
+        </div>
 
         <div className="mt-auto pt-4">
           <a
