@@ -62,3 +62,17 @@ export const OUTCOME_LINE: Record<Outcome, { en: string; he: string }> = {
   contradicted: { en: "Verification: the sources contradict each other on numbers.", he: "אימות: המקורות סותרים זה את זה במספרים." },
   unverifiable: { en: "Verification: none of the numbers could be matched to a source.", he: "אימות: אף מספר לא הותאם למקור." },
 };
+
+const ISSUE_TEXT: Array<{ re: RegExp; en: string; he: string }> = [
+  { re: /older than/, en: "the data is older than the freshness limit", he: "הנתונים ישנים מגבול הטריות" },
+  { re: /without a date/, en: "the data carries no date", he: "לנתונים אין תאריך" },
+  { re: /source missing/, en: "the source is not named in both languages", he: "המקור לא מופיע בשתי השפות" },
+  { re: /scenario|simulation/, en: "invented and real data are not kept apart", he: "נתונים מומצאים ואמיתיים לא מופרדים" },
+];
+/** One trace line about a live-data tool result: what the audit found, or that it passed. Bilingual, built from fixed text and the result's own date. */
+export function dataCheckLine(r: ToolResult, now: number = Date.now()): { en: string; he: string } {
+  const a = auditResult(r, now);
+  if (!a.issues.length) return { en: `Data check passed: source named, dated${r.provenance.asOf ? ` (as of ${r.provenance.asOf})` : ""}, within the freshness limit.`, he: `בדיקת נתונים עברה: המקור מצוין, מתוארך${r.provenance.asOf ? ` (נכון ל-${r.provenance.asOf})` : ""} ובתוך גבול הטריות.` };
+  const words = a.issues.map((i) => ISSUE_TEXT.find((t) => t.re.test(i)));
+  return { en: `Data check found: ${words.map((w) => w?.en ?? "an unexplained issue").join("; ")}.`, he: `בדיקת נתונים מצאה: ${words.map((w) => w?.he ?? "בעיה לא מוסברת").join("; ")}.` };
+}

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { auditResult, checkClaims, outcomeOf, OUTCOME_LINE, unknownLinks } from "./claims";
+import { auditResult, dataCheckLine, checkClaims, outcomeOf, OUTCOME_LINE, unknownLinks } from "./claims";
 import type { ToolResult } from "./envelope";
 
 const res = (state: "live" | "cached" | "static" | "synthetic" | "calculated", asOf?: string, trust: ToolResult["trust"] = "DATA"): ToolResult => ({ toolId: "t", value: 1, trust, provenance: { source: { en: "S", he: "מ" }, state, asOf } });
@@ -42,5 +42,15 @@ describe("outcome", () => {
     expect(outcomeOf({ ...base, conflicts: 1 })).toBe("contradicted");
     expect(outcomeOf({ ...base, claims: [{ sentence: "z 9", label: "unsupported" }] })).toBe("unverifiable");
     for (const k of Object.keys(OUTCOME_LINE)) expect(OUTCOME_LINE[k as keyof typeof OUTCOME_LINE].he).not.toMatch(/[A-Za-z]{4,}/);
+  });
+});
+describe("data check line", () => {
+  const now = Date.parse("2026-10-02T12:00:00Z");
+  it("says passed or what was found, in both languages, with no English in Hebrew", () => {
+    expect(dataCheckLine(res("live", "2026-10-01"), now).en).toContain("passed");
+    const bad = dataCheckLine(res("cached", "2026-09-01"), now);
+    expect(bad.en).toContain("older than the freshness limit"); expect(bad.he).toContain("ישנים");
+    expect(dataCheckLine(res("live"), now).he).toContain("אין תאריך");
+    expect(bad.he.replace(/\d|-/g, "")).not.toMatch(/[A-Za-z]{3,}/);
   });
 });

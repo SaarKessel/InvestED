@@ -34,7 +34,7 @@ import { describePlan, decompose } from "@/lib/copilot/decompose";
 import { recordTrace } from "@/lib/intelligence/traceStore";
 import { isDeepRequest, runDeepResearch, stepsForLevel, stripTrigger } from "@/lib/copilot/deepResearch";
 import { describeRun } from "@/lib/copilot/plan";
-import { checkClaims, OUTCOME_LINE, outcomeOf, unknownLinks } from "@/lib/intelligence/claims";
+import { checkClaims, dataCheckLine, OUTCOME_LINE, outcomeOf, unknownLinks } from "@/lib/intelligence/claims";
 import { relevantNotes, recallLine } from "@/lib/memory/noteRecall";
 import { defaultMemoryApi } from "@/lib/memory/memoryApi";
 import { downloadText, printHtml, toCsv, toPrintHtml } from "@/lib/copilot/exportChat";
@@ -317,6 +317,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
       { text: { en: `Recognized a risk question about ${tickers.join(", ")}.`, he: `זיהיתי שאלת סיכון על ${tickers.join(", ")}.` } },
       { text: out.ok ? { en: `Took about a year of daily closes from Yahoo Finance through the site server (${live === "live" ? "latest data" : "cached or older data"}) and ${BENCHMARK} as the benchmark for beta.`, he: `לקחתי כשנה של מחירי סגירה יומיים מ-Yahoo Finance דרך שרת האתר (${live === "live" ? "נתונים עדכניים" : "נתונים ממטמון או ישנים"}) ואת ${BENCHMARK} כמדד ייחוס לבטא.` } : { en: "No real price data came back, so nothing was calculated.", he: "לא חזרו נתוני מחיר אמיתיים, ולכן לא חושב דבר." }, trust: "DATA" },
       { text: { en: "Volatility, worst drop and beta were calculated by fixed code. No model wrote these numbers.", he: "תנודתיות, ירידה מקסימלית ובטא חושבו בקוד קבוע. אף מודל לא כתב את המספרים." }, trust: "CALCULATION" },
+      ...(out.ok ? [{ text: dataCheckLine(out.result), trust: "ANALYSIS" as const }] : []),
     ];
     setMessages((current) => [...current, { role: "copilot", text: formatRisk(value, lang), trace, question: text }]);
     return true;
@@ -423,7 +424,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
     if (plan.fx) {
       const fxOut = await runTool<FxResult>(plan.tools[0], plan.fx, { agentId: pickedAgent });
       const fx = fxOut.ok ? fxOut.result.value : null;
-      setMessages((current) => [...current, { role: "copilot", trace, text: fx ? (language === "he" ? "הנה ההמרה:" : "Here is the conversion:") : (language === "he" ? "לא הצלחתי לטעון עכשיו את שער היחס, ולכן לא המרתי. נסו שוב בעוד רגע." : "I could not load the reference rate right now, so I did not convert anything. Try again in a moment."), fx, prov: fxOut.ok ? fxOut.result.provenance : undefined }]);
+      setMessages((current) => [...current, { role: "copilot", trace: fxOut.ok ? [...trace, { text: dataCheckLine(fxOut.result), trust: "ANALYSIS" as const }] : trace, text: fx ? (language === "he" ? "הנה ההמרה:" : "Here is the conversion:") : (language === "he" ? "לא הצלחתי לטעון עכשיו את שער היחס, ולכן לא המרתי. נסו שוב בעוד רגע." : "I could not load the reference rate right now, so I did not convert anything. Try again in a moment."), fx, prov: fxOut.ok ? fxOut.result.provenance : undefined }]);
       return;
     }
     if (plan.math) {
