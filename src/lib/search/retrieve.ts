@@ -5,7 +5,15 @@ import { conceptAnswerByLabel } from "@/lib/financialEducation";
 export interface Passage { id: string; label: string; text: string; score: number }
 interface Doc { id: string; en: string; he: string; text: { en: string; he: string }; tokens: Record<"en" | "he", string[]> }
 const STOP = new Set("the and for are was what how why when who does did can you your about tell me this that with from have has not but today now please explain mean means מהי מהו מה איך למה מתי האם על של את זה זאת הוא היא יש אני אתה".split(" "));
-const tok = (s: string) => normalizeTerm(s).split(" ").filter((w) => w.length > 2 && !STOP.has(w));
+/** Hebrew attaches ה ב ל ו מ ש כ to the front of words ("בריבית", "והריבית"). Strip up to two so the stored and asked forms meet; applied the same way to both sides, and only when 3+ letters remain. */
+const HE_WORD = /^[א-ת]+$/;
+export function stemHe(w: string): string {
+  if (!HE_WORD.test(w)) return w;
+  let out = w;
+  for (let i = 0; i < 2; i++) if (out.length >= 5 && "הבלומשכ".includes(out[0])) out = out.slice(1);
+  return out;
+}
+const tok = (s: string) => normalizeTerm(s).split(" ").filter((w) => w.length > 2 && !STOP.has(w)).map(stemHe);
 let cache: Doc[] | null = null;
 function docs(): Doc[] {
   if (cache) return cache;
