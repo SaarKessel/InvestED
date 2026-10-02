@@ -99,6 +99,7 @@ export function validateStrategyUniverse(
     }
     if (
       typeof strategy.riskProfile?.level !== "number" ||
+      Number.isNaN(strategy.riskProfile.level) ||
       strategy.riskProfile.level < 1 ||
       strategy.riskProfile.level > 10
     ) {
