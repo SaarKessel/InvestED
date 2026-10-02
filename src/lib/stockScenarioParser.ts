@@ -137,7 +137,7 @@ function extractContribution(
 );
 
 const monthly =
-  /(?:כל חודש|בחודש|לחודש|monthly)/i.test(text);
+  /(?:כל חודש|בחודש|לחודש|\bmonthly\b|\b(?:per|a|each|every)\s+month\b|\/\s*month\b)/i.test(text);
 
 
   if (monthly && monthlyShares) {
@@ -184,7 +184,7 @@ function detectMode(
 ): StockSimulationMode {
 
   const historicalWords =
-    /(?:לפני|בעבר|הייתי משקיע|אם הייתי קונה|historical|backtest)/i;
+    /(?:לפני|בעבר|הייתי משקיע|אם הייתי קונה|historical|backtest|\bif\s+i\s+had\s+(?:invested|bought|put)|\bwould\s+have\b|\byears?\s+ago\b)/i;
 
 
   return historicalWords.test(text)
@@ -198,26 +198,23 @@ function extractStartDate(
   now: Date
 ): string | null {
 
+  // "N years ago" is the clearest signal; an explicit calendar year is only
+  // read when it is not part of an amount ("2000 ILS", "$2,018").
   const yearMatch = text.match(
-    /(20\d{2})/
+    /(?<![\d,.$₪])(20\d{2})(?![\d,.])(?!\s*(?:ILS|₪|\$|USD|EUR|dollars?|shekels?|שקל|שקלים|דולר|דולרים|אלף|k\b))/i
   );
-
-
-  if (yearMatch) {
-    return `${yearMatch[1]}-01-01`;
-  }
 
 
   const yearsAgo =
   text.match(
-    /לפני\s+(\d+)\s+שנים?/i
+    /לפני\s+(\d+)\s+שנים?|(\d+)\s+years?\s+ago/i
   );
 
   if (yearsAgo) {
     const date = new Date(now);
     date.setFullYear(
       date.getFullYear() -
-      Number(yearsAgo[1])
+      Number(yearsAgo[1] ?? yearsAgo[2])
     );
 
     return `${date.getFullYear()}-${String(
@@ -225,6 +222,11 @@ function extractStartDate(
     ).padStart(2, "0")}-${String(
       date.getDate()
     ).padStart(2, "0")}`;
+  }
+
+
+  if (yearMatch) {
+    return `${yearMatch[1]}-01-01`;
   }
 
 
