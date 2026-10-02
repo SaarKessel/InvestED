@@ -29,11 +29,12 @@ import { formatRisk, knownTickers, parseRiskRequest, tickersIn, BENCHMARK, type 
 import { runPlan, shouldOrchestrate } from "@/lib/copilot/orchestrate";
 import { planQuestion } from "@/lib/copilot/planner";
 import { retrieve, type Passage } from "@/lib/search/retrieve";
-import { critique } from "@/lib/intelligence/critique";
+import { critique, findConflicts } from "@/lib/intelligence/critique";
 import { describePlan, decompose } from "@/lib/copilot/decompose";
 import { recordTrace } from "@/lib/intelligence/traceStore";
 import { isDeepRequest, runDeepResearch, stepsForLevel, stripTrigger } from "@/lib/copilot/deepResearch";
 import { describeRun } from "@/lib/copilot/plan";
+import { checkClaims, OUTCOME_LINE, outcomeOf, unknownLinks } from "@/lib/intelligence/claims";
 import { relevantNotes, recallLine } from "@/lib/memory/noteRecall";
 import { defaultMemoryApi } from "@/lib/memory/memoryApi";
 import { downloadText, printHtml, toCsv, toPrintHtml } from "@/lib/copilot/exportChat";
@@ -349,6 +350,11 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
         { text: describeRun(result.plan), trust: "EDUCATIONAL" },
       ];
       const review = result.text ? critique(result.text, { sources: result.steps.map((st) => ({ label: st.label, text: st.text })), lang, missingTopics: result.missing }) : null;
+      if (result.text) {
+        const srcTexts = result.steps.map((st) => st.text);
+        const outcome = outcomeOf({ claims: checkClaims(result.text, srcTexts), conflicts: findConflicts(result.steps.map((st) => ({ label: st.label, text: st.text }))).length, badLinks: unknownLinks(result.text, srcTexts).length, audits: [], missing: result.missing.length });
+        trace.push({ text: OUTCOME_LINE[outcome], trust: "ANALYSIS" });
+      }
       if (review) trace.push({ text: review.ok ? { en: "Self-check passed: numbers match the sources, no advice or guarantee wording, language matches.", he: "בדיקה עצמית עברה: המספרים תואמים למקורות, אין ניסוח של ייעוץ או הבטחה, והשפה תואמת." } : { en: `Self-check flagged: ${review.failed.map((c) => c.note.en).join(" ")}`, he: `הבדיקה העצמית סימנה: ${review.failed.map((c) => c.note.he).join(" ")}` }, trust: "ANALYSIS" });
       recordTrace({ at: Date.now(), route: "deep", tools: [], ms: Date.now() - started, ok: review?.ok ?? false, failedChecks: review?.failed.map((c) => c.id) ?? ["empty"], live: "none", question: q });
       setMessages((current) => current.map((m, i) => i === at.i ? { role: "copilot", text: result.text ? result.text + (result.missing.length ? `\n\n${t("deep_missing")} ${result.missing.join(", ")}` : "") : t("deep_none"), trace: result.text ? trace : undefined, deep: result.text ? { steps: result.steps.length, reworded: result.reworded } : undefined, question: result.text ? q : undefined } : m));
