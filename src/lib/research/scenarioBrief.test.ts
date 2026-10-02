@@ -6,7 +6,7 @@ import type { AssetResearch } from "./assetResearchEngine";
 const hist = (n: number) => Array.from({ length: n }, (_, i) => ({ date: `2026-01-${String((i % 28) + 1).padStart(2, "0")}`, close: 100 + i })) as unknown as AssetResearch["history"];
 const mkResearch = (n: number): AssetResearch => ({
   symbol: "NVDA", name: "NVIDIA", assetType: "stock",
-  quote: { price: 150, previousClose: 148, change: 2, changePercent: 1.35, volume: 1, currency: "USD", marketStatus: "open" },
+  quote: { changeKnown: true, price: 150, previousClose: 148, change: 2, changePercent: 1.35, volume: 1, currency: "USD", marketStatus: "open" },
   provenance: { source: "yahoo" as never, timestamp: null, freshness: "live" as never, isMock: false },
   history: hist(n),
   indicators: { volatilityPct: { status: "available", value: 2.5 }, rsi14: { status: "available", value: 61.2 }, sma20: { status: "insufficient_history", value: null }, sma50: { status: "available", value: 140 }, ema20: { status: "available", value: 1 }, macd: { status: "unavailable", value: null } },

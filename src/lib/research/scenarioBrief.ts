@@ -38,7 +38,8 @@ export function moveOver(history: AssetResearch["history"], n: number): number |
 export function buildBriefFacts(research: AssetResearch, headlines: BriefHeadline[]): BriefFacts {
   const lines: string[] = [];
   const unavailable: string[] = ["basic financials (no reliable provider)"];
-  lines.push(`Last price ${fmt(research.quote.price)} ${research.quote.currency ?? ""}, daily change ${fmt(research.quote.changePercent)}%.`.replace("  ", " "));
+  lines.push(`Last price ${fmt(research.quote.price)} ${research.quote.currency ?? ""}.`.replace("  ", " "));
+  if (research.quote.changeKnown) lines.push(`Daily change ${fmt(research.quote.changePercent)}%.`); else unavailable.push("daily change (no previous close)");
   for (const [n, label] of [[5, "5 observations"], [20, "20 observations"], [60, "60 observations"]] as const) {
     const m = moveOver(research.history, n);
     if (m === null) unavailable.push(`move over ${label} (history too short)`); else lines.push(`Move over the last ${label}: ${fmt(m)}%.`);

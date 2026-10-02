@@ -10,3 +10,12 @@ describe("Asset Research Engine",()=>{
  it("handles provider failure and unsupported names",async()=>{expect(await researchAsset("not a supported company",{fetchAsset:async()=>asset()})).toBeNull();expect(await researchAsset("NVDA",{fetchAsset:async()=>null})).toBeNull();});
  it("fetches each comparison asset once",async()=>{const fetchAsset=vi.fn(async(s:string)=>asset(s));const r=await compareAssetResearch(["NVDA","AAPL","NVDA"],{fetchAsset});expect(r.assets).toHaveLength(2);expect(fetchAsset).toHaveBeenCalledTimes(2);});
 });
+
+describe("day change is unknown, not zero, without a previous close", () => {
+  it("changeKnown reflects the provider data", async () => {
+    const known = await researchAsset("NVDA", { fetchAsset: async () => asset() });
+    expect(known?.quote.changeKnown).toBe(true);
+    const unknown = await researchAsset("NVDA", { fetchAsset: async () => ({ ...asset(), previousClose: null, change: null, changePercent: 0 }) });
+    expect(unknown?.quote.changeKnown).toBe(false);
+  });
+});

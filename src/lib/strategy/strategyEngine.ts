@@ -582,6 +582,9 @@ export interface StrategyMarketExample {
 export type StrategyMarketFetcher = (symbol: string) => Promise<{
   price: number;
   changePercent: number;
+  /** When both are explicitly null the provider gave no previous close, so the day change is unknown (not zero). */
+  previousClose?: number | null;
+  change?: number | null;
   dataSource?: string;
   freshness?: string;
   timestamp?: string | null;
@@ -614,7 +617,7 @@ export async function loadStrategyMarketExamples(
           symbol,
           available: true,
           price: asset.price,
-          changePercent: asset.changePercent,
+          changePercent: asset.previousClose === null && asset.change === null ? null : asset.changePercent,
           dataSource: asset.dataSource ?? "mock",
           freshness: asset.freshness ?? (asset.isMock ? "simulated" : "unavailable"),
           timestamp: asset.timestamp ?? null,

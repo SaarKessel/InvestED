@@ -208,6 +208,14 @@ describe("Market examples with provenance", () => {
       ? { price: 250.5, changePercent: 1.2, dataSource: "yahoo_finance", freshness: "current", timestamp: "2026-09-21T10:00:00Z", isMock: false }
       : null;
 
+  it("reports an unknown day change as null instead of 0 when the provider gave no previous close", async () => {
+    const f: StrategyMarketFetcher = async () => ({ price: 10, changePercent: 0, previousClose: null, change: null, dataSource: "yahoo_finance", freshness: "current", isMock: false });
+    const ex = await loadStrategyMarketExamples("buy-and-hold", f, { limit: 1 });
+    expect(ex[0]).toMatchObject({ available: true, price: 10, changePercent: null });
+    const g: StrategyMarketFetcher = async () => ({ price: 10, changePercent: 0, previousClose: 10, change: 0, isMock: false });
+    expect((await loadStrategyMarketExamples("buy-and-hold", g, { limit: 1 }))[0].changePercent).toBe(0);
+  });
+
   it("returns examples with full provenance", async () => {
     const examples = await loadStrategyMarketExamples("buy-and-hold", fetcher, { limit: 3 });
     expect(examples).toHaveLength(3);

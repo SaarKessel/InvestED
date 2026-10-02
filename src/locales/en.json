@@ -947,6 +947,8 @@
   "dcf_err_discount": "Discount rate must be above 0 and at most 100.",
   "dcf_err_growth": "Growth must be between -100 and 100.",
   "dcf_err_all": "All inputs must be numbers.",
+  "slab_market_change_unavailable": "day change unavailable",
+  "research_change_unavailable": "Day change unavailable (no previous close from the provider)",
   "slab_perf_rf": "Sharpe assumes a 0% risk-free rate.",
   "slab_perf_dropped": "{count} invalid or duplicate price points were skipped, none were filled in.",
   "slab_perf_notice": "Past performance only. Based on real prices from {source}. Not a forecast and not investment advice.",

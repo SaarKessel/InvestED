@@ -218,7 +218,7 @@ export function StrategyDetail({ strategyId }: { strategyId: StrategyId }) {
                     <span className="font-bold">{example.symbol}</span>{" "}
                     {example.available ? (
                       <>
-                        <span>{example.price?.toFixed(2)} ({(example.changePercent ?? 0).toFixed(2)}%)</span>
+                        <span>{example.price?.toFixed(2)} ({example.changePercent === null ? t("slab_market_change_unavailable", "day change unavailable") : `${example.changePercent.toFixed(2)}%`})</span>
                         <span className="block text-[10px] text-muted-foreground">
                           {example.dataSource?.replace("_", " ")} · {t(`copilot_freshness_${example.freshness ?? "unavailable"}`, example.freshness ?? "unavailable")}
                         </span>

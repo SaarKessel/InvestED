@@ -7,7 +7,7 @@ export type Availability = "available" | "insufficient_history" | "unavailable";
 export interface ResearchValue<T> { status: Availability; value: T | null; reason?: string }
 export interface AssetResearch {
   symbol: string; name: string; assetType: string;
-  quote: { price: number; previousClose: number | null; change: number | null; changePercent: number; volume: number | null; currency: string | null; marketStatus: string };
+  quote: { /** False when the provider gave no previous close: the day change is unknown, not 0. */ changeKnown: boolean; price: number; previousClose: number | null; change: number | null; changePercent: number; volume: number | null; currency: string | null; marketStatus: string };
   provenance: { source: MarketDataSource; timestamp: string | null; freshness: MarketDataFreshness; isMock: boolean };
   history: MarketAsset["history"];
   indicators: { volatilityPct: ResearchValue<number>; rsi14: ResearchValue<number>; sma20: ResearchValue<number>; sma50: ResearchValue<number>; ema20: ResearchValue<number>; macd: ResearchValue<MacdResult> };
@@ -31,7 +31,7 @@ export async function researchAsset(input: string, dependencies: AssetResearchDe
   const profileRelevance = profile ? [`Profile context available: ${profile.classification ?? "classified investor"}.`, "Fit is educational and does not imply a recommendation."] : [];
   return {
     symbol: asset.symbol, name: asset.name, assetType: asset.assetType ?? "unknown",
-    quote: { price: asset.price, previousClose: asset.previousClose ?? null, change: asset.change ?? null, changePercent: asset.changePercent, volume: asset.volume ?? null, currency: asset.currency ?? null, marketStatus: asset.marketStatus ?? "unknown" },
+    quote: { changeKnown: (asset.previousClose ?? null) !== null || (asset.change ?? null) !== null, price: asset.price, previousClose: asset.previousClose ?? null, change: asset.change ?? null, changePercent: asset.changePercent, volume: asset.volume ?? null, currency: asset.currency ?? null, marketStatus: asset.marketStatus ?? "unknown" },
     provenance: { source, timestamp: asset.timestamp ?? null, freshness, isMock }, history,
     indicators: {
       volatilityPct: history.length < 2 ? { status: "insufficient_history", value: null, reason: "At least 2 history points are required." } : metric(volatility, "At least 2 history points are required."),
