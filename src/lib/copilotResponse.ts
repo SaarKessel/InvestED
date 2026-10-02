@@ -47,6 +47,12 @@ function money(value: number, currency: string): string {
   return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(value) + ` ${currency}`;
 }
 
+/** The engine's "no reliable answer" text. The grounding layer recognises it and tries stored explanations before giving up. */
+export const UNKNOWN_ANSWER = {
+  he: "זו שאלה שאין לי עליה מענה מהימן — אני בנויה לחינוך פיננסי: מושגים, חישובים, נתוני שוק והשוואות. שאלו אותי אחת מהאלה.",
+  en: "That's outside what I can reliably answer — I'm built for financial education: concepts, calculations, market data and comparisons. Ask me one of those.",
+};
+
 function educationalFallback(message: string, language: ConversationLanguage): string {
   const he = language !== "en";
   if (/\betf\b/i.test(message)) return he
@@ -64,9 +70,7 @@ function educationalFallback(message: string, language: ConversationLanguage): s
   if (/dollar.?cost|מיצוע/i.test(message)) return he
     ? "מיצוע עלויות הוא השקעת סכום קבוע במרווחי זמן קבועים. כך קונים יותר יחידות כשהמחיר נמוך ופחות כשהוא גבוה, בלי לנסות לתזמן את השוק."
     : "Dollar-cost averaging means investing a fixed amount on a regular schedule. You buy more units when prices are lower and fewer when they are higher, without trying to time the market.";
-  return he
-    ? "זו שאלה שאין לי עליה מענה מהימן — אני בנויה לחינוך פיננסי: מושגים, חישובים, נתוני שוק והשוואות. שאלו אותי אחת מהאלה."
-    : "That's outside what I can reliably answer — I'm built for financial education: concepts, calculations, market data and comparisons. Ask me one of those.";
+  return he ? UNKNOWN_ANSWER.he : UNKNOWN_ANSWER.en;
 }
 
 function strategyMarketText(examples: StrategyMarketExample[], language: ConversationLanguage): string {

@@ -30,6 +30,7 @@ import { formatAgentResult, parseAgentRequest } from "@/lib/intelligence/superAg
 import { formatRisk, knownTickers, parseRiskRequest, tickersIn, BENCHMARK, type RiskDeskResult } from "@/lib/risk/riskDesk";
 import { runPlan, shouldOrchestrate } from "@/lib/copilot/orchestrate";
 import { planQuestion } from "@/lib/copilot/planner";
+import { isUnknownAnswer, notKnownText } from "@/lib/copilot/groundedAnswer";
 import { retrieve, type Passage } from "@/lib/search/retrieve";
 import { critique, findConflicts } from "@/lib/intelligence/critique";
 import { describePlan, decompose } from "@/lib/copilot/decompose";
@@ -484,6 +485,8 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
         if (!knowledge.length) void recordGap(text, turn.response.language, "no_hit");
       }
       const asked = turn.response.language === "he" ? "he" : "en";
+      // Nothing grounded the answer (no engine, no stored note, no concept): say so plainly instead of the vague fallback.
+      if (isUnknownAnswer(turn.response.text) && !knowledge.length && wantsKnowledgeLookup(turn.response.intent)) turn.response = { ...turn.response, text: notKnownText(asked) };
       const mainText = turn.response.text;
       const retrieved = wantsKnowledgeLookup(turn.response.intent) && !knowledge.length ? retrieve(text, asked, 3).filter((r) => r.score >= MIN_RETRIEVE_SCORE && !mainText.includes(r.text.slice(0, 30))).slice(0, 2) : [];
       setMessages((current) => [...current, { role: "copilot", trace, text: turn.response.text, response: turn.response, question: text, knowledge, retrieved }]);
