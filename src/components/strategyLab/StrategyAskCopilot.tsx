@@ -48,7 +48,7 @@ export function StrategyAskCopilot({ strategyName }: { strategyName: string }) {
     <section aria-label={t("slab_ask_aria")} className="mt-6 rounded-2xl border border-border bg-muted/30 p-5">
       <div className="flex items-center gap-2 text-primary">
         <Sparkles className="h-4 w-4" />
-        <h3 className="text-sm font-bold">{t("slab_ask_title")}</h3>
+        <h2 className="text-sm font-bold">{t("slab_ask_title")}</h2>
       </div>
 
       <div aria-live="polite" className="mt-4 max-h-64 space-y-3 overflow-y-auto">

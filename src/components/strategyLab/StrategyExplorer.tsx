@@ -214,9 +214,9 @@ export function StrategyExplorer({
                   } ${isCompareSelected ? "ring-2 ring-primary/40" : ""}`}
                 >
                   <div className="mb-2 flex items-start justify-between gap-2">
-                    <h3 className="font-display text-base font-bold leading-6">
+                    <h2 className="font-display text-base font-bold leading-6">
                       {localize(strategy.name, lang)}
-                    </h3>
+                    </h2>
                     <span className={`shrink-0 rounded-full border px-2.5 py-0.5 text-[11px] font-bold ${riskTone(strategy.riskProfile.level)}`}>
                       {strategy.riskProfile.level}/10
                     </span>

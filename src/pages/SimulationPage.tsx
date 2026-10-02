@@ -195,8 +195,9 @@ export default function SimulationPage() {
 
               <div className="mt-6 grid gap-4 sm:grid-cols-3">
                 <div>
-                  <label className="text-xs font-semibold text-muted-foreground">{t("sim_nickname_label")}</label>
+                  <label htmlFor="sim-nickname" className="text-xs font-semibold text-muted-foreground">{t("sim_nickname_label")}</label>
                   <input
+                    id="sim-nickname"
                     value={nickname}
                     onChange={(event) => setNickname(event.target.value)}
                     placeholder={t("sim_nickname_placeholder")}

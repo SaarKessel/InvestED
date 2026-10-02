@@ -104,6 +104,7 @@ export function InputPage() {
                 value={text}
                 onChange={(e) => setText(e.target.value)}
                 placeholder={t("input_placeholder")}
+                aria-label={t("input_placeholder")}
                 rows={8}
                 className="w-full resize-none rounded-xl border border-border bg-background p-4 text-sm leading-relaxed outline-none transition-shadow focus:ring-2 focus:ring-ring text-foreground placeholder:text-muted-foreground/60"
               />

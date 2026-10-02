@@ -159,9 +159,9 @@ export function StrategyPerformancePanel({ strategyId }: { strategyId: string })
 
   return (
     <section aria-live="polite">
-      <h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-primary">
+      <h2 className="mb-2 flex items-center gap-2 text-sm font-bold text-primary">
         <TrendingUp className="h-4 w-4" /> {t("slab_perf_title", "Historical performance")}
-      </h3>
+      </h2>
       {state.status === "idle" && (
         <button
           type="button"

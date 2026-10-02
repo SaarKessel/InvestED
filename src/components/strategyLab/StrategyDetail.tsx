@@ -95,26 +95,26 @@ export function StrategyDetail({ strategyId }: { strategyId: StrategyId }) {
         </p>
 
         <section>
-          <h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-primary">
+          <h2 className="mb-2 flex items-center gap-2 text-sm font-bold text-primary">
             <BookOpen className="h-4 w-4" /> {t("slab_section_philosophy")}
-          </h3>
+          </h2>
           <p className="text-sm leading-7 text-muted-foreground">{explanation.philosophy}</p>
         </section>
 
         <div className="grid gap-6 md:grid-cols-2">
           <section>
-            <h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-primary">
+            <h2 className="mb-2 flex items-center gap-2 text-sm font-bold text-primary">
               <ListOrdered className="h-4 w-4" /> {t("slab_section_rules")}
-            </h3>
+            </h2>
             <ol className="list-decimal space-y-1.5 ps-5 text-sm leading-6 text-muted-foreground">
               {explanation.rules.map((rule) => <li key={rule}>{rule}</li>)}
             </ol>
           </section>
 
           <section>
-            <h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-primary">
+            <h2 className="mb-2 flex items-center gap-2 text-sm font-bold text-primary">
               <LineChart className="h-4 w-4" /> {t("slab_section_metrics")}
-            </h3>
+            </h2>
             <ul className="space-y-2 text-sm leading-6 text-muted-foreground">
               {explanation.metrics.map((metric) => (
                 <li key={metric.key}>
@@ -127,9 +127,9 @@ export function StrategyDetail({ strategyId }: { strategyId: StrategyId }) {
 
         <div className="grid gap-6 md:grid-cols-2">
           <section>
-            <h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-success">
+            <h2 className="mb-2 flex items-center gap-2 text-sm font-bold text-success">
               <Check className="h-4 w-4" /> {t("slab_section_strengths")}
-            </h3>
+            </h2>
             <ul className="space-y-1.5 text-sm leading-6 text-muted-foreground">
               {explanation.strengths.map((item) => (
                 <li key={item} className="flex items-start gap-2">
@@ -140,9 +140,9 @@ export function StrategyDetail({ strategyId }: { strategyId: StrategyId }) {
           </section>
 
           <section>
-            <h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-danger">
+            <h2 className="mb-2 flex items-center gap-2 text-sm font-bold text-danger">
               <AlertTriangle className="h-4 w-4" /> {t("slab_section_limitations")}
-            </h3>
+            </h2>
             <ul className="space-y-1.5 text-sm leading-6 text-muted-foreground">
               {explanation.limitations.map((item) => (
                 <li key={item} className="flex items-start gap-2">
@@ -154,23 +154,23 @@ export function StrategyDetail({ strategyId }: { strategyId: StrategyId }) {
         </div>
 
         <section>
-          <h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-primary">
+          <h2 className="mb-2 flex items-center gap-2 text-sm font-bold text-primary">
             <History className="h-4 w-4" /> {t("slab_section_history")}
-          </h3>
+          </h2>
           <p className="text-sm leading-7 text-muted-foreground">{explanation.historicalContext}</p>
         </section>
 
         <section>
-          <h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-primary">
+          <h2 className="mb-2 flex items-center gap-2 text-sm font-bold text-primary">
             <BookOpen className="h-4 w-4" /> {t("slab_section_notes")}
-          </h3>
+          </h2>
           <p className="text-sm leading-7 text-muted-foreground">{explanation.educationalNotes}</p>
         </section>
 
         <section>
-          <h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-primary">
+          <h2 className="mb-2 flex items-center gap-2 text-sm font-bold text-primary">
             <Database className="h-4 w-4" /> {t("slab_section_requirements")}
-          </h3>
+          </h2>
           <div className="grid gap-4 md:grid-cols-2">
             <div>
               <p className="mb-1 text-xs font-bold text-muted-foreground">{t("slab_requirements_inputs")}</p>
@@ -188,9 +188,9 @@ export function StrategyDetail({ strategyId }: { strategyId: StrategyId }) {
         </section>
 
         <section aria-live="polite">
-          <h3 className="mb-2 flex items-center gap-2 text-sm font-bold text-primary">
+          <h2 className="mb-2 flex items-center gap-2 text-sm font-bold text-primary">
             <LineChart className="h-4 w-4" /> {t("slab_section_market")}
-          </h3>
+          </h2>
           {market.status === "idle" && (
             <button
               type="button"
