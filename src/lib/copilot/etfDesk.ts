@@ -13,7 +13,7 @@ export interface EtfResult extends EtfRequest {
 
 const KNOWN = ["VOO", "VTI", "VXUS", "BND", "VYM", "QQQ", "IVV", "SPY", "VUG", "VTV", "SCHD", "VNQ", "IWM", "DIA", "VEA", "VWO", "AGG", "VGT", "VIG", "ARKK"];
 const NOT_TICKERS = new Set(["ETF", "ETFS", "SEC", "USA", "THE", "AND", "FOR", "WHAT", "TOP", "IRA", "GDP", "CPI", "USD", "ILS", "EUR", "NIS", "FAQ", "AI"]);
-const ASKS = /\b(?:holdings?|constituents?|components?|composition|inside|what(?:'s| is| are) in)\b|החזקות|מה יש (?:ב|בתוך)|הרכב|מורכב/i;
+const ASKS = /\b(?:holdings?|constituents?|components?|composition|inside|what(?:'s| is| are) in)\b|\bwhat does\b.*\bhold\b|מה מחזיק(?:ה)?(?![א-ת])|החזקות|מה יש (?:ב|בתוך)|הרכב|מורכב/i;
 
 export function parseEtfRequest(text: string): EtfRequest | null {
   if (text.length > 120 || !ASKS.test(text)) return null;
