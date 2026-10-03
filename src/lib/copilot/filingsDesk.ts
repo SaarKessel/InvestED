@@ -25,7 +25,7 @@ const MANAGERS: { cik: string; re: RegExp; name: { en: string; he: string } }[] 
   { cik: "0001603466", re: /point ?72|פוינט72|פוינט 72/i, name: { en: "Point72", he: "פוינט72" } },
 ];
 
-const ASKS_HOLDINGS = /13-?f\b|\bholdings?\b|\bpositions?\b|what (?:does|did|do) .{1,60}?\b(?:own|hold|buy|bought|holding)\b|החזקות|מה (?:יש|מחזיק|מחזיקה|קנה|קנתה|הוא מחזיק)|במה (?:מחזיק|מחזיקה|השקיע|השקיעה)/i;
+const ASKS_HOLDINGS = /13-?f\b|\bholdings?\b|\bpositions?\b|what (?:(?:stocks|shares|companies|positions) )?(?:does|did|do|is|are) .{1,60}?\b(?:own|hold|buy|bought|holding|buying|selling|sold|invested in)\b|\bportfolio\b|החזקות|מה (?:יש|מחזיק|מחזיקה|קנה|קנתה|הוא מחזיק)|במה (?:מחזיק|מחזיקה|השקיע|השקיעה)|במה [א-ת'"-]{2,15} (?:מחזיק|מחזיקה)|המניות של|תיק ההשקעות של/i;
 
 /** The known manager a question names, or null. Shared with the copy-the-fund desk. */
 export function findManager(text: string): FilingsRequest | null {
