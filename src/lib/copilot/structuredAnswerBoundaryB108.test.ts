@@ -25,12 +25,15 @@ describe("[sweep] B108 declared and undeclared invented numbers stay blocked", (
 });
 
 const renderings: Array<[string, string]> = [["12500", "12500"], ["12,500", "12500"], ["12500.0", "12500"], ["12500.00", "12500"], ["0.030", "0.03"], ["0.0300", "0.03"]];
-describe("[sweep] B108 formatting-equivalent validated numbers survive the schema bridge", () => {
+describe("[sweep] B108 schema bridge keeps exact validated numeric precision", () => {
   it.each(renderings)("number %s declared as %s", (number, declared) => {
     const text = `The amount is ${number}.`;
     const parsed = parseStructuredResponse(body({ text, numbersUsed: [declared] }));
     expect(parsed).toEqual({ text, numbersUsed: [declared] });
-    expect(verifyStructuredAnswer(payload, parsed)).toEqual({ ok: true, text });
+    // Gateway contract allows comma normalization, but retains exact numeric tokens.
+    // Extra decimal zeros alter displayed precision, so the deterministic answer remains.
+    if (["12500", "12,500"].includes(number)) expect(verifyStructuredAnswer(payload, parsed)).toEqual({ ok: true, text });
+    else expect(verifyStructuredAnswer(payload, parsed)).toEqual({ ok: false, reason: "fact_mismatch" });
   });
 });
 
