@@ -3,6 +3,8 @@
  * reference rate, served by Frankfurter (free, no key). It is a reference rate for a
  * working day, not a live trading quote, and the card says so with its date.
  */
+import { isNegatedAsk } from "./negatedAsk";
+
 export interface FxRequest { amount: number; from: string; to: string }
 export interface FxResult extends FxRequest { rate: number; date: string; result: number }
 
@@ -38,7 +40,7 @@ function order(text: string): string[] {
 /** Fires on "100 USD to ILS", "convert 500 euros to dollars", "כמה זה 100 דולר בשקלים", "דולר שקל". Needs two different currencies. */
 export function parseFxRequest(text: string): FxRequest | null {
   const t = text.trim();
-  if (t.length > 120) return null;
+  if (t.length > 120 || isNegatedAsk(t)) return null;
   const hasCue = /\b(?:to|in|into|convert|exchange|rate|how much)\b|→|=|ל-?|ב(?=[א-ת])|ב-|בשקל|בדולר|ביורו|שער|המר|המרה|כמה/i.test(t);
   if (!hasCue) return null;
   const codes = order(t);

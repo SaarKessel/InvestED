@@ -2,6 +2,8 @@
  * Country statistics from the World Bank open data API (CC BY 4.0, free, no key), through our own /api/worldbank pass-through because the browser cannot call it reliably.
  * Yearly values, published with a delay, so the card shows the year of every number.
  */
+import { isNegatedAsk } from "./negatedAsk";
+
 export type WbIndicator = "inflation" | "gdp_growth" | "unemployment" | "gdp";
 export interface WbRequest { indicator: WbIndicator; country: string; countryName: { en: string; he: string } }
 export interface WbPoint { year: string; value: number }
@@ -34,7 +36,7 @@ const COUNTRIES: { iso: string; re: RegExp; name: { en: string; he: string } }[]
 
 /** Needs both an indicator word and a named country; otherwise the question goes to the normal explanation. */
 export function parseWbRequest(text: string): WbRequest | null {
-  if (text.length > 120) return null;
+  if (text.length > 120 || isNegatedAsk(text)) return null;
   const ind = (Object.keys(IND) as WbIndicator[]).find((k) => IND[k].re.test(text));
   const c = COUNTRIES.find((x) => x.re.test(text));
   if (!ind || !c) return null;

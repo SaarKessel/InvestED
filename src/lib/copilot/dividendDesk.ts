@@ -5,6 +5,8 @@
  * (last paid amount x observed payment frequency) and it is withheld when the payments look like they stopped.
  * Nothing is invented; a symbol with no dividend data comes back as "none found" or unavailable.
  */
+import { isNegatedAsk } from "./negatedAsk";
+
 export interface DividendRequest { symbol: string; shares: number | null; focus: "history" | "expected" }
 export interface DividendPayment { date: string; amount: number }
 export interface DividendEstimate { perYear: number; lastAmount: number; annualPerShare: number; nextDateApprox: string | null; yieldPct: number | null }
@@ -25,7 +27,7 @@ const DIV_CUE = /dividends?|payouts?|דיבידנד|דיבידנדים|דיבי�
 const EXPECT_CUE = /expect|will |next|forecast|upcoming|going to|receive|per year|annual|yield|אמור|צפוי|יקבל|אקבל|לקבל|תשואת|הקרוב|הבא/i;
 
 export function parseDividendRequest(text: string): DividendRequest | null {
-  if (text.length > 160 || !DIV_CUE.test(text)) return null;
+  if (text.length > 160 || !DIV_CUE.test(text) || isNegatedAsk(text)) return null;
   let symbol: string | null = null;
   for (const [re, s] of NAMES) if (re.test(text)) { symbol = s; break; }
   if (!symbol) {
