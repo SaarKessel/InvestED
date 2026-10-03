@@ -102,12 +102,14 @@ export type LedgerRequest =
 
 const UP = /\b(up|rise|rises|go up|goes up|higher|gain|gains|outperform|beat)\b|עולה|תעלה|יעלה|עלייה/i;
 const DOWN = /\b(down|fall|falls|drop|drops|go down|goes down|lower|decline|declines)\b|יורד|תרד|ירד|תיפול|יפול|ירידה/i;
+// "will not go up", "won't drop", "never go down": the sentence states the opposite of the direction word, so it is not logged.
+const NEGATED_DIRECTION = /\b(?:not|never|no|won'?t|wouldn'?t|doesn'?t|isn'?t|aren'?t|can'?t)\s+(?:[a-z']+\s+){0,2}(?:up|rise|rises|go up|goes up|going up|higher|gain|gains|outperform|beat|down|fall|falls|drop|drops|go down|goes down|going down|lower|decline|declines)\b|לא\s+(?:\S+\s+)?(?:עולה|תעלה|יעלה|יורד|תרד|ירד|תיפול|יפול)/i;
 const PREDICT = /\b(predict(ion)?|i bet|i call it|my call|log (a )?(call|thesis)|my thesis)\b|תחזית|אני חוזה|אני מנבא|תרשום (לי )?(תחזית|תזה)|התזה שלי/i;
 const LOGGING = /\b(?:i predict|i bet|i call it|my call|my thesis|log (?:a )?(?:call|thesis))\b|אני חוזה|אני מנבא|תרשום (?:לי )?(?:תחזית|תזה)|התזה שלי/i;
 const VIEW = /\b(my (?:(?:past|open|settled|recent|latest|old) )?(?:predictions|calls|forecasts)|my (?:calibration|track record|brier)|calibration|brier|prediction ledger|prediction (?:history|record)|(?:open|settled|past) predictions|how (?:is|are|did|do) my (?:predictions?|calls?))\b|התחזיות (?:\S+ )?שלי|כיול|רשומת התחזיות|היסטוריית התחזיות|ציון בריר|אחוז הצלחה בתחזיות/i;
 
 export function parseHorizonDays(text: string): number | null {
-  const m = text.match(/(\d{1,3})\s*(days?|d\b|weeks?|w\b|months?|ימים|יום|שבועות|שבוע|חודשים|חודש)/i);
+  const m = text.match(/(\d{1,3})\s*(days?(?![a-z])|d(?![a-z])|weeks?(?![a-z])|w(?![a-z])|months?(?![a-z])|ימים|יום|שבועות|שבוע|חודשים|חודש)/i);
   if (!m) return null;
   const n = Number(m[1]); const u = m[2].toLowerCase();
   if (/^(days?|d|ימים|יום)$/.test(u)) return n;
@@ -123,6 +125,7 @@ export function parseLedgerRequest(text: string, resolveSymbol: (q: string) => s
   if (VIEW.test(text) && !UP.test(text) && !DOWN.test(text)) return { kind: "view" };
   const confidence = Number((text.match(/(\d{2})\s*%/) ?? [])[1]);
   const horizonDays = parseHorizonDays(text);
+  if (NEGATED_DIRECTION.test(text)) return { kind: "help" };
   const down = DOWN.test(text), up = UP.test(text);
   const direction: Direction | null = up === down ? null : up ? "up" : "down";
   let symbol: string | null = null;
