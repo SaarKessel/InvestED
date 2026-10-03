@@ -25,7 +25,7 @@ const MANAGERS: { cik: string; re: RegExp; name: { en: string; he: string } }[] 
   { cik: "0001603466", re: /(?:point ?72)|(?<![א-ת])[הבלומשכ]?(?:פוינט72|פוינט 72)(?![א-ת])/i, name: { en: "Point72", he: "פוינט72" } },
 ];
 
-const ASKS_HOLDINGS = /13-?f\b|\bholdings?\b|\bpositions?\b|what (?:(?:stocks|shares|companies|positions) )?(?:does|did|do|is|are) .{1,60}?\b(?:own|hold|buy|bought|holding|buying|selling|sold|invested in)\b|\bportfolio\b|החזקות|מה (?:יש|מחזיק|מחזיקה|קנה|קנתה|הוא מחזיק)|במה (?:מחזיק|מחזיקה|השקיע|השקיעה)|במה [א-ת'"-]{2,15} (?:מחזיק|מחזיקה)|המניות של|תיק ההשקעות של/i;
+const ASKS_HOLDINGS = /13-?f\b|\bholdings?\b|\bpositions?\b|what (?:(?:stocks|shares|companies|positions) )?(?:does|did|do|is|are) .{1,60}?\b(?:own|hold|buy|bought|holding|buying|selling|sold|invested in)\b|\bportfolio\b|החזקות|מה (?:יש|מחזיק|מחזיקה|קנה|קנתה|הוא מחזיק)|במה (?:מחזיק|מחזיקה|השקיע|השקיעה)|במה [א-ת'"-]{2,15} (?:מחזיק|מחזיקה)|(?<![א-ת])מה [א-ת'"-]{2,15} (?:מחזיק|מחזיקה|קנה|קנתה|מוכר|מוכרת)(?![א-ת])|המניות של|תיק ההשקעות של/i;
 
 /** The known manager a question names, or null. Shared with the copy-the-fund desk. */
 export function findManager(text: string): FilingsRequest | null {
@@ -41,8 +41,11 @@ export function findManager(text: string): FilingsRequest | null {
   return m ? { cik: m.cik, managerName: m.name } : null;
 }
 
+/** "don't show X's holdings", "אל תראה", "לא רוצה לראות" ask for the opposite. */
+const NEGATED = /\b(?:do not|don'?t|dont|never|no need to|not want to|won'?t)\s+(?:want to\s+|need to\s+)?(?:show|list|display|tell|give|open|pull)\b|(?<![א-ת])(?:אל|לא)\s+(?:ת\S+|רוצה|צריך|צריכה|מתכוון|מתכוונת)(?![א-ת])/i;
+
 export function parseFilingsRequest(text: string): FilingsRequest | null {
-  if (text.length > 140 || !ASKS_HOLDINGS.test(text)) return null;
+  if (text.length > 140 || !ASKS_HOLDINGS.test(text) || NEGATED.test(text)) return null;
   const cikMatch = text.match(/\bcik\b\D{0,3}(\d{4,10})\b/i);
   if (cikMatch) {
     const cik = cikMatch[1].padStart(10, "0");
