@@ -406,7 +406,7 @@ const INITIAL_AMOUNT_PATTERNS: RegExp[] = [
 
     /(?:want to|planning to|going to|would like to)\s+invest\s+(?:\$|usd\s*)?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?\s*(?:initially|upfront|as a start)?\b/i,
 
-    /(?:have|got)\s+(?:\$|usd\s*)?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?\s*(?:to invest|to start|available)?\b/i,
+    /(?<!(?:want|need|like|hope|hoping|aim|aiming|trying)\s+to\s+)(?:have|got)\s+(?:\$|usd\s*)?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?\s*(?:to invest|to start|available)?\b/i,
 
     /(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?\s*(?:to invest|to start|initially|upfront|initial)\b/i,
 
@@ -942,10 +942,16 @@ function detectExplicitTargetAmount(
   const patterns = [
 
     // Hebrew explicit target
-    /(?:יעד|מטרה)\s*(?:של\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?/i,
+    /(?:יעד|מטרה)(?:\s+שלי)?\s*(?:(?:של|היא|הוא)\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?/i,
 
     // Hebrew "להגיע ל..."
     /(?:להגיע|להגיע ל|להגיע ל־|להגיע ל-)\s*(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?/i,
+
+    // Hebrew "לצבור / לחסוך X"
+    /(?:לצבור|לחסוך)\s*(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?/i,
+
+    // English "how do I get to X"
+    /how\s+(?:do|can|could|would|should)\s+i\s+(?:get\s+to|reach|hit)\s+\$?\s*(\d[\d,]*(?:\.\d+)?)\s*(k|m|million|thousand)?/i,
 
     // Hebrew "רוצה / צריך..."
     /(?:רוצה|צריך)\s*(?:להגיע\s*)?(?:ל\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?/i,
@@ -958,7 +964,7 @@ function detectExplicitTargetAmount(
 
     // English wish phrasing: "I want to reach 2m", "I want 100000", "aiming for 1.5 million",
     // "trying to save up 50k". A per-month amount or a horizon is not a target.
-    /(?:want|would like|aim(?:ing)?|trying|hope|hoping|need)\s+(?:to\s+)?(?:reach|get\s+to|hit|accumulate|build|grow\s+to|save(?:\s+up)?)?\s*(?:for\s+)?\$?\s*(\d[\d,]*(?:\.\d+)?)\s*(k|m|million|thousand)?(?!\d)(?!\s*(?:%|years?|months?|yrs?|(?:shekels?|ils?|dollars?|usd)?\s*(?:a|per|each|every)\s+month|(?:shekels?|ils?|dollars?|usd)?\s*monthly))/i
+    /(?:want|would like|aim(?:ing)?|trying|hope|hoping|need)\s+(?:to\s+)?(?:reach|get\s+to|hit|accumulate|build|grow\s+to|have|save(?:\s+up)?)?\s*(?:for\s+)?\$?\s*(\d[\d,]*(?:\.\d+)?)\s*(k|m|million|thousand)?(?!\d)(?!\s*(?:%|years?|months?|yrs?|(?:shekels?|ils?|dollars?|usd)?\s*(?:a|per|each|every)\s+month|(?:shekels?|ils?|dollars?|usd)?\s*monthly))/i
   ];
 
   for (const pattern of patterns) {
