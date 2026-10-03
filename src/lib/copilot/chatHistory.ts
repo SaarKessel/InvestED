@@ -23,7 +23,7 @@ export async function createConversation(firstMessage: string): Promise<string> 
 }
 export async function saveMessage(conversationId: string, message: StoredMessage): Promise<void> {
   const supabase = getSupabase();
-  const { error } = await supabase.from("chat_messages").insert({ conversation_id: conversationId, role: message.role, text: message.text.slice(0, 8000) });
+  const { error } = await supabase.from("chat_messages").insert({ conversation_id: conversationId, role: message.role, text: safeSlice(message.text, 8000) });
   if (error) throw error;
   await supabase.from("chat_conversations").update({ updated_at: new Date().toISOString() }).eq("id", conversationId);
 }
