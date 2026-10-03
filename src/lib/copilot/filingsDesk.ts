@@ -13,16 +13,16 @@ export interface FilingsResult extends FilingsRequest {
 
 /** Managers whose CIK was checked against SEC EDGAR (the filer name matches). */
 const MANAGERS: { cik: string; re: RegExp; name: { en: string; he: string } }[] = [
-  { cik: "0001067983", re: /berkshire|ברקשייר|buffett|באפט/i, name: { en: "Berkshire Hathaway", he: "ברקשייר האת'אווי" } },
-  { cik: "0001350694", re: /bridgewater|ברידג'?ווטר|dalio|דליו/i, name: { en: "Bridgewater Associates", he: "ברידג'ווטר" } },
-  { cik: "0001649339", re: /scion|burry|בורי/i, name: { en: "Scion Asset Management", he: "Scion Asset Management" } },
-  { cik: "0001336528", re: /pershing|ackman|אקמן|פרשינג/i, name: { en: "Pershing Square", he: "פרשינג סקוור" } },
-  { cik: "0001037389", re: /renaissance|medallion|רנסנס/i, name: { en: "Renaissance Technologies", he: "רנסנס טכנולוג'יז" } },
-  { cik: "0000102909", re: /vanguard|ונגארד/i, name: { en: "Vanguard Group", he: "ונגארד" } },
-  { cik: "0001423053", re: /citadel|סיטדל/i, name: { en: "Citadel Advisors", he: "סיטדל" } },
-  { cik: "0001167483", re: /tiger global|טייגר גלובל/i, name: { en: "Tiger Global Management", he: "טייגר גלובל" } },
-  { cik: "0001656456", re: /appaloosa|tepper|טפר/i, name: { en: "Appaloosa", he: "אפלוזה" } },
-  { cik: "0001603466", re: /point ?72|פוינט72|פוינט 72/i, name: { en: "Point72", he: "פוינט72" } },
+  { cik: "0001067983", re: /(?:berkshire|buffett)|(?<![א-ת])[הבלומשכ]?(?:ברקשייר|באפט)(?![א-ת])/i, name: { en: "Berkshire Hathaway", he: "ברקשייר האת'אווי" } },
+  { cik: "0001350694", re: /(?:bridgewater|dalio)|(?<![א-ת])[הבלומשכ]?(?:ברידג'?ווטר|דליו)(?![א-ת])/i, name: { en: "Bridgewater Associates", he: "ברידג'ווטר" } },
+  { cik: "0001649339", re: /(?:scion|burry)|(?<![א-ת])[הבלומשכ]?(?:בורי)(?![א-ת])/i, name: { en: "Scion Asset Management", he: "Scion Asset Management" } },
+  { cik: "0001336528", re: /(?:pershing|ackman)|(?<![א-ת])[הבלומשכ]?(?:אקמן|פרשינג)(?![א-ת])/i, name: { en: "Pershing Square", he: "פרשינג סקוור" } },
+  { cik: "0001037389", re: /(?:renaissance|medallion)|(?<![א-ת])[הבלומשכ]?(?:רנסנס)(?![א-ת])/i, name: { en: "Renaissance Technologies", he: "רנסנס טכנולוג'יז" } },
+  { cik: "0000102909", re: /(?:vanguard)|(?<![א-ת])[הבלומשכ]?(?:ונגארד)(?![א-ת])/i, name: { en: "Vanguard Group", he: "ונגארד" } },
+  { cik: "0001423053", re: /(?:citadel)|(?<![א-ת])[הבלומשכ]?(?:סיטדל)(?![א-ת])/i, name: { en: "Citadel Advisors", he: "סיטדל" } },
+  { cik: "0001167483", re: /(?:tiger global)|(?<![א-ת])[הבלומשכ]?(?:טייגר גלובל)(?![א-ת])/i, name: { en: "Tiger Global Management", he: "טייגר גלובל" } },
+  { cik: "0001656456", re: /(?:appaloosa|tepper)|(?<![א-ת])[הבלומשכ]?(?:טפר)(?![א-ת])/i, name: { en: "Appaloosa", he: "אפלוזה" } },
+  { cik: "0001603466", re: /(?:point ?72)|(?<![א-ת])[הבלומשכ]?(?:פוינט72|פוינט 72)(?![א-ת])/i, name: { en: "Point72", he: "פוינט72" } },
 ];
 
 const ASKS_HOLDINGS = /13-?f\b|\bholdings?\b|\bpositions?\b|what (?:(?:stocks|shares|companies|positions) )?(?:does|did|do|is|are) .{1,60}?\b(?:own|hold|buy|bought|holding|buying|selling|sold|invested in)\b|\bportfolio\b|החזקות|מה (?:יש|מחזיק|מחזיקה|קנה|קנתה|הוא מחזיק)|במה (?:מחזיק|מחזיקה|השקיע|השקיעה)|במה [א-ת'"-]{2,15} (?:מחזיק|מחזיקה)|המניות של|תיק ההשקעות של/i;
