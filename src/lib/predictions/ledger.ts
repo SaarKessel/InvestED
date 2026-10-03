@@ -103,7 +103,7 @@ export type LedgerRequest =
 const UP = /\b(up|rise|rises|go up|goes up|higher|gain|gains|outperform|beat)\b|עולה|תעלה|יעלה|עלייה/i;
 const DOWN = /\b(down|fall|falls|drop|drops|go down|goes down|lower|decline|declines)\b|יורד|תרד|ירד|תיפול|יפול|ירידה/i;
 const PREDICT = /\b(predict(ion)?|i bet|i call it|my call|log (a )?(call|thesis)|my thesis)\b|תחזית|אני חוזה|אני מנבא|תרשום (לי )?(תחזית|תזה)|התזה שלי/i;
-const VIEW = /\b(my (predictions|calls|calibration|track record|brier)|calibration|brier|prediction ledger)\b|התחזיות שלי|כיול|רשומת התחזיות/i;
+const VIEW = /\b(my (?:(?:past|open|settled|recent|latest|old) )?(?:predictions|calls|forecasts)|my (?:calibration|track record|brier)|calibration|brier|prediction ledger|prediction (?:history|record)|(?:open|settled|past) predictions|how (?:is|are|did|do) my (?:predictions?|calls?))\b|התחזיות (?:\S+ )?שלי|כיול|רשומת התחזיות|היסטוריית התחזיות|ציון בריר|אחוז הצלחה בתחזיות/i;
 
 export function parseHorizonDays(text: string): number | null {
   const m = text.match(/(\d{1,3})\s*(days?|d\b|weeks?|w\b|months?|ימים|יום|שבועות|שבוע|חודשים|חודש)/i);
@@ -118,6 +118,8 @@ export function parseLedgerRequest(text: string, resolveSymbol: (q: string) => s
   if (text.length > 600) return null;
   const isPredict = PREDICT.test(text);
   if (!isPredict) return VIEW.test(text) ? { kind: "view" } : null;
+  // Asking about the record of calls ("my prediction history") is a view, unless the text also states a direction.
+  if (VIEW.test(text) && !UP.test(text) && !DOWN.test(text)) return { kind: "view" };
   const confidence = Number((text.match(/(\d{2})\s*%/) ?? [])[1]);
   const horizonDays = parseHorizonDays(text);
   const down = DOWN.test(text), up = UP.test(text);
