@@ -4,6 +4,7 @@
  * The return rate is an invented teaching assumption and is shown as such.
  */
 import { analyzeFinancialScenarioWithProjection, computeProjection, DEFAULT_INFLATION_PCT } from "../calculatorEngine";
+import { isNegatedAsk } from "./negatedAsk";
 
 export interface CalcDeskResult {
   principal: number;
@@ -54,7 +55,7 @@ export function findStartingAmount(text: string, monthly: number, years: number,
 
 export function runCalcDesk(raw: string): CalcDeskResult | null {
   const text = normalizeAmountText(raw);
-  if (!looksLikeCalcRequest(text)) return null;
+  if (!looksLikeCalcRequest(text) || isNegatedAsk(text)) return null;
   const r = analyzeFinancialScenarioWithProjection(text, "en");
   const s = r.scenario;
   if (!(s.years > 0) || (s.initialInvestment <= 0 && s.monthlyContribution <= 0)) return null;
