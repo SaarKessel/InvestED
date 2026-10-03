@@ -46,14 +46,7 @@ const NEGATED = /\b(?:do not|don'?t|dont|never|no need to|not want to|won'?t)\s+
 
 export function parseFilingsRequest(text: string): FilingsRequest | null {
   if (text.length > 140 || !ASKS_HOLDINGS.test(text) || NEGATED.test(text)) return null;
-  const cikMatch = text.match(/\bcik\b\D{0,3}(\d{4,10})\b/i);
-  if (cikMatch) {
-    const cik = cikMatch[1].padStart(10, "0");
-    const known = MANAGERS.find((m) => m.cik === cik);
-    return { cik, managerName: known?.name ?? { en: `CIK ${Number(cik)}`, he: `CIK ${Number(cik)}` } };
-  }
-  const m = MANAGERS.find((x) => x.re.test(text));
-  return m ? { cik: m.cik, managerName: m.name } : null;
+  return findManager(text);
 }
 
 export async function loadFilings(req: FilingsRequest, fetcher: typeof fetch = fetch): Promise<FilingsResult | null> {
