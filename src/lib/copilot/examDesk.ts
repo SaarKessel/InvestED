@@ -13,7 +13,7 @@ export const isExamStart = (text: string): boolean => START.test(text) || START_
 
 /** A bare option number, or "answer 2" / "תשובה 2". Returns the 0-based index. */
 export function parseExamAnswer(text: string, optionCount: number): number | null {
-  const m = text.match(/^\s*(?:answer\s*|תשובה\s*)?([1-9])\s*[.)]?\s*$/i);
+  const m = text.match(/^\s*(?:(?:answer|option|choice|תשובה|אפשרות)\s*:?\s*)?\(?([1-9])\)?\s*[.)]?\s*$/i);
   if (!m) return null;
   const i = Number(m[1]) - 1;
   return i < optionCount ? i : null;
