@@ -33,10 +33,11 @@ const KEYWORDS: Record<string, { en: string[]; he: string[] }> = {
   "/terms": { en: ["terms"], he: ["תנאים", "תנאי שימוש"] },
 };
 
-const OPEN_WORDS = /^(?:open|show|show me|go to|take me to|launch|פתח|תפתח|תפתחי|הראה|תראה|תראי|הצג|עבור ל|לך ל)\s+/i;
+const OPEN_WORDS = /^(?:please\s+)?(?:open(?:\s+up)?|show(?:\s+me)?|go to|take me to|launch|bring up|תפתחי|תפתחו|תפתח|פתחי|פתחו|פתח|הראה|הראי|תראה|תראי|הצג|הציגי|עבור ל|(?:עבור|לך|כנס|גש)\s+(?:אל(?=\s)|ל))(?:\s+לי)?(?:\s+|(?<=ל))/i;
+const TRAILING = /(?:\s+(?:please|בבקשה))+$/i;
 
 function normalize(text: string): string {
-  return text.trim().toLowerCase().replace(/[!?.,"'״׳]+/g, "").replace(/\s+/g, " ").replace(OPEN_WORDS, "").replace(/^(?:the|ה)\s+/, "").trim();
+  return text.trim().toLowerCase().replace(/[!?.,"'״׳]+/g, "").replace(/\s+/g, " ").replace(OPEN_WORDS, "").replace(/^(?:the|ה)\s+/, "").replace(TRAILING, "").trim();
 }
 
 /** The tool path a bare keyword points to, or null when the text is a normal question. */
@@ -48,10 +49,11 @@ export function resolveToolKeyword(text: string): string | null {
     || /שכירות.{0,40}(?:מול|או|לעומת).{0,40}קנ(?:ייה|יה)|לשכור.{0,24}(?:או|מול|לעומת).{0,24}לקנות/i.test(text);
   if (rentVsBuy) return "/money-lessons";
   if (!t) return null;
-  for (const [path, k] of Object.entries(KEYWORDS)) {
-    if ([...k.en, ...k.he].some((word) => word.toLowerCase() === t)) return path;
-  }
-  return null;
+  const find = (w: string) => Object.entries(KEYWORDS).find(([, k]) => [...k.en, ...k.he].some((word) => word.toLowerCase() === w))?.[0] ?? null;
+  const direct = find(t);
+  if (direct) return direct;
+  // Hebrew "the" is glued to the word (המחשבון), but some keywords start with ה themselves, so try the whole word first.
+  return t.length > 3 && /^ה[א-ת]/.test(t) ? find(t.slice(1)) : null;
 }
 
 export const TOOL_KEYWORD_PATHS = Object.keys(KEYWORDS);
