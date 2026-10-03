@@ -711,7 +711,8 @@ function detectTargetAge(
     /לפרוש\s*בגיל\s*(\d+)/i,
     /פרישה\s*בגיל\s*(\d+)/i,
     /retire\s*(?:at|by)\s*(\d+)/i,
-    /retirement\s*(?:at|by)\s*(\d+)/i
+    /retirement\s*(?:at|by)\s*(\d+)/i,
+    /retirement\s+age\s*(?:is|of|:)?\s*(\d+)/i
   ];
 
   for (const pattern of patterns) {
@@ -753,7 +754,7 @@ function detectYears(
   }
 
   const englishExplicitMatch = normalized.match(
-    /(?:for|over|during|within|period of)\s*(?:a\s+)?(?:period\s+of\s*)?(\d+)\s*years?/i
+    /(?:for|over|during|within|period of)\s*(?:a\s+)?(?:period\s+of\s*)?(\d+)\s*years?\b(?!\s*old)/i
   );
 
   if (englishExplicitMatch) {
@@ -770,7 +771,7 @@ function detectYears(
   }
 
   const englishSimpleMatch = normalized.match(
-    /(\d+)\s*years?/i
+    /(\d+)\s*years?\b(?!\s*old)/i
   );
 
   if (englishSimpleMatch) {
