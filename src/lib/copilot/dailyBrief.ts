@@ -1,8 +1,8 @@
 /** Daily brief: three fixed parts run by the existing desks. Concept of the day (stored explanation), market movers (live or labelled), one quiz question. Nothing here is generated. */
 import { allConcepts, conceptName } from "../knowledge/concepts/registry";
 
-const BRIEF = /^\s*(?:daily brief|my daily brief|today'?s brief|morning brief|daily intelligence)\s*[.!?]*\s*$/i;
-const BRIEF_HE = /^\s*(?:תדריך יומי|התדריך היומי|סיכום יומי|מודיעין יומי)\s*[.!?]*\s*$/;
+const BRIEF = /^\s*(?:(?:give me|show me|send me|tell me|open|what'?s|what is)\s+)?(?:(?:the|my)\s+)?(?:daily brief(?:ing)?|today'?s brief|morning brief|daily intelligence)(?:\s*,?\s*(?:please|pls))?\s*[.!?]*\s*$/i;
+const BRIEF_HE = /^\s*(?:(?:תן לי|תני לי|הראה לי|הראי לי|הצג|מה)\s+(?:את\s+)?)?(?:תדריך יומי|התדריך היומי|סיכום יומי|הסיכום היומי|מודיעין יומי)(?:\s+בבקשה)?\s*[.!?]*\s*$/;
 export const isDailyBrief = (text: string): boolean => BRIEF.test(text) || BRIEF_HE.test(text);
 
 /** Day number in the user's local calendar, so the pick is stable for a whole day. */
