@@ -29,7 +29,7 @@ export function looksLikeCalcRequest(text: string): boolean {
 }
 
 /** The engine can read "invest 10000 and save 500 a month" as a monthly 500 and no starting amount. When it found no starting amount, look for exactly one other plain amount in the sentence (not the monthly amount, not years, not a percent) and use it. Zero or several candidates: leave it alone. */
-export function findStartingAmount(text: string, monthly: number, years: number): number | null {
+export function findStartingAmount(text: string, monthly: number, years: number, target: number | null = null): number | null {
   const amounts: number[] = [];
   for (const m of text.matchAll(/(\d[\d,]*(?:\.\d+)?)\s*(k\b)?(?!\d)/gi)) {
     const rest = text.slice((m.index ?? 0) + m[0].length, (m.index ?? 0) + m[0].length + 12);
@@ -40,7 +40,7 @@ export function findStartingAmount(text: string, monthly: number, years: number)
     const v = Number(m[1].replace(/,/g, "")) * (m[2] ? 1000 : 1);
     if (Number.isFinite(v) && v > 0) amounts.push(v);
   }
-  const other = amounts.filter((v) => v !== monthly && v !== years);
+  const other = amounts.filter((v) => v !== monthly && v !== years && v !== target);
   return other.length === 1 ? other[0] : null;
 }
 
@@ -52,7 +52,7 @@ export function runCalcDesk(text: string): CalcDeskResult | null {
   let proj = r.projection;
   let principal = s.initialInvestment;
   if (principal <= 0) {
-    const start = findStartingAmount(text, s.monthlyContribution, s.years);
+    const start = findStartingAmount(text, s.monthlyContribution, s.years, s.targetAmount);
     if (start !== null) { principal = start; proj = computeProjection(start, s.monthlyContribution, s.years, s.annualReturnPct, DEFAULT_INFLATION_PCT, s.currency); }
   }
   const target = s.targetAmount && s.targetAmount > 0 ? s.targetAmount : null;
