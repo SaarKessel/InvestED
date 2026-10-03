@@ -1,3 +1,4 @@
+import { safeSlice } from "@/lib/copilot/safeSlice";
 import { getSupabase } from "../account/supabaseClient";
 import { relevantHits, tokenizeQuestion, type KnowledgeItem } from "./knowledge";
 
@@ -13,12 +14,12 @@ export async function searchKnowledge(question: string): Promise<KnowledgeItem[]
 }
 
 export async function recordGap(question: string, lang: string, reason: "no_hit" | "thumbs_down"): Promise<void> {
-  try { await getSupabase().from("knowledge_gaps").insert({ question: question.slice(0, 500), lang, reason }); } catch { /* best effort */ }
+  try { await getSupabase().from("knowledge_gaps").insert({ question: safeSlice(question, 500), lang, reason }); } catch { /* best effort */ }
 }
 
 export async function submitFeedback(question: string, rating: 1 | -1, knowledgeIds: string[], lang: string): Promise<boolean> {
   try {
-    const { error } = await getSupabase().from("answer_feedback").insert({ question: question.slice(0, 1000), rating, knowledge_ids: knowledgeIds, lang });
+    const { error } = await getSupabase().from("answer_feedback").insert({ question: safeSlice(question, 1000), rating, knowledge_ids: knowledgeIds, lang });
     if (error) return false;
     if (rating === -1) await recordGap(question, lang, "thumbs_down");
     return true;

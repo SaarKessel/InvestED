@@ -1,3 +1,4 @@
+import { safeSlice } from "@/lib/copilot/safeSlice";
 /** Global search: one deterministic pass over the stored concepts, the site's pages and the user's saved answers. Matching only; nothing is generated and no network is used. */
 import { allConcepts, normalizeTerm, type ConceptEntry } from "@/lib/knowledge/concepts/registry";
 import { SITE_CAPABILITIES } from "@/lib/copilot/siteCapabilities";
@@ -38,7 +39,7 @@ export function globalSearch(query: string, opts: { lang: "he" | "en"; saved?: S
   }
   for (const s of opts.saved ?? []) {
     const score = Math.max(scoreName(s.question, q), scoreName(s.text, q) ? SCORE.contains : 0);
-    if (score) hits.push({ kind: "saved", id: s.id, label: s.question.slice(0, 80), score: score - 5, ask: s.question, excerpt: s.text.slice(0, 120) });
+    if (score) hits.push({ kind: "saved", id: s.id, label: safeSlice(s.question, 80), score: score - 5, ask: s.question, excerpt: safeSlice(s.text, 120) });
   }
   return hits.sort((a, b) => b.score - a.score || a.label.localeCompare(b.label)).slice(0, opts.limit ?? 8);
 }
