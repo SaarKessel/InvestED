@@ -13,7 +13,7 @@ export type DataDeskKind = "movers" | "policy_rate" | "insurance";
 export function resolveDataDesk(text: string): DataDeskKind | null {
   const t = text.trim().toLowerCase();
   if (!t) return null;
-  if (/policy rate|interest rate (?:in|of) israel|bank of israel (?:rate|interest)|israel(?:i)? (?:base|policy|interest) rate/.test(t) || /ריבית בנק ישראל|ריבית המדיניות|ריבית בישראל|ריבית הבנק המרכזי/.test(t)) return "policy_rate";
+  if (/policy rate|interest rate (?:in|of) israel|bank of israel(?:'s|’s)? (?:interest |policy )?(?:rate|interest)|israel(?:i)? (?:base|policy|interest) rate/.test(t) || /ריבית (?:של )?בנק ישראל|בנק ישראל (?:מה )?(?:ה)?ריבית|ריבית המדיניות|ריבית בישראל|ריבית הבנק המרכזי/.test(t)) return "policy_rate";
   if (/insurance (?:funds?|yields?|reports?|returns?|management fees?)|pension (?:funds?|yields?)/.test(t) || /תשואות? (?:ב)?ביטוח|קרנות פנסיה|דמי ניהול בביטוח|דוחות ביטוח (?:אחרונים|עדכניים)/.test(t)) return "insurance";
   if (/top (?:gainers|losers|movers)|biggest (?:gainers|losers|movers)|market movers|what(?:'s| is) moving/.test(t) || /מובילי? (?:העליות|הירידות|השוק)|הכי עולות|הכי יורדות|מניות שזזות|מה זז בשוק/.test(t)) return "movers";
   return null;
