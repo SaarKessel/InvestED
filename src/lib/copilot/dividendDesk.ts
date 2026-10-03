@@ -33,7 +33,7 @@ export function parseDividendRequest(text: string): DividendRequest | null {
     symbol = caps ?? null;
   }
   if (!symbol) return null;
-  const sh = /(\d[\d,]*(?:\.\d+)?)\s*(?:shares?|stocks?|units?|מניות|מניה|יחידות)/i.exec(text) ?? /(?:מניות|מניה)\s*(?:של)?\s*\d/.exec(text) ;
+  const sh = /(\d[\d,]*(?:\.\d+)?)\s*(?:[A-Z]{1,5}\s+)?(?:shares?|stocks?|units?|מניות|מניה|יחידות)/i.exec(text) ?? /(?:מניות|מניה)\s*(?:של)?\s*\d/.exec(text) ;
   const shares = sh && sh[1] ? Number(sh[1].replace(/,/g, "")) : null;
   const focus = EXPECT_CUE.test(text) ? "expected" : "history";
   return { symbol, shares: shares && shares > 0 && Number.isFinite(shares) ? shares : null, focus };
