@@ -12,7 +12,7 @@ export interface CopyFundResult extends CopyFundRequest {
   matched: MatchedHolding[]; unmatched: UnmatchedHolding[]; copy: CopyResult; today: string;
 }
 
-const ASKS_COPY = /\b(copy|copied|copying|mirror|mirrored|follow|followed|replicate|clone)\b|if i (had )?(bought|invested|held)|תעתיק|להעתיק|העתק|העתקתי|לחקות|הייתי מעתיק|ללכת אחרי|לעקוב אחרי/i;
+const ASKS_COPY = /\b(copy|copied|copying|mirror|mirrored|follow|followed|replicate|clone)\b|if i (had )?(bought|invested|held)|תעתיק|להעתיק|העתק|העתקתי|לחקות|הייתי מעתיק|ללכת אחרי|לעקוב אחרי|עוקב אחרי|עוקבת אחרי|עקבתי אחרי|אעקוב אחרי|מעתיק|מעתיקה/i;
 
 export function parseCopyFundRequest(text: string): CopyFundRequest | null {
   if (text.length > 160 || !ASKS_COPY.test(text)) return null;
