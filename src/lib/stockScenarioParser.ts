@@ -86,6 +86,7 @@ function findAsset(text: string): {
   const notTickers = new Set([
     "US", "USA", "UK", "EU", "ETF", "USD", "EUR", "ILS", "GBP", "JPY", "AI", "ROI", "APR", "APY",
     "GDP", "CPI", "IRA", "FED", "CEO", "CFO", "OK", "DCA", "IPO", "AND", "THE", "FOR", "VS",
+    "CAGR", "YTD", "NYSE", "ATH", "AUM", "SEC", "ETFS", "TTM", "LLC", "INC",
   ]);
   const tickerMatch = [...text.matchAll(/\b[A-Z]{2,5}\b/g)].find((m) => !notTickers.has(m[0]));
 
