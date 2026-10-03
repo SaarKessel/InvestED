@@ -41,6 +41,8 @@ function normalize(raw: string): string {
   let s = ` ${raw} `;
   for (const [re, to] of WORDS) s = s.replace(re, to);
   s = stripGroupCommas(s);
+  // "1 000 + 500": digits written with space (or nbsp) thousands are one number; two bare numbers were never a valid expression
+  s = s.replace(/(\d)[ \u00a0\u202f](?=\d{3}(?!\d))/g, "$1").replace(/(\d)[ \u00a0\u202f](?=\d{3}(?!\d))/g, "$1");
   // "200 + 15%" and "100 - 20%" as a whole expression: add or take off that percent of the first number.
   s = s.replace(/^\s*(\d+(?:\.\d+)?)\s*([+-])\s*(\d+(?:\.\d+)?)\s*%\s*$/, "$1$2$1*($3/100)");
   s = s.replace(/(\d+(?:\.\d+)?)\s*%\s*(?:of|from|מ-?|של)\s*/gi, "($1/100)*");
