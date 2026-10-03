@@ -694,15 +694,15 @@ export interface PurchasePowerResult extends PurchasePowerRequest {
 const PURCHASE_PATTERNS = [
   // Statement-first: "יש לי 10,000 דולר, כמה מניות של VOO אפשר לקנות?"
   /(?:יש\s+לי|עם)\s*(?<amount>[\d,.]+)\s*(?<multiplier>אלף|מיליון)?\s*(?<currency>שקל|ש["״']?ח|ILS|NIS|דולר|USD|יורו|EUR|פאונד|GBP).*?(?:כמה|how many).*?(?:מניות|יחידות|shares?|units?).*?(?<symbol>[A-Z][A-Z0-9.-]{0,9})/i,
-  /(?:i\s+have|with)\s*(?<amount>[\d,.]+)\s*(?<multiplier>thousand|million)?\s*(?<currency>ILS|NIS|USD|dollars?|EUR|euros?|GBP|pounds?).*?(?:how many).*?(?:shares?|units?)(?:\s+(?:of|in)\b)?.*?(?<symbol>[A-Z][A-Z0-9.-]{0,9})/i,
+  /(?:i\s+have|with)\s*(?<amount>[\d,.]+)\s*(?<multiplier>thousand|million)?\s*(?<currency>ILS|NIS|shekels?|USD|dollars?|EUR|euros?|GBP|pounds?).*?(?:how many).*?(?:shares?|units?)(?:\s+(?:of|in)\b)?.*?(?<symbol>[A-Z][A-Z0-9.-]{0,9})/i,
   // Question-first: "כמה מניות של VOO אפשר לקנות ב-10,000 דולר?"
   /כמה\s*(?:מניות|יחידות)\s*(?:של|ב)\s*(?<symbol>[A-Z][A-Z0-9.-]{0,9})\s*.*?(?:לקנות|אקנה|קונה)\s*(?:ב|עם|באמצעות)?\s*[-–—]?\s*(?<amount>[\d,.]+)\s*(?<multiplier>אלף|מיליון)?\s*(?<currency>שקלים|שקל|ש["״']?ח|₪|ILS|NIS|דולרים|דולר|USD|יורו|EUR|פאונד|GBP)/i,
   // Question-first English: "how many VOO shares can I buy with $10,000?"
-  /how\s+many\s+(?:(?:shares?|units?)\s+(?:of\s+)?)?(?<symbol>[A-Z][A-Z0-9.-]{0,9})\s+(?:(?:shares?|units?)\s+)?(?:can|could)\s+(?:i|we)\s+(?:buy|get|afford)\s+(?:with|for)\s*\$?\s*(?<amount>[\d,.]+)\s*(?<multiplier>thousand|million)?\s*(?<currency>ILS|NIS|USD|dollars?|EUR|euros?|GBP|pounds?)?/i,
+  /how\s+many\s+(?:(?:shares?|units?)\s+(?:of\s+)?)?(?<symbol>[A-Z][A-Z0-9.-]{0,9})\s+(?:(?:shares?|units?)\s+)?(?:can|could)\s+(?:i|we)\s+(?:buy|get|afford)\s+(?:with|for)\s*\$?\s*(?<amount>[\d,.]+)\s*(?<multiplier>thousand|million)?\s*(?<currency>ILS|NIS|shekels?|USD|dollars?|EUR|euros?|GBP|pounds?)?/i,
 ];
 
 function currencyCode(raw: string): PurchasePowerRequest["sourceCurrency"] | null {
-  if (/שקל|ש["״']?ח|ILS|NIS/i.test(raw)) return "ILS";
+  if (/שקל|ש["״']?ח|ILS|NIS|shekels?/i.test(raw)) return "ILS";
   if (/דולר|USD|dollars?|\$/i.test(raw)) return "USD";
   if (/יורו|EUR|euros?/i.test(raw)) return "EUR";
   if (/פאונד|GBP|pounds?/i.test(raw)) return "GBP";
