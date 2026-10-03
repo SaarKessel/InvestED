@@ -76,6 +76,7 @@ export function normalizeYahooScreener(raw: unknown, source: MarketProviderId = 
     const quote = asRecord(entry);
     if (!quote || typeof quote.symbol !== "string" || quote.symbol.length === 0) continue;
     const marketTime = rawNumber(quote.regularMarketTime);
+    const marketDate = marketTime !== null ? new Date(marketTime * 1000) : null;
     movers.push({
       symbol: quote.symbol,
       name:
@@ -88,7 +89,7 @@ export function normalizeYahooScreener(raw: unknown, source: MarketProviderId = 
       changePercent: rawNumber(quote.regularMarketChangePercent),
       currency: typeof quote.currency === "string" ? quote.currency : null,
       dataSource: source,
-      timestamp: marketTime !== null ? new Date(marketTime * 1000).toISOString() : null,
+      timestamp: marketDate !== null && Number.isFinite(marketDate.getTime()) ? marketDate.toISOString() : null,
     });
   }
   return movers;
