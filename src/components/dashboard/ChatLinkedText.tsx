@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import enLocale from "@/locales/en.json";
 import heLocale from "@/locales/he.json";
 import { linkTerms, termExplanation } from "@/lib/copilot/termLinks";
+import { safeSlice } from "@/lib/copilot/safeSlice";
 
 /** Answer text with known terms underlined. A click opens the stored explanation under the paragraph, with an option to ask more. */
 export function ChatLinkedText({ text, onAsk }: { text: string; onAsk: (q: string) => void }) {
@@ -21,7 +22,7 @@ export function ChatLinkedText({ text, onAsk }: { text: string; onAsk: (q: strin
       </p>
       {preview && (
         <div dir={he ? "rtl" : "ltr"} role="tooltip" className="mt-1 rounded-lg border border-border/70 bg-popover p-2 text-xs leading-5 shadow-sm" data-testid="term-hover">
-          <span className="font-semibold">{preview.label}: </span>{preview.text.length > 160 ? `${preview.text.slice(0, 160).trimEnd()}…` : preview.text}
+          <span className="font-semibold">{preview.label}: </span>{safeSlice(preview.text, 160) !== preview.text ? `${safeSlice(preview.text, 160).trimEnd()}…` : preview.text}
         </div>
       )}
       {info && (

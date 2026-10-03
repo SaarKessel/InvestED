@@ -1,3 +1,4 @@
+import { safeSlice } from "@/lib/copilot/safeSlice";
 /**
  * Daily intelligence feed: shapes what the scheduled job stores. Pure functions, no network.
  * Only headlines, links, publisher names and times are kept (no article text), and movers are stored
@@ -24,7 +25,7 @@ export function headlinesRow(date: string, now: string, n: NewsIn | null): FeedR
   const items = n.items
     .filter((i) => typeof i.title === "string" && i.title.trim() && typeof i.url === "string" && /^https?:\/\//.test(i.url))
     .slice(0, MAX_HEADLINES)
-    .map((i) => ({ title: String(i.title).slice(0, 300), url: String(i.url), source: typeof i.source === "string" ? i.source.slice(0, 80) : null, publishedAt: typeof i.publishedAt === "string" ? i.publishedAt : null }));
+    .map((i) => ({ title: safeSlice(String(i.title), 300), url: String(i.url), source: typeof i.source === "string" ? safeSlice(i.source, 80) : null, publishedAt: typeof i.publishedAt === "string" ? i.publishedAt : null }));
   if (items.length === 0) return null;
   return { feed_date: date, kind: "headlines", payload: { items }, source: `${n.feedProvider ?? "Yahoo Finance search"} via /api/news (headlines and links only)`, fetched_at: now };
 }

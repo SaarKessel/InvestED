@@ -1,3 +1,4 @@
+import { safeSlice } from "@/lib/copilot/safeSlice";
 // ---------------------------------------------------------------------------
 // InvestED - AI headline tone estimate
 //
@@ -69,7 +70,7 @@ export type FetchLike = (url: string, init: { method: string; headers: Record<st
 
 /** Client call. Returns a map of id -> rating, or null when the AI layer is unavailable (the page then shows nothing). */
 export async function fetchHeadlineSentiment(inputs: SentimentInput[], language: "he" | "en", fetcher: FetchLike = fetch as unknown as FetchLike): Promise<Map<string, SentimentItem> | null> {
-  const items = inputs.slice(0, MAX_HEADLINES).map((i) => ({ id: i.id, title: i.title.slice(0, 300), source: i.source.slice(0, 80) }));
+  const items = inputs.slice(0, MAX_HEADLINES).map((i) => ({ id: i.id, title: safeSlice(i.title, 300), source: safeSlice(i.source, 80) }));
   if (items.length === 0) return null;
   try {
     const r = await fetcher("/api/news-sentiment", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items, language }) });
