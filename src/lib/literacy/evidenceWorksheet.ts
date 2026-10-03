@@ -38,7 +38,7 @@ const SPLIT = /\s*[:;|]\s+|\s+[-–—]\s+|,\s+(?=(?:but|while|as|after|with|and
 const OPINION_EN = /\b(could|may|might|should|must|likely|expected to|set to|poised|bullish|bearish|best|worst|great|terrible|amazing|disaster|smart|risky|overvalued|undervalued|cheap|expensive|top pick|will (?:double|soar|crash|rise|fall|surge|plunge)|is (?:a )?(?:buy|sell))\b/i;
 const OPINION_HE = /(עשוי|עשויה|צפוי|צפויה|כנראה|אולי|ייתכן|הכי טוב|הכי גרוע|מדהים|אסון|הזדמנות|מומלץ|כדאי|יזנק|ינחת|יקרוס|תזנק|תקרוס)/;
 const ATTRIB_EN = /\b(says?|said|according to|reportedly|reports?|told|claims?|alleged(?:ly)?|sources?|insiders?|rumou?rs?|analysts?)\b/i;
-const ATTRIB_HE = /(אומר|אומרת|אמר|אמרה|לדברי|לפי|דיווח|דווח|טוען|טוענת|מקורות|גורמים|שמועה|אנליסטים)/;
+const ATTRIB_HE = /(אומר|אומרת|אמר(?!יק)|אמרה|לדברי|לפי|דיווח|דווח|טוען|טוענת|מקורות|גורמים|שמועה|אנליסטים)/;
 const FACT_EN = /\b(rose|rises?|fell|falls?|beat|beats|missed|misses|raised|raises|cut|cuts|filed|files|announced?|announces|acquires?|acquired|sues?|sued|posts?|posted|holds?|held|launch(?:es|ed)?|hires?|fired|approves?|approved|reports?|reported|jumps?|jumped|drops?|dropped|gains?|gained|loses|lost|pays?|paid|plunges?|plunged|soars?|soared)\b/i;
 const FACT_HE = /(עלה|עלתה|ירד|ירדה|הכריז|הכריזה|הודיע|הודיעה|רכשה|רכש|תבע|תבעה|פרסמה|פרסם|הותיר|השאיר|אישר|אישרה|זינק|זינקה|קרס|קרסה|הגישה|הגיש)/;
 
