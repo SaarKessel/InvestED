@@ -23,8 +23,16 @@ const HAS_NUMBER = /\d/;
 const HAS_YEARS = /\b\d+\s*(?:-|\s)?\s*(?:years?|yrs?)\b|\d+\s*(?:שנה|שנים|שנות)|ל-?\s*\d+\s*שנ|(?:years?|שנים)\s*\d+/i;
 const HAS_INTENT = /\b(?:invest|save|saving|deposit|put away|grow|worth)\b|\badd(?:ing)?\s+\$?\d[\d,.]*k?\s*(?:\w+\s+){0,2}(?:per|a|each|every)\s+month\b|\b\d[\d,.]*k?\s*(?:per|a|each|every)\s+month\b|(?:מוסיף|מוסיפה|אוסיף)\s+\d[\d,.]*\s*(?:\S+\s+)?(?:ב|כל\s+)חודש|(?:אשקיע|משקיע|אחסוך|חוסך|אפקיד|מפקיד|להשקיע|לחסוך|כמה יהיה לי|כמה יצטבר)/i;
 
+/** "1 500" and "1,5" are one amount each: join space-grouped thousands, read a comma before 1-2 digits as a decimal point. */
+export function normalizeAmountText(text: string): string {
+  return text
+    .replace(/(\d),(\d{1,2})(?!\d)/g, "$1.$2")
+    .replace(/(\d)[ \u00a0\u202f](?=\d{3}(?!\d))/g, "$1")
+    .replace(/(\d)[ \u00a0\u202f](?=\d{3}(?!\d))/g, "$1");
+}
+
 export function looksLikeCalcRequest(text: string): boolean {
-  const t = text.trim();
+  const t = normalizeAmountText(text).trim();
   return HAS_NUMBER.test(t) && HAS_YEARS.test(t) && HAS_INTENT.test(t);
 }
 
@@ -44,7 +52,8 @@ export function findStartingAmount(text: string, monthly: number, years: number,
   return other.length === 1 ? other[0] : null;
 }
 
-export function runCalcDesk(text: string): CalcDeskResult | null {
+export function runCalcDesk(raw: string): CalcDeskResult | null {
+  const text = normalizeAmountText(raw);
   if (!looksLikeCalcRequest(text)) return null;
   const r = analyzeFinancialScenarioWithProjection(text, "en");
   const s = r.scenario;
