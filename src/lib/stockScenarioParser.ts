@@ -82,7 +82,12 @@ function findAsset(text: string): {
     }
   }
 
-  const tickerMatch = text.match(/\b[A-Z]{2,5}\b/);
+  // Words that look like tickers but are currencies, countries or generic terms.
+  const notTickers = new Set([
+    "US", "USA", "UK", "EU", "ETF", "USD", "EUR", "ILS", "GBP", "JPY", "AI", "ROI", "APR", "APY",
+    "GDP", "CPI", "IRA", "FED", "CEO", "CFO", "OK", "DCA", "IPO", "AND", "THE", "FOR", "VS",
+  ]);
+  const tickerMatch = [...text.matchAll(/\b[A-Z]{2,5}\b/g)].find((m) => !notTickers.has(m[0]));
 
   if (tickerMatch) {
     return {
