@@ -23,7 +23,7 @@ export const wbLabel = (i: WbIndicator) => IND[i].label;
 
 const COUNTRIES: { iso: string; re: RegExp; name: { en: string; he: string } }[] = [
   { iso: "ISR", re: /\bisrael\b|ישראל/i, name: { en: "Israel", he: "ישראל" } },
-  { iso: "USA", re: /\bus\b|\busa\b|united states|america|ארה"?ב|ארצות הברית|אמריקה/i, name: { en: "United States", he: "ארצות הברית" } },
+  { iso: "USA", re: /(?<!\b(?:tell|show|give|send|help|let|ask|remind|teach)\s)\bus\b|\busa\b|united states|america|ארה"?ב|ארצות הברית|אמריקה/i, name: { en: "United States", he: "ארצות הברית" } },
   { iso: "GBR", re: /\buk\b|united kingdom|britain|בריטניה/i, name: { en: "United Kingdom", he: "בריטניה" } },
   { iso: "DEU", re: /germany|גרמניה/i, name: { en: "Germany", he: "גרמניה" } },
   { iso: "EMU", re: /euro area|eurozone|גוש היורו/i, name: { en: "Euro area", he: "גוש היורו" } },
