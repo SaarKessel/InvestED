@@ -43,10 +43,11 @@ export function parseFxRequest(text: string): FxRequest | null {
   if (!hasCue) return null;
   const codes = order(t);
   if (codes.length < 2) return null;
-  const n = /(\d[\d,]*(?:\.\d+)?)\s*(k\b|m\b|thousand|million|אלף|מיליון)?/i.exec(t);
-  const unit = n?.[2]?.toLowerCase();
-  const scale = unit === "m" || unit === "million" || unit === "מיליון" ? 1_000_000 : unit ? 1000 : 1;
-  const amount = n ? Number(n[1].replace(/,/g, "")) * scale : 1;
+  const n = /(\d[\d,]*(?:\.\d+)?)\s*(k\b|m\b|bn\b|billion|thousand|million|אלף|מיליון|מיליארד)?/i.exec(t);
+  const bare = n ? null : /\b(billion|million|thousand)\b|מיליארד|מיליון|אלף/i.exec(t);
+  const unit = (n?.[2] ?? bare?.[0])?.toLowerCase();
+  const scale = unit === "bn" || unit === "billion" || unit === "מיליארד" ? 1_000_000_000 : unit === "m" || unit === "million" || unit === "מיליון" ? 1_000_000 : unit ? 1000 : 1;
+  const amount = n ? Number(n[1].replace(/,/g, "")) * scale : scale;
   if (!(amount > 0) || !Number.isFinite(amount)) return null;
   // "X to Y": first mentioned is the source. A trailing Hebrew "ב" form ("100 דולר בשקלים") also reads left to right.
   return { amount, from: codes[0], to: codes[1] };
