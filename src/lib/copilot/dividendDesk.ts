@@ -20,7 +20,7 @@ const NAMES: [RegExp, string][] = [
   [/\bprocter\b|פרוקטר/i, "PG"], [/\bwalmart\b|וולמארט/i, "WMT"], [/\bjpmorgan\b|ג'?יי ?פי ?מורגן/i, "JPM"], [/\bnvidia\b|אנבידיה|אנבדיה/i, "NVDA"], [/\bintel\b|אינטל/i, "INTC"],
   [/\bat&t\b/i, "T"], [/\bdisney\b|דיסני/i, "DIS"], [/\bvisa\b|ויזה/i, "V"], [/\bpfizer\b|פייזר/i, "PFE"], [/\bcisco\b|סיסקו/i, "CSCO"], [/\bs&p ?500\b|אס ?אנד ?פי/i, "VOO"],
 ];
-const NOT_TICKERS = new Set(["ETF", "ETFS", "USD", "ILS", "NIS", "EUR", "SEC", "USA", "THE", "AND", "FOR", "HOW", "MUCH", "DID", "PAY", "PAID", "DO", "I", "A", "AI", "FAQ", "IRA", "GDP", "CPI", "TTM", "DRIP", "YIELD", "EPS", "IPO", "ATM", "AM", "PM", "IS", "OF", "TO", "IN", "ON", "OR", "MY", "ME", "WILL", "GET", "CAN", "WHAT", "WHEN", "ARE", "HAS", "ANY"]);
+const NOT_TICKERS = new Set(["ETF", "ETFS", "USD", "ILS", "NIS", "EUR", "SEC", "USA", "THE", "AND", "FOR", "HOW", "MUCH", "DID", "PAY", "PAID", "DO", "I", "A", "AI", "FAQ", "IRA", "GDP", "CPI", "TTM", "DRIP", "YIELD", "EPS", "IPO", "ATM", "AM", "PM", "IS", "OF", "TO", "IN", "ON", "OR", "MY", "ME", "WILL", "GET", "CAN", "WHAT", "WHEN", "ARE", "HAS", "ANY", "US", "UK", "EU", "OK", "CAGR", "CEO", "CFO", "YTD", "NYSE", "ATH", "AUM"]);
 const DIV_CUE = /dividends?|payouts?|דיבידנד|דיבידנדים|דיביד/i;
 const EXPECT_CUE = /expect|will |next|forecast|upcoming|going to|receive|per year|annual|yield|אמור|צפוי|יקבל|אקבל|לקבל|תשואת|הקרוב|הבא/i;
 
