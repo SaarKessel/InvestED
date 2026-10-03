@@ -13,7 +13,7 @@ export function ChatDividendCard({ data }: { data: DividendResult }) {
   const sh = data.shares;
   return (
     <div className="mt-3 rounded-lg border border-border/70 bg-background/70 p-3 text-xs" data-testid="dividend-card">
-      <p className="font-semibold" dir="ltr">{data.symbol} \u00b7 {data.name}</p>
+      <p className="font-semibold" dir="ltr">{data.symbol} · {data.name}</p>
       {data.payments.length === 0 ? (
         <p className="mt-2" data-testid="dividend-none">{he ? "לא נמצאו דיבידנדים ששולמו בנתוני המקור. ייתכן שהנייר לא מחלק דיבידנד." : "No paid dividends were found in the source data. This security may not pay a dividend."}</p>
       ) : (
