@@ -35,6 +35,8 @@ export function findManager(text: string): FilingsRequest | null {
     const known = MANAGERS.find((m) => m.cik === cik);
     return { cik, managerName: known?.name ?? { en: `CIK ${Number(cik)}`, he: `CIK ${Number(cik)}` } };
   }
+  // "holdings of Vanguard S&P 500 ETF" asks about a fund, not the manager's 13F, unless 13F is named.
+  if (/\b(?:etfs?|index funds?|mutual funds?)\b|קרן סל|קרן מחקה|קרן נאמנות|תעודת סל/i.test(text) && !/13-?f\b/i.test(text)) return null;
   const m = MANAGERS.find((x) => x.re.test(text));
   return m ? { cik: m.cik, managerName: m.name } : null;
 }
