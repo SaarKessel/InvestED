@@ -14,8 +14,11 @@ export interface CopyFundResult extends CopyFundRequest {
 
 const ASKS_COPY = /\b(copy|copied|copying|mirror|mirrored|follow|followed|replicate|clone)\b|if i (had )?(bought|invested|held)|תעתיק|להעתיק|העתק|העתקתי|לחקות|הייתי מעתיק|ללכת אחרי|לעקוב אחרי|עוקב אחרי|עוקבת אחרי|עקבתי אחרי|אעקוב אחרי|מעתיק|מעתיקה/i;
 
+/** "do not copy X", "אל תעתיק", "לא רוצה להעתיק" and "follow up" ask for the opposite or something else. */
+const NEGATED_OR_OTHER = /\b(do not|don'?t|dont|never|no need to|not to|not want to|won'?t)\s+(want to\s+|need to\s+)?(copy|mirror|follow|replicate|clone)\b|\bfollow[- ]?ups?\b|(?<![\u0590-\u05ff])(אל|לא)\s+(ת\S+|רוצה|צריך|צריכה|מתכוון|מתכוונת|מעוניין|מעוניינת)(?![\u0590-\u05ff])/i;
+
 export function parseCopyFundRequest(text: string): CopyFundRequest | null {
-  if (text.length > 160 || !ASKS_COPY.test(text)) return null;
+  if (text.length > 160 || !ASKS_COPY.test(text) || NEGATED_OR_OTHER.test(text)) return null;
   return findManager(text);
 }
 
