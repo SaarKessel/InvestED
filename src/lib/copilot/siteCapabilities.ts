@@ -24,7 +24,7 @@ export const SITE_CAPABILITIES: SiteCapability[] = [
   { id: "data", route: "/data-controls", en: ["data controls", "my data", "delete my data", "privacy controls"], he: ["בקרת נתונים", "הנתונים שלי", "מחיקת נתונים"] },
 ];
 
-const OPEN_EN = /\b(open|show me|take me|go to|where (?:is|can i find)|launch|navigate|bring up)\b/i;
+const OPEN_EN = /\b(open|show me|take me|go to|where (?:is|can i find)|launch|navigate|bring up|bring me to|pull up|jump to|head to|switch to)\b/i;
 const OPEN_HE = /(פתח|תפתח|תפתחי|הראה|תראה|תראי|קח אותי|קחי אותי|לך ל|איפה|היכן|הפעל)/;
 const OVERVIEW_EN = /\bwhat can you (?:do|help)|what do you do|what(?:'s| is) on (?:the )?site|site map|list (?:all )?(?:the )?(?:tools|features|pages)|what features\b/i;
 const OVERVIEW_HE = /מה (?:אתה|את|אפשר|אתם) (?:יכול|יכולה|יכולים|לעשות)|מה יש באתר|אילו כלים|אילו דפים|רשימת (?:הכלים|הדפים)/;
