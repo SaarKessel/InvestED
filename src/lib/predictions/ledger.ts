@@ -103,6 +103,7 @@ export type LedgerRequest =
 const UP = /\b(up|rise|rises|go up|goes up|higher|gain|gains|outperform|beat)\b|עולה|תעלה|יעלה|עלייה/i;
 const DOWN = /\b(down|fall|falls|drop|drops|go down|goes down|lower|decline|declines)\b|יורד|תרד|ירד|תיפול|יפול|ירידה/i;
 const PREDICT = /\b(predict(ion)?|i bet|i call it|my call|log (a )?(call|thesis)|my thesis)\b|תחזית|אני חוזה|אני מנבא|תרשום (לי )?(תחזית|תזה)|התזה שלי/i;
+const LOGGING = /\b(?:i predict|i bet|i call it|my call|my thesis|log (?:a )?(?:call|thesis))\b|אני חוזה|אני מנבא|תרשום (?:לי )?(?:תחזית|תזה)|התזה שלי/i;
 const VIEW = /\b(my (?:(?:past|open|settled|recent|latest|old) )?(?:predictions|calls|forecasts)|my (?:calibration|track record|brier)|calibration|brier|prediction ledger|prediction (?:history|record)|(?:open|settled|past) predictions|how (?:is|are|did|do) my (?:predictions?|calls?))\b|התחזיות (?:\S+ )?שלי|כיול|רשומת התחזיות|היסטוריית התחזיות|ציון בריר|אחוז הצלחה בתחזיות/i;
 
 export function parseHorizonDays(text: string): number | null {
@@ -130,6 +131,8 @@ export function parseLedgerRequest(text: string, resolveSymbol: (q: string) => s
     const r = resolveSymbol(token);
     if (r) { symbol = r; break; }
   }
+  // The bare noun ("מה התחזית לשוק", "what is a prediction") is a general question, not a call to log. Help only when the text states a direction, or logs a call in the first person.
+  if (!direction && !LOGGING.test(text)) return null;
   if (!symbol || !direction || !Number.isFinite(confidence) || horizonDays === null) return { kind: "help" };
   const input: PredictionInput = { symbol, direction, confidence, horizonDays, thesis: text.trim() };
   return validateInput(input) ? { kind: "help" } : { kind: "create", input };
