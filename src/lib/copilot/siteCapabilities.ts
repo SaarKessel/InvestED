@@ -42,9 +42,12 @@ const LAUNCH_TARGETS: Array<{ id: string; re: RegExp }> = [
 
 export type SiteIntent = { kind: "overview" } | { kind: "open"; matches: SiteCapability[] } | null;
 
+/** "don't open X", "אל תפתח", "לא רוצה לפתוח" ask for the opposite of opening. */
+const NEGATED_OPEN = /\b(?:do not|don'?t|dont|never|no need to|not want to|won'?t)\s+(?:want to\s+|need to\s+)?(?:open|launch|show|take me|go|start|try)\b|(?<![\u0590-\u05ff])(?:אל|לא)\s+(?:ת\S+|רוצה|צריך|צריכה|מתכוון|מתכוונת)(?![\u0590-\u05ff])/i;
+
 export function resolveSiteIntent(text: string): SiteIntent {
   const t = text.trim().toLowerCase();
-  if (!t) return null;
+  if (!t || NEGATED_OPEN.test(t)) return null;
   if (OVERVIEW_EN.test(t) || OVERVIEW_HE.test(t)) return { kind: "overview" };
   if (TRY_EN.test(t) || TRY_HE.test(t)) {
     const hit = LAUNCH_TARGETS.find((x) => x.re.test(t));
