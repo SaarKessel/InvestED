@@ -86,15 +86,35 @@ const HORIZON_KEYWORDS = {
 } as const;
 
 
+/** True when the words just before `index` negate what follows ("not a conservative", "don't want high risk"). */
+const NEGATION_BEFORE =
+  /(?:\b(?:not|no)\s+(?:\S+\s+)?|(?:\bdon'?t|\bdo not|\bdoesn'?t|\bnever|\bwithout)\s+(?:\S+\s+){0,3}|(?:^|\s)לא\s+(?:\S+\s+)?)$/;
+
+function isNegatedAt(text: string, index: number): boolean {
+  const clauseStart = Math.max(
+    text.lastIndexOf(".", index - 1),
+    text.lastIndexOf(",", index - 1),
+    text.lastIndexOf(";", index - 1),
+    text.lastIndexOf("!", index - 1),
+    text.lastIndexOf("?", index - 1)
+  );
+  return NEGATION_BEFORE.test(text.slice(clauseStart + 1, index));
+}
+
 function containsAny(
   text:string,
   arr:readonly string[]
 ):boolean {
 
-  return arr.some(
-    keyword =>
-      text.includes(keyword)
-  );
+  return arr.some((keyword) => {
+    let from = 0;
+    for (;;) {
+      const idx = text.indexOf(keyword, from);
+      if (idx === -1) return false;
+      if (!isNegatedAt(text, idx)) return true;
+      from = idx + 1;
+    }
+  });
 
 }
 
@@ -183,7 +203,7 @@ export function extractProfileFlags(
 
 
   const ageMatch =
-    text.match(/(?:בן|בת|i am|i'm|age[:\s]+)\s*(\d{1,3})/i);
+    text.match(/(?:בן|בת|i am|i'm|age[:\s]+)\s*(\d{1,3})(?!\d)(?!\s*(?:%|per\s?cent|minutes?|mins?|hours?|days?|weeks?|months?|dollars?|shekels?|nis\b|usd\b|times\b|k\b))/i);
 
 
   if(ageMatch){
