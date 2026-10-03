@@ -5,9 +5,9 @@ export const MAX_TASKS = 5;
 export interface SubTask { index: number; text: string; route: Route; tools: Plan["tools"] }
 export interface Decomposition { tasks: SubTask[]; /** true when the question had more than one part */ multi: boolean; /** parts dropped by the cap */ dropped: number }
 
-const SPLIT = /(?<=[.?!؟])\s+|\s*;\s*|\n+|\s+(?:and then|then|after that|also|ואז|אחר כך|וגם)\s+|\s*\b\d\)\s+|^\s*\d\.\s+/i;
+const SPLIT = /(?<=[.?!؟])(?<!\b(?:vs|e\.g|i\.e|u\.s|dr|mr|mrs|ms|inc|ltd|approx)\.)\s+|\s*;\s*|\n+|\s+(?:and then|and also|then|after that|also|ואז|אחר כך|וגם)\s+|\s*\b\d\)\s+|^\s*\d\.\s+/i;
 export function splitParts(text: string): string[] {
-  return text.split(SPLIT).map((s) => s?.trim().replace(/^(?:and then|then|after that|also|and|ואז|אחר כך|וגם)\s+/i, "")).filter((s): s is string => !!s && s.replace(/[^A-Za-z0-9א-ת]/g, "").length >= 3);
+  return text.split(SPLIT).map((s) => s?.trim().replace(/^(?:and then|then|after that|also|and|ואז|אחר כך|וגם)\s+/i, "")).filter((s): s is string => !!s && !/^(?:and|then|also|ו)$/i.test(s) && (s.replace(/[^A-Za-z0-9א-ת]/g, "").length >= 3 || /\d\s*[-+*/x×÷^]\s*\d/.test(s)));
 }
 export function decompose(question: string): Decomposition {
   const parts = splitParts(question);
