@@ -22,7 +22,7 @@ const MANAGERS: { cik: string; re: RegExp; name: { en: string; he: string } }[] 
   { cik: "0001423053", re: /citadel|סיטדל/i, name: { en: "Citadel Advisors", he: "סיטדל" } },
   { cik: "0001167483", re: /tiger global|טייגר גלובל/i, name: { en: "Tiger Global Management", he: "טייגר גלובל" } },
   { cik: "0001656456", re: /appaloosa|tepper|טפר/i, name: { en: "Appaloosa", he: "אפלוזה" } },
-  { cik: "0001603466", re: /point72|פוינט72|פוינט 72/i, name: { en: "Point72", he: "פוינט72" } },
+  { cik: "0001603466", re: /point ?72|פוינט72|פוינט 72/i, name: { en: "Point72", he: "פוינט72" } },
 ];
 
 const ASKS_HOLDINGS = /13-?f\b|\bholdings?\b|\bpositions?\b|what (?:does|did|do) .{1,60}?\b(?:own|hold|buy|bought|holding)\b|החזקות|מה (?:יש|מחזיק|מחזיקה|קנה|קנתה|הוא מחזיק)|במה (?:מחזיק|מחזיקה|השקיע|השקיעה)/i;
