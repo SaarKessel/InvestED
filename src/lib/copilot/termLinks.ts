@@ -21,7 +21,7 @@ export function linkTerms(text: string, max = 5): Segment[] {
     if (seen.has(id) || taken.length >= max) continue;
     const re = HE.test(name)
       ? new RegExp(`(?<![א-ת])[הבלומשכ]?(${esc(name)})(?![א-ת])`, "u")
-      : new RegExp(`(?<![A-Za-z0-9א-ת])(${esc(name)})(?![A-Za-z0-9א-ת])`, "iu");
+      : new RegExp(`(?<![A-Za-z0-9א-ת])(${esc(name)}(?:(?<=[sx])es|s)?)(?![A-Za-z0-9א-ת])`, "iu");
     const m = re.exec(text);
     if (!m) continue;
     const start = m.index + m[0].length - m[1].length;
