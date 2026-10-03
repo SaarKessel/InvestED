@@ -133,18 +133,24 @@ function lessonsFor(kind: MarketEventKind, m: number, dd: number): Bi[] {
 
 const KIND_PATTERNS: Array<[MarketEventKind, RegExp]> = [
   ["bubble", /bubble|בועה|בועת/i],
-  ["crash", /crash|collapse|meltdown|plunge|\bdrops?\b|\bfalls?\b|declin|tumbl|sell-?off|correction|קריס|התרסק|מפולת|קורס|(?<![א-ת])(?:יצנח|צונח|יירד|ירד)(?![א-ת])/i],
+  ["crash", /crash|collapse|meltdown|plunge|\bdrops?\b|\bfalls?\b|declin|tumbl|sell-?off|correction|קריס|התרסק|מפולת|קורס|(?<![א-ת])(?:יצנח|צונח|יירד|ירד|יורד|נופל|ייפול|יפול)(?![א-ת])/i],
   ["rally", /rally|boom|bull run|surge|goes up|climbs?\b|ראלי|זינוק|פריחה|עליית שוק|שוק עולה|(?<![א-ת])(?:יעלה|יעלו)(?![א-ת])/i],
 ];
-const SIM_WORDS = /simulat|scenario|what if|what would happen|imagine|סימולצ|תרחיש|דמה|דמיין|מה יקרה אם|מה היה קורה|מה אם/i;
+const SIM_WORDS = /simulat|scenario|what if|what would happen|what happens if|what will happen|imagine|סימולצ|תרחיש|דמה|דמיין|הדמי(?:ה|ית)|מה יקרה אם|מה קורה אם|מה היה קורה|מה אם/i;
+
+/** Something other than the market that can "drop" or "fall": a what-if about it is not a market simulation. */
+const NOT_THE_MARKET = /\b(?:interest rates?|rates?|salary|salaries|wages?|income|pay|rent|inflation|fed|unemployment|mortgage|taxes|tax|job)\b|ריבית|משכורת|שכר|שכירות|אינפלציה|הכנסה|אבטלה|משכנתא|מס(?![א-ת])/i;
+const MARKET_SUBJECT = /\b(?:market|markets|stocks?|shares?|index|indices|portfolio|equities|s&p|nasdaq|dow)\b|שוק|שווקים|מניות|מדד|תיק|בורסה/i;
+const HARD_CRASH = /crash|meltdown|collapse|bubble|קריס|התרסק|מפולת|בועה|בועת/i;
 
 /** Recognize a request to simulate an invented market event. A plain question about a real crash is NOT matched: a simulation word is required. */
 export function parseMarketEventRequest(text: string): MarketEventInput | null {
   if (!SIM_WORDS.test(text)) return null;
   const kind = KIND_PATTERNS.find(([, re]) => re.test(text))?.[0];
   if (!kind) return null;
+  if (NOT_THE_MARKET.test(text) && !MARKET_SUBJECT.test(text) && !HARD_CRASH.test(text)) return null;
   const pct = /(\d+(?:\.\d+)?)\s*%/.exec(text);
-  const rest = text.replace(/(\d+(?:\.\d+)?)\s*%/g, " ");
+  const rest = text.replace(/(\d+(?:\.\d+)?)\s*%/g, " ").replace(/\b(?:s&p\s*500|nasdaq[- ]?100|dow\s*30|russell\s*2000)\b/gi, " ");
   let amount: number | undefined;
   for (const m of rest.matchAll(/(\d[\d,]*(?:\.\d+)?)\s*(k\b|m\b|million|thousand|אלף|מיליון)?/gi)) {
     const after = rest.slice(m.index! + m[0].length);
