@@ -620,11 +620,21 @@ function detectMonthlyContribution(
       continue;
     }
 
+    // "add 3000 yearly" / "add 300 weekly" is a per-period amount: convert it
+    // to the monthly figure the projection uses instead of reading it as monthly.
+    const tail = normalized.slice((match.index ?? 0) + match[0].length);
+    const periodFactor =
+      /^\s*(?:shekels?|ils?|₪|usd|dollars?|\$)?\s*(?:yearly|annually|per year|a year|every year|each year)\b/.test(tail)
+        ? 1 / 12
+        : /^\s*(?:shekels?|ils?|₪|usd|dollars?|\$)?\s*(?:weekly|per week|a week|every week|each week)\b/.test(tail)
+          ? 52 / 12
+          : 1;
+
     const amount = Math.round(
       parseAmount(
         value,
         match[2] ?? ""
-      )
+      ) * periodFactor
     );
 
     // The retirement-income goal ("הכנסה של 10000 בחודש") is a monthly amount
