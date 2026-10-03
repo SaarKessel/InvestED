@@ -33,8 +33,8 @@ export function parseDividendRequest(text: string): DividendRequest | null {
     symbol = caps ?? null;
   }
   if (!symbol) return null;
-  const sh = /(\d[\d,]*(?:\.\d+)?)\s*(?:[A-Z]{1,5}\s+)?(?:shares?|stocks?|units?|מניות|מניה|יחידות)/i.exec(text) ?? /(?:מניות|מניה)\s*(?:של)?\s*\d/.exec(text) ;
-  const shares = sh && sh[1] ? Number(sh[1].replace(/,/g, "")) : null;
+  const sh = /(\d{1,3}(?:[ \u00a0\u202f]\d{3})+(?:\.\d+)?|\d[\d,]*(?:\.\d+)?)\s*(?:[A-Z]{1,5}\s+)?(?:shares?|stocks?|units?|מניות|מניה|יחידות)/i.exec(text) ?? /(?:מניות|מניה)\s*(?:של)?\s*\d/.exec(text) ;
+  const shares = sh && sh[1] ? Number(/^\d+,\d{1,2}$/.test(sh[1]) ? sh[1].replace(",", ".") : sh[1].replace(/[,\u00a0\u202f ]/g, "")) : null;
   const focus = EXPECT_CUE.test(text) ? "expected" : "history";
   return { symbol, shares: shares && shares > 0 && Number.isFinite(shares) ? shares : null, focus };
 }
