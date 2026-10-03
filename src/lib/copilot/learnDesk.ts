@@ -7,8 +7,8 @@ import { LEARNING_ROADMAP } from "../educationContent";
 export function looksLikeLearningPathRequest(text: string): boolean {
   const t = text.trim().toLowerCase();
   if (!t) return false;
-  return /learning (?:path|roadmap|plan)|study (?:plan|path)|roadmap|where (?:do i|should i|can i|to) (?:start|begin)|how (?:do i|should i|can i) (?:start|begin|learn)|teach me (?:how )?(?:to )?invest|learn (?:to )?invest|beginner/.test(t)
-    || /מפת דרכים|מסלול (?:לימוד|למידה)|תוכנית (?:לימוד|למידה)|מאיפה (?:להתחיל|מתחילים)|איפה (?:להתחיל|מתחילים)|איך (?:מתחיל|להתחיל|אני מתחיל)|(?:ללמוד|לומדים) (?:להשקיע|על השקעות)|תלמד(?:י)? אותי|מתחיל(?:ה)?(?![א-ת])/.test(t);
+  return /learning (?:path|roadmap|plan)|study (?:plan|path)|roadmap|where (?:do i|should i|can i|to) (?:start|begin)|how (?:do i|should i|can i) (?:start|begin|learn)|teach me (?:how )?(?:to )?invest|learn (?:to )?invest|beginner|how to (?:start|begin) invest|(?:i'?m|i am) (?:a )?(?:total |complete )?(?:new to invest|newbie)|what (?:should i|do i) learn first/.test(t)
+    || /מפת דרכים|מסלול (?:לימוד|למידה)|תוכנית (?:לימוד|למידה)|מאיפה (?:להתחיל|מתחילים)|איפה (?:להתחיל|מתחילים)|איך (?:מתחיל|להתחיל|אני מתחיל)|(?:ללמוד|לומדים) (?:להשקיע|על השקעות)|תלמד(?:י)? אותי|מתחיל(?:ה)?(?![א-ת])|אני חדש(?:ה)? (?:ב|בעולם )ה?השקעות|אני רוצה להתחיל (?:להשקיע|לחסוך)|מה ללמוד (?:קודם|ראשון)/.test(t);
 }
 
 export interface LearnDeskStage { stage: string; title: string; topics: string[] }
