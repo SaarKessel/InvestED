@@ -1,4 +1,4 @@
-import { safeSlice } from "@/lib/copilot/safeSlice";
+import { safeSlice } from "../copilot/safeSlice.js";
 // ---------------------------------------------------------------------------
 // InvestED - AI headline tone estimate
 //

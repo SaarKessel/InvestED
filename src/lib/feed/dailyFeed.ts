@@ -1,4 +1,4 @@
-import { safeSlice } from "@/lib/copilot/safeSlice";
+import { safeSlice } from "../copilot/safeSlice.js";
 /**
  * Daily intelligence feed: shapes what the scheduled job stores. Pure functions, no network.
  * Only headlines, links, publisher names and times are kept (no article text), and movers are stored
