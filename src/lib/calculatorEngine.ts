@@ -674,6 +674,18 @@ function detectAge(
     return Number(englishMatch[1]);
   }
 
+  // "I am 30", "I'm 40", "age: 35", "aged 28": a plausible age that is not a percentage or an amount.
+  const englishBareMatch = normalized.match(
+    /(?:\bi am\s+|\bi'm\s+|\bage[:\s]+|\baged\s+)(\d{1,3})\b(?!\s*(?:%|percent|k\b|m\b|thousand|million|\$|dollars?|shekels?|usd))/i
+  );
+
+  if (englishBareMatch) {
+    const bare = Number(englishBareMatch[1]);
+    if (bare >= 10 && bare <= 100) {
+      return bare;
+    }
+  }
+
   return null;
 }
 
