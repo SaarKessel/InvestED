@@ -624,9 +624,11 @@ function detectMonthlyContribution(
     // to the monthly figure the projection uses instead of reading it as monthly.
     const tail = normalized.slice((match.index ?? 0) + match[0].length);
     const periodFactor =
-      /^\s*(?:shekels?|ils?|₪|usd|dollars?|\$)?\s*(?:yearly|annually|per year|a year|every year|each year)\b/.test(tail)
+      /^\s*(?:shekels?|ils?|₪|usd|dollars?|\$)?\s*(?:yearly|annually|per year|a year|every year|each year)\b/.test(tail) ||
+      /^\s*(?:שקלים|שקל|דולר|₪)?\s*(?:בשנה|לשנה|כל שנה)(?![א-ת])/.test(tail)
         ? 1 / 12
-        : /^\s*(?:shekels?|ils?|₪|usd|dollars?|\$)?\s*(?:weekly|per week|a week|every week|each week)\b/.test(tail)
+        : /^\s*(?:shekels?|ils?|₪|usd|dollars?|\$)?\s*(?:weekly|per week|a week|every week|each week)\b/.test(tail) ||
+          /^\s*(?:שקלים|שקל|דולר|₪)?\s*(?:בשבוע|לשבוע|כל שבוע)(?![א-ת])/.test(tail)
           ? 52 / 12
           : 1;
 
