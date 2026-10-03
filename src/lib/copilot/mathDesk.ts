@@ -10,7 +10,7 @@ const WORDS: [RegExp, string][] = [
   [/(?:^|\s)(?:what is|what's|calculate|compute|how much is|solve|eval(?:uate)?)\s*:?/gi, " "],
   [/(?:^|\s)(?:מה זה|כמה זה|כמה יוצא|כמה הם|חשב(?:י)?|תחשב(?:י)?|חישוב)\s*:?/g, " "],
   [/\bto the power of\b/gi, "^"], [/\bdivided by\b/gi, "/"], [/\bmultiplied by\b/gi, "*"],
-  [/(?<=\d)\s*\bpercent\b/gi, "%"], [/\bplus\b/gi, "+"], [/\bminus\b/gi, "-"], [/\btimes\b/gi, "*"], [/\bover\b/gi, "/"],
+  [/(?<=\d)\s*\b(?:percent|per\s*cent|pct)\b/gi, "%"], [/(?<=\d)\s*(?:אחוזים|אחוז)(?![א-ת])/g, "%"], [/\bplus\b/gi, "+"], [/\bminus\b/gi, "-"], [/\btimes\b/gi, "*"], [/\bover\b/gi, "/"],
   [/(?<![א-ת])(?:ועוד|פלוס)(?![א-ת])/g, "+"], [/(?<![א-ת])מינוס(?![א-ת])/g, "-"], [/(?<![א-ת])פחות(?![א-ת])/g, "-"], [/(?<![א-ת])כפול(?![א-ת])/g, "*"], [/(?<![א-ת])חלקי(?![א-ת])/g, "/"],
   [/(?<![א-ת])בחזקת(?![א-ת])/g, "^"], [/(?<![א-ת])מתוך(?![א-ת])/g, " of "],
   [/(?<=[\d)]\s*)[×x✕](?=\s*[\d(.])/gi, "*"], [/×|✕/g, "*"], [/÷/g, "/"], [/\*\*/g, "^"], [/[−–]/g, "-"], [/[=?؟]/g, " "], [/[$€£₪]/g, ""],
@@ -43,7 +43,7 @@ function normalize(raw: string): string {
   s = stripGroupCommas(s);
   // "200 + 15%" and "100 - 20%" as a whole expression: add or take off that percent of the first number.
   s = s.replace(/^\s*(\d+(?:\.\d+)?)\s*([+-])\s*(\d+(?:\.\d+)?)\s*%\s*$/, "$1$2$1*($3/100)");
-  s = s.replace(/(\d+(?:\.\d+)?)\s*%\s*(?:of|מ-?)\s*/gi, "($1/100)*");
+  s = s.replace(/(\d+(?:\.\d+)?)\s*%\s*(?:of|from|מ-?|של)\s*/gi, "($1/100)*");
   s = s.replace(/(\d+(?:\.\d+)?)\s*%/g, "($1/100)");
   s = s.replace(/(\d+(?:\.\d+)?)\s*([kmb])\b/gi, (_m, n: string, u: string) => `(${n}*${{ k: 1e3, m: 1e6, b: 1e9 }[u.toLowerCase() as "k"]})`);
   return s.replace(/\s+/g, " ").trim();
