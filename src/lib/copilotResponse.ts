@@ -249,6 +249,18 @@ export function buildCopilotResponse(
   else if (!text && strategyOutput) text = strategyCopilotText(strategyOutput, resolution.language);
   else if (!text) text = educationalFallback(message, resolution.language);
 
+
+  // No supported asset-rating model exists here. Metrics are not an overall score.
+  if (assets.length > 0 && /\b(?:score|rating|rank)\b|(?<![א-ת])(?:ה?ציון|ה?דירוג)(?![א-ת])/i.test(message) && !financialNeeded && !profileUsed && !strategyOutput) {
+    const he = resolution.language !== "en";
+    const lead = he ? "אין כרגע ציון כולל נתמך לנייר הזה, ולכן לא אמציא דירוג. המדדים הזמינים אינם ציון כולל:" : "No supported overall asset score is available here, so I will not invent a rating. These available metrics are not an overall score:";
+    const lines = assets.map((asset) => {
+      const simulated = asset.isMock || asset.freshness === "simulated";
+      return `${asset.symbol}: ${he ? (simulated ? "ערך מדומה" : "מחיר זמין אחרון") : (simulated ? "simulated value" : "latest available price")} ${asset.price.toFixed(2)} ${asset.currency ?? ""}, RSI ${asset.rsi?.toFixed(1) ?? (he ? "לא זמין" : "unavailable")}, ${he ? "תנודתיות" : "volatility"} ${asset.volatilityPct.toFixed(2)}%. ${he ? "מקור" : "Source"}: ${asset.dataSource}; ${he ? "נכון ל" : "as of"} ${asset.timestamp ?? (he ? "תאריך לא זמין" : "date unavailable")}; ${asset.freshness ?? "unavailable"}.`;
+    });
+    text = `${lead}\n${lines.join("\n")}`;
+  }
+
   return {
     text,
     language: resolution.language,
