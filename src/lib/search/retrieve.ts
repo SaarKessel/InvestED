@@ -3,7 +3,7 @@ import { allConcepts, normalizeTerm } from "@/lib/knowledge/concepts/registry";
 import { conceptAnswerByLabel } from "@/lib/financialEducation";
 
 export interface Passage { id: string; label: string; text: string; score: number }
-interface Doc { id: string; en: string; he: string; text: { en: string; he: string }; tokens: Record<"en" | "he", string[]> }
+interface Doc { id: string; en: string; he: string; text: { en: string; he: string }; anchors: string[]; tokens: Record<"en" | "he", string[]> }
 const STOP = new Set("the and for are was what how why when who does did can you your about tell me this that with from have has not but today now please explain mean means מהי מהו מה איך למה מתי האם על של את זה זאת הוא היא יש אני אתה".split(" "));
 /** Hebrew attaches ה ב ל ו מ ש כ to the front of words ("בריבית", "והריבית"). Strip up to two so the stored and asked forms meet; applied the same way to both sides, and only when 3+ letters remain. */
 const HE_WORD = /^[א-ת]+$/;
@@ -13,13 +13,13 @@ export function stemHe(w: string): string {
   for (let i = 0; i < 2; i++) if (out.length >= 5 && "הבלומשכ".includes(out[0])) out = out.slice(1);
   return out;
 }
-const tok = (s: string) => normalizeTerm(s).split(" ").filter((w) => w.length > 2 && !STOP.has(w)).map(stemHe);
+const tok = (s: string) => normalizeTerm(s).split(" ").filter((w) => w.length > 2 && !STOP.has(w)).map(stemHe).filter((w) => !STOP.has(w));
 let cache: Doc[] | null = null;
 function docs(): Doc[] {
   if (cache) return cache;
   cache = allConcepts().filter((c) => c.explain).map((c) => {
     const en = conceptAnswerByLabel(c.explain!, "en") ?? ""; const he = conceptAnswerByLabel(c.explain!, "he") ?? "";
-    return { id: c.id, en: c.en, he: c.he, text: { en, he }, tokens: { en: tok(`${c.en} ${c.aliases.join(" ")} ${en}`), he: tok(`${c.he} ${c.aliases.join(" ")} ${he}`) } };
+    return { id: c.id, en: c.en, he: c.he, text: { en, he }, anchors: tok(`${c.en} ${c.he} ${c.aliases.join(" ")}`), tokens: { en: tok(`${c.en} ${c.aliases.join(" ")} ${en}`), he: tok(`${c.he} ${c.aliases.join(" ")} ${he}`) } };
   }).filter((d) => d.text.en || d.text.he);
   return cache;
 }
@@ -34,6 +34,8 @@ export function retrieve(question: string, lang: "he" | "en", limit = 3): Passag
   for (const w of q) df.set(w, all.filter((d) => d.tokens[lang].includes(w)).length);
   const out: Passage[] = [];
   for (const d of all) {
+    // Generic prose headings/source requests are not topical evidence.
+    if (!q.some((word) => d.anchors.includes(word))) continue;
     const t = d.tokens[lang]; let score = 0; let matched = 0;
     for (const w of q) {
       const f = t.filter((x) => x === w).length;
