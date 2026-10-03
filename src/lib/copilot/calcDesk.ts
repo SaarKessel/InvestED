@@ -33,7 +33,8 @@ export function findStartingAmount(text: string, monthly: number, years: number)
   const amounts: number[] = [];
   for (const m of text.matchAll(/(\d[\d,]*(?:\.\d+)?)\s*(k\b)?(?!\d)/gi)) {
     const rest = text.slice((m.index ?? 0) + m[0].length, (m.index ?? 0) + m[0].length + 12);
-    if (/^\s*(?:%|percent|years?|yrs?|שנ|אחוז)/i.test(rest)) continue;
+    if (/^\s*(?:%|per[\s-]?cent|pct\b|years?|yrs?|שנ|אחוז)/i.test(rest)) continue;
+    if (/^\s*(?:(?:per|a|each|every|\/)\s*(?:month|week|day|שבוע|חודש)|weekly\b|monthly\b)/i.test(rest)) continue;
     if (/ל-?$/.test(text.slice(Math.max(0, (m.index ?? 0) - 2), m.index ?? 0)) && /^\s*שנ/.test(rest)) continue;
     if (/(?:&\s*P|S\s*&|nasdaq|dow|ftse|dax|index|מדד)\s*$/i.test(text.slice(Math.max(0, (m.index ?? 0) - 12), m.index ?? 0))) continue;
     const v = Number(m[1].replace(/,/g, "")) * (m[2] ? 1000 : 1);
