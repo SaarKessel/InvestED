@@ -151,6 +151,10 @@ function normalizeText(text: string): string {
   return text
     .toLowerCase()
     .replace(/₪/g, "")
+    // "15y", "15 yrs", "15-year" read as years; "700/month" and "700/mo" read as "700 per month".
+    .replace(/(\d)\s*-?\s*(?:yrs?|y)\b/g, "$1 years")
+    .replace(/(\d)\s*-\s*year\b/g, "$1 year")
+    .replace(/(\d)\s*\/\s*(?:month|mo)\b/g, "$1 per month")
     .replace(/\s+/g, " ")
     .trim();
 }
