@@ -41,7 +41,7 @@ function normalize(raw: string): string {
   let s = ` ${raw} `;
   for (const [re, to] of WORDS) s = s.replace(re, to);
   s = stripGroupCommas(s);
-  s = s.replace(/(\d+(?:\.\d+)?)\s*%\s*(?:of|מ)\s*/gi, "($1/100)*");
+  s = s.replace(/(\d+(?:\.\d+)?)\s*%\s*(?:of|מ-?)\s*/gi, "($1/100)*");
   s = s.replace(/(\d+(?:\.\d+)?)\s*%/g, "($1/100)");
   s = s.replace(/(\d+(?:\.\d+)?)\s*([kmb])\b/gi, (_m, n: string, u: string) => `(${n}*${{ k: 1e3, m: 1e6, b: 1e9 }[u.toLowerCase() as "k"]})`);
   return s.replace(/\s+/g, " ").trim();
