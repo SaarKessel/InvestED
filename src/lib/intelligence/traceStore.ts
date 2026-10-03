@@ -18,7 +18,7 @@ export const clearTraces = (store: Store | null = ls()): void => { try { store?.
 const pct = (sorted: number[], p: number) => (sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor(p * sorted.length))] : 0);
 export function summarize(list: TraceEntry[]) {
   const ms = list.map((t) => t.ms).sort((a, b) => a - b);
-  const byRoute: Record<string, number> = {}; const failures: Record<string, number> = {};
+  const byRoute: Record<string, number> = Object.create(null); const failures: Record<string, number> = Object.create(null);
   for (const t of list) { byRoute[t.route] = (byRoute[t.route] ?? 0) + 1; for (const f of t.failedChecks) failures[f] = (failures[f] ?? 0) + 1; }
   return { count: list.length, okRate: list.length ? list.filter((t) => t.ok).length / list.length : null, p50: pct(ms, 0.5), p95: pct(ms, 0.95), byRoute, failures };
 }
