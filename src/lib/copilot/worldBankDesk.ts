@@ -8,9 +8,9 @@ export interface WbPoint { year: string; value: number }
 export interface WbResult extends WbRequest { points: WbPoint[]; lastUpdated: string }
 
 const IND: Record<WbIndicator, { code: string; unit?: "usd"; re: RegExp; label: { en: string; he: string } }> = {
-  inflation: { code: "FP.CPI.TOTL.ZG", re: /inflation|אינפלציה|עליית מחירים/i, label: { en: "Inflation, consumer prices (annual %)", he: "אינפלציה, מדד המחירים לצרכן (שנתי, %)" } },
+  inflation: { code: "FP.CPI.TOTL.ZG", re: /inflation|\bcpi\b|consumer prices?|אינפלציה|עליית מחירים/i, label: { en: "Inflation, consumer prices (annual %)", he: "אינפלציה, מדד המחירים לצרכן (שנתי, %)" } },
   gdp_growth: { code: "NY.GDP.MKTP.KD.ZG", re: /gdp growth|economic growth|צמיחה|צמיחת/i, label: { en: "GDP growth (annual %)", he: "צמיחת התוצר (שנתי, %)" } },
-  unemployment: { code: "SL.UEM.TOTL.ZS", re: /unemployment|אבטלה/i, label: { en: "Unemployment (% of labor force)", he: "אבטלה (% מכוח העבודה)" } },
+  unemployment: { code: "SL.UEM.TOTL.ZS", re: /unemployment|jobless|אבטלה/i, label: { en: "Unemployment (% of labor force)", he: "אבטלה (% מכוח העבודה)" } },
   // listed last so "GDP growth" matches the growth indicator first
   gdp: { code: "NY.GDP.MKTP.CD", unit: "usd", re: /\bgdp\b|gross domestic product|תוצר/i, label: { en: "GDP (current US$)", he: "תוצר (דולר נוכחי)" } },
 };
@@ -22,14 +22,14 @@ export function formatWbValue(i: WbIndicator, v: number, digits = 1): string {
 export const wbLabel = (i: WbIndicator) => IND[i].label;
 
 const COUNTRIES: { iso: string; re: RegExp; name: { en: string; he: string } }[] = [
-  { iso: "ISR", re: /\bisrael\b|ישראל/i, name: { en: "Israel", he: "ישראל" } },
-  { iso: "USA", re: /(?<!\b(?:tell|show|give|send|help|let|ask|remind|teach)\s)\bus\b|\busa\b|united states|america|ארה"?ב|ארצות הברית|אמריקה/i, name: { en: "United States", he: "ארצות הברית" } },
-  { iso: "GBR", re: /\buk\b|united kingdom|britain|בריטניה/i, name: { en: "United Kingdom", he: "בריטניה" } },
-  { iso: "DEU", re: /germany|גרמניה/i, name: { en: "Germany", he: "גרמניה" } },
+  { iso: "ISR", re: /\bisrael(?:i)?\b|ישראל/i, name: { en: "Israel", he: "ישראל" } },
+  { iso: "USA", re: /(?<!\b(?:tell|show|give|send|help|let|ask|remind|teach)\s)\bus\b|\bu\.s\.(?:a\.)?|\busa\b|united states|america|ארה"?ב|ארצות הברית|אמריקה/i, name: { en: "United States", he: "ארצות הברית" } },
+  { iso: "GBR", re: /\buk\b|united kingdom|britain|british|בריטניה/i, name: { en: "United Kingdom", he: "בריטניה" } },
+  { iso: "DEU", re: /german(?:y)?|גרמניה/i, name: { en: "Germany", he: "גרמניה" } },
   { iso: "EMU", re: /euro area|eurozone|גוש היורו/i, name: { en: "Euro area", he: "גוש היורו" } },
   { iso: "JPN", re: /japan|יפן/i, name: { en: "Japan", he: "יפן" } },
-  { iso: "CHN", re: /china|סין/i, name: { en: "China", he: "סין" } },
-  { iso: "IND", re: /\bindia\b|הודו/i, name: { en: "India", he: "הודו" } },
+  { iso: "CHN", re: /china|chinese|סין/i, name: { en: "China", he: "סין" } },
+  { iso: "IND", re: /\bindia(?:n)?\b|הודו/i, name: { en: "India", he: "הודו" } },
 ];
 
 /** Needs both an indicator word and a named country; otherwise the question goes to the normal explanation. */
@@ -38,6 +38,7 @@ export function parseWbRequest(text: string): WbRequest | null {
   const ind = (Object.keys(IND) as WbIndicator[]).find((k) => IND[k].re.test(text));
   const c = COUNTRIES.find((x) => x.re.test(text));
   if (!ind || !c) return null;
+  if (/per capita|לנפש/i.test(text)) return null;
   if (/what is|מה זה|מהי|מהו|explain|הסבר/i.test(text) && !/\b(?:in|of|rate)\b|\bב(?=[א-ת])|של/i.test(text)) return null;
   return { indicator: ind, country: c.iso, countryName: c.name };
 }
