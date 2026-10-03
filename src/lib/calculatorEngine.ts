@@ -945,10 +945,14 @@ function detectExplicitTargetAmount(
     /(?:רוצה|צריך)\s*(?:להגיע\s*)?(?:ל\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?/i,
 
     // English retirement target
-    /(?:retire|retirement)\s+(?:with|with\s+a\s+target\s+of)\s+(\d[\d,]*(?:\.\d+)?)\s*(k|m|million|thousand)?/i,
+    /(?:retire|retirement)\s+(?:with|with\s+a\s+target\s+of)\s+\$?\s*(\d[\d,]*(?:\.\d+)?)\s*(k|m|million|thousand)?/i,
 
-    // English target / goal
-    /(?:target|goal)\s*(?:of\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|million|thousand)?/i
+    // English target / goal ("target of 750k", "my target is $1,000,000")
+    /(?:target|goal)\s*(?:of|is|:)?\s*\$?\s*(\d[\d,]*(?:\.\d+)?)\s*(k|m|million|thousand)?/i,
+
+    // English wish phrasing: "I want to reach 2m", "I want 100000", "aiming for 1.5 million",
+    // "trying to save up 50k". A per-month amount or a horizon is not a target.
+    /(?:want|would like|aim(?:ing)?|trying|hope|hoping|need)\s+(?:to\s+)?(?:reach|get\s+to|hit|accumulate|build|grow\s+to|save(?:\s+up)?)?\s*(?:for\s+)?\$?\s*(\d[\d,]*(?:\.\d+)?)\s*(k|m|million|thousand)?(?!\d)(?!\s*(?:%|years?|months?|yrs?|(?:shekels?|ils?|dollars?|usd)?\s*(?:a|per|each|every)\s+month|(?:shekels?|ils?|dollars?|usd)?\s*monthly))/i
   ];
 
   for (const pattern of patterns) {
