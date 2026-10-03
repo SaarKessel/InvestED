@@ -155,7 +155,7 @@ const monthly =
 
   const amounts = [
   ...text.matchAll(
-    /(\d[\d,]*)\s*(אלף|k|מיליון)?/gi
+    /(\d[\d,]*(?:\.\d+)?)\s*(אלף|k|מיליון)?/gi
   ),
 ];
 
