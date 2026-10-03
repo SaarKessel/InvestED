@@ -7,7 +7,7 @@ import { findConcept } from "../knowledge/concepts/registry";
 export interface SymbolInfo { symbol: string; kind: "equity" | "fund"; name: string; sector: string | null; size: string | null; issuer: string | null }
 type Row = [string, string, string, string, string];
 
-const ASK = /^\s*(?:what(?:'s| is| does)|who is|tell me about|explain|מה זה|מהו|מהי|ספר(?:י)? לי על|הסבר(?:י)? על)\s+\$?([A-Z]{1,5})\s*(?:stock|etf|fund|מניה|קרן)?\s*\??\s*$/;
+const ASK = /^\s*(?:[Ww]hat(?:'s| is| does)|[Ww]ho is|[Tt]ell me about|[Ee]xplain|מה זה|מהו|מהי|ספר(?:י)? לי על|הסבר(?:י)? על)\s+\$?([A-Z]{1,5})\s*(?:stock|etf|fund|מניה|קרן)?\s*\??\s*$/;
 
 /** Returns the ticker when the whole question is "what is TICKER" with an uppercase ticker that is not a finance term. */
 export function parseSymbolQuestion(text: string): string | null {
