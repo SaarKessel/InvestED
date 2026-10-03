@@ -7,7 +7,7 @@ export function formatCurrency(
 ): string {
   const currency = getCurrencyByCode(currencyCode);
   const appLocale = language === "he" ? "he-IL" : "en-US";
-  const safeValue = Number.isFinite(value) ? value : 0;
+  const safeValue = Number.isFinite(value) && Math.abs(value) >= 0.5 ? value : 0;
   return new Intl.NumberFormat(appLocale, {
     style: "currency",
     currency: currency.currency,
@@ -36,7 +36,7 @@ export function formatMoney(
   locale: string = "en-US",
   currencyCode: string = "ILS"
 ): string {
-  const safeValue = Number.isFinite(value) ? value : 0;
+  const safeValue = Number.isFinite(value) && Math.abs(value) >= 0.5 ? value : 0;
   return new Intl.NumberFormat(locale, {
     style: "currency",
     currency: currencyCode,

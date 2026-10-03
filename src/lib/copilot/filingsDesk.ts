@@ -81,5 +81,5 @@ export function formatUsd(v: number): string {
   const a = Math.abs(v);
   if (a >= 1e9) return `$${(v / 1e9).toFixed(2)}B`;
   if (a >= 1e6) return `$${(v / 1e6).toFixed(1)}M`;
-  return `$${Math.round(v).toLocaleString("en-US")}`;
+  return `$${(Math.round(v) || 0).toLocaleString("en-US")}`;
 }
