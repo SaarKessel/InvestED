@@ -7,13 +7,13 @@ export const newExamState = (missed: string[] = []): ExamState => ({ next: 0, cu
 /** A missed question comes back after this many fresh ones. */
 export const REVIEW_AFTER = 2;
 
-const START = /^\s*(?:quiz me|test me|give me a quiz|exam mode|start (?:a )?quiz|next question)\s*[.!?]*\s*$/i;
-const START_HE = /^\s*(?:בחן אותי|בחני אותי|תבחן אותי|תבחני אותי|חידון|מבחן|שאלה הבאה)\s*[.!?]*\s*$/;
+const START = /^\s*(?:quiz me|test me|give me a quiz|exam mode|start (?:a )?quiz|next question|let'?s (?:do|have) a quiz|i want (?:a quiz|to be quizzed))(?:\s*,?\s*(?:please|pls))?\s*[.!?]*\s*$/i;
+const START_HE = /^\s*(?:בחן אותי|בחני אותי|תבחן אותי|תבחני אותי|חידון|מבחן|שאלה הבאה|תן לי חידון|תני לי חידון|בוא נעשה חידון|בואי נעשה חידון)(?:\s+בבקשה)?\s*[.!?]*\s*$/;
 export const isExamStart = (text: string): boolean => START.test(text) || START_HE.test(text);
 
 /** A bare option number, or "answer 2" / "תשובה 2". Returns the 0-based index. */
 export function parseExamAnswer(text: string, optionCount: number): number | null {
-  const m = text.match(/^\s*(?:(?:answer|option|choice|תשובה|אפשרות)\s*:?\s*)?\(?([1-9])\)?\s*[.)]?\s*$/i);
+  const m = text.match(/^\s*(?:(?:answer|option|choice|number|תשובה|אפשרות)\s*:?\s*)?\(?([1-9])\)?\s*[.)]?(?:\s*,?\s*(?:please|pls|thanks|thank you|בבקשה|תודה))?\s*[.!]*\s*$/i);
   if (!m) return null;
   const i = Number(m[1]) - 1;
   return i < optionCount ? i : null;
