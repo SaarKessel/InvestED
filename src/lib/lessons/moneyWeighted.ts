@@ -33,7 +33,7 @@ export function moneyWeightedReturn(flows: CashFlow[], endingValue: number, endD
   if (days < 1) return { status: "invalid", reason: "too_short" };
 
   const contributions = sorted.filter((f) => f.amount > 0).reduce((s, f) => s + f.amount, 0);
-  const withdrawals = -sorted.filter((f) => f.amount < 0).reduce((s, f) => s + f.amount, 0);
+  const withdrawals = sorted.filter((f) => f.amount < 0).reduce((s, f) => s - f.amount, 0);
   const netGain = endingValue + withdrawals - contributions;
   let running = 0;
   const timeline = sorted.map((f) => { running += f.amount; return { date: new Date(f.t).toISOString().slice(0, 10), amount: f.amount, cumulativeNet: running }; });
