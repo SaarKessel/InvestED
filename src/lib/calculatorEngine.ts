@@ -406,7 +406,7 @@ const INITIAL_AMOUNT_PATTERNS: RegExp[] = [
 
     /(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?\s*(?:to invest|to start|initially|upfront)\b/i,
 
-    /(?:starting|beginning|starting off)\s+with\s+(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?/i,
+    /(?:starting|beginning|starting off|start|starts|begin|begins)\s+with\s+(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?/i,
 
     /half\s+(?:a\s+)?million/i,
 
@@ -489,6 +489,11 @@ function detectInitialAmount(text: string): number {
     );
   }
 
+  // "יש לי מיליון שקל": a bare Hebrew million after a holding verb is exactly 1,000,000.
+  if (/(?:יש לי|ברשותי|מחזיק|מחזיקה|השקעתי|מתחיל עם|מתחילה עם)\s+(?:מיליון|מליון)(?![א-ת])(?!\s+וחצי)/.test(normalized)) {
+    return 1_000_000;
+  }
+
   const hebrewAmountPhrases =
     normalized.includes("חצי מיליון") ||
     normalized.includes("חצי מליון") ||
@@ -533,6 +538,10 @@ function detectInitialAmount(text: string): number {
     ) {
       return true;
     }
+  }
+
+  if (/(?:יש לי|ברשותי|מחזיק|מחזיקה|השקעתי|מתחיל עם|מתחילה עם)\s+(?:מיליון|מליון)(?![א-ת])(?!\s+וחצי)/.test(normalized)) {
+    return true;
   }
 
   if (
@@ -1329,6 +1338,7 @@ function detectExplicitAnnualReturnPct(
   const bareEnglish = [
     /\b(?:at|assuming|assume|assumes|growing at|grows at|earning|earns)\s+(\d+(?:\.\d+)?)\s*(?:%|percent)/gi,
     /(\d+(?:\.\d+)?)\s*(?:%|percent)\s*(?:a\s+year|per\s+year|annually|yearly)/gi,
+    /(\d+(?:\.\d+)?)\s*(?:%|percent)\s*(?:for|over)\s+(?:the\s+next\s+)?\d+\s*years?/gi,
   ];
   const bare: RegExpMatchArray[] = [];
   for (const re of bareEnglish) {
