@@ -13,7 +13,7 @@ export interface OosRequest { symbols: string[] }
 export interface OosDeskResult { symbols: string[]; outcome: OosOutcome; unavailable: string[] }
 
 const WORDS = /out[- ]of[- ]sample|overfit\w*|over-?fitting|train[\s/-]*(and|\/)?[\s-]*test|unseen data|hold up on (new|unseen|future) data|התאמת יתר|מחוץ למדגם|אימון ומבחן|נתונים שלא ראה/i;
-const STOP = new Set(["AI", "ETF", "USD", "EUR", "ILS", "VS", "THE", "AND", "FOR", "OF", "IS", "IT", "ME", "MY", "A", "I", "PE", "ROI", "APR", "APY", "GDP", "CPI", "S", "P", "OOS", "TEST", "TRAIN", "ON", "IN", "TO", "DO", "DOES", "OR", "NOT"]);
+const STOP = new Set(["AI", "ETF", "USD", "EUR", "ILS", "VS", "THE", "AND", "FOR", "OF", "IS", "IT", "ME", "MY", "A", "I", "PE", "ROI", "APR", "APY", "GDP", "CPI", "S", "P", "OOS", "TEST", "TRAIN", "ON", "IN", "TO", "DO", "DOES", "OR", "NOT", "US", "USA", "UK", "EU", "OK", "CAGR", "IRA", "IPO", "CEO", "CFO", "YTD", "NYSE", "FAQ", "ATH", "AUM"]);
 
 export function parseOosRequest(text: string): OosRequest | null {
   if (text.length > 220 || !WORDS.test(text)) return null;
