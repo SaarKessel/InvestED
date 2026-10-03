@@ -402,7 +402,7 @@ const INITIAL_AMOUNT_PATTERNS: RegExp[] = [
 
     // Explicit lump sum with a horizon. The horizon/upfront lookahead keeps
     // monthly "invest X per month" phrases in the monthly parser.
-    /(?:if\s+i\s+|i\s+)?invest\s+\$?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪|usd|dollars?|\$)?\s*(?:at\s+\d+(?:\.\d+)?%\s*)?(?=for\s+\d+\s*years?|over\s+\d+\s*years?|initially\b|upfront\b)/i,
+    /(?:if\s+i\s+|i\s+)?invest\s+\$?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|nis|₪|usd|eur|gbp|euros?|pounds?|dollars?|\$)?\s*(?:at\s+\d+(?:\.\d+)?%\s*)?(?=for\s+\d+\s*years?|over\s+\d+\s*years?|initially\b|upfront\b)/i,
 
     /(?:want to|planning to|going to|would like to)\s+invest\s+(?:\$|usd\s*)?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?\s*(?:initially|upfront|as a start)?\b/i,
 
@@ -581,14 +581,14 @@ function detectMonthlyContribution(
     /(?:מפקיד|מוסיף|מפריש|חוסך)\s+(?:של\s+)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון|thousand|million)?/i,
 
     // English: explicit monthly patterns first (highest priority)
-    /(\d[\d,]*(?:\.\d+)?)\s*(?:shekels?|ils?|₪|usd|dollars?|\$)?\s*(?:per month|every month|each month|a month|monthly)/i,
+    /(\d[\d,]*(?:\.\d+)?)\s*(?:shekels?|ils?|nis|₪|usd|eur|gbp|euros?|pounds?|dollars?|\$)?\s*(?:per month|every month|each month|a month|monthly)/i,
 
-    /(\d+(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪|usd|dollars?|\$)?\s*(?:per month|every month|each month|a month|monthly)/i,
+    /(\d+(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|nis|₪|usd|eur|gbp|euros?|pounds?|dollars?|\$)?\s*(?:per month|every month|each month|a month|monthly)/i,
 
     // English: "contribute X monthly", "deposit X per month", "add X every month"
-    /(?:contribute|deposit|add|contributing|depositing|adding)\s+(\d[\d,]*(?:\.\d+)?)\s*(?:shekels?|ils?|₪|usd|dollars?|\$)?\s*(?:per month|every month|each month|monthly|a month)?/i,
+    /(?:contribute|deposit|add|contributing|depositing|adding)\s+(\d[\d,]*(?:\.\d+)?)\s*(?:shekels?|ils?|nis|₪|usd|eur|gbp|euros?|pounds?|dollars?|\$)?\s*(?:per month|every month|each month|monthly|a month)?/i,
 
-    /(\d+(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪|usd|dollars?|\$)?\s*(?:per month|every month|each month|monthly|a month)/i,
+    /(\d+(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|nis|₪|usd|eur|gbp|euros?|pounds?|dollars?|\$)?\s*(?:per month|every month|each month|monthly|a month)/i,
 
     // Hebrew: X שקל בחודש, X לחודש, X כל חודש
     /(\d[\d,]*(?:\.\d+)?)\s*(?:שקל)?\s*(?:בחודש|לחודש|כל חודש)/i,
@@ -628,10 +628,10 @@ function detectMonthlyContribution(
     // to the monthly figure the projection uses instead of reading it as monthly.
     const tail = normalized.slice((match.index ?? 0) + match[0].length);
     const periodFactor =
-      /^\s*(?:shekels?|ils?|₪|usd|dollars?|\$)?\s*(?:yearly|annually|per year|a year|every year|each year)\b/.test(tail) ||
+      /^\s*(?:shekels?|ils?|nis|₪|usd|eur|gbp|euros?|pounds?|dollars?|\$)?\s*(?:yearly|annually|per year|a year|every year|each year)\b/.test(tail) ||
       /^\s*(?:שקלים|שקל|דולר|₪)?\s*(?:בשנה|לשנה|כל שנה)(?![א-ת])/.test(tail)
         ? 1 / 12
-        : /^\s*(?:shekels?|ils?|₪|usd|dollars?|\$)?\s*(?:weekly|per week|a week|every week|each week)\b/.test(tail) ||
+        : /^\s*(?:shekels?|ils?|nis|₪|usd|eur|gbp|euros?|pounds?|dollars?|\$)?\s*(?:weekly|per week|a week|every week|each week)\b/.test(tail) ||
           /^\s*(?:שקלים|שקל|דולר|₪)?\s*(?:בשבוע|לשבוע|כל שבוע)(?![א-ת])/.test(tail)
           ? 52 / 12
           : 1;
