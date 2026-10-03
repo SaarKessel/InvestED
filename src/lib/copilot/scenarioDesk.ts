@@ -17,10 +17,10 @@ const LOAN = /(?:loan|mortgage|הלוואה|משכנתא)/i;
 /** "loan of 200000 at 5% for 30 years" becomes the same pmt(...) expression a user could type. */
 export function loanExpression(text: string): string | null {
   if (!LOAN.test(text)) return null;
-  const pct = /(\d+(?:\.\d+)?)\s*%/.exec(text)?.[1];
+  const pct = /(\d+(?:\.\d+)?)\s*(?:%|percent|per\s*cent|אחוזים|אחוז)/i.exec(text)?.[1];
   const years = /(\d+(?:\.\d+)?)\s*-?\s*(?:years?|yrs?|שנה|שנים|שנות)|ל-?\s*(\d+)\s*שנ/i.exec(text);
   const y = years?.[1] ?? years?.[2];
-  const rest = text.replace(/(\d+(?:\.\d+)?)\s*%/g, " ").replace(/(\d+(?:\.\d+)?)\s*-?\s*(?:years?|yrs?|שנה|שנים|שנות)|ל-?\s*\d+\s*שנ\S*/gi, " ");
+  const rest = text.replace(/(\d+(?:\.\d+)?)\s*(?:%|percent|per\s*cent|אחוזים|אחוז)/gi, " ").replace(/(\d+(?:\.\d+)?)\s*-?\s*(?:years?|yrs?|שנה|שנים|שנות)|ל-?\s*\d+\s*שנ\S*/gi, " ");
   const amt = /(\d[\d,]*(?:\.\d+)?)\s*(k\b|m\b|thousand|million|אלף|מיליון)?/i.exec(rest);
   if (!pct || !y || !amt) return null;
   const unit = amt[2]?.toLowerCase();
