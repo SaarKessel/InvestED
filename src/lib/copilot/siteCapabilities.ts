@@ -36,7 +36,7 @@ const LAUNCH_TARGETS: Array<{ id: string; re: RegExp }> = [
   { id: "analyst-game", re: /analyst|אנליסט/i },
   { id: "accountant-game", re: /accountant|accounting|רואה חשבון|חשבונאות/i },
   { id: "operations-game", re: /operations|back[- ]office|תפעול/i },
-  { id: "portfolio-game", re: /portfolio manager|fund manager|מנהל תיק|מנהלת תיק/i },
+  { id: "portfolio-game", re: /portfolio manager|fund manager|portfolio game|מנהל תיק|מנהלת תיק|משחק תיק/i },
   { id: "strategy", re: /strateg|אסטרטגי/i },
 ];
 
