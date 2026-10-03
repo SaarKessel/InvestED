@@ -35,7 +35,7 @@ export function parseLoanQuery(rawText: string): ParsedLoanQuery {
 
   let loanAmount = 0;
   const currencyMatches = [
-    ...text.matchAll(/([\d]{1,3}(?:,\d{3})*(?:\.\d+)?)\s*(אלף|מיליון)?\s*(?:ש"ח|שקל(?:ים)?|₪)?/g),
+    ...text.matchAll(/(\d{1,3}(?:,\d{3})+(?:\.\d+)?|\d+(?:\.\d+)?)\s*(אלף|מיליון)?\s*(?:ש"ח|שקל(?:ים)?|₪)?/g),
   ];
   for (const m of currencyMatches) {
     // מתעלמים ממספרים שכבר זוהו כאחוז ריבית או כמספר שנים (למניעת בלבול)
