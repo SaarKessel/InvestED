@@ -392,7 +392,7 @@ function detectAmount(text: string): number {
 // ---------------------------------------------------------------------------
 
 const INITIAL_AMOUNT_PATTERNS: RegExp[] = [
-    /(?:יש לי|יש ברשותי|ברשותי|קיים לי|מחזיק|השקעתי)\s*(?:היום|כיום|כרגע)?\s*(?:הון של|הון בסך|סכום של|סכום)?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון|thousand|million)?/i,
+    /(?:יש לי|יש ברשותי|ברשותי|קיים לי|מחזיק|השקעתי)\s*(?:היום|כיום|כרגע)?\s*(?:הון של|הון בסך|סכום של|סכום)?\s*\$?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון|thousand|million)?/i,
 
     /(?:initial investment|starting capital|initial capital)\s*(?:of|is|:)?\s*(?:\$|usd\s*)?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?/i,
 
@@ -404,7 +404,7 @@ const INITIAL_AMOUNT_PATTERNS: RegExp[] = [
 
     /(?:have|got)\s+(?:\$|usd\s*)?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?\s*(?:to invest|to start|available)?\b/i,
 
-    /(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?\s*(?:to invest|to start|initially|upfront)\b/i,
+    /(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?\s*(?:to invest|to start|initially|upfront|initial)\b/i,
 
     /(?:starting|beginning|starting off|start|starts|begin|begins)\s+with\s+(?:\$|usd\s*)?\s*(\d[\d,.]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|₪)?/i,
 
