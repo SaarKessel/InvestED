@@ -23,8 +23,9 @@ export function checkClaims(draft: string, sources: string[]): ClaimCheck[] {
 const URL_RE = /https?:\/\/[^\s)>\]"']+/g;
 /** Links in a draft that no source contains. */
 export function unknownLinks(draft: string, sources: string[]): string[] {
-  const known = sources.join("\n");
-  return [...new Set((draft.match(URL_RE) ?? []).map((u) => u.replace(/[.,;]+$/, "")))].filter((u) => !known.includes(u));
+  const links = (text: string) => (text.match(URL_RE) ?? []).map((u) => u.replace(/[.,;]+$/, ""));
+  const known = new Set(sources.flatMap(links));
+  return [...new Set(links(draft))].filter((u) => !known.has(u));
 }
 
 export const FRESH_LIMIT_DAYS: Record<DataState, number | null> = { live: 4, cached: 4, fallback: 4, static: null, calculated: null, synthetic: null };
