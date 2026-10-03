@@ -13,7 +13,7 @@ const NAMES: [RegExp, string][] = [
   [/\b(?:eur|euros?)\b|€|יורו|אירו/i, "EUR"],
   [/\b(?:gbp|pounds?|sterling)\b|£|לירה שטרלינג|פאונד/i, "GBP"],
   [/\b(?:jpy|yen)\b|¥|ין(?![א-ת])/i, "JPY"],
-  [/\b(?:chf|swiss francs?)\b|פרנק שוויצרי/i, "CHF"],
+  [/\b(?:chf|swiss francs?)\b|פרנק(?:ים)?(?: שוויצרי(?:ם)?)?/i, "CHF"],
 ];
 const CODES = ["USD", "ILS", "EUR", "GBP", "JPY", "CHF", "CAD", "AUD"];
 
@@ -39,15 +39,18 @@ function order(text: string): string[] {
 export function parseFxRequest(text: string): FxRequest | null {
   const t = text.trim();
   if (t.length > 120) return null;
-  const hasCue = /\b(?:to|in|into|convert|exchange|rate|how much)\b|→|=|ל-?|ב(?=[א-ת])|בשקל|בדולר|ביורו|שער|המר|המרה|כמה/i.test(t);
+  const hasCue = /\b(?:to|in|into|convert|exchange|rate|how much)\b|→|=|ל-?|ב(?=[א-ת])|ב-|בשקל|בדולר|ביורו|שער|המר|המרה|כמה/i.test(t);
   if (!hasCue) return null;
   const codes = order(t);
   if (codes.length < 2) return null;
-  const n = /(\d[\d,]*(?:\.\d+)?)\s*(k\b|m\b|bn\b|billion|thousand|million|אלף|מיליון|מיליארד)?/i.exec(t);
+  // Amounts written in words ("one hundred dollars", "half a million") are not read: guessing would convert 1 unit.
+  if (!/\d/.test(t) && (/\b(?:one|two|three|four|five|six|seven|eight|nine|ten|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|half|quarter|dozen)\b/i.test(t) || /(?<![א-ת])(?:חצי|מאה|מאתיים|עשרים|שלושים|ארבעים|חמישים|שישים|שבעים|שמונים|תשעים)(?![א-ת])/.test(t))) return null;
+  const n = /(\d{1,3}(?:[ \u00a0\u202f]\d{3})+(?:\.\d+)?|\d[\d,]*(?:\.\d+)?)\s*(k\b|m\b|bn\b|billion|thousand|million|אלף|מיליון|מיליארד)?/i.exec(t);
   const bare = n ? null : /\b(billion|million|thousand)\b|מיליארד|מיליון|אלף/i.exec(t);
   const unit = (n?.[2] ?? bare?.[0])?.toLowerCase();
   const scale = unit === "bn" || unit === "billion" || unit === "מיליארד" ? 1_000_000_000 : unit === "m" || unit === "million" || unit === "מיליון" ? 1_000_000 : unit ? 1000 : 1;
-  const amount = n ? Number(n[1].replace(/,/g, "")) * scale : scale;
+  const digits = n ? (/^\d+,\d{1,2}$/.test(n[1]) ? n[1].replace(",", ".") : n[1].replace(/[,\u00a0\u202f ]/g, "")) : "";
+  const amount = n ? Number(digits) * scale : scale;
   if (!(amount > 0) || !Number.isFinite(amount)) return null;
   // "X to Y": first mentioned is the source. A trailing Hebrew "ב" form ("100 דולר בשקלים") also reads left to right.
   return { amount, from: codes[0], to: codes[1] };
