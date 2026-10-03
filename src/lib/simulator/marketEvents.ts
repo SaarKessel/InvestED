@@ -133,8 +133,8 @@ function lessonsFor(kind: MarketEventKind, m: number, dd: number): Bi[] {
 
 const KIND_PATTERNS: Array<[MarketEventKind, RegExp]> = [
   ["bubble", /bubble|בועה|בועת/i],
-  ["crash", /crash|collapse|meltdown|plunge|קריס|התרסק|מפולת|קורס/i],
-  ["rally", /rally|boom|bull run|surge|ראלי|זינוק|פריחה|עליית שוק|שוק עולה/i],
+  ["crash", /crash|collapse|meltdown|plunge|\bdrops?\b|\bfalls?\b|declin|tumbl|sell-?off|correction|קריס|התרסק|מפולת|קורס|(?<![א-ת])(?:יצנח|צונח|יירד|ירד)(?![א-ת])/i],
+  ["rally", /rally|boom|bull run|surge|goes up|climbs?\b|ראלי|זינוק|פריחה|עליית שוק|שוק עולה|(?<![א-ת])(?:יעלה|יעלו)(?![א-ת])/i],
 ];
 const SIM_WORDS = /simulat|scenario|what if|what would happen|imagine|סימולצ|תרחיש|דמה|דמיין|מה יקרה אם|מה היה קורה|מה אם/i;
 
@@ -145,7 +145,17 @@ export function parseMarketEventRequest(text: string): MarketEventInput | null {
   if (!kind) return null;
   const pct = /(\d+(?:\.\d+)?)\s*%/.exec(text);
   const rest = text.replace(/(\d+(?:\.\d+)?)\s*%/g, " ");
-  const amt = /(\d[\d,]*(?:\.\d+)?)\s*(k\b)?/i.exec(rest);
-  const amount = amt ? Number(amt[1].replace(/,/g, "")) * (amt[2] ? 1000 : 1) : undefined;
-  return { kind, amount: amount && amount > 0 ? amount : undefined, magnitudePct: pct ? Number(pct[1]) : undefined };
+  let amount: number | undefined;
+  for (const m of rest.matchAll(/(\d[\d,]*(?:\.\d+)?)\s*(k\b|m\b|million|thousand|אלף|מיליון)?/gi)) {
+    const after = rest.slice(m.index! + m[0].length);
+    const before = rest.slice(0, m.index!);
+    // a duration ("in 2 years") or a year ("like 2008", "2000-style") is not the amount
+    if (!m[2] && /^\s*(?:years?|yrs?|months?|weeks?|days?|שנים|שנה|חודשים|חודש)/i.test(after)) continue;
+    if (!m[2] && /^(?:19|20)\d\d$/.test(m[1]) && (/(?:like|in|of|during|since|from|the)\s+$/i.test(before) || /^(?:-?style|'s|\s*(?:crash|bubble|collapse))/i.test(after))) continue;
+    const unit = m[2]?.toLowerCase();
+    const scale = unit === "m" || unit === "million" || unit === "מיליון" ? 1_000_000 : unit ? 1000 : 1;
+    const value = Number(m[1].replace(/,/g, "")) * scale;
+    if (value > 0) { amount = value; break; }
+  }
+  return { kind, amount, magnitudePct: pct ? Number(pct[1]) : undefined };
 }
