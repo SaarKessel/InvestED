@@ -49,7 +49,7 @@ const DEFAULT_YEARS = 10;
 
 function extractYears(text: string): number | null {
   const match = text.match(
-    /(\d+)\s*(?:שנים|שנה|year|years|ש׳)/i
+    /(\d+)\s*-?\s*(?:שנים|שנה|years?|yrs?|ש׳)/i
   );
 
   if (!match) return null;
@@ -138,7 +138,7 @@ function extractContribution(
 ): StockContributionPlan {
 
   const monthlyShares = text.match(
-  /(\d+)\s*(?:מניות|shares)/i
+  /(\d+)\s*(?:[A-Za-z.]{1,6}\s+)?(?:מניות|shares?)(?![A-Za-z])/i
 );
 
 const monthly =
