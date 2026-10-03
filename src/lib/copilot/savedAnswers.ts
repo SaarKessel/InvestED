@@ -9,7 +9,7 @@ export function loadSaved(userId: string, store: Store | null = ls()): SavedAnsw
   try { const v = JSON.parse(store?.getItem(key(userId)) ?? "[]"); return Array.isArray(v) ? v.filter((x): x is SavedAnswer => typeof x?.id === "string" && typeof x.question === "string" && typeof x.text === "string") : []; } catch { return []; }
 }
 const write = (userId: string, list: SavedAnswer[], store: Store | null) => { try { store?.setItem(key(userId), JSON.stringify(list)); } catch { /* not remembered */ } };
-export const idFor = (question: string, text: string): string => { let h = 5381; for (const c of `${question}\n${text}`) h = ((h << 5) + h + c.charCodeAt(0)) | 0; return `s${(h >>> 0).toString(36)}`; };
+export const idFor = (question: string, text: string): string => { let h = 5381; for (const c of `${question}\n${text}`) h = ((h << 5) + h + (c.codePointAt(0) ?? 0)) | 0; return `s${(h >>> 0).toString(36)}`; };
 export function isSaved(list: SavedAnswer[], question: string, text: string): boolean { return list.some((s) => s.id === idFor(question, text)); }
 /** Toggles; returns the new list (newest first, capped). */
 export function toggleSaved(userId: string, question: string, text: string, now = Date.now(), store: Store | null = ls()): SavedAnswer[] {
