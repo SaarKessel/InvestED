@@ -41,6 +41,8 @@ function normalize(raw: string): string {
   let s = ` ${raw} `;
   for (const [re, to] of WORDS) s = s.replace(re, to);
   s = stripGroupCommas(s);
+  // "200 + 15%" and "100 - 20%" as a whole expression: add or take off that percent of the first number.
+  s = s.replace(/^\s*(\d+(?:\.\d+)?)\s*([+-])\s*(\d+(?:\.\d+)?)\s*%\s*$/, "$1$2$1*($3/100)");
   s = s.replace(/(\d+(?:\.\d+)?)\s*%\s*(?:of|מ-?)\s*/gi, "($1/100)*");
   s = s.replace(/(\d+(?:\.\d+)?)\s*%/g, "($1/100)");
   s = s.replace(/(\d+(?:\.\d+)?)\s*([kmb])\b/gi, (_m, n: string, u: string) => `(${n}*${{ k: 1e3, m: 1e6, b: 1e9 }[u.toLowerCase() as "k"]})`);
