@@ -147,7 +147,8 @@ export function maxDrawdown(points: PricePoint[]): Metric<DrawdownInfo> {
   });
 }
 
-const round = (value: number, digits = 2) => Number(value.toFixed(digits));
+// "+ 0" turns -0 (a tiny negative that rounds to zero) into 0 so it never prints as "-0".
+const round = (value: number, digits = 2) => Number(value.toFixed(digits)) + 0;
 
 export interface BenchmarkComparison {
   benchmarkSymbolLabel?: string;
