@@ -21,9 +21,11 @@ export function loanExpression(text: string): string | null {
   const years = /(\d+(?:\.\d+)?)\s*(?:years?|yrs?|שנה|שנים|שנות)|ל-?\s*(\d+)\s*שנ/i.exec(text);
   const y = years?.[1] ?? years?.[2];
   const rest = text.replace(/(\d+(?:\.\d+)?)\s*%/g, " ").replace(/(\d+(?:\.\d+)?)\s*(?:years?|yrs?|שנה|שנים|שנות)|ל-?\s*\d+\s*שנ\S*/gi, " ");
-  const amt = /(\d[\d,]*(?:\.\d+)?)\s*(k\b)?/i.exec(rest);
+  const amt = /(\d[\d,]*(?:\.\d+)?)\s*(k\b|m\b|thousand|million|אלף|מיליון)?/i.exec(rest);
   if (!pct || !y || !amt) return null;
-  const a = Number(amt[1].replace(/,/g, "")) * (amt[2] ? 1000 : 1);
+  const unit = amt[2]?.toLowerCase();
+  const scale = unit === "m" || unit === "million" || unit === "מיליון" ? 1_000_000 : unit ? 1000 : 1;
+  const a = Number(amt[1].replace(/,/g, "")) * scale;
   return a > 0 ? `pmt(${a}, ${pct}, ${y})` : null;
 }
 
