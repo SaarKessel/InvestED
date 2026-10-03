@@ -29,7 +29,12 @@ export interface GoalAnalysis {
 export function detectTargetAmount(text: string): number {
   const normalized = text
     .toLowerCase()
+    // "1,5 million" uses a decimal comma; a comma before exactly three digits is a thousands separator
+    .replace(/(\d),(\d{1,2})(?!\d)/g, "$1.$2")
     .replace(/,/g, "")
+    // "1 000 000" written with spaces
+    .replace(/(\d)[ \u00a0\u202f](?=\d{3}(?!\d))/g, "$1")
+    .replace(/(\d)[ \u00a0\u202f](?=\d{3}(?!\d))/g, "$1")
     .trim();
 
   let amount = 0;
@@ -83,6 +88,16 @@ export function detectTargetAmount(text: string): number {
     amount = Math.max(amount, words[wordMillion[1]] * 1_000_000);
   }
 
+  // English: "1.5 million", "2m", "half a million", "a million", "two million"
+  const enMillion = cleanedText.match(/(\d+(?:\.\d+)?)\s*(?:million|mn|m)(?![a-z0-9])/);
+  if (enMillion) amount = Math.max(amount, Number(enMillion[1]) * 1_000_000);
+  if (/\bhalf a million\b/.test(cleanedText)) amount = Math.max(amount, 500_000);
+  const enWordMillion = cleanedText.match(/(?<!half )\b(a|one|two|three|four|five|six|seven|eight|nine|ten)\s+million\b/);
+  if (enWordMillion) {
+    const w: Record<string, number> = { a: 1, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10 };
+    amount = Math.max(amount, w[enWordMillion[1]] * 1_000_000);
+  }
+
   // "מיליון" without number
   if (
     /(?:מיליון|מליון)/.test(cleanedText) &&
@@ -93,7 +108,7 @@ export function detectTargetAmount(text: string): number {
 
   // Thousands
   const thousandMatch = cleanedText.match(
-    /(\d+(?:\.\d+)?)\s*(?:אלף|k)(?!\w)/i
+    /(\d+(?:\.\d+)?)\s*(?:אלף|k|thousand)(?!\w)/i
   );
 
   if (thousandMatch) {
