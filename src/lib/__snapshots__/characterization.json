@@ -151,7 +151,7 @@
    "education"
   ],
   "clarifies": false,
-  "head": "APR: latest available price 103.00 USD, change 2.00%, RSI unavailable,"
+  "head": "The annual percentage rate (APR) shows the real yearly cost of a loan,"
  },
  {
   "q": "what is a credit score",
@@ -604,12 +604,12 @@
   "tools": [
    "wb"
   ],
-  "intent": "asset_analysis",
+  "intent": "general",
   "engines": [
-   "market"
+   "education"
   ],
   "clarifies": false,
-  "head": "US: latest available price 103.00 USD, change 2.00%, RSI unavailable, "
+  "head": "That's outside what I can reliably answer — I'm built for financial ed"
  },
  {
   "q": "GDP growth in Germany",
@@ -617,12 +617,12 @@
   "tools": [
    "wb"
   ],
-  "intent": "asset_analysis",
+  "intent": "general",
   "engines": [
-   "market"
+   "education"
   ],
   "clarifies": false,
-  "head": "GDP: latest available price 103.00 USD, change 2.00%, RSI unavailable,"
+  "head": "GDP, gross domestic product, is the total value of goods and services "
  },
  {
   "q": "אינפלציה בישראל",

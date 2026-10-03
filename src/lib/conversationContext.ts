@@ -164,6 +164,8 @@ const NON_ASSET_TOKENS = new Set([
   "ILS", "USD", "EUR", "GBP", "JPY",
   "AND", "OR", "THE", "FOR", "NOT", "ALL", "NEW", "NOW",
   "HOW", "WHY", "WHO", "WHAT", "VS",
+  // Common acronyms and country codes that are not tradable assets.
+  "GDP", "CEO", "CFO", "ROI", "IRA", "FED", "CPI", "APR", "APY", "FAQ", "OK", "US", "USA", "UK", "EU",
 ]);
 
 export function extractAssets(text: string): string[] {
