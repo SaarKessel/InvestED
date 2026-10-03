@@ -1,9 +1,10 @@
+import { safeSlice } from "./safeSlice";
 import { getSupabase } from "@/lib/account/supabaseClient";
 
 export interface ChatConversation { id: string; title: string; updated_at: string }
 export interface StoredMessage { role: "user" | "copilot"; text: string }
 
-export const titleFromMessage = (text: string): string => text.replace(/\s+/g, " ").trim().slice(0, 60);
+export const titleFromMessage = (text: string): string => safeSlice(text.replace(/\s+/g, " ").trim(), 60);
 
 export async function listConversations(): Promise<ChatConversation[]> {
   const { data, error } = await getSupabase().from("chat_conversations").select("id,title,updated_at").order("updated_at", { ascending: false }).limit(30);

@@ -1,3 +1,4 @@
+import { safeSlice } from "./safeSlice";
 /** "Saved": answers the user bookmarked, kept on this device per user id. Stores the question and the text as shown; re-asking re-runs the engines. */
 export interface SavedAnswer { id: string; question: string; text: string; savedAt: number }
 const key = (userId: string) => `invested.saved.v1.${userId}`;
@@ -14,7 +15,7 @@ export function isSaved(list: SavedAnswer[], question: string, text: string): bo
 export function toggleSaved(userId: string, question: string, text: string, now = Date.now(), store: Store | null = ls()): SavedAnswer[] {
   const list = loadSaved(userId, store);
   const id = idFor(question, text);
-  const next = list.some((s) => s.id === id) ? list.filter((s) => s.id !== id) : [{ id, question: question.slice(0, 300), text: text.slice(0, 4000), savedAt: now }, ...list].slice(0, MAX_SAVED);
+  const next = list.some((s) => s.id === id) ? list.filter((s) => s.id !== id) : [{ id, question: safeSlice(question, 300), text: safeSlice(text, 4000), savedAt: now }, ...list].slice(0, MAX_SAVED);
   write(userId, next, store);
   return next;
 }
