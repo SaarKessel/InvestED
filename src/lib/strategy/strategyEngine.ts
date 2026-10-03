@@ -186,6 +186,20 @@ export function getStrategy(
  * either language. Name fragments and declared keywords are
  * matched case-insensitively; earliest mention first.
  */
+/** First index of `term` in `text`. A term that starts with a Latin letter or digit must not begin in the
+ *  middle of a longer word ("dca" is not in "podcast"). Hebrew terms keep plain substring matching because
+ *  Hebrew prefixes attach to the word. */
+function indexOfTerm(text: string, term: string): number {
+  const needsBoundary = /^[a-z0-9]/.test(term);
+  let from = 0;
+  for (;;) {
+    const idx = text.indexOf(term, from);
+    if (idx === -1) return -1;
+    if (!needsBoundary || idx === 0 || !/[a-z0-9]/.test(text[idx - 1])) return idx;
+    from = idx + 1;
+  }
+}
+
 export function detectStrategyMentions(
   text: string,
   universe: InvestmentStrategy[] = STRATEGY_UNIVERSE
@@ -202,7 +216,7 @@ export function detectStrategyMentions(
     ];
     let earliest = -1;
     for (const term of terms) {
-      const idx = lower.indexOf(term.toLowerCase());
+      const idx = indexOfTerm(lower, term.toLowerCase());
       if (idx !== -1 && (earliest === -1 || idx < earliest)) earliest = idx;
     }
     if (earliest !== -1) found.push({ id: strategy.id, index: earliest });
