@@ -738,7 +738,7 @@ function detectYears(
   const normalized = normalizeText(text);
 
   const futureMatch = normalized.match(
-    /בעוד\s*(\d+)\s*(?:שנה|שנים)/i
+    /בעוד\s*(\d+(?:\.\d+)?)\s*(?:שנה|שנים)/i
   );
 
   if (futureMatch) {
@@ -746,7 +746,7 @@ function detectYears(
   }
 
   const explicitMatch = normalized.match(
-    /(?:למשך|תקופה של|ל-?)\s*(\d+)\s*(?:שנה|שנים)/i
+    /(?:למשך|תקופה של|ל-?)\s*(\d+(?:\.\d+)?)\s*(?:שנה|שנים)/i
   );
 
   if (explicitMatch) {
@@ -754,7 +754,7 @@ function detectYears(
   }
 
   const englishExplicitMatch = normalized.match(
-    /(?:for|over|during|within|period of)\s*(?:a\s+)?(?:period\s+of\s*)?(\d+)\s*years?\b(?!\s*old)/i
+    /(?:for|over|during|within|period of)\s*(?:a\s+)?(?:period\s+of\s*)?(\d+(?:\.\d+)?)\s*years?\b(?!\s*old)/i
   );
 
   if (englishExplicitMatch) {
@@ -771,7 +771,7 @@ function detectYears(
   }
 
   const englishSimpleMatch = normalized.match(
-    /(\d+)\s*years?\b(?!\s*old)/i
+    /(\d+(?:\.\d+)?)\s*years?\b(?!\s*old)/i
   );
 
   if (englishSimpleMatch) {
@@ -779,7 +779,7 @@ function detectYears(
   }
 
   const simpleMatch = normalized.match(
-    /(\d+)\s*(?:שנה|שנים)/i
+    /(\d+(?:\.\d+)?)\s*(?:שנה|שנים)/i
   );
 
   if (simpleMatch) {
