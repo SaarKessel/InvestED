@@ -742,6 +742,15 @@ function detectYears(
     return Number(englishExplicitMatch[1]);
   }
 
+  // A horizon in months ("for 18 months") is a fraction of a year, not the 10-year default.
+  const monthsMatch = normalized.match(
+    /(?:for|over|during|within|period of|ל-?|למשך)\s*(?:a\s+)?(\d+)\s*(?:months|חודשים)/i
+  );
+
+  if (monthsMatch) {
+    return Number(monthsMatch[1]) / 12;
+  }
+
   const englishSimpleMatch = normalized.match(
     /(\d+)\s*years?/i
   );
