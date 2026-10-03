@@ -5,6 +5,8 @@ import { conceptAnswerByLabel } from "@/lib/financialEducation";
 export type Segment = { text: string; id?: string };
 const esc = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const HE = /[א-ת]/;
+/** Words that are also common verbs: "spreads your money" must not open the bid-ask spread card, so no plural/-s match for them. */
+const NO_PLURAL = new Set(["spread", "nudge", "leverage"]);
 const names = (() => {
   const out: Array<{ id: string; name: string }> = [];
   for (const c of allConcepts()) {
@@ -21,7 +23,7 @@ export function linkTerms(text: string, max = 5): Segment[] {
     if (seen.has(id) || taken.length >= max) continue;
     const re = HE.test(name)
       ? new RegExp(`(?<![א-ת])[הבלומשכ]?(${esc(name)})(?![א-ת])`, "u")
-      : new RegExp(`(?<![A-Za-z0-9א-ת])(${esc(name)}(?:(?<=[sx])es|s)?)(?![A-Za-z0-9א-ת])`, "iu");
+      : new RegExp(`(?<![A-Za-z0-9א-ת])(${esc(name)}${NO_PLURAL.has(name.toLowerCase()) ? "" : "(?:(?<=[sx])es|s)?"})(?![A-Za-z0-9א-ת])`, "iu");
     const m = re.exec(text);
     if (!m) continue;
     const start = m.index + m[0].length - m[1].length;

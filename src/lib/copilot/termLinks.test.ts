@@ -20,3 +20,12 @@ describe("termLinks", () => {
   it("does not link inside longer words", () => { expect(linkTerms("Rebalancing the datasets").some((s) => s.id === undefined ? false : /sets/.test(s.text))).toBe(false); });
   it("caps the number of links", () => { expect(linkTerms("diversification risk inflation stocks bonds ETF index fund dividend yield volatility", 3).filter((s) => s.id).length).toBeLessThanOrEqual(3); });
 });
+
+describe("plural links and verbs", () => {
+  it("links plural nouns but not the verb 'spreads'", () => {
+    const linked = (t: string) => linkTerms(t).filter((s) => s.id).map((s) => s.text);
+    expect(linked("Most ETFs follow an index.")).toContain("ETFs");
+    expect(linked("One purchase spreads your money over many investments.")).not.toContain("spreads");
+    expect(linked("The spread is small.")).toContain("spread");
+  });
+});
