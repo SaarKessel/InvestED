@@ -965,6 +965,9 @@ function detectExplicitTargetAmount(
     // English target / goal ("target of 750k", "my target is $1,000,000")
     /(?:target|goal)\s*(?:of|is|:)?\s*\$?\s*(\d[\d,]*(?:\.\d+)?)\s*(k|m|million|thousand)?/i,
 
+    // English "to reach 100000", "can I reach 100,000", "will I get to 200k". A horizon or a rate is not a target.
+    /(?:to\s+reach|(?:can|could|will|would|do)\s+i\s+(?:reach|get\s+to|hit))\s+\$?\s*(\d[\d,]*(?:\.\d+)?)\s*(k|m|million|thousand)?(?!\d)(?!\s*(?:%|years?|months?|yrs?))/i,
+
     // English wish phrasing: "I want to reach 2m", "I want 100000", "aiming for 1.5 million",
     // "trying to save up 50k". A per-month amount or a horizon is not a target.
     /(?:want|would like|aim(?:ing)?|trying|hope|hoping|need)\s+(?:to\s+)?(?:reach|get\s+to|hit|accumulate|build|grow\s+to|have|save(?:\s+up)?)?\s*(?:for\s+)?\$?\s*(\d[\d,]*(?:\.\d+)?)\s*(k|m|million|thousand)?(?!\d)(?!\s*(?:%|years?|months?|yrs?|(?:shekels?|ils?|dollars?|usd)?\s*(?:a|per|each|every)\s+month|(?:shekels?|ils?|dollars?|usd)?\s*monthly))/i
