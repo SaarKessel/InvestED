@@ -30,11 +30,11 @@ export function alsoAnswered(question: string, mainAnswer: string, limit = 3): A
 }
 
 const HINTS: Array<{ re: RegExp; hint: ToolHint }> = [
-  { re: /(market|stocks?|prices?)\s+(drop|fall|crash|decline)|\bcrash\b|drawdown|(ירד|ירידה|ירידות|קריסה|משבר)/i,
+  { re: /(market|stocks?|prices?)\s+(drop|fall|crash|decline)|\bcrash\b|drawdown|(?:market|stocks?|prices?)\s+(?:plunge|tumble)|sell-?off|(?<![א-ת])[ויהבלמשכ]{0,2}(?:ירד[הו]?|ירידה|ירידת|ירידות|קריסה|משבר|נפילה|נפילות)(?![א-ת])/i,
     hint: { toolId: "simulation", en: "Your question includes a market drop. The Simulation tool lets you try one with example numbers.", he: "בשאלה שלך יש ירידת שוק. בכלי הסימולציה אפשר לנסות תרחיש כזה עם מספרי דוגמה." } },
-  { re: /per\s+month|monthly|each\s+month|every\s+month|(כל\s+חודש|חודשי|חודשית|בחודש)/i,
+  { re: /per\s+month|monthly|each\s+month|every\s+month|\ba\s+month\b|(מדי\s+חודש|כל\s+חודש|חודשי|חודשית|בחודש)/i,
     hint: { toolId: "calculator", en: "Your question includes monthly deposits. The Smart Calculator can run those numbers.", he: "בשאלה שלך יש הפקדות חודשיות. במחשבון החכם אפשר להריץ את המספרים." } },
-  { re: /mortgage|loan|amortiz|(משכנתא|הלוואה|הלוואות|לוח\s+סילוקין)/i,
+  { re: /mortgage|loan|amortiz|(משכנתא|הלוואה|הלוואות|הלוואת|לוח\s+סילוקין)/i,
     hint: { toolId: "loans", en: "Your question includes a loan. The Loans tool shows a full repayment schedule.", he: "בשאלה שלך יש הלוואה. בכלי ההלוואות רואים לוח החזר מלא." } },
 ];
 /** Tool pointers for parts of the question that need a calculation tool. Wording is fixed text, no numbers. */
