@@ -20,7 +20,7 @@ export interface RiskDeskResult { items: RiskItem[]; benchmark: string }
 export type AssetLoader = (symbol: string) => Promise<MarketAsset | null>;
 
 const STOP = new Set(["AI", "ETF", "USD", "EUR", "ILS", "VS", "THE", "AND", "FOR", "OF", "IS", "IT", "ME", "MY", "A", "I", "PE", "ROI", "APR", "APY", "GDP", "CPI", "S", "P", "US", "USA", "UK", "EU", "IRA", "FED", "OK", "CEO", "CFO", "FAQ"]);
-const WORDS = /(?:risk|volatil\w*|drawdown|beta|riskier|סיכון|סיכונים|תנודתיות|תנודתי|ירידה מקסימלית|בטא)/i;
+const WORDS = /(?:risk|volatil\w*|drawdown|beta|riskier|סיכון|סיכונים|מסוכ[א-ת]*|תנודתיות|תנודתי|ירידה מקסימלית|בטא)/i;
 
 /** Uppercase tickers in the text, in order, at most MAX_TICKERS. */
 export function tickersIn(text: string): string[] {
