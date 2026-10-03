@@ -8,9 +8,9 @@ export interface MathDeskResult { ok: boolean; expression: string; value?: numbe
 
 const WORDS: [RegExp, string][] = [
   [/(?:^|\s)(?:what is|what's|calculate|compute|how much is|solve|eval(?:uate)?)\s*:?/gi, " "],
-  [/(?:^|\s)(?:כמה זה|כמה יוצא|כמה הם|חשב(?:י)?|תחשב(?:י)?|חישוב)\s*:?/g, " "],
+  [/(?:^|\s)(?:מה זה|כמה זה|כמה יוצא|כמה הם|חשב(?:י)?|תחשב(?:י)?|חישוב)\s*:?/g, " "],
   [/\bto the power of\b/gi, "^"], [/\bdivided by\b/gi, "/"], [/\bmultiplied by\b/gi, "*"],
-  [/\bplus\b/gi, "+"], [/\bminus\b/gi, "-"], [/\btimes\b/gi, "*"], [/\bover\b/gi, "/"],
+  [/(?<=\d)\s*\bpercent\b/gi, "%"], [/\bplus\b/gi, "+"], [/\bminus\b/gi, "-"], [/\btimes\b/gi, "*"], [/\bover\b/gi, "/"],
   [/(?<![א-ת])ועוד(?![א-ת])/g, "+"], [/(?<![א-ת])פחות(?![א-ת])/g, "-"], [/(?<![א-ת])כפול(?![א-ת])/g, "*"], [/(?<![א-ת])חלקי(?![א-ת])/g, "/"],
   [/(?<![א-ת])בחזקת(?![א-ת])/g, "^"], [/(?<![א-ת])מתוך(?![א-ת])/g, " of "],
   [/(?<=[\d)]\s*)[×x✕](?=\s*[\d(.])/gi, "*"], [/×|✕/g, "*"], [/÷/g, "/"], [/\*\*/g, "^"], [/[−–]/g, "-"], [/[=?؟]/g, " "], [/[$€£₪]/g, ""],
