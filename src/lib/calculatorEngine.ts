@@ -823,7 +823,13 @@ function detectTargetMonthlyIncome(
 
     /(?:בפרישה|לאחר הפרישה)\s*(?:עם\s*)?(?:הכנסה\s*)?(?:של\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)/i,
 
-    /(?:חופש כלכלי|עצמאות כלכלית)\s+(?:עם\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)/i
+    /(?:חופש כלכלי|עצמאות כלכלית)\s+(?:עם\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)/i,
+
+    // English: "income of 4000 a month", "live on 3000 a month", "receive 5k monthly".
+    /(?:income of|income|receive|live on|live off|withdraw|get)\s+\$?(\d[\d,]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|dollars?|usd)?\s*(?:(?:a|per|each|every)\s+month|monthly)/i,
+
+    // English: "5000 a month income", "6k a month in retirement".
+    /\$?(\d[\d,]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|dollars?|usd)?\s*(?:(?:a|per|each|every)\s+month|monthly)\s+(?:of\s+)?(?:income|(?:in|during|after)\s+retirement|when i retire)/i
   ];
 
 
