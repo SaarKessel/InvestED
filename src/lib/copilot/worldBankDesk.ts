@@ -8,7 +8,7 @@ export interface WbPoint { year: string; value: number }
 export interface WbResult extends WbRequest { points: WbPoint[]; lastUpdated: string }
 
 const IND: Record<WbIndicator, { code: string; unit?: "usd"; re: RegExp; label: { en: string; he: string } }> = {
-  inflation: { code: "FP.CPI.TOTL.ZG", re: /inflation|\bcpi\b|consumer prices?|אינפלציה|עליית מחירים/i, label: { en: "Inflation, consumer prices (annual %)", he: "אינפלציה, מדד המחירים לצרכן (שנתי, %)" } },
+  inflation: { code: "FP.CPI.TOTL.ZG", re: /inflation|\bcpi\b|consumer prices?|אינפלציה|עליית מחירים|מדד המחירים/i, label: { en: "Inflation, consumer prices (annual %)", he: "אינפלציה, מדד המחירים לצרכן (שנתי, %)" } },
   gdp_growth: { code: "NY.GDP.MKTP.KD.ZG", re: /gdp growth|economic growth|צמיחה|צמיחת/i, label: { en: "GDP growth (annual %)", he: "צמיחת התוצר (שנתי, %)" } },
   unemployment: { code: "SL.UEM.TOTL.ZS", re: /unemployment|jobless|אבטלה/i, label: { en: "Unemployment (% of labor force)", he: "אבטלה (% מכוח העבודה)" } },
   // listed last so "GDP growth" matches the growth indicator first
@@ -23,10 +23,10 @@ export const wbLabel = (i: WbIndicator) => IND[i].label;
 
 const COUNTRIES: { iso: string; re: RegExp; name: { en: string; he: string } }[] = [
   { iso: "ISR", re: /\bisrael(?:i)?\b|ישראל/i, name: { en: "Israel", he: "ישראל" } },
-  { iso: "USA", re: /(?<!\b(?:tell|show|give|send|help|let|ask|remind|teach)\s)\bus\b|\bu\.s\.(?:a\.)?|\busa\b|united states|america|ארה"?ב|ארצות הברית|אמריקה/i, name: { en: "United States", he: "ארצות הברית" } },
-  { iso: "GBR", re: /\buk\b|united kingdom|britain|british|בריטניה/i, name: { en: "United Kingdom", he: "בריטניה" } },
+  { iso: "USA", re: /(?<!\b(?:tell|show|give|send|help|let|ask|remind|teach)\s)\bus\b|\bu\.s\.(?:a\.)?|\busa\b|united states|america|ארה["״'׳]?ב|\bthe states\b|ארצות הברית|אמריקה/i, name: { en: "United States", he: "ארצות הברית" } },
+  { iso: "GBR", re: /\buk\b|\bu\.k\.?(?!\w)|united kingdom|britain|british|בריטניה/i, name: { en: "United Kingdom", he: "בריטניה" } },
   { iso: "DEU", re: /german(?:y)?|גרמניה/i, name: { en: "Germany", he: "גרמניה" } },
-  { iso: "EMU", re: /euro area|eurozone|גוש היורו/i, name: { en: "Euro area", he: "גוש היורו" } },
+  { iso: "EMU", re: /euro\s?(?:area|zone)|גוש היורו/i, name: { en: "Euro area", he: "גוש היורו" } },
   { iso: "JPN", re: /japan|יפן/i, name: { en: "Japan", he: "יפן" } },
   { iso: "CHN", re: /china|chinese|סין/i, name: { en: "China", he: "סין" } },
   { iso: "IND", re: /\bindia(?:n)?\b|הודו/i, name: { en: "India", he: "הודו" } },
