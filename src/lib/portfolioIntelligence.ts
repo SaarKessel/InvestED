@@ -64,7 +64,10 @@ export function isEquityAsset(
     name.includes("msci") ||
     name.includes("world") ||
     name.includes("מדד") ||
-    name.includes("סקטור")
+    name.includes("סקטור") ||
+    name.includes("sector") ||
+    name.includes("dividend") ||
+    name.includes("דיבידנד")
   );
 
 }
