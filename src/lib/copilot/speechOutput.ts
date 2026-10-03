@@ -26,7 +26,7 @@ export function chunkForSpeech(text: string, max = 220): string[] {
     if ((cur + " " + s).trim().length > max && cur) { out.push(cur.trim()); cur = s; } else cur = (cur + " " + s).trim();
   }
   if (cur) out.push(cur.trim());
-  return out.flatMap((c) => (c.length > max * 2 ? c.match(new RegExp(`.{1,${max}}(\\s|$)`, "g")) ?? [c] : [c]));
+  return out.flatMap((c) => (c.length > max * 2 ? c.match(new RegExp(`.{1,${max}}(?:\\s|$)|.{1,${max}}`, "g")) ?? [c] : [c]));
 }
 export type SpeakResult = "started" | "no_voice" | "unsupported";
 /** Speaks text; resolves "no_voice" when the device has no voice for that language. */
