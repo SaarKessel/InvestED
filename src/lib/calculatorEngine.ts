@@ -583,17 +583,17 @@ function detectMonthlyContribution(
     // English: explicit monthly patterns first (highest priority)
     /(\d[\d,]*(?:\.\d+)?)\s*(?:shekels?|ils?|nis|₪|usd|eur|gbp|euros?|pounds?|dollars?|\$)?\s*(?:per month|every month|each month|a month|monthly)/i,
 
-    /(\d+(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|nis|₪|usd|eur|gbp|euros?|pounds?|dollars?|\$)?\s*(?:per month|every month|each month|a month|monthly)/i,
+    /(?<![\d,])(\d+(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|nis|₪|usd|eur|gbp|euros?|pounds?|dollars?|\$)?\s*(?:per month|every month|each month|a month|monthly)/i,
 
     // English: "contribute X monthly", "deposit X per month", "add X every month"
     /(?:contribute|deposit|add|contributing|depositing|adding)\s+(\d[\d,]*(?:\.\d+)?)\s*(?:shekels?|ils?|nis|₪|usd|eur|gbp|euros?|pounds?|dollars?|\$)?\s*(?:per month|every month|each month|monthly|a month)?/i,
 
-    /(\d+(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|nis|₪|usd|eur|gbp|euros?|pounds?|dollars?|\$)?\s*(?:per month|every month|each month|monthly|a month)/i,
+    /(?<![\d,])(\d+(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|nis|₪|usd|eur|gbp|euros?|pounds?|dollars?|\$)?\s*(?:per month|every month|each month|monthly|a month)/i,
 
     // Hebrew: X שקל בחודש, X לחודש, X כל חודש
     /(\d[\d,]*(?:\.\d+)?)\s*(?:שקל)?\s*(?:בחודש|לחודש|כל חודש)/i,
 
-    /(\d+(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)\s*(?:שקל)?\s*(?:בחודש|לחודש|כל חודש)/i,
+    /(?<![\d,])(\d+(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)\s*(?:שקל)?\s*(?:בחודש|לחודש|כל חודש)/i,
   ];
 
   for (const pattern of patterns) {
@@ -822,21 +822,23 @@ function detectTargetMonthlyIncome(
   }
 
    const patterns = [
-    /(?:הכנסה|הכנסה חודשית|להכנסה)\s*(?:של\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)/i,
+    /(?:הכנסה|הכנסה חודשית|להכנסה|פנסיה|פנסיה חודשית|קצבה)\s*(?:של\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)/i,
 
-    /(?:רוצה|לקבל)\s*(?:לקבל\s*)?(?:הכנסה\s*)?(?:של\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)/i,
+    /(?:רוצה|לקבל|לחיות\s*(?:מ-?|על)?)\s*(?:לקבל\s*)?(?:הכנסה\s*)?(?:של\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)/i,
 
     /(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)\s*(?:בפרישה|לאחר הפרישה)/i,
 
     /(?:בפרישה|לאחר הפרישה)\s*(?:עם\s*)?(?:הכנסה\s*)?(?:של\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)/i,
 
+    /(?:הכנסה חודשית|פנסיה חודשית)\s*(?:של\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?(?![\d\s]*(?:בחודש|לחודש))/i,
+
     /(?:חופש כלכלי|עצמאות כלכלית)\s+(?:עם\s*)?(\d[\d,]*(?:\.\d+)?)\s*(k|m|אלף|מיליון|מליון)?\s*(?:שקל)?\s*(?:בחודש|לחודש)/i,
 
     // English: "income of 4000 a month", "live on 3000 a month", "receive 5k monthly".
-    /(?:income of|income|receive|live on|live off|withdraw|get)\s+\$?(\d[\d,]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|dollars?|usd)?\s*(?:(?:a|per|each|every)\s+month|monthly)/i,
+    /(?:income of|income|pension of|pension|receive|live on|live off|withdraw|get)\s+\$?(\d[\d,]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|dollars?|usd)?\s*(?:(?:a|per|each|every)\s+month|monthly)/i,
 
     // English: "5000 a month income", "6k a month in retirement".
-    /\$?(\d[\d,]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|dollars?|usd)?\s*(?:(?:a|per|each|every)\s+month|monthly)\s+(?:of\s+)?(?:income|(?:in|during|after)\s+retirement|when i retire)/i
+    /\$?(\d[\d,]*(?:\.\d+)?)\s*(k|m|thousand|million)?\s*(?:shekels?|ils?|dollars?|usd)?\s*(?:(?:a|per|each|every)\s+month|monthly)\s+(?:of\s+)?(?:(?:passive\s+)?income|pension|to\s+live\s+on|(?:in|during|after)\s+retirement|when i retire)/i
   ];
 
 
