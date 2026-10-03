@@ -4,8 +4,19 @@ import type { RssNewsItem, RssNewsResult } from "./rssClient";
 const EN = /\b(official (news|announcements?|statements?)|central bank (news|announcements?)|latest (market |financial |official )?(news|headlines|announcements?)|(fed|federal reserve|ecb|sec|bank of england) (news|announcements?|statements?|press)|what('?s| is) new (at|from|with) the (fed|ecb|sec))\b/i;
 const HE = /(הודעות\s+ה?רשמיות|הודעה\s+ה?רשמית|חדשות\s+ה?רשמיות|חדשות הבנק המרכזי|חדשות מהפד|הודעות הפד|הודעות הבנק המרכזי|כותרות אחרונות|חדשות אחרונות|מה חדש בפד)/;
 
+const PUB = "(?:the\\s+)?(?:fed|federal reserve|ecb|european central bank|sec|bank of england|central bank)";
+const EN_MORE = new RegExp(
+  `\\b(?:(?:news|announcements?|statements?|press releases?|headlines)\\s+(?:from|by|of)\\s+${PUB}|what\\s+did\\s+${PUB}\\s+(?:announce|say|publish|release)|central bank\\s+(?:statements?|headlines|press releases?)|official\\s+(?:headlines|updates))\\b`,
+  "i",
+);
+const HE_PUB = "(?:ה?פד|ה?-?(?:ecb|sec)|ה?בנק האירופי|ה?רשות לניירות ערך)";
+const HE_MORE = new RegExp(
+  `(?:(?:חדשות|הודעות|הודעה|ההודעות(?:\\s+האחרונות)?|הודעה אחרונה|הודעות לעיתונות)\\s+(?:של\\s+|מ)?${HE_PUB}|מה\\s+${HE_PUB}\\s+(?:אמר|הודיע|פרסם))`,
+  "i",
+);
+
 export function isOfficialNewsQuestion(text: string): boolean {
-  return EN.test(text) || HE.test(text);
+  return EN.test(text) || HE.test(text) || EN_MORE.test(text) || HE_MORE.test(text);
 }
 
 const day = (iso: string) => (/^\d{4}-\d{2}-\d{2}/.test(iso) ? iso.slice(0, 10) : iso);
