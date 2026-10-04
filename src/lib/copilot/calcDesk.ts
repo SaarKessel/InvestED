@@ -23,7 +23,15 @@ export interface CalcDeskResult {
 }
 
 /** A standalone negative amount ("invest -10000"): not a plan the calculator can read, so it is not silently turned positive. A percent ("at -2%") or a Hebrew prefix ("ל-10") is not one. */
-export const hasNegativeAmount = (t: string): boolean => /(?<![\p{L}\d])[-−]\s?\d[\d,.]*(?!\d|[\d,.]*\s*%)/u.test(t);
+export function hasNegativeAmount(t: string): boolean {
+  for (const m of t.matchAll(/[-−]\s?\d[\d,.]*/g)) {
+    const at = m.index ?? 0;
+    if (at > 0 && /[\p{L}\d]/u.test(t[at - 1])) continue;
+    if (/^\s*%/.test(t.slice(at + m[0].length))) continue;
+    return true;
+  }
+  return false;
+}
 
 export function planWarning(years: number, returnPct: number): CalcDeskResult["warning"] {
   if (years > 60) return { en: `Note: ${years} years is far beyond a normal planning horizon, so treat this figure as arithmetic only.`, he: `שימו לב: ${years} שנים הוא אופק רחוק הרבה מעבר לתכנון רגיל, ולכן המספר הוא חשבון בלבד.` };

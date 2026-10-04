@@ -1401,7 +1401,7 @@ function detectExplicitAnnualReturnPct(
   ];
   // Bare Hebrew rates ("ב-6 אחוז", "עם 6%"); a percentage after inflation, fee, tax or withdrawal wording is not a return.
   const NOT_A_RETURN_HE = /(?:אינפלציה|עמלה|עמלות|דמי ניהול|מס|משיכה|למשוך|הוצאות)\W+(?:[א-תa-z]+\W+){0,3}$/i;
-  const bareHebrew = [/(?<![א-ת])(?:ב-?|עם\s+)([-−]?\d+(?:\.\d+)?)\s*(?:%|אחוזים?|אחוז)(?![א-ת])/gi];
+  const bareHebrew = [/(?:^|[^א-ת])(?:ב-?|עם\s+)([-−]?\d+(?:\.\d+)?)\s*(?:%|אחוזים?|אחוז)(?![א-ת])/gi];
   const bare: RegExpMatchArray[] = [];
   for (const re of bareHebrew) {
     for (const m of normalized.matchAll(re)) {

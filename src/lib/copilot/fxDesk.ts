@@ -45,7 +45,7 @@ export function parseFxRequest(text: string): FxRequest | null {
   if (!hasCue) return null;
   const codes = order(t);
   if (codes.length < 2) return null;
-  if (/(?<![\p{L}\d])[-−]\s?\d/u.test(t)) return null;
+  for (const m of t.matchAll(/[-−]\s?\d/g)) if (!((m.index ?? 0) > 0 && /[\p{L}\d]/u.test(t[(m.index ?? 0) - 1]))) return null;
   // Amounts written in words ("one hundred dollars", "half a million") are not read: guessing would convert 1 unit.
   if (!/\d/.test(t) && (/\b(?:one|two|three|four|five|six|seven|eight|nine|ten|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety|hundred|half|quarter|dozen)\b/i.test(t) || /(?<![א-ת])(?:חצי|מאה|מאתיים|עשרים|שלושים|ארבעים|חמישים|שישים|שבעים|שמונים|תשעים)(?![א-ת])/.test(t))) return null;
   const n = /(\d{1,3}(?:[ \u00a0\u202f]\d{3})+(?:\.\d+)?|\d[\d,]*(?:\.\d+)?)\s*(k\b|m\b|bn\b|billion|thousand|million|אלף|מיליון|מיליארד)?/i.exec(t);
