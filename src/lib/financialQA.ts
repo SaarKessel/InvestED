@@ -868,7 +868,7 @@ function loanCalc(message: string, lang: QALanguage): QAPlan | null {
     const a = scaled(amtM?.[1], amtM?.[2]);
     const r = parseNum(rateM?.[1]);
     const y = yM ? Number(yM[1]) : null;
-    if (!a || !r || !y) {
+    if (!a || r === null || !y) {
       return clarifyPlan("loan", "To compute a monthly payment I need the loan amount, annual interest rate, and term in years. For example: a 1.2 million mortgage at 4.8% for 25 years.");
     }
     amount = a;
