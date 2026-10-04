@@ -73,7 +73,7 @@ describe("factors boundaries (B191)", () => {
     expect(rangePosition(mk(14, (i) => ({ close: 5 + i, high: 5 + i, low: 5 + i }))).status).toBe("computed");
   });
   it("atrPercent: n+1 window, true range uses prev close, exact value", () => {
-    const h = mk(15, (i) => ({ close: 100, high: 101, low: 99 }));
+    const h = mk(15, () => ({ close: 100, high: 101, low: 99 }));
     expect(v(atrPercent(h))).toBe(0.02);
     const gap = mk(15, (i) => (i === 14 ? { close: 120, open: 120, high: 121, low: 119 } : { close: 100, high: 101, low: 99 }));
     // last bar TR = max(2, |121-100|, |119-100|) = 21 ; others 2
