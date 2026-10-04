@@ -1395,11 +1395,19 @@ function detectExplicitAnnualReturnPct(
   // percentage that follows inflation, fee, tax or withdrawal wording is not a return.
   const NOT_A_RETURN = /(?:inflation|fees?|tax(?:es)?|withdraw(?:al)?s?|expense|cost)\W+(?:\w+\W+){0,3}$/i;
   const bareEnglish = [
-    /\b(?:at|assuming|assume|assumes|growing at|grows at|earning|earns)\s+(\d+(?:\.\d+)?)\s*(?:%|percent)/gi,
+    /\b(?:at|assuming|assume|assumes|growing at|grows at|earning|earns)\s+([-−]?\d+(?:\.\d+)?)\s*(?:%|percent)/gi,
     /(\d+(?:\.\d+)?)\s*(?:%|percent)\s*(?:a\s+year|per\s+year|annually|yearly)/gi,
     /(\d+(?:\.\d+)?)\s*(?:%|percent)\s*(?:for|over)\s+(?:the\s+next\s+)?\d+\s*years?/gi,
   ];
+  // Bare Hebrew rates ("ב-6 אחוז", "עם 6%"); a percentage after inflation, fee, tax or withdrawal wording is not a return.
+  const NOT_A_RETURN_HE = /(?:אינפלציה|עמלה|עמלות|דמי ניהול|מס|משיכה|למשוך|הוצאות)\W+(?:[א-תa-z]+\W+){0,3}$/i;
+  const bareHebrew = [/(?<![א-ת])(?:ב-?|עם\s+)([-−]?\d+(?:\.\d+)?)\s*(?:%|אחוזים?|אחוז)(?![א-ת])/gi];
   const bare: RegExpMatchArray[] = [];
+  for (const re of bareHebrew) {
+    for (const m of normalized.matchAll(re)) {
+      if (!NOT_A_RETURN_HE.test(normalized.slice(0, m.index ?? 0))) bare.push(m);
+    }
+  }
   for (const re of bareEnglish) {
     for (const m of normalized.matchAll(re)) {
       if (!NOT_A_RETURN.test(normalized.slice(0, m.index ?? 0))) bare.push(m);
@@ -1415,7 +1423,7 @@ function detectExplicitAnnualReturnPct(
       continue;
     }
 
-    const value = Number(match[1]);
+    const value = Number(match[1].replace("−", "-"));
 
     if (
       Number.isFinite(value) &&
