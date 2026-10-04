@@ -23,6 +23,7 @@ import {
 } from "./financialEducation";
 import { calculateRequiredMonthlyContribution as calcRequiredMonthlyContribution } from "./calculatorEngine";
 import { computeSchpitzer, parseLoanQuery } from "./loanEngine";
+import { hasNegativeAmount, looksLikeCalcRequest } from "./copilot/calcDesk";
 
 export type QALanguage = "he" | "en";
 
@@ -951,6 +952,10 @@ function adviceBoundary(message: string, lang: QALanguage, strict = false): QAPl
 export function planFinancialQA(message: string, lang: QALanguage, memory: QAMemory): QAPlan | null {
   const seeking = adviceBoundary(message, lang, true);
   if (seeking) return seeking;
+  // A negative amount in a projection ("invest -10000 ...") is not a plan the engine can read; do not answer from the other numbers alone.
+  if (hasNegativeAmount(message) && looksLikeCalcRequest(message)) return textPlan("negative_amount", lang === "he"
+    ? "לא קראתי סכום שלילי כתוכנית חיסכון או השקעה, ולכן לא חישבתי כלום. כתבו סכומים חיוביים (למשל סכום התחלתי והפקדה חודשית) ואחשב."
+    : "I cannot read a negative amount as a saving or investing plan, so I did not calculate anything. Write the amounts as positive numbers (for example a starting amount and a monthly deposit) and I will run it.");
   // Market-backed answers first (they may need live data).
   const gainLoss = gainLossCalc(message, lang);
   if (gainLoss) return gainLoss;
