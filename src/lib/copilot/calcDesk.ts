@@ -40,13 +40,14 @@ export function looksLikeCalcRequest(text: string): boolean {
 /** The engine can read "invest 10000 and save 500 a month" as a monthly 500 and no starting amount. When it found no starting amount, look for exactly one other plain amount in the sentence (not the monthly amount, not years, not a percent) and use it. Zero or several candidates: leave it alone. */
 export function findStartingAmount(text: string, monthly: number, years: number, target: number | null = null): number | null {
   const amounts: number[] = [];
-  for (const m of text.matchAll(/(\d[\d,]*(?:\.\d+)?)\s*(k\b)?(?!\d)/gi)) {
+  for (const m of text.matchAll(/(\d[\d,]*(?:\.\d+)?)(?:\s*(k\b|m\b|thousand\b|million\b|אלף|מיליון|מליון))?(?!\d)/gi)) {
     const rest = text.slice((m.index ?? 0) + m[0].length, (m.index ?? 0) + m[0].length + 12);
     if (/^\s*(?:%|per[\s-]?cent|pct\b|years?|yrs?|שנ|אחוז)/i.test(rest)) continue;
     if (/^\s*(?:(?:per|a|each|every|\/)\s*(?:month|week|day|שבוע|חודש)|weekly\b|monthly\b)/i.test(rest)) continue;
     if (/ל-?$/.test(text.slice(Math.max(0, (m.index ?? 0) - 2), m.index ?? 0)) && /^\s*שנ/.test(rest)) continue;
     if (/(?:&\s*P|S\s*&|nasdaq|dow|ftse|dax|index|מדד)\s*$/i.test(text.slice(Math.max(0, (m.index ?? 0) - 12), m.index ?? 0))) continue;
-    const v = Number(m[1].replace(/,/g, "")) * (m[2] ? 1000 : 1);
+    const sc = (m[2] ?? "").toLowerCase();
+    const v = Number(m[1].replace(/,/g, "")) * (/^(?:m|million|מיליון|מליון)$/.test(sc) ? 1e6 : sc ? 1000 : 1);
     if (Number.isFinite(v) && v > 0) amounts.push(v);
   }
   const other = amounts.filter((v) => v !== monthly && v !== years && v !== target);
