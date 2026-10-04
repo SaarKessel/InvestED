@@ -824,6 +824,20 @@ function retirementWithdrawal(message: string, lang: QALanguage): QAPlan | null 
     : `By the 4% rule (a research rule of thumb, not a guarantee): withdrawing 4% a year from ${fmt(amount, lang)} is ${fmt(yearly, lang)} a year, about ${fmt(yearly / 12, lang)} a month, before tax, raised with inflation each year. The rule is based on past US data and depends on the order of returns. This is an educational calculation, not advice.`);
 }
 
+function retireGoal(message: string, lang: QALanguage): QAPlan | null {
+  if (!/retire|retirement|לפרוש|פרישה|פורש/i.test(message)) return null;
+  const tm = message.match(new RegExp(`(?:with|עם|target of|יעד של)\\s*\\$?${NUM}\\s*${UNIT}`, "i"));
+  const target = tm ? scaled(tm[1], tm[2]) : null;
+  if (!target || target < 10_000) return null;
+  const needMonthly = /(?:need|needs|צריך|צריכה|צריכים)\s*\$?\d[\d,.]*\s*(?:k|m|אלף|thousand)?\s*(?:shekels?|ils?|dollars?|usd|ש["״']?ח|שקלים|₪)?\s*(?:(?:a|per|each|every)\s+month|monthly|בחודש|לחודש)/i.test(message);
+  if (needMonthly) {
+    return clarifyPlan("retire_goal", lang === "he"
+      ? "לא ברור לי מה הכוונה ב-\"צריך X בחודש\": האם זו הכנסה חודשית שתרצו לקבל בפרישה, או הפקדה חודשית שתחסכו עכשיו? לא הנחתי כלום ולא חישבתי. כתבו למשל: \"אני בן 35 ורוצה לפרוש בגיל 60 עם 3 מיליון, כמה לחסוך בחודש ב-6%\" או \"רוצה הכנסה של 15,000 בחודש בפרישה\"."
+      : "I am not sure what \"need X a month\" means here: a monthly income you want in retirement, or a monthly deposit you will save now? I did not assume anything and did not calculate. Write for example: \"I am 35 and want to retire at 60 with 3M, how much a month at 6%\" or \"I want 15,000 a month in retirement\".");
+  }
+  return null;
+}
+
 function goalSolver(message: string, lang: QALanguage): QAPlan | null {
   if (!/(reach|get to|hit|accumulate|להגיע|לצבור|למיליון|ליעד)/i.test(message)) return null;
   if (!/(per month|monthly|a month|each month|every month|כל חודש|בחודש|חודשי|להפקיד|לחסוך|save)/i.test(message)) return null;
@@ -967,6 +981,8 @@ export function planFinancialQA(message: string, lang: QALanguage, memory: QAMem
   const splitFirst = stockSplitCalc(message, lang);
   if (splitFirst) return splitFirst;
 
+  const retireG = retireGoal(message, lang);
+  if (retireG) return retireG;
   const goal = goalSolver(message, lang);
   if (goal) return goal;
 
