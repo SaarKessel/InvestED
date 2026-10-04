@@ -18,6 +18,17 @@ export interface CalcDeskResult {
   real: number;
   target: number | null;
   reachesTarget: boolean | null;
+  /** Set when an input is outside a plausible planning range; the numbers are unchanged, the note says so. */
+  warning?: { en: string; he: string };
+}
+
+/** A standalone negative amount ("invest -10000"): not a plan the calculator can read, so it is not silently turned positive. A percent ("at -2%") or a Hebrew prefix ("ל-10") is not one. */
+export const hasNegativeAmount = (t: string): boolean => /(?<![\p{L}\d])[-−]\s?\d[\d,.]*(?!\d|[\d,.]*\s*%)/u.test(t);
+
+export function planWarning(years: number, returnPct: number): CalcDeskResult["warning"] {
+  if (years > 60) return { en: `Note: ${years} years is far beyond a normal planning horizon, so treat this figure as arithmetic only.`, he: `שימו לב: ${years} שנים הוא אופק רחוק הרבה מעבר לתכנון רגיל, ולכן המספר הוא חשבון בלבד.` };
+  if (Math.abs(returnPct) > 30) return { en: `Note: a ${returnPct}% yearly return is far outside what markets have delivered over long periods. It is used exactly as you wrote it.`, he: `שימו לב: תשואה שנתית של ${returnPct}% רחוקה מאוד ממה שהשווקים נתנו לאורך זמן. היא משמשת בדיוק כפי שכתבתם.` };
+  return undefined;
 }
 
 const HAS_NUMBER = /\d/;
@@ -56,7 +67,7 @@ export function findStartingAmount(text: string, monthly: number, years: number,
 
 export function runCalcDesk(raw: string): CalcDeskResult | null {
   const text = normalizeAmountText(raw);
-  if (!looksLikeCalcRequest(text) || isNegatedAsk(text)) return null;
+  if (!looksLikeCalcRequest(text) || isNegatedAsk(text) || hasNegativeAmount(text)) return null;
   const r = analyzeFinancialScenarioWithProjection(text, "en");
   const s = r.scenario;
   if (!(s.years > 0) || (s.initialInvestment <= 0 && s.monthlyContribution <= 0)) return null;
@@ -79,5 +90,6 @@ export function runCalcDesk(raw: string): CalcDeskResult | null {
     real: proj.realValueAfterInflation,
     target,
     reachesTarget: target === null ? null : proj.finalBalance >= target,
+    ...(planWarning(s.years, s.annualReturnPct) ? { warning: planWarning(s.years, s.annualReturnPct) } : {}),
   };
 }

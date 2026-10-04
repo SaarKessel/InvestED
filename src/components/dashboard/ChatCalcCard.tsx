@@ -21,6 +21,7 @@ export function ChatCalcCard({ data }: { data: CalcDeskResult }) {
       </div>
       {data.target !== null && <p className="mt-3 font-medium">{t(data.reachesTarget ? "calc_target_yes" : "calc_target_no").replace("{target}", money(data.target))}</p>}
       <p className="mt-3 text-muted-foreground">{t("calc_assumption").replace("{rate}", String(data.returnPct))}</p>
+      {data.warning && <p className="mt-2 font-medium text-amber-600">{data.warning[language === "he" ? "he" : "en"]}</p>}
       <details className="mt-3">
         <summary className="cursor-pointer select-none font-medium text-muted-foreground hover:text-foreground">{t("calc_how")}</summary>
         <ol className="mt-1.5 list-decimal space-y-1 ps-5 text-muted-foreground">{calcSteps({ data, money, language: language === "he" ? "he" : "en" }).map((x, i) => <li key={i}>{x}</li>)}</ol>
