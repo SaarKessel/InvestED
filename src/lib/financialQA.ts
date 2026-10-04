@@ -835,7 +835,31 @@ function retireGoal(message: string, lang: QALanguage): QAPlan | null {
       ? "לא ברור לי מה הכוונה ב-\"צריך X בחודש\": האם זו הכנסה חודשית שתרצו לקבל בפרישה, או הפקדה חודשית שתחסכו עכשיו? לא הנחתי כלום ולא חישבתי. כתבו למשל: \"אני בן 35 ורוצה לפרוש בגיל 60 עם 3 מיליון, כמה לחסוך בחודש ב-6%\" או \"רוצה הכנסה של 15,000 בחודש בפרישה\"."
       : "I am not sure what \"need X a month\" means here: a monthly income you want in retirement, or a monthly deposit you will save now? I did not assume anything and did not calculate. Write for example: \"I am 35 and want to retire at 60 with 3M, how much a month at 6%\" or \"I want 15,000 a month in retirement\".");
   }
-  return null;
+  if (/withdraw|income|למשוך|משיכה|הכנסה|קצבה/i.test(message)) return null;
+  let y: number | null = null;
+  const ym = message.match(/(?:in|within|over|בעוד|תוך)\s*(\d+(?:\.\d+)?)\s*(?:years?|שנה|שנים|שנות)/i)
+    ?? message.match(/(\d+(?:\.\d+)?)\s*(?:years?|שנה|שנים)/i);
+  if (ym) y = Number(ym[1]);
+  else {
+    const now = message.match(/(?:i\s*am|i'm|age|aged)\s*(\d{2})\b/i) ?? message.match(/(?:בן|בת|גילי)\s*(\d{2})\b/);
+    const at = message.match(/(?:retire\s*(?:at|by|when i am)|retirement\s*at|פרוש\s*בגיל|לפרוש\s*בגיל|פרישה\s*בגיל|בגיל)\s*(\d{2})\b/i);
+    if (now && at && Number(at[1]) > Number(now[1])) y = Number(at[1]) - Number(now[1]);
+  }
+  if (!y || y <= 0 || y > 60) {
+    return clarifyPlan("retire_goal", lang === "he"
+      ? "כדי לחשב כמה לחסוך בחודש עד הפרישה אני צריכה את מספר השנים (או הגיל הנוכחי וגיל הפרישה). לא הנחתי כלום ולא חישבתי. למשל: \"אני בן 35 ורוצה לפרוש בגיל 60 עם 3 מיליון\"."
+      : "To work out the monthly saving I need the number of years (or your current age and retirement age). I did not assume anything and did not calculate. For example: \"I am 35 and want to retire at 60 with 3M\".");
+  }
+  const rm = message.match(/(\d+(?:\.\d+)?)\s*(?:%|אחוז|percent)/i);
+  const r = rm ? Number(rm[1]) : 7;
+  if (r < 0 || r > 30) return null;
+  const monthly = calcRequiredMonthlyContribution(target, 0, y, r);
+  if (!Number.isFinite(monthly) || monthly <= 0) return null;
+  const contributed = monthly * y * 12;
+  const rateNote = rm ? "" : (lang === "he" ? ` לא ציינת תשואה, ולכן הנחתי ${r}% בשנה כברירת מחדל לימודית, לא כתחזית.` : ` You did not give a return, so I used ${r}% a year as a teaching default, not a forecast.`);
+  return textPlan("retire_goal", lang === "he"
+    ? `כדי להגיע ל-${fmt(target, lang)} בעוד ${fmt(y, lang, 0)} שנים בהנחת תשואה של ${fmt(r, lang)}% בשנה, צריך להפקיד בערך ${fmt(monthly, lang, 0)} בחודש. סך ההפקדות: ${fmt(contributed, lang, 0)}, והשאר מגיע מהתשואה.${rateNote} החישוב מניח התחלה מאפס, הפקדה בסוף כל חודש וריבית דריבית חודשית, לפני מסים ועמלות. זה חישוב לימודי, לא ייעוץ.`
+    : `To reach ${fmt(target, lang)} in ${fmt(y, lang, 0)} years at ${fmt(r, lang)}% a year, you would need to save about ${fmt(monthly, lang, 0)} a month. Total deposits: ${fmt(contributed, lang, 0)}, and the rest comes from returns.${rateNote} It assumes starting from zero, a deposit at the end of each month and monthly compounding, before tax and fees. This is an educational calculation, not advice.`);
 }
 
 function goalSolver(message: string, lang: QALanguage): QAPlan | null {
