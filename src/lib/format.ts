@@ -161,3 +161,15 @@ export function riskBandLabel(
       return band ?? t("risk_band_medium", "Medium");
   }
 }
+
+/** Display cap for projections: past one trillion the digits are arithmetic noise, so show "over 1 trillion" in the sentence language instead of a 30-digit number. */
+export const DISPLAY_CAP = 1e12;
+export function formatCurrencyCapped(value: number, currencyCode: string = "ILS", language: string = "en"): string {
+  if (Number.isFinite(value) && Math.abs(value) >= DISPLAY_CAP) {
+    const cap = formatCurrency(DISPLAY_CAP, currencyCode, language).replace(/[\d,.\s\u00a0]+/g, (m) => (/\d/.test(m) ? "\u0000" : m)).replace("\u0000", "");
+    const sym = cap.replace(/[\u200e\u200f]/g, "").trim();
+    const sign = value < 0 ? "-" : "";
+    return language === "he" ? `${sign}מעל טריליון ${sym}`.trim() : `${sign}over 1 trillion ${sym}`.trim();
+  }
+  return formatCurrency(value, currencyCode, language);
+}

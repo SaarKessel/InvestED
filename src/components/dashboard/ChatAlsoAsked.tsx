@@ -3,9 +3,10 @@ import { Link } from "react-router-dom";
 import enLocale from "@/locales/en.json";
 import heLocale from "@/locales/he.json";
 import { CHAT_TOOLS } from "./chatTools";
-import { alsoAnswered, toolHints } from "@/lib/copilot/multiPart";
+import { alsoAnswered, toolHints, isAdviceRefusal } from "@/lib/copilot/multiPart";
 
 export function ChatAlsoAsked({ question, answer }: { question: string; answer: string }) {
+  if (isAdviceRefusal(answer)) return null;
   const he = /[א-ת]/.test(question);
   const dict = (he ? heLocale : enLocale) as Record<string, string>;
   const items = alsoAnswered(question, answer);

@@ -1,13 +1,13 @@
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/context/languageContext";
 import type { CalcDeskResult } from "@/lib/copilot/calcDesk";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrencyCapped } from "@/lib/format";
 import { calcSteps } from "@/lib/copilot/calcExplain";
 
 /** Read-only projection card. Numbers come from calculatorEngine; the rate is a labeled teaching assumption. */
 export function ChatCalcCard({ data }: { data: CalcDeskResult }) {
   const { t, language } = useLanguage();
-  const money = (v: number) => formatCurrency(v, data.currency, language);
+  const money = (v: number) => formatCurrencyCapped(v, data.currency, language);
   const cell = (label: string, value: string) => <div><p className="text-muted-foreground">{label}</p><p className="mt-0.5 text-sm font-semibold" dir="ltr">{value}</p></div>;
   return (
     <div className="mt-3 rounded-lg border border-border/70 bg-background/70 p-3 text-xs">
