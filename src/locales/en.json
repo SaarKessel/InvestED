@@ -2063,7 +2063,7 @@
   "calc_contributed": "You put in",
   "calc_growth": "Growth",
   "calc_real": "In today's money",
-  "calc_assumption": "Assumed return {rate}% a year. This is an invented teaching assumption, not a forecast.",
+  "calc_assumption": "Assumed return {rate}% a year. Compounded monthly: annual rate divided by 12, with deposits added at month end. This is an educational calculation assumption, not a forecast.",
   "calc_inputs": "{monthly} a month, starting {principal}, for {years} years",
   "calc_target_yes": "This reaches your target of {target}.",
   "calc_target_no": "This falls short of your target of {target}.",

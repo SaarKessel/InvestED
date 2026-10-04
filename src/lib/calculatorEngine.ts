@@ -1379,7 +1379,7 @@ function detectExplicitAnnualReturnPct(
     .trim();
 
   const patterns = [
-    /(?:תשואה|תשואה שנתית)\s*(?:של|שנתית של)?\s*(\d+(?:\.\d+)?)\s*(?:%|אחוזים?)/i,
+    /(?:תשואה|ריבית)\s*(?:שנתית\s*)?(?:של\s*)?(\d+(?:\.\d+)?)\s*(?:%|אחוזים?)/i,
     /(?:ב|עם|לפי|על)\s*(?:תשואה|תשואה שנתית)\s*(?:של)?\s*(\d+(?:\.\d+)?)\s*(?:%|אחוזים?)/i,
     /(?:annual\s+return|expected\s+return|return)\s*(?:of|at|is)?\s*(\d+(?:\.\d+)?)\s*%/i,
     /(\d+(?:\.\d+)?)\s*%\s*(?:תשואה|תשואה שנתית|return|annual return)/i,
