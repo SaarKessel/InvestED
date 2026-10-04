@@ -249,6 +249,15 @@ export function buildCopilotResponse(
   else if (!text && strategyOutput) text = strategyCopilotText(strategyOutput, resolution.language);
   else if (!text) text = educationalFallback(message, resolution.language);
 
+  // A compared asset with no data is named, not silently left out of the answer.
+  if (assets.length > 0 && resolution.intent === "comparison") {
+    const have = new Set(assets.map((x) => x.symbol.toUpperCase()));
+    const missing = resolution.comparisonSet.filter((x) => !have.has(x.toUpperCase()));
+    if (missing.length > 0) text += resolution.language === "en"
+      ? ` No market data is available for ${missing.join(", ")}, so it is not in this comparison and I have not invented any figures for it.`
+      : ` אין נתוני שוק זמינים עבור ${missing.join(", ")}, ולכן הוא לא נכלל בהשוואה ולא המצאתי עבורו נתונים.`;
+  }
+
 
   // No supported asset-rating model exists here. Metrics are not an overall score.
   if (assets.length > 0 && /\b(?:score|rating|rank)\b|(?<![א-ת])(?:ה?ציון|ה?דירוג)(?![א-ת])/i.test(message) && !financialNeeded && !profileUsed && !strategyOutput) {
