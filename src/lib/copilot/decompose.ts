@@ -13,6 +13,9 @@ export function splitParts(text: string): string[] {
 }
 /** "100 USD in EUR and 50 GBP in ILS" / "inflation in Germany and unemployment in France": a plain "and" splits only when both halves are, on their own, a currency conversion or a country statistic. */
 function splitDeskPairs(part: string): string[] {
+  // "what is 15% of 2400 and what is 2400 * 1.15": a second question word after "and" starts a new question, when both sides carry numbers.
+  const q = /^(.*\d.*?)\s*,?\s+(?:and|ו-?)\s*((?:what|how much|how many|calculate|compute|convert|מה|כמה|חשב|חשבי)(?![א-ת]).*\d.*)$/is.exec(part);
+  if (q && /^(?:what|how|calc|comp|conv|מה|כמה|חשב|חשבי)/i.test(q[1].trim())) return [q[1].trim(), ...splitDeskPairs(q[2].trim())];
   const m = /^(.+?)\s*,?\s+(?:and|ו-?)\s*(.+)$/is.exec(part);
   if (!m) return [part];
   const [a, b] = [m[1].trim(), m[2].trim()];
