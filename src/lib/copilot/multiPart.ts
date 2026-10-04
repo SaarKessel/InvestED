@@ -44,4 +44,4 @@ export function toolHints(question: string): ToolHint[] {
 export const hasExtraParts = (question: string, mainAnswer: string): boolean => alsoAnswered(question, mainAnswer).length > 0 || toolHints(question).length > 0;
 
 /** The advice-boundary refusal is a complete answer. Definition cards and tool pointers after it only clutter it. */
-export const isAdviceRefusal = (answer: string): boolean => /^\s*(?:I cannot tell you what to buy or sell|This is an educational simulation, not investment advice|אני לא יכולה לומר לך מה לקנות|זו סימולציה לימודית ולא ייעוץ השקעות)/.test(answer);
+export const isAdviceRefusal = (answer: string): boolean => /^\s*(?:I (?:cannot|can.t|can not) (?:tell you what to buy|recommend)|This is an educational simulation, not investment advice|אני לא (?:יכולה|יכול) (?:לומר|להמליץ)|זו סימולציה לימודית ולא ייעוץ השקעות)/.test(answer);

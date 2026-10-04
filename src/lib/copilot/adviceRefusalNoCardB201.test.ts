@@ -18,3 +18,9 @@ describe("advice refusal suppresses extra cards", () => {
     expect(isAdviceRefusal("A stock is a share of ownership.")).toBe(false);
   });
 });
+
+describe("live wording variant", () => {
+  it("matches the Hebrew variant seen on the live site", () => {
+    expect(isAdviceRefusal("אני לא יכולה להמליץ לך על מניה מסוימת או לומר לך מה לקנות או למכור")).toBe(true);
+  });
+});
