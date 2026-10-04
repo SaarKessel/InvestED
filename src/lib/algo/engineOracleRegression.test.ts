@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // Regression tests added after mutation testing showed cost, P&L, exposure and
 // walk-forward window math was not pinned by exact expected values.
 // Expected values come from an independent re-implementation written here
@@ -165,5 +166,45 @@ describe("walk-forward window math matches an independent computation", () => {
     expect(r.status === "computed" && r.value.windows.length).toBe(4);
     const r2 = walkForward(h, strat, {}, { windows: 5, minBars: 33 });
     expect(r2.status === "computed" && r2.value.windows.length).toBe(0); // size 32 < 33
+  });
+});
+
+describe("walk-forward overfit warning and guards", () => {
+  const trending = Array.from({ length: 140 }, (_, i) => 100 + i * 0.5 + Math.sin(i / 3) * 4);
+  const choppyDown = Array.from({ length: 60 }, (_, i) => trending[139] - i * 0.8 + Math.sin(i / 2) * 5);
+  const cl = [...trending, ...choppyDown];
+  const h2 = hist(cl, cl);
+  it("warns when out-of-sample Sharpe falls below half of in-sample Sharpe, with both numbers", () => {
+    const r = walkForward(h2, strat);
+    expect(r.status).toBe("computed");
+    if (r.status !== "computed") return;
+    const sh = (m: any) => (m.status === "computed" ? m.value.sharpeRatio.value : null);
+    const sIn = sh(r.value.inSample), sOut = sh(r.value.outOfSample);
+    expect(sIn).not.toBeNull(); expect(sOut).not.toBeNull();
+    expect(sIn).toBeGreaterThan(0);
+    expect(sOut).toBeLessThan(sIn * 0.5);
+    const w = r.value.warnings.find((x) => x.en.startsWith("Sharpe was"));
+    expect(w).toBeDefined();
+    expect(w!.en).toContain(`Sharpe was ${sIn} in-sample but only ${sOut} out-of-sample`);
+  });
+  it("no overfit warning when out-of-sample Sharpe holds up", () => {
+    const steady = Array.from({ length: 200 }, (_, i) => 100 + i * 0.4 + Math.sin(i / 3) * 3);
+    const r = walkForward(hist(steady, steady), strat);
+    if (r.status !== "computed") throw new Error("expected computed");
+    const sh = (m: any) => (m.status === "computed" ? m.value.sharpeRatio.value : null);
+    const sIn = sh(r.value.inSample), sOut = sh(r.value.outOfSample);
+    const expectWarn = sIn !== null && sOut !== null && sIn > 0 && sOut < sIn * 0.5;
+    expect(r.value.warnings.some((x) => x.en.startsWith("Sharpe was"))).toBe(expectWarn);
+  });
+  it("trainFraction must be strictly between 0 and 1", () => {
+    for (const f of [0, 1, -0.2, NaN]) expect(walkForward(hist(closes, opens), strat, {}, { trainFraction: f }).status).toBe("unavailable");
+    expect(walkForward(hist(closes, opens), strat, {}, { trainFraction: 0.5 }).status).toBe("computed");
+    expect(walkForward(hist(closes, opens), strat, {}, { trainFraction: 0.99 }).status).toBe("unavailable"); // too few out-of-sample points
+    expect(walkForward(hist(closes, opens), strat, {}, { trainFraction: 0.01 }).status).toBe("unavailable");
+  });
+  it("trade-count warning wording and threshold: 3 closed trades out-of-sample is enough", () => {
+    const r = walkForward(h2, strat);
+    if (r.status !== "computed") throw new Error("expected computed");
+    expect(r.value.warnings.some((x) => x.en.includes("too few")) ).toBe(r.value.outOfSampleTrades < 3);
   });
 });
