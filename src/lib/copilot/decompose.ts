@@ -1,5 +1,7 @@
 /** Task decomposition: splits a long question into ordered sub-questions and plans each with the existing planner. Planning only; the chat pipeline still runs every route. */
 import { planQuestion, type Plan, type Route } from "./planner";
+import { parseFxRequest } from "./fxDesk";
+import { parseWbRequest } from "./worldBankDesk";
 
 export const MAX_TASKS = 5;
 export interface SubTask { index: number; text: string; route: Route; tools: Plan["tools"] }
@@ -7,6 +9,18 @@ export interface Decomposition { tasks: SubTask[]; /** true when the question ha
 
 const SPLIT = /(?<=[.?!؟])(?<!\b(?:vs|e\.g|i\.e|u\.s|dr|mr|mrs|ms|inc|ltd|approx)\.)(?!(?<=\b(?:no|jan|feb|mar|apr|aug|sept?|oct|nov|dec)\.)\s+\d)\s+|\s+\d\.\s+(?=[A-Za-z\u05d0-\u05ea])|\s*;\s*|\n+|\s+(?:and then|and also|then|after that|afterwards|also|ואז|אחר כך|ואחר כך|וגם)\s+|\s*\(?\b\d\)\s+|^\s*\d\.\s+/i;
 export function splitParts(text: string): string[] {
+  return splitParts0(text).flatMap(splitDeskPairs);
+}
+/** "100 USD in EUR and 50 GBP in ILS" / "inflation in Germany and unemployment in France": a plain "and" splits only when both halves are, on their own, a currency conversion or a country statistic. */
+function splitDeskPairs(part: string): string[] {
+  const m = /^(.+?)\s*,?\s+(?:and|ו-?)\s*(.+)$/is.exec(part);
+  if (!m) return [part];
+  const [a, b] = [m[1].trim(), m[2].trim()];
+  const same = (f: (t: string) => unknown) => !!f(a) && !!f(b);
+  const wbThenOther = !!parseWbRequest(a) && (!!parseWbRequest(b) || /inflation|unemployment|\bgdp\b|growth|אינפלציה|אבטלה|תמ["״']?ג|תוצר/i.test(b));
+  return same(parseFxRequest) || wbThenOther ? [a, ...splitDeskPairs(b)] : [part];
+}
+function splitParts0(text: string): string[] {
   return text.split(SPLIT).map((s) => s?.trim().replace(/^(?:and then|then|after that|afterwards|also|and|ואז|אחר כך|ואחר כך|וגם)\s+/i, "")).filter((s): s is string => !!s && !/^(?:and|then|also|ו)$/i.test(s) && (s.replace(/[^A-Za-z0-9א-ת]/g, "").length >= 3 || /\d\s*[-+*/x×÷^]\s*\d/.test(s)));
 }
 export function decompose(question: string): Decomposition {
