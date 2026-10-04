@@ -915,8 +915,30 @@ function taxCalc(message: string, lang: QALanguage): QAPlan | null {
     : "Which country does this concern? Capital gains tax rates differ between countries (in Israel it is generally 25% of the real gain). You can also state a rate and I will compute it right away.");
 }
 
-function adviceBoundary(message: string, lang: QALanguage): QAPlan | null {
-  if (!/כדאי\s+(לי\s+)?(לקנות|להשקיע|למכור)|האם\s+כדאי|מה\s+כדאי|מומלץ\s+לקנות|should\s+i\s+(buy|invest|sell)|is\s+it\s+(a\s+)?good\s+(idea|time)\s+to\s+(buy|invest)/i.test(message)) return null;
+/** Pick-a-stock, where-to-put-my-money and is-X-a-buy phrasings. Checked before any desk so a ticker or a concept in the question cannot turn them into a price card or a definition. */
+const ADVICE_SEEKING = new RegExp([
+  String.raw`\b(?:what|which|where|how)\b[^?.]{0,40}\bshould\s+i\s+(?:buy|sell|invest|put|park)\b`,
+  String.raw`\bwhere\s+(?:should|can|do)\s+i\s+(?:put|invest|park)\b`,
+  String.raw`\btell\s+me\s+(?:what|which)\s+(?:to\s+)?(?:buy|sell|invest)\b`,
+  String.raw`\bwhat\s+(?:to|should\s+i)\s+(?:buy|sell|invest)\b`,
+  String.raw`\b(?:best|top|hot|good)\s+(?:stocks?|shares?|etfs?|crypto|coins?)\s+(?:to\s+)?(?:buy|invest|pick)\b`,
+  String.raw`\b(?:stock|share|crypto)\s+tips?\b`,
+  String.raw`\b(?:recommend|suggest|pick)\s+(?:me\s+)?(?:a|an|some|the)\s+(?:\w+\s+)?(?:stocks?|shares?|etfs?|funds?|crypto|coins?)\b`,
+  String.raw`\bis\s+[A-Za-z.]{1,10}\s+a\s+(?:buy|sell)\b(?!\s+(?:order|side|rating|signal|and))`,
+  String.raw`\bis\s+(?:now|today)\s+a\s+good\s+time\s+to\s+(?:buy|sell|invest)\b`,
+  String.raw`\bgood\s+time\s+to\s+(?:buy|sell)\b`,
+  String.raw`\bshould\s+i\s+(?:put|move)\s+[^?]{0,40}\b(?:into|in)\s+(?:bitcoin|btc|crypto|gold|stocks?|[A-Z]{2,5}\b)`,
+  String.raw`(?:איזו|איזה|מה|במה|איפה|היכן)\s+(?:מניה\s+|מניות\s+|קרן\s+|נכס\s+|מטבע\s+|קריפטו\s+)?(?:הכי\s+)?(?:כדאי\s+)?(?:לי\s+)?(?:ל(?:קנות|מכור|השקיע|שים|הפקיד))`,
+  String.raw`(?:תמליץ|תמליצי|המלץ|המליצי|תציע|תציעי|תבחרי?|תן|תני)\s+(?:לי\s+)?(?:על\s+)?(?:מניה|מניות|קרן|טיפ|המלצה)`,
+  String.raw`(?:איזו|איזה)\s+מניה\s+(?:תעלה|תרוויח|תזנק|תצנח|תרד)`,
+  String.raw`טיפ\s+(?:ל)?(?:מניה|קריפטו)`,
+  String.raw`^\s*(?:האם\s+)?(?:לקנות|למכור)(?![א-ת])`,
+  String.raw`(?:לקנות|למכור)\s+או\s+(?:ל)?(?:קנות|מכור)`,
+  String.raw`\S+\s+(?:קנייה|מכירה)\s*\?`,
+].join("|"), "iu");
+
+function adviceBoundary(message: string, lang: QALanguage, strict = false): QAPlan | null {
+  if (strict ? !ADVICE_SEEKING.test(message) : !/כדאי\s+(לי\s+)?(לקנות|להשקיע|למכור)|האם\s+כדאי|מה\s+כדאי|מומלץ\s+לקנות|should\s+i\s+(buy|invest|sell)|is\s+it\s+(a\s+)?good\s+(idea|time)\s+to\s+(buy|invest)/i.test(message)) return null;
   return textPlan("advice_boundary", lang === "he"
     ? "אני לא יכולה לומר לך מה לקנות או למכור - זו החלטה אישית שתלויה באופק, בסיבולת הסיכון ובמצב הכלכלי שלך. אני כן יכולה לעזור לך להחליט: להסביר מושגים, לחשב תרחישים, להשוות נכסים או לבדוק כמה מניות אפשר לקנות בסכום מסוים."
     : "I cannot tell you what to buy or sell - that is a personal decision that depends on your horizon, risk tolerance, and financial situation. I can help you decide: explain concepts, compute scenarios, compare assets, or check how many shares a given amount buys.");
@@ -927,6 +949,8 @@ function adviceBoundary(message: string, lang: QALanguage): QAPlan | null {
 // ---------------------------------------------------------------------------
 
 export function planFinancialQA(message: string, lang: QALanguage, memory: QAMemory): QAPlan | null {
+  const seeking = adviceBoundary(message, lang, true);
+  if (seeking) return seeking;
   // Market-backed answers first (they may need live data).
   const gainLoss = gainLossCalc(message, lang);
   if (gainLoss) return gainLoss;
