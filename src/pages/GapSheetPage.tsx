@@ -47,6 +47,8 @@ export default function GapSheetPage() {
   const [ledger, setLedger] = useState<LedgerEntry[]>(loadLedger);
   useEffect(() => { try { localStorage.setItem(LEDGER, JSON.stringify(ledger)); } catch { /* storage blocked */ } }, [ledger]);
   const fileRef = useRef<HTMLInputElement>(null);
+  // DOT voice edits write the workbook to storage and fire this event; reload so the page never overwrites them with stale state.
+  useEffect(() => { const h = () => { const w = loadSaved(); if (w) setState(w); }; window.addEventListener("invested:gapsheet-reload", h); return () => window.removeEventListener("invested:gapsheet-reload", h); }, []);
   useEffect(() => { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch { /* storage full or blocked: the sheet still works */ } }, [state]);
   const [history, setHistory] = useState<WorkbookState[]>([]);
   const [msgs, setMsgs] = useState<Msg[]>([]);

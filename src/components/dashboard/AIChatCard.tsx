@@ -55,6 +55,7 @@ import { type TraceStep } from "@/lib/copilot/planner";
 import { routeRequest } from "@/lib/intelligence/router";
 import { VoiceOrb, VoiceDot } from "./VoiceOrb";
 import { DotLive } from "./DotLive";
+import { useTheme } from "@/hooks/useTheme";
 import { LevelPicker } from "./LevelPicker";
 import { checkFile, giveConsent, hasConsent } from "@/lib/copilot/fileAnalysis";
 import { askAboutFile, prepareFile, type PreparedFile } from "@/lib/copilot/fileClient";
@@ -99,7 +100,8 @@ const MIN_RETRIEVE_SCORE = 3;
 interface Message { ledger?: LedgerResult | null; dividends?: DividendResult | null; copyfund?: CopyFundResult | null; oos?: OosDeskResult | null; retrieved?: Passage[]; prov?: Provenance; agent?: { id: string | null; switchTo?: string }; deep?: { steps: number; reworded: boolean }; trace?: TraceStep[]; role: "user" | "copilot"; fileNote?: string; fromFile?: boolean; text: string; response?: CopilotResponse; careerLaunch?: boolean; siteCaps?: SiteCapability[]; desk?: DataDeskResult; calc?: CalcDeskResult; math?: MathDeskResult; fx?: FxResult | null; fxFailed?: boolean; symbol?: SymbolInfo; wb?: WbResult | null; filings?: FilingsResult | null; etf?: EtfResult | null; macro?: MacroResult | null; scenario?: ScenarioPart[]; marketsim?: MarketEventResult; learnPath?: boolean; question?: string; knowledge?: KnowledgeItem[]; }
 
 export function AIChatCard({ workstation = false }: { workstation?: boolean } = {}) {
-  const { t, language } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
+  const { setTheme } = useTheme();
   const { askCopilot, isAnalyzing, reset } = useAnalysis();
   const navigate = useNavigate();
   const toolOpen = toolForPath(useLocation().pathname) !== null;
@@ -638,7 +640,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
       </div>
       {talk && <VoiceOrb accent={(() => { const last = [...messages].reverse().find((m) => m.role === "user"); return getAgent(last?.agent?.id ?? pickedAgent)?.color ?? null; })()} state={speakingIdx !== null ? "speaking" : isAnalyzing ? "thinking" : listening ? "listening" : (voiceError || speechNote || !SpeechCtor) ? "error" : "idle"} onClose={toggleTalk} onTapOrb={() => { if (speakingIdx !== null) { stopSpeaking(); setSpeakingIdx(null); } else toggleVoice(); }} onStopSpeech={() => { stopSpeaking(); setSpeakingIdx(null); }} speechLang={orbLang} onLang={changeVoiceLang} heard={heard} reply={(() => { const last = [...messages].reverse().find((m) => m.role === "copilot"); return last ? cleanForSpeech(last.text).slice(0, 280) : ""; })()} note={speechNote === "no_voice" ? t("speak_no_voice") : speechNote === "unsupported" ? t("speak_unsupported") : voiceNote} code={voiceError ? voiceCode : null} trace={voiceError ? voiceTrace : undefined} />}
       {user && !talk && !dotOpen && <VoiceDot state="idle" onOpen={() => setDotOpen(true)} accent={null} />}
-      {user && dotOpen && <DotLive ctx={{ navigate, askCopilot: async (q) => (await askCopilot(q)).response.text }} onClose={() => setDotOpen(false)} onFallback={() => { setDotOpen(false); if ((canSpeak || SpeechCtor) && !talkRef.current) toggleTalk(); }} />}
+      {user && dotOpen && <DotLive ctx={{ navigate, setLanguage: (l) => setLanguage(l), setTheme: (th) => setTheme(th), askCopilot: async (q) => (await askCopilot(q)).response.text }} onClose={() => setDotOpen(false)} onFallback={() => { setDotOpen(false); if ((canSpeak || SpeechCtor) && !talkRef.current) toggleTalk(); }} />}
       {!user && !authLoading && <><ChatAuthGate /><GateShowcase /></>}
       {user && <div className={started ? "sticky bottom-0 bg-background/90 pb-3 pt-2 backdrop-blur" : ""}>
         {consentAsk && !consented && (

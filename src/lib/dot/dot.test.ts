@@ -33,7 +33,7 @@ describe("DOT tools and policy gate", () => {
   });
   it("no registered tool is tier 3 and none touches credentials or payments", () => {
     expect(TOOLS.every((t) => t.tier < 3)).toBe(true);
-    expect(TOOLS.map((t) => t.name).join(" ")).not.toMatch(/password|card|payment|login|trade|order/i);
+    expect(TOOLS.map((t) => t.name).join(" ")).not.toMatch(/password|card|payment|login|trade|(?<!paper_)order/i);
   });
   it("downsamples to 16 kHz 16-bit", () => { const out = floatToPcm16(new Float32Array(480).fill(0.5), 48000); expect(out.length).toBe(160); expect(out[0]).toBeGreaterThan(16000); });
 });
@@ -51,5 +51,49 @@ describe("/api/dot-token", () => {
     delete process.env.GEMINI_API_KEY;
     const r = await call({ authorization: "Bearer x" });
     expect(JSON.stringify(r)).not.toMatch(/AIza/); expect(r.code).toBe(200); expect(r.body).toMatchObject({ available: false, reason: "auth_not_configured" });
+  });
+});
+
+describe("DOT coverage map", () => {
+  // Every typed-action area from the Phase 0 inventory is either mapped to a tool or listed as an explicit gap. A new area must be added here.
+  const COVERAGE: Record<string, string | "GAP"> = {
+    navigation: "navigate", "copilot-qa": "ask_copilot", calculators: "ask_copilot", "news-research": "ask_copilot", "market-quotes": "get_quote",
+    "gapsheet-create": "create_gapsheet_table", "gapsheet-edit-sort-filter-formula-format-chart": "gapsheet_edit", language: "set_language", theme: "set_theme",
+    "gapsheet-export-import": "GAP", watchlist: "watchlist_add", "watchlist-read-remove": "watchlist_remove", "paper-ledger": "paper_order", "paper-ledger-view": "paper_ledger_view", simulation: "GAP", "learning-quiz": "GAP", "career-lab": "GAP", "data-controls": "GAP", "contact-form": "GAP", "file-upload": "GAP",
+    auth: "T3", payments: "T3", "real-money": "T3",
+  };
+  it("every mapped tool exists", () => { for (const [k, v] of Object.entries(COVERAGE)) if (v !== "GAP" && v !== "T3") expect(TOOLS.some((t) => t.name === v), k).toBe(true); });
+  it("T3 areas have no tool", () => { expect(TOOLS.some((t) => /auth|login|payment|money/i.test(t.name))).toBe(false); });
+});
+
+describe("gapsheet_edit", () => {
+  it("sorts and applies after confirmation for destructive clears", async () => {
+    localStorage.clear();
+    const mkc = () => ({ navigate() {}, language: "en" as const, askCopilot: async () => "" });
+    await runTool("create_gapsheet_table", { title: "T", columns: ["N", "V"], rows: [["a", "3"], ["b", "1"], ["c", "2"]] }, mkc(), async () => true);
+    const sorted = await runTool("gapsheet_edit", { type: "SORT", range: "A2:B4", keyColumn: "B", direction: "asc" }, mkc(), async () => true);
+    expect(sorted.result.ok).toBe(true);
+    const wb = JSON.parse(localStorage.getItem(GAPSHEET_STORE)!); expect(wb.sheets[0].cells.A2.value).toBe("b");
+    const declined = await runTool("gapsheet_edit", { type: "CLEAR_RANGE", range: "A1:B4" }, mkc(), async () => false);
+    expect(declined.result).toMatchObject({ ok: false, error: "user_declined" });
+    expect(JSON.parse(localStorage.getItem(GAPSHEET_STORE)!).sheets[0].cells.A2.value).toBe("b");
+    const bad = await runTool("gapsheet_edit", { type: "DROP_TABLE" }, mkc(), async () => true);
+    expect(bad.result).toMatchObject({ ok: false });
+  });
+});
+
+describe("watchlist and paper tools", () => {
+  const c = () => ({ navigate() {}, language: "en" as const, askCopilot: async () => "" });
+  it("adds, dedupes and removes watchlist symbols", async () => {
+    localStorage.clear();
+    expect((await runTool("watchlist_add", { symbol: "AAPL" }, c(), async () => true)).result.ok).toBe(true);
+    expect((await runTool("watchlist_add", { symbol: "AAPL" }, c(), async () => true)).result).toMatchObject({ already: true });
+    expect((await runTool("watchlist_get", {}, c(), async () => true)).result.symbols).toContain("AAPL");
+    expect((await runTool("watchlist_remove", { symbol: "AAPL" }, c(), async () => true)).result.ok).toBe(true);
+    expect((await runTool("watchlist_add", { symbol: "NOTAREALTHING9" }, c(), async () => true)).result).toMatchObject({ ok: false });
+  });
+  it("paper orders need confirmation and reject bad input", async () => {
+    expect((await runTool("paper_order", { side: "buy", quantity: 1, symbol: "AAPL" }, c(), async () => false)).result).toMatchObject({ error: "user_declined" });
+    expect((await runTool("paper_order", { side: "short", quantity: -1, symbol: "AAPL" }, c(), async () => true)).result).toMatchObject({ ok: false });
   });
 });
