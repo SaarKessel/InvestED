@@ -59,7 +59,7 @@ export function validateAction(input: unknown, state: WorkbookState, lang: Lang 
 
   if (action.type === "RENAME_SHEET") {
     const n = action.newName.trim();
-    if (!n || /[\[\]:*?/\\']/.test(n)) return fail("business", L(lang, "שם הגיליון לא יכול להיות ריק או להכיל [ ] : * ? / \\ או גרש.", "A sheet name cannot be empty or contain [ ] : * ? / \\ or an apostrophe."));
+    if (!n || /[[\]:*?/\\']/.test(n)) return fail("business", L(lang, "שם הגיליון לא יכול להיות ריק או להכיל [ ] : * ? / \\ או גרש.", "A sheet name cannot be empty or contain [ ] : * ? / \\ or an apostrophe."));
     if (n === sheet.name) return fail("business", L(lang, "זה כבר שם הגיליון.", "That is already the sheet name."));
     if (state.sheets.some((s) => s.id !== sheet.id && s.name.toLowerCase() === n.toLowerCase())) return fail("business", L(lang, `כבר יש גיליון בשם ${n}. שם גיליון חייב להיות ייחודי.`, `A sheet named ${n} already exists. Sheet names must be unique.`));
   }

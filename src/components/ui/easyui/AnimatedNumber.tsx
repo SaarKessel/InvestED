@@ -66,6 +66,7 @@ function DigitColumn({
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- pure formatter shared with tests
 export function formatAnimatedNumber(
   val: number,
   { decimals = 0, useGrouping = true, compact = false }: { decimals?: number; useGrouping?: boolean; compact?: boolean } = {}
