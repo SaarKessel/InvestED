@@ -67,3 +67,6 @@
 - Project: https://github.com/Surajmaurya1/easyui , site: https://easyui.site
 - License: MIT (verified from the repository LICENSE, Copyright (c) 2026 Suraj Maurya)
 - Use: source-copied UI components under src/components/ui/easyui/ and src/lib/easyui/motion.ts, adapted for InvestED design tokens, Hebrew/RTL and reduced motion. Also the motion patterns behind the accordion, tooltip, dialog and command-palette updates in src/components/ui/interactive.tsx and src/components/terminal/.
+
+## GapSheet (first-party)
+src/features/gapsheet is ported from SaarKessel/gapsheet (same owner). Deterministic engine only; no AI calls, no network, no data leaves the browser. Dependency added: zod (MIT).

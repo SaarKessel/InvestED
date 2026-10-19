@@ -12,6 +12,7 @@ const KEYWORDS: Record<string, { en: string[]; he: string[] }> = {
   "/simulation": { en: ["simulation", "simulator", "paper trading"], he: ["סימולציה", "סימולטור"] },
   "/trivia": { en: ["trivia", "quiz"], he: ["טריוויה", "חידון"] },
   "/calculator": { en: ["calculator", "smart calculator"], he: ["מחשבון", "מחשבון חכם"] },
+  "/gapsheet": { en: ["gapsheet", "excel", "spreadsheet"], he: ["גאפשיט", "אקסל", "גיליון"] },
   "/loans": { en: ["loan", "loans", "loan learning", "mortgage"], he: ["הלוואה", "הלוואות", "משכנתא", "למידת הלוואות"] },
   "/insurance-reports": { en: ["insurance", "insurance reports"], he: ["ביטוח", "דוחות ביטוח"] },
   "/markets": { en: ["markets", "watchlist", "market overview"], he: ["שווקים", "רשימת מעקב", "מעקב מניות"] },
