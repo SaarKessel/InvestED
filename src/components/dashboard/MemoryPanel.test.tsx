@@ -19,8 +19,8 @@ async function mount(a: MemoryApi) { act(() => root.render(<LanguageProvider><Me
 describe("MemoryPanel", () => {
   it("starts off and turning it on calls setConsent(true)", async () => {
     const a = api(); await mount(a);
-    const sw = container.querySelector<HTMLInputElement>("input[role=switch]")!;
-    expect(sw.checked).toBe(false);
+    const sw = container.querySelector<HTMLElement>("[role=switch]")!;
+    expect(sw.getAttribute("aria-checked")).toBe("false");
     expect(container.textContent).toContain("Off by default");
     await act(async () => { sw.click(); });
     expect(a.setConsent).toHaveBeenCalledWith(true);
@@ -33,7 +33,7 @@ describe("MemoryPanel", () => {
     const yes = [...container.querySelectorAll("button")].find((b) => b.textContent === "Yes, delete")!;
     await act(async () => { yes.click(); });
     expect(a.deleteAll).toHaveBeenCalledTimes(1);
-    expect(container.querySelector<HTMLInputElement>("input[role=switch]")!.checked).toBe(false);
+    expect(container.querySelector<HTMLElement>("[role=switch]")!.getAttribute("aria-checked")).toBe("false");
   });
   it("export calls exportMemory", async () => {
     URL.createObjectURL = vi.fn(() => "blob:x"); URL.revokeObjectURL = vi.fn();
@@ -45,6 +45,6 @@ describe("MemoryPanel", () => {
   it("shows unavailable when tables are missing", async () => {
     await mount(api({ getConsent: vi.fn().mockRejectedValue(new Error("no table")) }));
     expect(container.textContent).toContain("not available");
-    expect(container.querySelector("input[role=switch]")).toBeNull();
+    expect(container.querySelector("[role=switch]")).toBeNull();
   });
 });

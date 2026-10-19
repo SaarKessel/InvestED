@@ -5,6 +5,7 @@ import { LanguageProvider } from "@/context/languageContext";
 import { AuthProvider } from "@/context/authContext";
 import { AnalysisProvider } from "@/context/AnalysisContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { ToastProvider } from "@/components/ui/easyui/toast";
 import { Layout } from "@/components/layout/Layout";
 const AICopilotPage = lazy(() => import("@/pages/AICopilotPage"));
 
@@ -26,11 +27,13 @@ export default function App() {
       <ErrorBoundary>
         <ThemeProvider>
           <AnalysisProvider>
+          <ToastProvider>
           <BrowserRouter>
             <Routes>
               <Route path="*" element={<Suspense fallback={<PageLoading />}><AICopilotPage /></Suspense>} />
             </Routes>
           </BrowserRouter>
+          </ToastProvider>
         </AnalysisProvider>
       </ThemeProvider>
       </ErrorBoundary>

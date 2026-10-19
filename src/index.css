@@ -437,3 +437,5 @@ html.dark { color-scheme: dark; }
 *::-webkit-scrollbar-thumb { background: hsl(var(--muted-foreground) / 0.35); border-radius: 8px; }
 *::-webkit-scrollbar-thumb:hover { background: hsl(var(--muted-foreground) / 0.55); }
 *::-webkit-scrollbar-button { display: none; }
+
+@keyframes easyui-toast-progress { from { width: 100%; } to { width: 0%; } }

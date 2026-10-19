@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/context/languageContext";
+import { StretchSwitch } from "@/components/ui/easyui/StretchSwitch";
 import type { MemoryApi } from "@/lib/memory/memoryApi";
 
 const T = {
@@ -37,10 +38,10 @@ export function MemoryPanel({ api }: { api: MemoryApi }) {
       <p className="pb-1 pt-4 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{s.title}</p>
       {failed ? <p role="status" className="text-xs text-muted-foreground">{s.unavailable}</p> : (
         <div className="flex flex-col gap-2">
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" role="switch" checked={!!consent} disabled={consent === null} onChange={() => void toggle()} aria-label={s.toggle} />
+          <div className="flex items-center gap-2 text-sm">
+            <StretchSwitch checked={!!consent} disabled={consent === null} onChange={() => void toggle()} aria-label={s.toggle} dir={language === "he" ? "rtl" : "ltr"} />
             <span>{s.toggle}</span>
-          </label>
+          </div>
           <p className="text-xs text-muted-foreground">{consent ? s.on : s.off}</p>
           <button type="button" className={btn} onClick={() => void doExport()}>{s.exp}</button>
           {confirming ? (

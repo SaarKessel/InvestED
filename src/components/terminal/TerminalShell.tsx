@@ -15,6 +15,9 @@ import { TerminalDialog } from "./TerminalDialog";
 import {loadSessions,saveSessions,closeSession,moveSession,type TerminalSession} from "./terminalSessions";
 import { Tooltip } from "@/components/ui/interactive";
 import { HamburgerMenu } from "@/components/ui/easyui/HamburgerMenu";
+import { useToast } from "@/components/ui/easyui/toast";
+import { motion, useReducedMotion } from "framer-motion";
+import { motionTransitions } from "@/lib/easyui/motion";
 
 const navigation = [
   { group: ["Intelligence", "מודיעין"], items: [{path:"/", label:["InvestED+", "InvestED+"], icon:Activity}, {path:"/dashboard",label:["Portfolio intelligence","מודיעין תיק השקעות"],icon:LayoutDashboard}] },
@@ -27,7 +30,7 @@ function workspaceName(path:string, t:(key:string)=>string, he:boolean) { const 
 
 export function TerminalShell({ children }: { children: ReactNode }) {
   const {language,t}=useLanguage(); const he=language==="he"; const l=he?1:0;
-  const {theme,toggleTheme}=useTheme(); const {toggleLanguage}=useLanguage(); const {user}=useAuth();
+  const {theme,toggleTheme}=useTheme();const toast=useToast();const reducedMotion=useReducedMotion()??false; const {toggleLanguage}=useLanguage(); const {user}=useAuth();
   const {pathname,state:routeState}=useLocation(); const navigate=useNavigate();
   const [mobileView,setMobileView]=useState<"ai"|"workspace">(toolForPath(pathname)?"workspace":"ai");
   const [compact,setCompact]=useState(false); const [mobileNav,setMobileNav]=useState(false);
@@ -43,7 +46,8 @@ export function TerminalShell({ children }: { children: ReactNode }) {
   useEffect(()=>{setSessions(current=>{if((pathname!=="/"&&!toolForPath(pathname))||current.tabs.some(tab=>tab.path===pathname))return current;return {...current,tabs:[...current.tabs,{id:crypto.randomUUID(),path:pathname}]};});setMobileNav(false);setMobileView(toolForPath(pathname)?"workspace":"ai");},[pathname]);
   const active=sessions.tabs.find(tab=>tab.id===activeId&&tab.path===pathname)??sessions.tabs.find(tab=>tab.path===pathname);
   const label=(tab:TerminalSession)=>tab.name||workspaceName(tab.path,t,he);
-  const closeTab=(tab:TerminalSession)=>{const next=closeSession(sessions,tab.id);setSessions(next);if(active?.id===tab.id){const target=next.tabs.at(-1);setActiveId(target?.id??"");navigate(target?.path??"/");}};
+  const closeTab=(tab:TerminalSession)=>{const next=closeSession(sessions,tab.id);setSessions(next);if(active?.id===tab.id){const target=next.tabs.at(-1);setActiveId(target?.id??"");navigate(target?.path??"/");}
+    toast.push({title:he?"סביבת העבודה נסגרה":"Workspace closed",description:label(tab),undoLabel:he?"שחזור":"Undo",onUndo:()=>{setSessions(current=>({tabs:[...current.tabs,tab],closed:current.closed.filter(closed=>closed.id!==tab.id)}));setActiveId(tab.id);navigate(tab.path);}});};
   const focusAI=()=>askAI();const askAI=(text?:string)=>{setMobileView("ai");requestAnimationFrame(()=>{const box=document.querySelector<HTMLTextAreaElement>(".terminal-copilot textarea");if(box&&text){Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,"value")?.set?.call(box,text);box.dispatchEvent(new Event("input",{bubbles:true}));}box?.focus();});};
   useEffect(()=>{const handler=(event:KeyboardEvent)=>{if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==="k"){event.preventDefault();setCommand(value=>!value);}else if((event.ctrlKey||event.metaKey)&&event.key==="/"){event.preventDefault();focusAI();}};window.addEventListener('keydown',handler);return ()=>window.removeEventListener('keydown',handler);},[]); // eslint-disable-line react-hooks/exhaustive-deps
   const restore=()=>{const tab=sessions.closed.at(-1);if(tab){setSessions(current=>({tabs:[...current.tabs,tab],closed:current.closed.slice(0,-1)}));setActiveId(tab.id);navigate(tab.path);}};
@@ -61,7 +65,7 @@ export function TerminalShell({ children }: { children: ReactNode }) {
       <div className="terminal-nav-foot"><label htmlFor="terminal-density">{he?"צפיפות תצוגה":"Display density"}</label><select id="terminal-density" value={density} onChange={event=>setDensity(event.target.value as Density)}><option value="comfortable">{he?"מרווחת":"Comfortable"}</option><option value="compact">{he?"קומפקטית":"Compact"}</option><option value="terminal">{he?"טרמינל":"Terminal"}</option></select></div>
     </aside>
     <div className="terminal-workspace-column">
-      <div className="terminal-session-rail"><div className="terminal-session-tabs" role="toolbar" aria-label={he?"סביבות עבודה":"Workspaces"}>{sessions.tabs.map(tab=><div key={tab.id} className="terminal-session" data-active={active?.id===tab.id}><button aria-pressed={active?.id===tab.id} onClick={()=>{setActiveId(tab.id);navigate(tab.path);}}>{tab.pinned&&<Pin size={11}/>} {label(tab)}</button><button className="terminal-tab-close" onClick={()=>{setEditing(tab.id);setName(tab.name??"");}} aria-label={`${he?"אפשרויות":"Options"} ${label(tab)}`}><MoreHorizontal size={14}/></button>{!tab.pinned&&<button className="terminal-tab-close" onClick={()=>closeTab(tab)} aria-label={`${he?"סגירה":"Close"} ${label(tab)}`}><X size={12}/></button>}</div>)}</div><button className="terminal-icon" disabled={!sessions.closed.length} onClick={restore} aria-label={he?"שחזור סביבת העבודה האחרונה":"Restore last workspace"}><RotateCcw size={14}/></button></div>
+      <div className="terminal-session-rail"><div className="terminal-session-tabs" role="toolbar" aria-label={he?"סביבות עבודה":"Workspaces"}>{sessions.tabs.map(tab=><div key={tab.id} className="terminal-session" data-active={active?.id===tab.id}>{active?.id===tab.id&&<motion.span layoutId="terminal-session-active" className="terminal-session-active" transition={reducedMotion?{duration:0}:motionTransitions.springMorph}/>}<button aria-pressed={active?.id===tab.id} onClick={()=>{setActiveId(tab.id);navigate(tab.path);}}>{tab.pinned&&<Pin size={11}/>} {label(tab)}</button><button className="terminal-tab-close" onClick={()=>{setEditing(tab.id);setName(tab.name??"");}} aria-label={`${he?"אפשרויות":"Options"} ${label(tab)}`}><MoreHorizontal size={14}/></button>{!tab.pinned&&<button className="terminal-tab-close" onClick={()=>closeTab(tab)} aria-label={`${he?"סגירה":"Close"} ${label(tab)}`}><X size={12}/></button>}</div>)}</div><button className="terminal-icon" disabled={!sessions.closed.length} onClick={restore} aria-label={he?"שחזור סביבת העבודה האחרונה":"Restore last workspace"}><RotateCcw size={14}/></button></div>
       <main className="terminal-workspace" aria-label={workspaceName(pathname,t,he)}>{toolForPath(pathname)?<ChatToolPanel key={`${pathname}:${(routeState as {symbol?:string}|null)?.symbol??""}`} />:<IntelligenceHome onFocusAI={()=>focusAI()}/>}</main>
     </div>
     <aside className="terminal-copilot" aria-label={he?"עוזר פיננסי":"Financial copilot"}>

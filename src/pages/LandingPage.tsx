@@ -20,6 +20,7 @@ import { LearningConstellation } from "@/components/landing/LearningConstellatio
 import { AINewsSection } from "@/components/news/AINewsSection";
 import { FlaskConical } from "lucide-react";
 import { Button, Card, CardContent } from "@/components/ui/primitives";
+import { SpotlightCard } from "@/components/ui/easyui/SpotlightCard";
 import { useLanguage } from "@/context/languageContext";
 
 export function LandingPage() {
@@ -253,7 +254,7 @@ export function LandingPage() {
                 viewport={{ once: true }}
                 transition={{ delay: index * 0.08 }}
               >
-                <Card className="h-full p-1">
+                <SpotlightCard className="h-full p-1">
                   <CardContent className="pt-5">
                     <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
                       <feature.icon className="h-5 w-5" />
@@ -267,7 +268,7 @@ export function LandingPage() {
                       {feature.desc}
                     </p>
                   </CardContent>
-                </Card>
+                </SpotlightCard>
               </motion.div>
             ))}
           </div>

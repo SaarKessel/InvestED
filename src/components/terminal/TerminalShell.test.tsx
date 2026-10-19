@@ -4,6 +4,7 @@ import {createRoot,type Root} from "react-dom/client";
 import {MemoryRouter} from "react-router-dom";
 import {afterEach,beforeEach,expect,it,vi} from "vitest";
 import {LanguageProvider} from "@/context/languageContext";
+import {ToastProvider} from "@/components/ui/easyui/toast";
 import {ThemeProvider} from "@/context/themeContext";
 import {TerminalShell} from "./TerminalShell";
 vi.mock("@/context/useAuth",()=>({useAuth:()=>({user:{email:"owner@example.invalid"}})}));
@@ -14,7 +15,7 @@ vi.mock("@/components/dashboard/ChatToolPanel",()=>({ChatToolPanel:()=> <div dat
 let root:Root;let el:HTMLDivElement;
 beforeEach(()=>{localStorage.clear();localStorage.setItem("invested_language_preference","en");el=document.createElement("div");document.body.append(el);root=createRoot(el);});
 afterEach(()=>{act(()=>root.unmount());el.remove();});
-function mount(path="/"){act(()=>root.render(<LanguageProvider><ThemeProvider><MemoryRouter initialEntries={[path]}><TerminalShell><textarea aria-label="AI"/></TerminalShell></MemoryRouter></ThemeProvider></LanguageProvider>));}
+function mount(path="/"){act(()=>root.render(<LanguageProvider><ThemeProvider><MemoryRouter initialEntries={[path]}><ToastProvider><TerminalShell><textarea aria-label="AI"/></TerminalShell></ToastProvider></MemoryRouter></ThemeProvider></LanguageProvider>));}
 it("offers primary navigation, workspace, AI and status landmarks",()=>{mount();expect(el.querySelector('aside[aria-label="Primary navigation"]')).not.toBeNull();expect(el.querySelector("main")).not.toBeNull();expect(el.querySelector('aside[aria-label="Financial copilot"]')).not.toBeNull();expect(el.querySelector("footer")?.textContent).toContain("Data status shown per result");expect(el.textContent).not.toContain("DATA CONNECTED");});
 it("uses existing tools rather than duplicating their business logic",()=>{mount("/research");expect(el.querySelector('[data-testid="existing-tool"]')).not.toBeNull();expect(el.querySelector('main')?.getAttribute("aria-label")).toBe("Asset Research");});
 it("changes density without changing workspace state",()=>{mount();const select=el.querySelector('select')!;act(()=>{select.value="terminal";select.dispatchEvent(new Event("change",{bubbles:true}));});expect(el.querySelector('[data-density]')?.getAttribute('data-density')).toBe("terminal");expect(el.querySelector('[aria-pressed="true"]')?.textContent?.trim()).toBe("Intelligence");});
