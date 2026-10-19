@@ -41,7 +41,7 @@ describe("DOT tools and policy gate", () => {
 describe("/api/dot-token", () => {
   const call = async (headers: Record<string, string> = {}, env: Record<string, string> = {}) => {
     vi.resetModules(); Object.assign(process.env, env);
-    const h = (await import("../../../api/dot-token")).default;
+    const h = (await import("../api/dotTokenHandler")).default;
     let code = 0; let body: unknown;
     await h({ method: "POST", headers }, { setHeader() {}, status: (c) => { code = c; return { json: (b) => { body = b; } }; } });
     return { code, body };

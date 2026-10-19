@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------
-// InvestED - POST /api/dot-token (DOT voice agent, beta)
+// InvestED - POST /api/dot-token (routed through api/system?fn=dot-token; Hobby plan function cap) (DOT voice agent, beta)
 //
 // Mints a short-lived Gemini Live ephemeral token for a SIGNED-IN user so the browser can open the Live WebSocket
 // directly without ever seeing GEMINI_API_KEY. The token is single-use, opens one session within 1 minute, lives

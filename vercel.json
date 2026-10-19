@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/api/dot-token",
+      "destination": "/api/system?fn=dot-token"
+    },
+    {
       "source": "/api/closes",
       "destination": "/api/system?fn=closes"
     },

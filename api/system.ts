@@ -5,6 +5,7 @@ import closesHandler from "../src/lib/api/closesHandler.js";
 import copy13fHandler from "../src/lib/api/copy13fHandler.js";
 import personaFactsHandler from "../src/lib/api/personaFactsHandler.js";
 import dividendHandler from "../src/lib/api/dividendHandler.js";
+import dotTokenHandler from "../src/lib/api/dotTokenHandler.js";
 import healthHandler from "../src/lib/api/healthHandler.js";
 import imfHandler from "../src/lib/api/imfHandler.js";
 import newsSentimentHandler from "../src/lib/api/newsSentimentHandler.js";
@@ -29,5 +30,6 @@ export default async function handler(req: Req, res: Res) {
   if (fn === "research-debate") return researchDebateHandler(req, res);
   if (fn === "news-sentiment") return newsSentimentHandler(req, res);
   if (fn === "dividends") return dividendHandler(req, res);
+  if (fn === "dot-token") return dotTokenHandler(req, res);
   res.status(404).json({ error: "unknown_function" });
 }
