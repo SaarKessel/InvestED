@@ -216,7 +216,7 @@
  .terminal-workspace .chat-tool-panel>div:first-child button {min-height:44px;min-width:44px;}
 }
 
-html:not(.dark) .terminal-topbar .font-display {color:#8c631b;}
+html:not(.dark) .terminal-topbar .font-display {color:#2457c5;}
 
 /* Tooltip series text must retain AA contrast in both terminal themes. */
 .terminal-shell .recharts-tooltip-item {color:hsl(var(--foreground)) !important;}
