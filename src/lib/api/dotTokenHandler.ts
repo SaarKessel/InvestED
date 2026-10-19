@@ -35,8 +35,9 @@ function bearer(req: Req): string | null {
 }
 
 async function verifiedUserId(jwt: string): Promise<string | null> {
-  const base = (process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "").replace(/\/$/, "");
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || "";
+  // Same public defaults the browser client ships with (the publishable key is public by design); env overrides win.
+  const base = (process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL || "https://yltbcsmkpjosyovsvtmn.supabase.co").replace(/\/$/, "");
+  const key = process.env.VITE_SUPABASE_PUBLISHABLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || "sb_publishable_mmnIVK2ZxZ79gcqSrER-Aw_UxV5WF9q";
   if (!base || !key) return null;
   try {
     const r = await fetch(`${base}/auth/v1/user`, { headers: { Authorization: `Bearer ${jwt}`, apikey: key }, signal: AbortSignal.timeout(5000) });
