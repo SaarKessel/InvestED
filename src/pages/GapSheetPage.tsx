@@ -12,6 +12,7 @@ import { explainActions } from "@/features/gapsheet/lib/ai/explain";
 import { executeActions } from "@/features/gapsheet/lib/actions/executor";
 import type { Lang } from "@/features/gapsheet/lib/i18n";
 import { csvToWorkbook, sheetToCsv, ImportError } from "@/features/gapsheet/lib/io";
+import { sheetToXlsx } from "@/features/gapsheet/lib/xlsx";
 import { LearnPanel } from "@/features/gapsheet/components/LearnPanel";
 import type { LedgerEntry } from "@/features/gapsheet/lib/learning/ledger";
 import { recalc } from "@/features/gapsheet/lib/workbook/engine";
@@ -94,6 +95,14 @@ export default function GapSheetPage() {
     a.download = `${(state.name || "gapsheet").replace(/[^\w\u0590-\u05ff-]+/g, "_")}.csv`; a.click();
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
+  function exportXlsx() {
+    const sheet = state.sheets.find(x => x.id === state.activeSheetId)!;
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([sheetToXlsx(sheet, { rtl: lang === "he" }) as BlobPart], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }));
+    a.download = `${(state.name || "gapsheet").replace(/[^\w\u0590-\u05ff-]+/g, "_")}.xlsx`; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    setNote(t("הקובץ הורד למחשב (ערכים בלבד, בלי נוסחאות).", "Downloaded to your computer (values only, no formulas)."));
+  }
   async function importCsv(f: File) {
     setNote("");
     if (!/\.csv$/i.test(f.name)) return setNote(t("אפשר לייבא כרגע רק קובץ CSV.", "Only CSV files can be imported for now."));
@@ -114,6 +123,7 @@ export default function GapSheetPage() {
           <div className="flex flex-wrap items-center gap-2 border-b border-border p-2 text-xs">
             <button type="button" className="rounded border border-border px-2 py-1" onClick={() => fileRef.current?.click()}>{t("ייבוא CSV", "Import CSV")}</button>
             <button type="button" className="rounded border border-border px-2 py-1" onClick={exportCsv}>{t("ייצוא CSV", "Export CSV")}</button>
+            <button type="button" className="rounded border border-border bg-primary/10 px-2 py-1 font-semibold" onClick={exportXlsx}>{t("הורדה כקובץ Excel (.xlsx)", "Download as Excel (.xlsx)")}</button>
             <button type="button" className="rounded border border-border px-2 py-1" onClick={reset}>{t("איפוס לדוגמה", "Reset to sample")}</button>
             <input ref={fileRef} type="file" accept=".csv,text/csv" className="sr-only" aria-label={t("בחירת קובץ CSV", "Choose a CSV file")} onChange={e => { const f = e.target.files?.[0]; e.target.value = ""; if (f) void importCsv(f); }} />
             <span className="text-muted-foreground" role="status">{note || t("נשמר אוטומטית במכשיר הזה בלבד.", "Saved automatically on this device only.")}</span>
