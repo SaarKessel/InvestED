@@ -4,6 +4,7 @@
 import { fetchMarketAssetBySymbol } from "@/lib/marketData";
 import { resolveAssetSymbol } from "@/lib/market/symbolResolution";
 import { buildSnapshot, newOrder, readLedger, recordOrder, positions, PaperLedgerConflictError } from "@/lib/career/paperLedger";
+import { snapshot, getEl, gateClick, gateType, typeInto, chooseOption } from "./uiControls";
 import { gridToSheet } from "@/features/gapsheet/lib/io";
 import { recalc } from "@/features/gapsheet/lib/workbook/engine";
 import type { WorkbookState } from "@/features/gapsheet/types/workbook";
@@ -163,6 +164,37 @@ export const TOOLS: DotTool[] = [
     },
   },
   {
+    name: "screen_controls", tier: 0, description: "List the visible buttons, links, inputs, toggles and dropdowns on the CURRENT page (numbered). Call this before ui_click / ui_type / ui_select, and again after the page changes. This is how you do anything the user could do by typing or tapping on the page (simulation, quiz, career lab, data controls, forms, filters, tabs).",
+    parameters: { type: "OBJECT", properties: {} },
+    run: async () => ({ ok: true, controls: snapshot(), note: "Indexes are valid until the next screen_controls call." }),
+  },
+  {
+    name: "ui_click", tier: 1, description: "Click/tap control number `index` from the latest screen_controls. Buttons that delete, reset, clear, send or export ask the user to confirm. Sign-in, sign-up, sign-out, payments and external sites are refused.",
+    parameters: { type: "OBJECT", properties: { index: { type: "NUMBER", description: "control number" } }, required: ["index"] },
+    run: async (a, ctx) => {
+      const el = getEl(Number(a.index)); if (!el) return { ok: false, error: "stale_control", note: "Call screen_controls again." };
+      const label = (el.getAttribute("aria-label") || el.textContent || "").replace(/\s+/g, " ").trim().slice(0, 80);
+      const g = gateClick(label, el.getAttribute("href")); if (!g.ok) return g;
+      if (g.confirm && !(await (ctx.confirm ?? (async () => false))({ click: label }))) return { ok: false, error: "user_declined" };
+      (el as HTMLElement).click(); return { ok: true, clicked: label };
+    },
+  },
+  {
+    name: "ui_type", tier: 1, description: "Type text into input/textarea number `index` (replaces its content). Password, payment and file fields are refused. Does not submit; click the submit button separately.",
+    parameters: { type: "OBJECT", properties: { index: { type: "NUMBER", description: "control number" }, text: { type: "STRING", description: "text to enter" } }, required: ["index", "text"] },
+    run: async (a) => { const el = getEl(Number(a.index)); if (!el || !/^(INPUT|TEXTAREA)$/.test(el.tagName)) return { ok: false, error: "stale_control" }; const g = gateType(el); if (!g.ok) return g; typeInto(el, str(a.text, 2000)); return { ok: true }; },
+  },
+  {
+    name: "ui_select", tier: 1, description: "Choose an option in dropdown number `index`, or set a checkbox/toggle (value true/false as text).",
+    parameters: { type: "OBJECT", properties: { index: { type: "NUMBER", description: "control number" }, value: { type: "STRING", description: "option text, or true/false for a checkbox" } }, required: ["index", "value"] },
+    run: async (a) => {
+      const el = getEl(Number(a.index)); if (!el) return { ok: false, error: "stale_control" };
+      if (el.tagName === "SELECT") return chooseOption(el as HTMLSelectElement, str(a.value, 80)) ? { ok: true } : { ok: false, error: "no_such_option" };
+      if ((el as HTMLInputElement).type === "checkbox") { const want = /^(true|yes|on|כן)$/i.test(str(a.value, 8)); if ((el as HTMLInputElement).checked !== want) (el as HTMLElement).click(); return { ok: true, checked: want }; }
+      return { ok: false, error: "not_selectable" };
+    },
+  },
+  {
     name: "set_language", tier: 1, description: "Switch the site language between Hebrew (he) and English (en).",
     parameters: { type: "OBJECT", properties: { language: { type: "STRING", description: "he or en" } }, required: ["language"] },
     run: async (a, ctx) => { const l = str(a.language, 4).toLowerCase(); if (l !== "he" && l !== "en") return { ok: false, error: "bad_language" }; if (!ctx.setLanguage) return { ok: false, error: "unavailable" }; ctx.setLanguage(l); return { ok: true, language: l }; },
@@ -192,6 +224,7 @@ export function systemPrompt(lang: "he" | "en"): string {
     "You have tools. For any number, price, calculation or fact about markets or the site, call a tool and read back its result with the source and time. If a tool says data is unavailable, say so. Never invent prices or data.",
     "Educational only: no personal investment advice, no buy/sell calls, no guarantees.",
     "Never ask for or accept passwords, card numbers, or account credentials by voice; tell the user to type those on screen. No real-money actions.",
+    "For anything else on a page (simulation, quiz, career lab, data controls, forms, tabs, filters, export buttons) call screen_controls, then ui_click / ui_type / ui_select by number, and call screen_controls again after the page changes. Tell the user which control you used. File pickers are not voice-driven: ask the user to tap Choose file themselves, then continue.",
     "Before any action that changes the user's data, the app asks the user to confirm on screen; say what you are about to do. After a tool result, state only what actually happened.",
     "Do not repeat personal data back unless needed. Keep questions to what is required.",
   ].join(" ");

@@ -59,10 +59,10 @@ describe("DOT coverage map", () => {
   const COVERAGE: Record<string, string | "GAP"> = {
     navigation: "navigate", "copilot-qa": "ask_copilot", calculators: "ask_copilot", "news-research": "ask_copilot", "market-quotes": "get_quote",
     "gapsheet-create": "create_gapsheet_table", "gapsheet-edit-sort-filter-formula-format-chart": "gapsheet_edit", language: "set_language", theme: "set_theme",
-    "gapsheet-export-import": "GAP", watchlist: "watchlist_add", "watchlist-read-remove": "watchlist_remove", "paper-ledger": "paper_order", "paper-ledger-view": "paper_ledger_view", simulation: "GAP", "learning-quiz": "GAP", "career-lab": "GAP", "data-controls": "GAP", "contact-form": "GAP", "file-upload": "GAP",
+    "gapsheet-export-import": "screen_controls", watchlist: "watchlist_add", "watchlist-read-remove": "watchlist_remove", "paper-ledger": "paper_order", "paper-ledger-view": "paper_ledger_view", simulation: "screen_controls", "learning-quiz": "screen_controls", "career-lab": "screen_controls", "data-controls": "screen_controls", "contact-form": "screen_controls", "file-upload": "MANUAL",
     auth: "T3", payments: "T3", "real-money": "T3",
   };
-  it("every mapped tool exists", () => { for (const [k, v] of Object.entries(COVERAGE)) if (v !== "GAP" && v !== "T3") expect(TOOLS.some((t) => t.name === v), k).toBe(true); });
+  it("every mapped tool exists", () => { for (const [k, v] of Object.entries(COVERAGE)) if (v !== "GAP" && v !== "T3" && v !== "MANUAL") expect(TOOLS.some((t) => t.name === v), k).toBe(true); });
   it("T3 areas have no tool", () => { expect(TOOLS.some((t) => /auth|login|payment|money/i.test(t.name))).toBe(false); });
 });
 
@@ -95,5 +95,27 @@ describe("watchlist and paper tools", () => {
   it("paper orders need confirmation and reject bad input", async () => {
     expect((await runTool("paper_order", { side: "buy", quantity: 1, symbol: "AAPL" }, c(), async () => false)).result).toMatchObject({ error: "user_declined" });
     expect((await runTool("paper_order", { side: "short", quantity: -1, symbol: "AAPL" }, c(), async () => true)).result).toMatchObject({ ok: false });
+  });
+});
+
+describe("screen controls", () => {
+  const c = () => ({ navigate() {}, language: "en" as const, askCopilot: async () => "" });
+  const html = '<button id="a">Run scenario</button><button>Reset ledger</button><button>Sign in</button><input aria-label="Amount" value=""/><input type="password" aria-label="Password"/><input aria-label="Card number"/><select aria-label="Mode"><option>Fast</option><option>Slow</option></select>';
+  it("lists controls without password fields, clicks safe ones, confirms destructive ones, refuses sign-in and credential typing", async () => {
+    document.body.innerHTML = html;
+    Object.defineProperty(HTMLElement.prototype, "getBoundingClientRect", { configurable: true, value: () => ({ width: 10, height: 10, top: 0, left: 0, right: 10, bottom: 10, x: 0, y: 0, toJSON() {} }) });
+    const list = (await runTool("screen_controls", {}, c(), async () => true)).result.controls as { index: number; label: string; role: string }[];
+    expect(list.some((x) => /password/i.test(x.label))).toBe(false);
+    const idx = (l: string) => list.find((x) => x.label === l)!.index;
+    let clicked = 0; document.querySelectorAll("button").forEach((b) => b.addEventListener("click", () => clicked++));
+    expect((await runTool("ui_click", { index: idx("Run scenario") }, c(), async () => false)).result.ok).toBe(true); expect(clicked).toBe(1);
+    expect((await runTool("ui_click", { index: idx("Reset ledger") }, c(), async () => false)).result).toMatchObject({ error: "user_declined" }); expect(clicked).toBe(1);
+    expect((await runTool("ui_click", { index: idx("Reset ledger") }, c(), async () => true)).result.ok).toBe(true); expect(clicked).toBe(2);
+    expect((await runTool("ui_click", { index: idx("Sign in") }, c(), async () => true)).result).toMatchObject({ error: "not_allowed_by_voice" }); expect(clicked).toBe(2);
+    expect((await runTool("ui_type", { index: idx("Card number"), text: "4111" }, c(), async () => true)).result).toMatchObject({ error: "not_allowed_by_voice" });
+    expect((await runTool("ui_type", { index: idx("Amount"), text: "250" }, c(), async () => true)).result.ok).toBe(true);
+    expect((document.querySelector('input[aria-label="Amount"]') as HTMLInputElement).value).toBe("250");
+    expect((await runTool("ui_select", { index: idx("Mode"), value: "slow" }, c(), async () => true)).result.ok).toBe(true);
+    expect((document.querySelector("select") as HTMLSelectElement).value).toBe("Slow");
   });
 });

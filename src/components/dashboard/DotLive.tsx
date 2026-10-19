@@ -64,7 +64,7 @@ export function DotLive({ ctx, onClose, onFallback }: Props) {
       <VoiceOrb state={state} onClose={onClose} onTapOrb={() => { mic.current.muted = !mic.current.muted; setNote(mic.current.muted ? t("dot_muted") : null); }} note={note ?? t("dot_notice")} heard={heard} reply={reply} onStopSpeech={() => tr.current?.player.flush()} />
       {done.length > 0 && !pending ? createPortal(<div className="fixed inset-x-0 bottom-24 z-[102] mx-auto w-fit rounded-full border border-border/60 bg-card px-4 py-2 text-xs" role="status" data-testid="dot-done">{t("dot_done")}: {done[done.length - 1]}</div>, document.body) : null}
       {pending ? createPortal(
-        <div role="alertdialog" aria-modal="true" aria-label={t("dot_confirm_title")} className="fixed inset-x-4 bottom-28 z-[103] mx-auto max-w-md rounded-2xl border border-border bg-card p-4 shadow-2xl" data-testid="dot-confirm">
+        <div data-dot-ui="" role="alertdialog" aria-modal="true" aria-label={t("dot_confirm_title")} className="fixed inset-x-4 bottom-28 z-[103] mx-auto max-w-md rounded-2xl border border-border bg-card p-4 shadow-2xl" data-testid="dot-confirm">
           <p className="text-sm font-semibold">{t("dot_confirm_title")}</p>
           <p className="mt-1 text-xs text-muted-foreground">{pending.tool.name}: <bdi dir="auto">{JSON.stringify(pending.args).slice(0, 240)}</bdi></p>
           <div className="mt-3 flex gap-2"><button type="button" onClick={() => answer(true)} className="flex-1 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">{t("dot_confirm_yes")}</button><button type="button" onClick={() => answer(false)} className="flex-1 rounded-full border border-border px-4 py-2 text-sm">{t("dot_confirm_no")}</button></div>

@@ -28,7 +28,7 @@ export function VoiceOrb({ state, onClose, onTapOrb, note, code, trace, accent, 
   }, []);
   const label = state === "idle" && !note ? t("orb_idle_tap") : t(`orb_${state}`);
   return createPortal(
-    <div role="dialog" aria-modal="true" aria-label={t("orb_title")} className="voice-orb-screen fixed inset-0 z-[100] flex flex-col items-center justify-between px-6 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))]" data-testid="voice-orb">
+    <div role="dialog" aria-modal="true" aria-label={t("orb_title")} className="voice-orb-screen fixed inset-0 z-[100] flex flex-col items-center justify-between px-6 pb-[max(2rem,env(safe-area-inset-bottom))] pt-[max(1.5rem,env(safe-area-inset-top))]" data-testid="voice-orb" data-dot-ui="">
       <div className="flex w-full items-center justify-between gap-3">
         {onLang ? (
           <div role="group" aria-label={t("orb_lang")} className="inline-flex rounded-full border border-border/60 bg-muted/40 p-0.5 text-xs font-semibold">
