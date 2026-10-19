@@ -53,3 +53,18 @@
 }
 @media (forced-colors: active) { .fx-aurora { display:none; } .terminal-home-heading h1 { color:CanvasText; background:none; } }
 @media (max-width:767px) { .fx-aurora i { filter:blur(60px); } }
+
+/* Phase 2: depth on cards, ticker light line, selection, thin glowing scrollbars */
+.dark .card-premium { background:hsl(var(--card) / .66); -webkit-backdrop-filter:blur(12px) saturate(130%); backdrop-filter:blur(12px) saturate(130%); box-shadow:0 1px 0 hsl(0 0% 100% / .05) inset, 0 18px 40px -26px rgb(0 0 0 / .6); }
+.card-premium:hover { transform:translateY(-2px); border-color:hsl(var(--fx-a) / .5); box-shadow:0 18px 44px -22px hsl(var(--fx-a) / .5); }
+.dashboard-command-tile:hover { box-shadow:0 14px 36px -14px hsl(var(--fx-b) / .6); }
+.ticker-strip { position:relative; }
+.ticker-strip::after { content:""; position:absolute; inset-inline:0; bottom:0; height:1px; background:linear-gradient(90deg, transparent, hsl(var(--fx-c) / .8), hsl(var(--fx-b) / .8), transparent); background-size:200% 100%; animation:fx-line 7s linear infinite; pointer-events:none; }
+@keyframes fx-line { to { background-position:200% 0; } }
+::selection { background:hsl(var(--fx-b) / .35); }
+.terminal-shell * { scrollbar-width:thin; scrollbar-color:hsl(var(--fx-a) / .45) transparent; }
+.terminal-table tbody tr { transition:background-color .15s ease, box-shadow .15s ease; }
+.terminal-table tbody tr:hover { box-shadow:inset 2px 0 0 hsl(var(--fx-c)); }
+.terminal-status[data-state="live"] .terminal-status-dot { box-shadow:0 0 0 0 hsl(var(--success) / .6); animation:fx-pulse 2s ease-out infinite; }
+@keyframes fx-pulse { to { box-shadow:0 0 0 8px hsl(var(--success) / 0); } }
+@media (prefers-reduced-motion: reduce) { .ticker-strip::after, .terminal-status[data-state="live"] .terminal-status-dot { animation:none !important; } .card-premium:hover { transform:none; } }
