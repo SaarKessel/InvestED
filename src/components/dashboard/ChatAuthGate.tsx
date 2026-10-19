@@ -1,7 +1,7 @@
 import { FormEvent, useState } from "react";
-import { Loader2 } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
 import { useAuth } from "@/context/useAuth";
+import { Loader } from "@/components/ui/easyui/Loader";
 
 /** Sign-up / sign-in card shown in place of the composer until the user is signed in. */
 export function ChatAuthGate() {
@@ -33,7 +33,7 @@ export function ChatAuthGate() {
         <input type="password" required minLength={8} autoComplete={mode === "in" ? "current-password" : "new-password"} dir="ltr" value={password} onChange={(e) => setPassword(e.target.value)} className={`${field} mt-1`} />
       </label>
       {message && <p role="alert" className="text-xs text-destructive">{message}</p>}
-      <button type="submit" disabled={busy} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary text-sm font-semibold text-primary-foreground disabled:opacity-50">{busy && <Loader2 className="h-4 w-4 animate-spin" />}{t(mode === "in" ? "auth_submit_in" : "auth_submit_up")}</button>
+      <button type="submit" disabled={busy} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary text-sm font-semibold text-primary-foreground disabled:opacity-50">{busy && <Loader variant="arc" size={16} label={null} className="shrink-0" />}{t(mode === "in" ? "auth_submit_in" : "auth_submit_up")}</button>
       <button type="button" onClick={() => { setMode(mode === "in" ? "up" : "in"); setMessage(null); }} className="w-full text-center text-xs font-semibold text-primary hover:underline">{t(mode === "in" ? "auth_switch_up" : "auth_switch_in")}</button>
       <p className="text-center text-[11px] text-muted-foreground">{t("auth_why")}</p>
     </form>

@@ -1,8 +1,9 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { Loader2, Send, Sparkles } from "lucide-react";
+import { Send, Sparkles } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
 import { useAnalysis } from "@/context/useAnalysis";
 import { researchCodeLabel } from "@/lib/research/researchLabels";
+import { Loader } from "@/components/ui/easyui/Loader";
 
 interface Message {
   role: "user" | "copilot";
@@ -84,7 +85,7 @@ export function StrategyAskCopilot({ strategyName }: { strategyName: string }) {
           aria-label={`${t("slab_ask_send")} - ${strategyName}`}
           className="inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground disabled:opacity-50"
         >
-          {isAnalyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+          {isAnalyzing ? <Loader variant="arc" size={16} label={null} className="shrink-0" /> : <Send className="h-4 w-4" />}
           <span className="hidden sm:inline">{t("slab_ask_send")}</span>
         </button>
       </form>

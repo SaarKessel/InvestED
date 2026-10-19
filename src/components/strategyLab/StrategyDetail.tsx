@@ -6,7 +6,6 @@ import {
   History,
   LineChart,
   ListOrdered,
-  Loader2,
   BookOpen,
   X,
 } from "lucide-react";
@@ -25,6 +24,7 @@ import { researchCodeLabel } from "@/lib/research/researchLabels";
 import type { StrategyId } from "@/types";
 import { StrategyAskCopilot } from "./StrategyAskCopilot";
 import { StrategyPerformancePanel } from "./StrategyPerformancePanel";
+import { Loader } from "@/components/ui/easyui/Loader";
 
 type MarketState =
   | { status: "idle" }
@@ -202,7 +202,7 @@ export function StrategyDetail({ strategyId }: { strategyId: StrategyId }) {
           )}
           {market.status === "loading" && (
             <p className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" /> {t("slab_market_loading")}
+              <Loader variant="arc" size={16} label={null} className="shrink-0" /> {t("slab_market_loading")}
             </p>
           )}
           {market.status === "error" && (

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2, TrendingUp } from "lucide-react";
+import { TrendingUp } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
 import { reasonText } from "@/lib/backtest/reasonText";
 import { fetchMarketAssetBySymbol } from "@/lib/marketData";
@@ -7,6 +7,7 @@ import { researchCodeLabel } from "@/lib/research/researchLabels";
 import type { Metric, PerformanceReport } from "@/lib/backtest/performance";
 import type { FactorSnapshot } from "@/lib/market/factors";
 import { loadStrategyPerformance, type StrategyPerformance } from "@/lib/backtest/strategyPerformance";
+import { Loader } from "@/components/ui/easyui/Loader";
 
 type State =
   | { status: "idle" }
@@ -173,7 +174,7 @@ export function StrategyPerformancePanel({ strategyId }: { strategyId: string })
       )}
       {state.status === "loading" && (
         <p className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" /> {t("slab_perf_loading", "Loading real price history...")}
+          <Loader variant="arc" size={16} label={null} className="shrink-0" /> {t("slab_perf_loading", "Loading real price history...")}
         </p>
       )}
       {state.status === "error" && (

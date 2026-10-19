@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Sparkles, Loader2 } from "lucide-react";
+import { Sparkles } from "lucide-react";
 import { Layout, DisclaimerBanner } from "@/components/layout/Layout";
 import { Button, Card, CardContent } from "@/components/ui/primitives";
 import { useAnalysis } from "@/context/useAnalysis";
 import { useLanguage } from "@/context/languageContext";
+import { Loader } from "@/components/ui/easyui/Loader";
 
 export function InputPage() {
   const [text, setText] = useState("");
@@ -144,7 +145,7 @@ export function InputPage() {
                 <Button size="lg" disabled={!text.trim() || isAnalyzing} onClick={handleSubmit} className="gap-2">
                   {isAnalyzing ? (
                     <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader variant="arc" size={16} label={null} className="shrink-0" />
                       {t("input_button_analyzing")}
                     </>
                   ) : (

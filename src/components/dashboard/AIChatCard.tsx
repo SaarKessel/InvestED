@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { isCareerLaunchRequest } from "@/lib/career/chatRoute";
-import { Check, Clipboard, History, Loader2, LogOut, Mic, Square, RotateCcw, Volume2, VolumeX, ArrowUp, Paperclip } from "lucide-react";
+import { Check, Clipboard, History, LogOut, Mic, Square, RotateCcw, Volume2, VolumeX, ArrowUp, Paperclip } from "lucide-react";
 import { useLanguage, LanguageOverride } from "@/context/languageContext";
 import { ChatAssetCards } from "./ChatAssetCards";
 import { ChatCalculationCard } from "./ChatCalculationCard";
@@ -89,6 +89,7 @@ import { speak, stopSpeaking, unlockSpeech, getSynth, type SpeakResult } from "@
 import { appendDictation, getSpeechRecognition, joinTranscript, speechLocale, voiceProblem, isIOS, type SpeechRecognitionLike, type VoiceProblem } from "@/lib/copilot/voiceInput";
 import { useAnalysis } from "@/context/useAnalysis";
 import type { CopilotResponse } from "@/lib/copilotResponse";
+import { Loader } from "@/components/ui/easyui/Loader";
 
 /** Minimum BM25 score for a retrieved passage to be shown; weaker matches are noise. */
 const MIN_RETRIEVE_SCORE = 3;
@@ -622,7 +623,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
           </div>;
         })}
         {toolOpen && !workstation && <ChatToolPanel />}
-        {(isAnalyzing || fileBusy) && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />{t("copilot_working")}</div>}
+        {(isAnalyzing || fileBusy) && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader variant="arc" size={16} label={null} className="shrink-0" />{t("copilot_working")}</div>}
         <div ref={endRef} className="scroll-mb-48" aria-hidden="true" />
       </div>
       {talk && <VoiceOrb accent={(() => { const last = [...messages].reverse().find((m) => m.role === "user"); return getAgent(last?.agent?.id ?? pickedAgent)?.color ?? null; })()} state={speakingIdx !== null ? "speaking" : isAnalyzing ? "thinking" : listening ? "listening" : "idle"} onClose={toggleTalk} onTapOrb={() => { if (speakingIdx !== null) { stopSpeaking(); setSpeakingIdx(null); } else toggleVoice(); }} note={speechNote === "no_voice" ? t("speak_no_voice") : speechNote === "unsupported" ? t("speak_unsupported") : voiceNote} code={voiceError ? voiceCode : null} trace={voiceTrace} />}
@@ -647,7 +648,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
           <LevelPicker level={level} onChange={changeLevel} />
           {canSpeak && SpeechCtor && <button type="button" onClick={toggleTalk} aria-pressed={talk} aria-label={t(talk ? "talk_stop" : "talk_start")} title={t(talk ? "talk_stop" : "talk_start")} className={`ms-auto sm:ms-0 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-150 ${talk ? "bg-primary/15 text-primary" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}><Volume2 className="h-[18px] w-[18px]" strokeWidth={1.75} /></button>}
           {SpeechCtor && <button type="button" onClick={toggleVoice} aria-pressed={listening} aria-label={t(listening ? "voice_stop" : "voice_start")} title={t(listening ? "voice_stop" : "voice_start")} className={`inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-colors duration-150 ${listening ? "animate-pulse bg-primary text-primary-foreground" : "text-muted-foreground hover:bg-accent hover:text-foreground"}`}>{listening ? <Square className="h-3.5 w-3.5" /> : <Mic className="h-[18px] w-[18px]" strokeWidth={1.75} />}</button>}
-          <button type="submit" disabled={(!question.trim() && !pendingFile) || isAnalyzing || fileBusy} aria-label={t("copilot_send")} className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition-all duration-150 hover:brightness-110 active:scale-95 disabled:bg-muted-foreground/20 disabled:text-muted-foreground disabled:shadow-none">{isAnalyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowUp className="h-[18px] w-[18px]" strokeWidth={2.25} />}</button>
+          <button type="submit" disabled={(!question.trim() && !pendingFile) || isAnalyzing || fileBusy} aria-label={t("copilot_send")} className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition-all duration-150 hover:brightness-110 active:scale-95 disabled:bg-muted-foreground/20 disabled:text-muted-foreground disabled:shadow-none">{isAnalyzing ? <Loader variant="arc" size={16} label={null} className="shrink-0" /> : <ArrowUp className="h-[18px] w-[18px]" strokeWidth={2.25} />}</button>
         </form>
         <p className="mt-3 truncate text-center text-[11px] text-muted-foreground" aria-live="polite">{speechNote === "no_voice" ? t("speak_no_voice") : speechNote === "unsupported" ? t("speak_unsupported") : voiceError ? voiceNote : listening ? t("voice_listening") : t("disclaimer_one_line")}</p>
         <p className="mt-1 truncate text-center text-[10px] leading-4 text-muted-foreground/80">{t("legal_line_credit")}</p>

@@ -1,6 +1,6 @@
 import type { CandleDatum } from "@/types";
 import { useState } from "react";
-import { Loader2, Cpu } from "lucide-react";
+import { Cpu } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
 import { fetchMarketAssetBySymbol } from "@/lib/marketData";
 import { researchCodeLabel } from "@/lib/research/researchLabels";
@@ -10,6 +10,7 @@ import { PaperTrading, WalkForwardView } from "./WalkForwardView";
 import { resolveOptions, type SimOptions } from "@/lib/algo/backtest";
 import { buildReportCard } from "@/lib/algo/reportCard";
 import { checkStrategy, countSignals, runSignals, type RuleStrategy, type SignalRun } from "@/lib/algo/rules";
+import { Loader } from "@/components/ui/easyui/Loader";
 
 type Preset = "rsi" | "macd" | "sma";
 
@@ -103,7 +104,7 @@ export function RuleBuilderPanel() {
         </details>
         <button type="button" onClick={run} className="rounded-xl border border-primary/30 bg-primary/5 px-4 py-2 text-sm font-semibold text-primary hover:bg-primary/10">{t("rule_run", "Show signals")}</button>
       </div>
-      {state.status === "loading" && <p className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> {t("slab_perf_loading", "Loading real price history...")}</p>}
+      {state.status === "loading" && <p className="flex items-center gap-2 text-sm text-muted-foreground"><Loader variant="arc" size={16} label={null} className="shrink-0" /> {t("slab_perf_loading", "Loading real price history...")}</p>}
       {state.status === "error" && <p role="alert" className="text-sm text-danger">{state.reason}</p>}
       {state.status === "ready" && <Result state={state} />}
       <p className="mt-3 text-[11px] text-muted-foreground">{t("rule_disclaimer", "Educational simulation, not advice. Signals describe the past on real data and do not predict the future.")}</p>
