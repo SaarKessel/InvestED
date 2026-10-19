@@ -132,3 +132,13 @@ describe("data_status", () => {
     vi.unstubAllGlobals();
   });
 });
+
+describe("screen controls coverage", () => {
+  it("lists custom widget roles and puts page content ahead of nav chrome", async () => {
+    const { snapshot } = await import("./uiControls");
+    document.body.innerHTML = "<nav>" + Array.from({ length: 120 }, (_, i) => `<a href="/n${i}">Nav ${i}</a>`).join("") + "</nav><main><div role='combobox' aria-label='Asset'>Stocks</div><div role='option'>Bonds</div><div role='menuitem'>Export view</div></main>";
+    const labels = snapshot().map((c) => c.label);
+    expect(labels.slice(0, 3)).toEqual(["Asset", "Bonds", "Export view"]);
+    expect(labels.length).toBeLessThanOrEqual(100);
+  });
+});

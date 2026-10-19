@@ -1,6 +1,6 @@
 // Generic screen control for DOT: "everything you can type or click on the page" without per-page code.
 // Snapshot -> index -> act. Credentials/payment fields and sign-in/payment buttons are blocked (tier 3); destructive or sending buttons need confirmation.
-const MAX = 60;
+const MAX = 100;
 const T3_FIELD = /pass(word)?|סיסמ|cvv|cvc|card|כרטיס|iban|ssn|otp|one-time|2fa|token|secret/i;
 const T3_BUTTON = /sign\s?in|log\s?in|sign\s?up|create account|sign\s?out|log\s?out|התחבר|הרשמ|יצירת חשבון|התנתק|pay\b|payment|checkout|buy now|purchase|subscribe|upgrade|תשלום|רכישה|שלם|מנוי|delete (my )?account|מחיקת חשבון/i;
 const CONFIRM_BUTTON = /delete|remove|reset|clear|erase|discard|send|submit|export|download|מחק|הסר|אפס|נקה|שלח|שליחה|ייצוא|הורד/i;
@@ -19,8 +19,11 @@ const inDot = (el: Element) => !!el.closest("[data-dot-ui]");
 
 export function snapshot(root: ParentNode = document): Control[] {
   registry.clear(); const out: Control[] = [];
-  const els = root.querySelectorAll("button, a[href], input, textarea, select, [role=button], [role=tab], [role=switch], [role=checkbox]");
-  for (const el of Array.from(els)) {
+  const els = root.querySelectorAll("button, a[href], input, textarea, select, [role=button], [role=tab], [role=switch], [role=checkbox], [role=combobox], [role=option], [role=menuitem], [role=menuitemcheckbox], [role=menuitemradio], [role=radio], [role=slider]");
+  // Page content first (in view, outside nav/header chrome), so a long sidebar never hides the page's own controls.
+  const rank = (el: Element) => { const r = (el as HTMLElement).getBoundingClientRect?.(); const chrome = !!el.closest("nav, aside, header, [role=navigation]"); const inView = !!r && r.bottom > 0 && r.top < (typeof innerHeight === "number" ? innerHeight : 800); return (inView ? 0 : 2) + (chrome ? 1 : 0); };
+  const ordered = Array.from(els).map((el, i) => ({ el, i, k: rank(el) })).sort((a, b) => a.k - b.k || a.i - b.i).map((x) => x.el);
+  for (const el of ordered) {
     if (out.length >= MAX) break;
     if (inDot(el) || (el as HTMLButtonElement).disabled || el.getAttribute("aria-hidden") === "true" || !visible(el)) continue;
     const tag = el.tagName.toLowerCase(); const type = (el as HTMLInputElement).type?.toLowerCase() ?? "";
@@ -28,6 +31,7 @@ export function snapshot(root: ParentNode = document): Control[] {
     const label = labelOf(el); if (!label && tag !== "input" && tag !== "textarea") continue;
     const index = out.length + 1; registry.set(index, el);
     const c: Control = { index, role: tag === "a" ? "link" : tag === "input" ? (type === "checkbox" ? "checkbox" : type === "range" ? "slider" : "textbox") : tag === "textarea" ? "textbox" : tag === "select" ? "select" : el.getAttribute("role") || "button", label };
+    if (el.getAttribute("aria-expanded") === "true") c.checked = true;
     if (tag === "input" && type !== "checkbox" && !T3_FIELD.test(label + (el as HTMLInputElement).name + (el as HTMLInputElement).autocomplete)) c.value = (el as HTMLInputElement).value.slice(0, 60);
     if (type === "checkbox") c.checked = (el as HTMLInputElement).checked;
     if (tag === "select") c.options = Array.from((el as HTMLSelectElement).options).slice(0, 20).map((o) => o.text.trim());
