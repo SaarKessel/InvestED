@@ -450,4 +450,4 @@ html.dark { color-scheme: dark; }
 
 @keyframes easyui-toast-progress { from { width: 100%; } to { width: 0%; } }
 /* Step aside while the user types in a field, so the dot never sits over a composer or send button (and the mobile keyboard). */
-body:has(input:focus, textarea:focus, select:focus, [contenteditable=true]:focus) .voice-dot { opacity:0; pointer-events:none; transition:opacity .15s ease; }
+body:has(input:focus, textarea:focus, select:focus, [contenteditable=true]:focus) .voice-dot { opacity:0 !important; pointer-events:none !important; transition:opacity .15s ease; }
