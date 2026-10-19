@@ -40,3 +40,22 @@ describe("GapSheet CSV", () => {
     expect(sheetToCsv(sheet)).toContain("Dan,10");
   });
 });
+
+import { parseInput, setCell } from "./lib/workbook/engine";
+import { generatePractice } from "./lib/practice/generator";
+import { validatePractice } from "./lib/practice/validator";
+import { newEntry, verifiedLevel } from "./lib/learning/ledger";
+describe("GapSheet practice and mastery", () => {
+  it("rejects a wrong answer and accepts the right formula", () => {
+    const task = generatePractice("sum", 0, "en");
+    expect(validatePractice(task, { state: task.workbook }).correct).toBe(false);
+    const wb = setCell(task.workbook, "p1", task.targetCell, parseInput(`=SUM(${task.dataRange})`));
+    expect(validatePractice(task, { state: wb }).correct).toBe(true);
+  });
+  it("only independent first attempts make a skill proficient; help and reveal do not", () => {
+    const base = { skill: "sum", kind: "attempt" as const, source: "practice" as const, contextId: "c", hints: 0, revealed: false, correct: true };
+    expect(verifiedLevel([newEntry({ ...base, taskId: "practice_sum_0", hints: 1 })], "sum")).not.toBe("PROFICIENT");
+    expect(verifiedLevel([newEntry({ ...base, taskId: "practice_sum_0", correct: false, revealed: true })], "sum")).not.toBe("PROFICIENT");
+    expect(verifiedLevel([newEntry({ ...base, taskId: "practice_sum_0" })], "sum")).toBe("PROFICIENT");
+  });
+});

@@ -12,9 +12,13 @@ import { explainActions } from "@/features/gapsheet/lib/ai/explain";
 import { executeActions } from "@/features/gapsheet/lib/actions/executor";
 import type { Lang } from "@/features/gapsheet/lib/i18n";
 import { csvToWorkbook, sheetToCsv, ImportError } from "@/features/gapsheet/lib/io";
+import { LearnPanel } from "@/features/gapsheet/components/LearnPanel";
+import type { LedgerEntry } from "@/features/gapsheet/lib/learning/ledger";
 import { recalc } from "@/features/gapsheet/lib/workbook/engine";
 
 const STORE = "invested.gapsheet.workbook.v1";
+const LEDGER = "invested.gapsheet.ledger.v1";
+function loadLedger(): LedgerEntry[] { try { const v = JSON.parse(localStorage.getItem(LEDGER) ?? "[]"); return Array.isArray(v) ? v.filter(e => e && typeof e.skill === "string") : []; } catch { return []; } }
 function loadSaved(): WorkbookState | null {
   try {
     const raw = localStorage.getItem(STORE); if (!raw) return null;
@@ -38,6 +42,9 @@ export default function GapSheetPage() {
   const t = (he: string, en: string) => (lang === "he" ? he : en);
   const [state, setState] = useState<WorkbookState>(() => loadSaved() ?? newWorkbook());
   const [note, setNote] = useState("");
+  const [tab, setTab] = useState<"ask" | "learn">("ask");
+  const [ledger, setLedger] = useState<LedgerEntry[]>(loadLedger);
+  useEffect(() => { try { localStorage.setItem(LEDGER, JSON.stringify(ledger)); } catch { /* storage blocked */ } }, [ledger]);
   const fileRef = useRef<HTMLInputElement>(null);
   useEffect(() => { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch { /* storage full or blocked: the sheet still works */ } }, [state]);
   const [history, setHistory] = useState<WorkbookState[]>([]);
@@ -116,10 +123,14 @@ export default function GapSheetPage() {
           </div>
         </section>
         <section aria-label={t("בקשות", "Requests")} className="terminal-panel flex min-h-[360px] flex-col">
-          <div className="flex items-center justify-between border-b border-border p-2">
-            <strong className="text-sm">{t("מה לעשות בטבלה?", "What should I do with the table?")}</strong>
-            <button type="button" onClick={undo} disabled={!history.length} className="rounded border border-border px-2 py-1 text-xs disabled:opacity-40">{t("בטל", "Undo")}</button>
+          <div className="flex items-center justify-between gap-2 border-b border-border p-2">
+            <div role="tablist" className="flex gap-1">
+              <button type="button" role="tab" aria-selected={tab === "ask"} onClick={() => setTab("ask")} className={`rounded px-3 py-1 text-sm ${tab === "ask" ? "bg-primary/20 font-semibold" : ""}`}>{t("בקשה", "Ask")}</button>
+              <button type="button" role="tab" aria-selected={tab === "learn"} onClick={() => setTab("learn")} className={`rounded px-3 py-1 text-sm ${tab === "learn" ? "bg-primary/20 font-semibold" : ""}`}>{t("למידה", "Learn")}</button>
+            </div>
+            {tab === "ask" && <button type="button" onClick={undo} disabled={!history.length} className="rounded border border-border px-2 py-1 text-xs disabled:opacity-40">{t("בטל", "Undo")}</button>}
           </div>
+          {tab === "learn" ? <div className="flex-1 overflow-auto"><LearnPanel lang={lang} ledger={ledger} onLedger={setLedger} /></div> : <>
           <div ref={log} className="flex-1 space-y-2 overflow-auto p-3 text-sm" aria-live="polite">
             {!msgs.length && <div className="flex flex-wrap gap-2">{examples.map(e => <button key={e} type="button" className="welcome-chip rounded-full border border-border px-3 py-1 text-xs" onClick={() => run(e)}>{e}</button>)}</div>}
             {msgs.map((m, i) => m.role === "user"
@@ -136,6 +147,7 @@ export default function GapSheetPage() {
             <input value={input} onChange={e => setInput(e.target.value)} aria-label={t("בקשה לטבלה", "Request for the table")} placeholder={t("למשל: חשב סך מכירות", "e.g. Add up Sales")} className="min-w-0 flex-1 rounded border border-input bg-background px-3 py-2 text-sm" />
             <button type="submit" className="terminal-primary rounded px-4 py-2 text-sm">{t("שלח", "Send")}</button>
           </form>
+          </>}
         </section>
       </div>
     </main>
