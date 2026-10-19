@@ -8,6 +8,7 @@ import { ChatCalculationCard } from "./ChatCalculationCard";
 import { ChatComparisonTable } from "./ChatComparisonTable";
 import { ChatNewsList } from "./ChatNewsList";
 import { ChatAuthGate } from "./ChatAuthGate";
+import { GateShowcase } from "./GateShowcase";
 import { useAuth } from "@/context/useAuth";
 import { createConversation, deleteConversation, listConversations, loadMessages, saveMessage, type ChatConversation } from "@/lib/copilot/chatHistory";
 import { ChatSiteLaunch } from "./ChatSiteLaunch";
@@ -579,7 +580,8 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
       {!started && (
         <div className="mb-8 flex flex-col items-center text-center">
           <img src="/copilot-avatar.png" alt="" width="56" height="56" className="h-14 w-14 rounded-2xl object-cover" />
-          <h1 className="mt-6 text-3xl font-semibold tracking-tight sm:text-4xl">{t(user || authLoading ? "copilot_home_title" : "gate_welcome")}</h1>
+          <h1 className={`mt-6 text-3xl font-semibold tracking-tight sm:text-5xl${user || authLoading ? "" : " fx-gradient-text"}`}>{t(user || authLoading ? "copilot_home_title" : "gate_welcome")}</h1>
+          {!user && !authLoading && <p className="mt-3 text-base text-muted-foreground sm:text-lg">{t("gate_tagline")}</p>}
         </div>
       )}
       {!started && user && !workstation && <ChatCockpit saved={saved} onAsk={(q) => void send(q)} />}
@@ -627,7 +629,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
         <div ref={endRef} className="scroll-mb-48" aria-hidden="true" />
       </div>
       {talk && <VoiceOrb accent={(() => { const last = [...messages].reverse().find((m) => m.role === "user"); return getAgent(last?.agent?.id ?? pickedAgent)?.color ?? null; })()} state={speakingIdx !== null ? "speaking" : isAnalyzing ? "thinking" : listening ? "listening" : "idle"} onClose={toggleTalk} onTapOrb={() => { if (speakingIdx !== null) { stopSpeaking(); setSpeakingIdx(null); } else toggleVoice(); }} note={speechNote === "no_voice" ? t("speak_no_voice") : speechNote === "unsupported" ? t("speak_unsupported") : voiceNote} code={voiceError ? voiceCode : null} trace={voiceTrace} />}
-      {!user && !authLoading && <ChatAuthGate />}
+      {!user && !authLoading && <><ChatAuthGate /><GateShowcase /></>}
       {user && <div className={started ? "sticky bottom-0 bg-background/90 pb-3 pt-2 backdrop-blur" : ""}>
         {consentAsk && !consented && (
           <div role="alertdialog" aria-label={t("file_consent_title")} className="mb-2 rounded-2xl border border-border bg-muted/50 p-3 text-xs leading-5" data-testid="file-consent">
