@@ -29,3 +29,14 @@ describe("GapSheet inside InvestED", () => {
     expect(ask("asdf qwer", "en").r.kind).toBe("clarification");
   });
 });
+
+import { csvToWorkbook, sheetToCsv } from "./lib/io";
+describe("GapSheet CSV", () => {
+  it("round-trips and never turns imported text into a formula", () => {
+    const wb = csvToWorkbook("Name,Sales\r\nDan,10\r\nEve,=1+1\r\n", "t.csv");
+    const sheet = wb.sheets[0];
+    expect(sheet.cells["B2"].value).toBe(10);
+    expect(sheet.cells["B3"].formula).toBeNull();
+    expect(sheetToCsv(sheet)).toContain("Dan,10");
+  });
+});

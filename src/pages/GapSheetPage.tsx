@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLanguage } from "@/context/languageContext";
 import { Spreadsheet } from "@/features/gapsheet/components/Spreadsheet";
 import type { WorkbookState } from "@/features/gapsheet/types/workbook";
@@ -11,6 +11,18 @@ import { parseIntent } from "@/features/gapsheet/lib/ai/intent";
 import { explainActions } from "@/features/gapsheet/lib/ai/explain";
 import { executeActions } from "@/features/gapsheet/lib/actions/executor";
 import type { Lang } from "@/features/gapsheet/lib/i18n";
+import { csvToWorkbook, sheetToCsv, ImportError } from "@/features/gapsheet/lib/io";
+import { recalc } from "@/features/gapsheet/lib/workbook/engine";
+
+const STORE = "invested.gapsheet.workbook.v1";
+function loadSaved(): WorkbookState | null {
+  try {
+    const raw = localStorage.getItem(STORE); if (!raw) return null;
+    const w = JSON.parse(raw) as WorkbookState;
+    if (!w || !Array.isArray(w.sheets) || !w.sheets.length || !w.sheets.some(x => x.id === w.activeSheetId)) return null;
+    return recalc(w);
+  } catch { return null; }
+}
 
 type Msg =
   | { role: "user"; text: string }
@@ -24,7 +36,10 @@ export default function GapSheetPage() {
   const { language } = useLanguage();
   const lang: Lang = language === "he" ? "he" : "en";
   const t = (he: string, en: string) => (lang === "he" ? he : en);
-  const [state, setState] = useState<WorkbookState>(() => newWorkbook());
+  const [state, setState] = useState<WorkbookState>(() => loadSaved() ?? newWorkbook());
+  const [note, setNote] = useState("");
+  const fileRef = useRef<HTMLInputElement>(null);
+  useEffect(() => { try { localStorage.setItem(STORE, JSON.stringify(state)); } catch { /* storage full or blocked: the sheet still works */ } }, [state]);
   const [history, setHistory] = useState<WorkbookState[]>([]);
   const [msgs, setMsgs] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
@@ -65,6 +80,21 @@ export default function GapSheetPage() {
   const edit = (address: string, raw: string) => { const p = parseInput(raw); void p; commit(setCells(state, state.activeSheetId, [{ address, raw }])); };
   const paste = (edits: { address: string; raw: string }[]) => commit(setCells(state, state.activeSheetId, edits));
 
+  function exportCsv() {
+    const sheet = state.sheets.find(x => x.id === state.activeSheetId)!;
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([sheetToCsv(sheet)], { type: "text/csv;charset=utf-8" }));
+    a.download = `${(state.name || "gapsheet").replace(/[^\w\u0590-\u05ff-]+/g, "_")}.csv`; a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+  async function importCsv(f: File) {
+    setNote("");
+    if (!/\.csv$/i.test(f.name)) return setNote(t("אפשר לייבא כרגע רק קובץ CSV.", "Only CSV files can be imported for now."));
+    try { commit(csvToWorkbook(await f.text(), f.name)); setMsgs([]); setNote(t("הקובץ יובא. אפשר לבטל.", "File imported. You can undo.")); }
+    catch (e) { setNote(e instanceof ImportError ? t("הקובץ לא תקין, ריק או גדול מדי (עד 5MB, 5,000 שורות, 100 עמודות).", "The file is invalid, empty or too large (5MB, 5,000 rows, 100 columns max).") : t("לא הצלחתי לקרוא את הקובץ.", "Could not read the file.")); }
+  }
+  function reset() { commit(newWorkbook()); setMsgs([]); setNote(t("הגיליון אופס לדוגמה. אפשר לבטל.", "Sheet reset to the sample. You can undo.")); }
+
   return (
     <main className="mx-auto max-w-6xl space-y-4 p-4" dir={lang === "he" ? "rtl" : "ltr"} data-testid="gapsheet-page">
       <header className="space-y-1">
@@ -73,8 +103,17 @@ export default function GapSheetPage() {
         <p className="text-sm text-muted-foreground">{t("כתבו מה לעשות בטבלה, ראו את השינוי ואת נוסחת האקסל המקבילה. הכול רץ בדפדפן, הנתונים לא יוצאים מהמכשיר.", "Say what to do with the table, see the change and the equivalent Excel formula. Everything runs in your browser; your data stays on your device.")}</p>
       </header>
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-        <section aria-label={t("גיליון", "Sheet")} className="terminal-panel overflow-hidden" dir="ltr">
+        <section aria-label={t("גיליון", "Sheet")} className="terminal-panel overflow-hidden" dir={lang === "he" ? "rtl" : "ltr"}>
+          <div className="flex flex-wrap items-center gap-2 border-b border-border p-2 text-xs">
+            <button type="button" className="rounded border border-border px-2 py-1" onClick={() => fileRef.current?.click()}>{t("ייבוא CSV", "Import CSV")}</button>
+            <button type="button" className="rounded border border-border px-2 py-1" onClick={exportCsv}>{t("ייצוא CSV", "Export CSV")}</button>
+            <button type="button" className="rounded border border-border px-2 py-1" onClick={reset}>{t("איפוס לדוגמה", "Reset to sample")}</button>
+            <input ref={fileRef} type="file" accept=".csv,text/csv" className="sr-only" aria-label={t("בחירת קובץ CSV", "Choose a CSV file")} onChange={e => { const f = e.target.files?.[0]; e.target.value = ""; if (f) void importCsv(f); }} />
+            <span className="text-muted-foreground" role="status">{note || t("נשמר אוטומטית במכשיר הזה בלבד.", "Saved automatically on this device only.")}</span>
+          </div>
+          <div dir="ltr">
           <Spreadsheet state={state} onEdit={edit} onPaste={paste} onSelect={setSelection} cols={6} rows={14} lang={lang} />
+          </div>
         </section>
         <section aria-label={t("בקשות", "Requests")} className="terminal-panel flex min-h-[360px] flex-col">
           <div className="flex items-center justify-between border-b border-border p-2">
