@@ -73,3 +73,5 @@
 .gs-grid { color:#172b29; color-scheme:light; }
 .gs-grid :is(input,textarea,td,th,button,span) { color:inherit; }
 .gs-grid input { background:transparent; }
+.gs-grid :is(th, thead td) { background:#f1f5f9; color:#475569; }
+.gs-grid tbody th { background:#f1f5f9; color:#475569; }
