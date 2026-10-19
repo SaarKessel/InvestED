@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode, type CSSProperties } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Activity, BookOpen, BriefcaseBusiness, Calculator, ChevronLeft, ChevronRight, Globe, LayoutDashboard, Menu, Moon, Newspaper, Search, Settings, Sun, X, MoreHorizontal, Pin, RotateCcw } from "lucide-react";
+import { Activity, BookOpen, BriefcaseBusiness, Calculator, ChevronLeft, ChevronRight, Globe, LayoutDashboard, Moon, Newspaper, Search, Settings, Sun, X, MoreHorizontal, Pin, RotateCcw } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/context/useAuth";
@@ -14,6 +14,7 @@ import { CommandCenter } from "./CommandCenter";
 import { TerminalDialog } from "./TerminalDialog";
 import {loadSessions,saveSessions,closeSession,moveSession,type TerminalSession} from "./terminalSessions";
 import { Tooltip } from "@/components/ui/interactive";
+import { HamburgerMenu } from "@/components/ui/easyui/HamburgerMenu";
 
 const navigation = [
   { group: ["Intelligence", "מודיעין"], items: [{path:"/", label:["InvestED+", "InvestED+"], icon:Activity}, {path:"/dashboard",label:["Portfolio intelligence","מודיעין תיק השקעות"],icon:LayoutDashboard}] },
@@ -48,7 +49,7 @@ export function TerminalShell({ children }: { children: ReactNode }) {
   const restore=()=>{const tab=sessions.closed.at(-1);if(tab){setSessions(current=>({tabs:[...current.tabs,tab],closed:current.closed.slice(0,-1)}));setActiveId(tab.id);navigate(tab.path);}};
   return <div className={`terminal-shell ${compact?"terminal-shell-compact":""} ${dock?"terminal-dock-bottom":""}`} style={{"--terminal-copilot":`${copilotWidth}px`} as CSSProperties} data-density={density} data-mobile-view={mobileView} dir={he?"rtl":"ltr"}>
     <header className="terminal-topbar">
-      <button type="button" className="terminal-icon terminal-mobile-menu" onClick={()=>setMobileNav(!mobileNav)} aria-expanded={mobileNav} aria-controls="terminal-navigation" aria-label={he?"ניווט":"Navigation"}><Menu size={18}/></button>
+      <HamburgerMenu className="terminal-icon terminal-mobile-menu" isOpen={mobileNav} onChange={setMobileNav} aria-controls="terminal-navigation" aria-label={he?"ניווט":"Navigation"} size={18}/>
       <Link to="/" aria-label="InvestED+"><Logo /></Link>
       <button type="button" className="terminal-search" onClick={()=>setCommand(true)}><Search size={15}/><span>{he?"שאלו, חפשו או פתחו סביבת עבודה":"Ask, search or open a workspace"}</span><kbd>⌘ / Ctrl K</kbd></button>
       <div className="terminal-top-actions"><Tooltip label={he?"שפה":"Language"}><button className="terminal-icon" onClick={toggleLanguage} aria-label={he?t("nav_lang_en_label"):t("nav_lang_he_label")}><Globe size={16}/><span>{he?"EN":"HE"}</span></button></Tooltip><button className="terminal-icon" onClick={toggleTheme} aria-label={t("nav_switch_theme")}>{theme==="dark"?<Sun size={17}/>:<Moon size={17}/>}</button><span className="terminal-user" title={user?.email}>{user?.email?.split("@")[0]}</span></div>

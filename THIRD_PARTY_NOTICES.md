@@ -62,3 +62,8 @@
 ## Literacy tools: concept credits (no code copied)
 - Fake-News-Detector (MIT): the idea of separating claims by how well they can be checked. InvestED's news worksheet is deterministic, headline-only and gives no true/false verdict.
 - Fraud_detection_using_ML and THEOREMX1.0: concepts only, no code, data or models used. The suspicious-link lab reads link text with fixed rules and teaches what to look for. It never opens or fetches the link.
+
+## EasyUI (UI components, adapted)
+- Project: https://github.com/Surajmaurya1/easyui , site: https://easyui.site
+- License: MIT (verified from the repository LICENSE, Copyright (c) 2026 Suraj Maurya)
+- Use: source-copied UI components under src/components/ui/easyui/ and src/lib/easyui/motion.ts, adapted for InvestED design tokens, Hebrew/RTL and reduced motion. Also the motion patterns behind the accordion, tooltip, dialog and command-palette updates in src/components/ui/interactive.tsx and src/components/terminal/.

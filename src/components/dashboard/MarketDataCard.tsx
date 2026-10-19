@@ -32,6 +32,7 @@ import {
 
 import { fetchMarketAssets } from "@/lib/marketData";
 import { cn } from "@/lib/utils";
+import { AnimatedNumber } from "@/components/ui/easyui/AnimatedNumber";
 
 import { CandlestickChart } from "./CandlestickChart";
 
@@ -467,7 +468,7 @@ export function MarketDataCard({
 
                       <p className="font-display text-2xl font-extrabold">
 
-                        ${active.price.toFixed(2)}
+                        <AnimatedNumber value={active.price} decimals={2} prefix="$" />
 
                       </p>
 
@@ -500,13 +501,12 @@ export function MarketDataCard({
 
                       >
 
-                        {
-                          active.changePercent>=0
-                          ? "+"
-                          : ""
-                        }
-
-                        {active.changePercent.toFixed(2)}%
+                        <AnimatedNumber
+                          value={active.changePercent}
+                          decimals={2}
+                          suffix="%"
+                          prefix={active.changePercent >= 0 ? "+" : ""}
+                        />
 
                       </span>
 
