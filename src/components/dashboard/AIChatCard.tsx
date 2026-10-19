@@ -579,7 +579,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
     <div dir={language === "he" ? "rtl" : "ltr"} className={`mx-auto flex w-full max-w-3xl flex-col ${started ? "min-h-[calc(100vh-9rem)]" : "min-h-[calc(100vh-14rem)] justify-center"}`}>
       {!started && (
         <div className="mb-8 flex flex-col items-center text-center">
-          <img src="/copilot-avatar.png" alt="" width="56" height="56" className="h-14 w-14 rounded-2xl object-cover" />
+          <img src="/copilot-avatar-blue.png" alt="" width="56" height="56" className="h-14 w-14 rounded-2xl object-cover" />
           <h1 className={`mt-6 text-3xl font-semibold tracking-tight sm:text-5xl${user || authLoading ? "" : " fx-gradient-text"}`}>{t(user || authLoading ? "copilot_home_title" : "gate_welcome")}</h1>
           {!user && !authLoading && <p className="mt-3 text-base text-muted-foreground sm:text-lg">{t("gate_tagline")}</p>}
         </div>
@@ -605,7 +605,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
         {messages.map((message, index) => {
           const response = message.response;
           return <div key={index} className={message.role === "user" ? "ms-auto w-fit max-w-[85%] rounded-3xl bg-[hsl(221_83%_44%)] px-4 py-2.5 text-sm leading-6 text-white [&_p]:text-white" : "group flex gap-3 text-sm leading-7"}>
-            {message.role === "copilot" && <img src="/copilot-avatar.png" alt="" width="36" height="36" className="mt-0.5 h-9 w-9 shrink-0 rounded-xl object-cover ring-1 ring-amber-400/30" />}
+            {message.role === "copilot" && <img src="/copilot-avatar-blue.png" alt="" width="36" height="36" className="mt-0.5 h-9 w-9 shrink-0 rounded-xl object-cover ring-1 ring-primary/30" />}
             <div className="min-w-0 flex-1">
             {message.role === "copilot" && (() => { const prev = messages.slice(0, index).reverse().find((m) => m.role === "user"); return prev?.agent ? <ChatAgentTag agentId={prev.agent.id} switchTo={prev.agent.switchTo} onSwitch={pickAgent} /> : null; })()}
             {message.role === "copilot" && message.response ? <ChatLinkedText text={message.text} onAsk={(q) => void send(q)} /> : <p dir={/[א-ת]/.test(message.text) ? "rtl" : "ltr"} className="whitespace-pre-wrap break-words [overflow-wrap:anywhere]">{message.text}</p>}
