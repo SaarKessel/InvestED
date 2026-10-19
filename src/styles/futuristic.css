@@ -68,3 +68,8 @@
 .terminal-status[data-state="live"] .terminal-status-dot { box-shadow:0 0 0 0 hsl(var(--success) / .6); animation:fx-pulse 2s ease-out infinite; }
 @keyframes fx-pulse { to { box-shadow:0 0 0 8px hsl(var(--success) / 0); } }
 @media (prefers-reduced-motion: reduce) { .ticker-strip::after, .terminal-status[data-state="live"] .terminal-status-dot { animation:none !important; } .card-premium:hover { transform:none; } }
+
+/* GapSheet grid is a light "paper" sheet inside the dark shell: pin its ink so cells stay readable in both themes */
+.gs-grid { color:#172b29; color-scheme:light; }
+.gs-grid :is(input,textarea,td,th,button,span) { color:inherit; }
+.gs-grid input { background:transparent; }
