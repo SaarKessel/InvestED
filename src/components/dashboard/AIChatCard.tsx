@@ -9,6 +9,7 @@ import { ChatComparisonTable } from "./ChatComparisonTable";
 import { ChatNewsList } from "./ChatNewsList";
 import { ChatAuthGate } from "./ChatAuthGate";
 import { GateShowcase } from "./GateShowcase";
+import type { OrbLang } from "./VoiceOrb";
 import { useAuth } from "@/context/useAuth";
 import { createConversation, deleteConversation, listConversations, loadMessages, saveMessage, type ChatConversation } from "@/lib/copilot/chatHistory";
 import { ChatSiteLaunch } from "./ChatSiteLaunch";
@@ -52,7 +53,8 @@ import { isSaved, loadSaved, removeSaved, toggleSaved, type SavedAnswer } from "
 import { ChatLinkedText } from "./ChatLinkedText";
 import { type TraceStep } from "@/lib/copilot/planner";
 import { routeRequest } from "@/lib/intelligence/router";
-import { VoiceOrb } from "./VoiceOrb";
+import { VoiceOrb, VoiceDot } from "./VoiceOrb";
+import { DotLive } from "./DotLive";
 import { LevelPicker } from "./LevelPicker";
 import { checkFile, giveConsent, hasConsent } from "@/lib/copilot/fileAnalysis";
 import { askAboutFile, prepareFile, type PreparedFile } from "@/lib/copilot/fileClient";
@@ -86,7 +88,7 @@ import { type CalcDeskResult } from "@/lib/copilot/calcDesk";
 import { loadDataDesk, type DataDeskResult } from "@/lib/copilot/dataDesk";
 import { ChatStrategyCard } from "./ChatStrategyCard";
 import { ChatStrategyFitCard } from "./ChatStrategyFitCard";
-import { speak, stopSpeaking, unlockSpeech, getSynth, type SpeakResult } from "@/lib/copilot/speechOutput";
+import { speak, cleanForSpeech, stopSpeaking, unlockSpeech, getSynth, type SpeakResult } from "@/lib/copilot/speechOutput";
 import { appendDictation, getSpeechRecognition, joinTranscript, speechLocale, voiceProblem, isIOS, type SpeechRecognitionLike, type VoiceProblem } from "@/lib/copilot/voiceInput";
 import { useAnalysis } from "@/context/useAnalysis";
 import type { CopilotResponse } from "@/lib/copilotResponse";
@@ -148,6 +150,10 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
   useEffect(() => { setActiveLevel(level); }, [level]);
   const changeLevel = (l: Level) => { if (saveLevel(user?.id, l)) setLevel(l); };
   const [talk, setTalk] = useState(false);
+  const [dotOpen, setDotOpen] = useState(false);
+  const [voiceLang, setVoiceLang] = useState<OrbLang | null>(null);
+  const [heard, setHeard] = useState("");
+  const orbLang: OrbLang = voiceLang ?? (language === "he" ? "he" : "en");
   const [speakingIdx, setSpeakingIdx] = useState<number | null>(null);
   const [speechNote, setSpeechNote] = useState<SpeakResult | null>(null);
   const talkRef = useRef(false); talkRef.current = talk;
@@ -158,10 +164,12 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
   }
   const toggleVoiceRef = useRef<(() => void) | null>(null);
   const sendRef = useRef<((raw: string) => Promise<void>) | null>(null);
-  function toggleTalk() { if (talk) { setTalk(false); stopSpeaking(); setSpeakingIdx(null); recognitionRef.current?.stop(); } else { unlockSpeech(); setTalk(true); if (SpeechCtor && !listening) toggleVoice(); } }
+  function changeVoiceLang(l: OrbLang) { setVoiceLang(l); voiceLangRef.current = l; fallbackLang.current = null; if (listening) { dictated.current = ""; recognitionRef.current?.stop(); window.setTimeout(() => { if (talkRef.current) toggleVoiceRef.current?.(); }, 400); } }
+  function toggleTalk() { setHeard(""); if (talk) { setTalk(false); stopSpeaking(); setSpeakingIdx(null); recognitionRef.current?.stop(); } else { unlockSpeech(); setTalk(true); if (SpeechCtor && !listening) toggleVoice(); } }
   useEffect(() => () => stopSpeaking(), []);
   useEffect(() => () => recognitionRef.current?.stop(), []);
   const wantListening = useRef(false);
+  const voiceLangRef = useRef<OrbLang | null>(null); voiceLangRef.current = voiceLang;
   const fallbackLang = useRef<string | null>(null);
   const dictated = useRef("");
   function startRecognition(base: string) {
@@ -169,10 +177,10 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
     vtrace("new recognizer");
     const rec = new SpeechCtor();
     rec.onstart = () => vtrace("onstart"); rec.onaudiostart = () => vtrace("audio on"); rec.onspeechstart = () => vtrace("speech heard"); rec.onnomatch = () => vtrace("no match");
-    rec.lang = fallbackLang.current ?? speechLocale(language); rec.interimResults = true; rec.continuous = false;
+    rec.lang = fallbackLang.current ?? speechLocale(voiceLangRef.current ?? language); rec.interimResults = true; rec.continuous = false;
     rec.onresult = (event) => {
       const said = appendDictation(base, joinTranscript(event.results));
-      dictated.current = said;
+      dictated.current = said; setHeard(joinTranscript(event.results));
       if (talkRef.current) return;
       setQuestion(said);
     };
@@ -628,7 +636,9 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
         {(isAnalyzing || fileBusy) && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader variant="arc" size={16} label={null} className="shrink-0" />{t("copilot_working")}</div>}
         <div ref={endRef} className="scroll-mb-48" aria-hidden="true" />
       </div>
-      {talk && <VoiceOrb accent={(() => { const last = [...messages].reverse().find((m) => m.role === "user"); return getAgent(last?.agent?.id ?? pickedAgent)?.color ?? null; })()} state={speakingIdx !== null ? "speaking" : isAnalyzing ? "thinking" : listening ? "listening" : "idle"} onClose={toggleTalk} onTapOrb={() => { if (speakingIdx !== null) { stopSpeaking(); setSpeakingIdx(null); } else toggleVoice(); }} note={speechNote === "no_voice" ? t("speak_no_voice") : speechNote === "unsupported" ? t("speak_unsupported") : voiceNote} code={voiceError ? voiceCode : null} trace={voiceTrace} />}
+      {talk && <VoiceOrb accent={(() => { const last = [...messages].reverse().find((m) => m.role === "user"); return getAgent(last?.agent?.id ?? pickedAgent)?.color ?? null; })()} state={speakingIdx !== null ? "speaking" : isAnalyzing ? "thinking" : listening ? "listening" : (voiceError || speechNote || !SpeechCtor) ? "error" : "idle"} onClose={toggleTalk} onTapOrb={() => { if (speakingIdx !== null) { stopSpeaking(); setSpeakingIdx(null); } else toggleVoice(); }} onStopSpeech={() => { stopSpeaking(); setSpeakingIdx(null); }} speechLang={orbLang} onLang={changeVoiceLang} heard={heard} reply={(() => { const last = [...messages].reverse().find((m) => m.role === "copilot"); return last ? cleanForSpeech(last.text).slice(0, 280) : ""; })()} note={speechNote === "no_voice" ? t("speak_no_voice") : speechNote === "unsupported" ? t("speak_unsupported") : voiceNote} code={voiceError ? voiceCode : null} trace={voiceError ? voiceTrace : undefined} />}
+      {user && !talk && !dotOpen && <VoiceDot state="idle" onOpen={() => setDotOpen(true)} accent={null} />}
+      {user && dotOpen && <DotLive ctx={{ navigate, askCopilot: async (q) => (await askCopilot(q)).response.text }} onClose={() => setDotOpen(false)} onFallback={() => { setDotOpen(false); if ((canSpeak || SpeechCtor) && !talkRef.current) toggleTalk(); }} />}
       {!user && !authLoading && <><ChatAuthGate /><GateShowcase /></>}
       {user && <div className={started ? "sticky bottom-0 bg-background/90 pb-3 pt-2 backdrop-blur" : ""}>
         {consentAsk && !consented && (
