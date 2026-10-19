@@ -58,22 +58,29 @@ export default async function handler(req: Req, res: Res) {
   if (!uid) return res.status(401).json({ available: false, reason: "sign_in_required" });
   if (limited(uid, Date.now())) return res.status(429).json({ available: false, reason: "rate_limited" });
   const now = Date.now();
+  const mint = async (constrained: boolean) => fetch("https://generativelanguage.googleapis.com/v1beta/auth_tokens", {
+    method: "POST",
+    headers: { "x-goog-api-key": apiKey, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      uses: 1,
+      expireTime: new Date(now + 30 * 60_000).toISOString(),
+      newSessionExpireTime: new Date(now + 60_000).toISOString(),
+      ...(constrained ? { liveConnectConstraints: { model: `models/${DOT_LIVE_MODEL}`, config: { responseModalities: ["AUDIO"] } } } : {}),
+    }),
+    signal: AbortSignal.timeout(8000),
+  });
   try {
-    const r = await fetch("https://generativelanguage.googleapis.com/v1beta/auth_tokens", {
-      method: "POST",
-      headers: { "x-goog-api-key": apiKey, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        uses: 1,
-        expireTime: new Date(now + 30 * 60_000).toISOString(),
-        newSessionExpireTime: new Date(now + 60_000).toISOString(),
-        liveConnectConstraints: { model: `models/${DOT_LIVE_MODEL}`, config: { responseModalities: ["AUDIO"] } },
-      }),
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!r.ok) return res.status(200).json({ available: false, reason: `gemini_${r.status}` });
+    let constrained = true;
+    let r = await mint(true);
+    // Some key/model combinations reject the lock config; the token is still Live-only and single-use, so retry without it.
+    if (r.status === 400) { constrained = false; r = await mint(false); }
+    if (!r.ok) {
+      const detail = ((await r.json().catch(() => ({}))) as { error?: { message?: string } }).error?.message?.slice(0, 200);
+      return res.status(200).json({ available: false, reason: `gemini_${r.status}`, detail });
+    }
     const j = (await r.json()) as { name?: string };
     if (!j.name) return res.status(200).json({ available: false, reason: "no_token" });
-    return res.status(200).json({ available: true, token: j.name, model: DOT_LIVE_MODEL });
+    return res.status(200).json({ available: true, token: j.name, model: DOT_LIVE_MODEL, constrained });
   } catch {
     return res.status(200).json({ available: false, reason: "gemini_unreachable" });
   }
