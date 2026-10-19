@@ -57,7 +57,7 @@ describe("/api/dot-token", () => {
 describe("DOT coverage map", () => {
   // Every typed-action area from the Phase 0 inventory is either mapped to a tool or listed as an explicit gap. A new area must be added here.
   const COVERAGE: Record<string, string | "GAP"> = {
-    navigation: "navigate", "copilot-qa": "ask_copilot", calculators: "ask_copilot", "news-research": "ask_copilot", "market-quotes": "get_quote",
+    navigation: "navigate", "copilot-qa": "ask_copilot", calculators: "ask_copilot", "news-research": "ask_copilot", "market-quotes": "get_quote", "data-freshness": "data_status",
     "gapsheet-create": "create_gapsheet_table", "gapsheet-edit-sort-filter-formula-format-chart": "gapsheet_edit", language: "set_language", theme: "set_theme",
     "gapsheet-export-import": "screen_controls", watchlist: "watchlist_add", "watchlist-read-remove": "watchlist_remove", "paper-ledger": "paper_order", "paper-ledger-view": "paper_ledger_view", simulation: "screen_controls", "learning-quiz": "screen_controls", "career-lab": "screen_controls", "data-controls": "screen_controls", "contact-form": "screen_controls", "file-upload": "MANUAL",
     auth: "T3", payments: "T3", "real-money": "T3",
@@ -117,5 +117,18 @@ describe("screen controls", () => {
     expect((document.querySelector('input[aria-label="Amount"]') as HTMLInputElement).value).toBe("250");
     expect((await runTool("ui_select", { index: idx("Mode"), value: "slow" }, c(), async () => true)).result.ok).toBe(true);
     expect((document.querySelector("select") as HTMLSelectElement).value).toBe("Slow");
+  });
+});
+
+describe("data_status", () => {
+  it("reports failing feeds from /api/health and never claims health on error", async () => {
+    const ctx = { navigate() {}, language: "en" as const, askCopilot: async () => "" };
+    const f = vi.fn(async () => ({ ok: true, json: async () => ({ checkedAt: "t", allOk: false, checks: [{ name: "yahoo_finance", ok: true }, { name: "daily_feed", ok: false, detail: "stale 17d" }] }) }));
+    vi.stubGlobal("fetch", f);
+    const r = (await runTool("data_status", {}, ctx, async () => true)).result;
+    expect(r).toMatchObject({ ok: true, allOk: false, problems: [{ feed: "daily_feed", detail: "stale 17d" }] });
+    vi.stubGlobal("fetch", vi.fn(async () => { throw new Error("net"); }));
+    expect((await runTool("data_status", {}, ctx, async () => true)).result).toMatchObject({ ok: false, error: "unavailable" });
+    vi.unstubAllGlobals();
   });
 });

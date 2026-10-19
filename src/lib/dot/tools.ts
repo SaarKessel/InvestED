@@ -195,6 +195,17 @@ export const TOOLS: DotTool[] = [
     },
   },
   {
+    name: "data_status", tier: 0, description: "Check whether the site's data feeds are working and fresh (Yahoo prices, FX, World Bank, Fed RSS, the daily feed). Call this for ANY question about whether data is up to date, stale, delayed or the site is healthy. Never infer feed freshness from a single quote.",
+    parameters: { type: "OBJECT", properties: {} },
+    run: async () => {
+      try {
+        const r = await fetch("/api/health", { signal: AbortSignal.timeout(8000) }); if (!r.ok) return { ok: false, error: "unavailable" };
+        const j = (await r.json()) as { checkedAt?: string; allOk?: boolean; checks?: { name: string; ok: boolean; detail?: string }[] };
+        return { ok: true, checkedAt: j.checkedAt ?? null, allOk: !!j.allOk, problems: (j.checks ?? []).filter((c) => !c.ok).map((c) => ({ feed: c.name, detail: c.detail ?? "failing" })), healthy: (j.checks ?? []).filter((c) => c.ok).map((c) => c.name) };
+      } catch { return { ok: false, error: "unavailable" }; }
+    },
+  },
+  {
     name: "set_language", tier: 1, description: "Switch the site language between Hebrew (he) and English (en).",
     parameters: { type: "OBJECT", properties: { language: { type: "STRING", description: "he or en" } }, required: ["language"] },
     run: async (a, ctx) => { const l = str(a.language, 4).toLowerCase(); if (l !== "he" && l !== "en") return { ok: false, error: "bad_language" }; if (!ctx.setLanguage) return { ok: false, error: "unavailable" }; ctx.setLanguage(l); return { ok: true, language: l }; },
@@ -222,6 +233,7 @@ export function systemPrompt(lang: "he" | "en"): string {
     "You are DOT, the voice assistant of InvestED, a finance-education site. Speak briefly and naturally.",
     lang === "he" ? "Default language: Hebrew. Answer in the language the user speaks; if unsure, use Hebrew." : "Default language: English. Answer in the language the user speaks.",
     "You have tools. For any number, price, calculation or fact about markets or the site, call a tool and read back its result with the source and time. If a tool says data is unavailable, say so. Never invent prices or data.",
+    "Questions about whether data or feeds are fresh, stale, delayed or working: call data_status and report any problems it lists; a good quote does not prove the feeds are healthy. If a tool call is missing a required detail (quantity, columns, symbol), ask the user for it instead of guessing.",
     "Educational only: no personal investment advice, no buy/sell calls, no guarantees.",
     "Never ask for or accept passwords, card numbers, or account credentials by voice; tell the user to type those on screen. No real-money actions.",
     "For anything else on a page (simulation, quiz, career lab, data controls, forms, tabs, filters, export buttons) call screen_controls, then ui_click / ui_type / ui_select by number, and call screen_controls again after the page changes. Tell the user which control you used. File pickers are not voice-driven: ask the user to tap Choose file themselves, then continue.",
