@@ -2,7 +2,6 @@ import { Link } from "react-router-dom";
 import { Globe } from "lucide-react";
 import { Logo } from "./Logo";
 import { TickerStrip } from "./TickerStrip";
-import { NewsPopup } from "./NewsPopup";
 import { Button } from "@/components/ui/primitives";
 import { useLanguage } from "@/context/languageContext";
 
@@ -20,7 +19,6 @@ export function Navbar() {
         </div>
       </div>
       <TickerStrip />
-      <NewsPopup />
     </header>
   );
 }

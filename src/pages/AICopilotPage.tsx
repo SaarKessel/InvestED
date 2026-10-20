@@ -1,5 +1,4 @@
 import { AIChatCard } from "@/components/dashboard/AIChatCard";
-import { NewsPopup } from "@/components/layout/NewsPopup";
 import { useAuth } from "@/context/useAuth";
 import { useLanguage } from "@/context/languageContext";
 import { Globe } from "lucide-react";
@@ -29,7 +28,6 @@ export default function AICopilotPage() {
         <button type="button" onClick={toggleLanguage} aria-label={language === "he" ? t("nav_lang_en_label") : t("nav_lang_he_label")} className="chat-shell-action"><Globe className="h-4 w-4" aria-hidden="true" />{language === "he" ? "EN" : "HE"}</button>
       </header>
       <main className="flex flex-1 flex-col px-3 sm:px-6"><AIChatCard /></main>
-      <NewsPopup />
     </div>
   );
 }

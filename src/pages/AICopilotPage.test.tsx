@@ -7,7 +7,6 @@ import { LanguageProvider } from "@/context/languageContext";
 import { ThemeProvider } from "@/context/themeContext";
 
 vi.mock("@/components/dashboard/AIChatCard", () => ({ AIChatCard: ({ workstation }: { workstation?: boolean }) => <div data-testid={workstation ? "chat-workstation" : "chat-only"} /> }));
-vi.mock("@/components/layout/NewsPopup", () => ({ NewsPopup: () => null }));
 let authed = true;
 vi.mock("@/context/useAuth", () => ({ useAuth: () => ({ user: authed ? { email: "owner@example.invalid", id: "u1" } : null, loading: false }) }));
 
