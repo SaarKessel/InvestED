@@ -587,7 +587,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
     <div dir={language === "he" ? "rtl" : "ltr"} className={`mx-auto flex w-full max-w-3xl flex-col ${started ? "min-h-[calc(100vh-9rem)]" : "min-h-[calc(100vh-14rem)]"}`}>
       {!started && (
         <div className="mb-8 my-auto flex flex-col items-center text-center">
-          <img src="/logo-silver.svg" alt="" width="56" height="56" className="h-14 w-14" />
+          <img src="/logo-silver.svg" alt="" width="80" height="80" className="h-20 w-20" />
           <h1 className={`mt-6 text-3xl font-semibold tracking-tight sm:text-5xl${user || authLoading ? "" : " fx-gradient-text"}`}>{t(user || authLoading ? "copilot_home_title" : "gate_welcome")}</h1>
           {!user && !authLoading && <p className="mt-3 text-base text-muted-foreground sm:text-lg">{t("gate_tagline")}</p>}
         </div>
