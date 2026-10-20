@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/hooks/useTheme";
 import { LanguageProvider } from "@/context/languageContext";
@@ -7,7 +7,8 @@ import { AnalysisProvider } from "@/context/AnalysisContext";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { ToastProvider } from "@/components/ui/easyui/toast";
 import { Layout } from "@/components/layout/Layout";
-const AICopilotPage = lazy(() => import("@/pages/AICopilotPage"));
+import { lazyWithRetry } from "@/lib/lazyWithRetry";
+const AICopilotPage = lazyWithRetry(() => import("@/pages/AICopilotPage"));
 
 function PageLoading() {
   return (
