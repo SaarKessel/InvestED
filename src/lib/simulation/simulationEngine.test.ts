@@ -6,7 +6,6 @@ import {
   abandonSimulation,
   sortLeaderboard,
   validateNickname,
-  validateAllocations,
   SIMULATION_BUDGET,
   type SimulationQuote,
 } from "./simulationEngine";
