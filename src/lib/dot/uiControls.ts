@@ -1,7 +1,7 @@
 // Generic screen control for DOT: "everything you can type or click on the page" without per-page code.
 // Snapshot -> index -> act. Credentials/payment fields and sign-in/payment buttons are blocked (tier 3); destructive or sending buttons need confirmation.
 const MAX = 100;
-const T3_FIELD = /pass(word)?|סיסמ|cvv|cvc|card|כרטיס|iban|ssn|otp|one-time|2fa|token|secret/i;
+const T3_FIELD = /pass(word)?|סיסמ|cvv|cvc|csc|card|כרטיס|iban|ssn|otp|one-time|2fa|token|secret/i;
 const T3_BUTTON = /sign\s?in|log\s?in|sign\s?up|create account|sign\s?out|log\s?out|התחבר|הרשמ|יצירת חשבון|התנתק|pay\b|payment|checkout|buy now|purchase|subscribe|upgrade|תשלום|רכישה|שלם|מנוי|delete (my )?account|מחיקת חשבון/i;
 const CONFIRM_BUTTON = /delete|remove|reset|clear|erase|discard|send|submit|export|download|מחק|הסר|אפס|נקה|שלח|שליחה|ייצוא|הורד/i;
 const registry = new Map<number, Element>();
