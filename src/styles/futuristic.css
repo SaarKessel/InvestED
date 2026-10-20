@@ -105,6 +105,7 @@
 .chat-shell-top { position:absolute; inset-block-start:.75rem; inset-inline-end:.75rem; z-index:2; display:flex; align-items:center; gap:.25rem; }
 .chat-shell-action { display:inline-flex; align-items:center; gap:.375rem; border-radius:9999px; padding:.5rem .625rem; font-size:.75rem; font-weight:600; color:hsl(var(--muted-foreground)); transition:color .15s ease, background-color .15s ease; }
 .chat-shell-action:hover { color:hsl(var(--foreground)); background:hsl(var(--accent)); }
+@media (pointer:coarse) { .chat-shell-action { min-width:44px; min-height:44px; justify-content:center; } }
 .fx-waves { position:absolute; inset-inline:0; inset-block-end:0; height:30vh; min-height:180px; overflow:hidden; pointer-events:none; z-index:0; }
 .fx-waves svg { position:absolute; inset-block-end:0; left:0; width:200%; height:100%; animation:fx-wave-slide 22s linear infinite; }
 .fx-waves svg:first-child path { fill:hsl(var(--fx-a) / .16); }
