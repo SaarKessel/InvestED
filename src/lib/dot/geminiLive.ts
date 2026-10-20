@@ -20,7 +20,7 @@ export class GeminiLiveTransport implements VoiceTransport {
         generationConfig: { responseModalities: ["AUDIO"] },
         systemInstruction: { parts: [{ text: systemPrompt(this.lang) }] },
         tools: [{ functionDeclarations: TOOLS.filter((t) => t.tier < 3).map((t) => ({ name: t.name, description: t.description, parameters: t.parameters })) }],
-        inputAudioTranscription: {}, outputAudioTranscription: {},
+        inputAudioTranscription: { languageCodes: [this.lang === "he" ? "he" : "en-US"] }, outputAudioTranscription: {},
         contextWindowCompression: { slidingWindow: {} },
         sessionResumption: resume ? { handle: resume } : {},
       } }));

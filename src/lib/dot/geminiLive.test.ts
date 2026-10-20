@@ -58,9 +58,29 @@ describe("GeminiLiveTransport setup", () => {
     expect(s.setup.model).toBe("models/m1");
     expect(s.setup.generationConfig.responseModalities).toEqual(["AUDIO"]);
     expect(s.setup.tools[0].functionDeclarations.length).toBe(TOOLS.filter((t) => t.tier < 3).length);
-    expect(s.setup.inputAudioTranscription).toEqual({});
+    expect(s.setup.inputAudioTranscription).toEqual({ languageCodes: ["he"] });
     expect(s.setup.outputAudioTranscription).toEqual({});
     expect(s.setup.systemInstruction.parts[0].text).toContain("InvestED");
+  });
+  it("pins the input transcription hint to English for English sessions", async () => {
+    const { ev } = mkEvents();
+    const tr = new GeminiLiveTransport("tok123", "m1", "en", ev);
+    const p = tr.connect();
+    const ws = FakeWS.instances[FakeWS.instances.length - 1];
+    ws.serverOpen();
+    ws.serverSend({ setupComplete: {} });
+    await p;
+    const s = JSON.parse(ws.sent[0]);
+    expect(s.setup.inputAudioTranscription).toEqual({ languageCodes: ["en-US"] });
+  });
+  it("Hebrew system prompt pins the conversation to Hebrew so the model does not drift to a misdetected language", async () => {
+    const { p, ws } = setup();
+    ws.serverSend({ setupComplete: {} });
+    await p;
+    const s = JSON.parse(ws.sent[0]);
+    const text = s.setup.systemInstruction.parts[0].text;
+    expect(text).toContain("RESPOND IN HEBREW");
+    expect(text).toContain("UNMISTAKABLY IN HEBREW");
   });
   it("fires onReady once on first setupComplete", async () => {
     const { p, ws, calls } = setup();
