@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { isCareerLaunchRequest } from "@/lib/career/chatRoute";
-import { Check, Clipboard, History, LogOut, Mic, Square, RotateCcw, Volume2, VolumeX, ArrowUp, Paperclip } from "lucide-react";
+import { Check, Clipboard, Mic, Square, RotateCcw, Volume2, VolumeX, ArrowUp, Paperclip } from "lucide-react";
 import { useLanguage, LanguageOverride } from "@/context/languageContext";
 import { ChatAssetCards } from "./ChatAssetCards";
 import { ChatCalculationCard } from "./ChatCalculationCard";
@@ -13,7 +13,6 @@ import type { OrbLang } from "./VoiceOrb";
 import { useAuth } from "@/context/useAuth";
 import { createConversation, deleteConversation, listConversations, loadMessages, saveMessage, type ChatConversation } from "@/lib/copilot/chatHistory";
 import { ChatSiteLaunch } from "./ChatSiteLaunch";
-import { ChatCockpit } from "./ChatCockpit";
 import { isOfficialNewsQuestion, formatRssNews } from "@/lib/news/newsAsk";
 import type { RssNewsResult } from "@/lib/news/rssClient";
 import { ToolResultCards } from "./resultCards";
@@ -586,19 +585,12 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
   return (
     <div data-workstation={workstation || undefined} dir="ltr" className={panelOpen ? "mx-auto grid w-full max-w-6xl items-start gap-6 lg:grid-cols-[minmax(0,24rem)_minmax(0,1fr)]" : "contents"}>
     {panelOpen && <ChatSidePanel symbols={panelSymbols} onClose={() => setDismissedPanel(panelIndex)}>{visuals(messages[panelIndex])}</ChatSidePanel>}
-    <div dir={language === "he" ? "rtl" : "ltr"} className={`mx-auto flex w-full max-w-3xl flex-col ${started ? "min-h-[calc(100vh-9rem)]" : "min-h-[calc(100vh-14rem)] justify-center"}`}>
+    <div dir={language === "he" ? "rtl" : "ltr"} className={`mx-auto flex w-full max-w-3xl flex-col ${started ? "min-h-[calc(100vh-9rem)]" : "min-h-[calc(100vh-14rem)]"}`}>
       {!started && (
-        <div className="mb-8 flex flex-col items-center text-center">
+        <div className="mb-8 my-auto flex flex-col items-center text-center">
           <img src="/copilot-avatar-blue.png" alt="" width="56" height="56" className="h-14 w-14 rounded-2xl object-cover" />
           <h1 className={`mt-6 text-3xl font-semibold tracking-tight sm:text-5xl${user || authLoading ? "" : " fx-gradient-text"}`}>{t(user || authLoading ? "copilot_home_title" : "gate_welcome")}</h1>
           {!user && !authLoading && <p className="mt-3 text-base text-muted-foreground sm:text-lg">{t("gate_tagline")}</p>}
-        </div>
-      )}
-      {!started && user && !workstation && <ChatCockpit saved={saved} onAsk={(q) => void send(q)} />}
-      {user && (
-        <div className={`mb-2 flex items-center justify-between gap-2${workstation ? " sticky top-0 z-20 bg-background py-1" : ""}`}>
-          <button type="button" onClick={() => void toggleHistory()} aria-expanded={historyOpen} className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"><History className="h-3.5 w-3.5" aria-hidden="true" />{t("history_open")}</button>
-          <button type="button" onClick={() => { clearConversation(); void signOut(); }} className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"><LogOut className="h-3.5 w-3.5" aria-hidden="true" />{t("auth_sign_out")}</button>
         </div>
       )}
       {user && <ChatSidebar open={historyOpen} onClose={() => setHistoryOpen(false)} onNew={clearConversation}
@@ -654,7 +646,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
         )}
         {(pendingFile || fileNote) && <p className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">{pendingFile ? <><Paperclip className="h-3.5 w-3.5" />{pendingFile.name}<button type="button" onClick={() => setPendingFile(null)} className="underline">{t("file_remove")}</button></> : fileNote}</p>}
         <form onSubmit={submit} className="welcome-composer relative flex flex-wrap items-end gap-1 sm:flex-nowrap rounded-[1.75rem] border border-border/60 bg-muted/50 p-2">
-          <ChatToolMenu query={question.startsWith("/") ? question.slice(1) : null} onPlus={() => { setQuestion("/"); composerRef.current?.focus(); }} onPick={() => setQuestion((q) => (q.startsWith("/") ? "" : q))} onAttach={openFilePicker} />
+          <ChatToolMenu query={question.startsWith("/") ? question.slice(1) : null} onPlus={() => { setQuestion("/"); composerRef.current?.focus(); }} onPick={() => setQuestion((q) => (q.startsWith("/") ? "" : q))} onAttach={openFilePicker} onAction={(id) => { if (id === "signout") { clearConversation(); void signOut(); } else { void toggleHistory(); } }} />
           <textarea ref={composerRef} rows={1} style={{ scrollbarWidth: "none" }} aria-label={t("copilot_input")} value={question} onChange={(event) => setQuestion(event.target.value)} onKeyDown={(event) => { if (event.key === "Escape" && question.startsWith("/")) { setQuestion(""); return; } if (event.key === "Enter" && !event.shiftKey && question.startsWith("/")) { event.preventDefault(); return; } if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); event.currentTarget.form?.requestSubmit(); } }} placeholder={t("copilot_placeholder")} className="order-first max-h-40 min-h-11 w-full min-w-0 basis-full resize-none sm:order-none sm:w-auto sm:flex-1 sm:basis-0 bg-transparent px-2 py-2.5 text-[15px] leading-5 outline-none placeholder:text-muted-foreground/70" />
           <input ref={fileInput} type="file" accept="image/*,application/pdf" className="hidden" onChange={(e) => { void onFileChosen(e.target.files?.[0]); e.target.value = ""; }} />
           <button type="button" onClick={openFilePicker} aria-label={t("file_attach")} title={t("file_attach")} className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground"><Paperclip className="h-[18px] w-[18px]" strokeWidth={1.75} /></button>

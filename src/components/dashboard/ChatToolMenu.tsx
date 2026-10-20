@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Paperclip, Plus, Table2 } from "lucide-react";
+import { Bookmark, Bot, History, LogOut, Paperclip, Plus, Table2, type LucideIcon } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
 import { isOwner } from "@/lib/knowledge/knowledgeClient";
 import { CHAT_TOOLS, type ChatTool } from "./chatTools";
@@ -9,7 +9,15 @@ import { stashGapSheetImport } from "@/features/gapsheet/lib/pendingImport";
 const GROUPS: ChatTool["group"][] = ["learn", "practice", "tools", "account", "about"];
 
 /** The "+" in the composer: every former tab, one tap away, opening inside the chat. */
-export function ChatToolMenu({ query, onPlus, onPick, onAttach }: { query: string | null; onPlus: () => void; onPick: () => void; onAttach: () => void }) {
+export type ChatActionId = "history" | "agents" | "saved" | "signout";
+const CHAT_ACTIONS: { id: ChatActionId; labelKey: string; icon: LucideIcon }[] = [
+  { id: "history", labelKey: "history_open", icon: History },
+  { id: "agents", labelKey: "action_agents", icon: Bot },
+  { id: "saved", labelKey: "sidebar_saved", icon: Bookmark },
+  { id: "signout", labelKey: "auth_sign_out", icon: LogOut },
+];
+
+export function ChatToolMenu({ query, onPlus, onPick, onAttach, onAction }: { query: string | null; onPlus: () => void; onPick: () => void; onAttach: () => void; onAction: (id: ChatActionId) => void }) {
   const { t } = useLanguage();
   const [owner, setOwner] = useState(false);
   const box = useRef<HTMLDivElement>(null);
@@ -33,6 +41,10 @@ export function ChatToolMenu({ query, onPlus, onPick, onAttach }: { query: strin
             <button type="button" role="menuitem" onClick={() => { onPick(); onAttach(); }} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-start text-sm text-foreground hover:bg-accent"><Paperclip className="h-4 w-4 shrink-0" aria-hidden="true" />{t("tools_attach_file")}</button>
             <button type="button" role="menuitem" onClick={() => dataFile.current?.click()} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-start text-sm text-foreground hover:bg-accent"><Table2 className="h-4 w-4 shrink-0" aria-hidden="true" />{t("tools_attach_data")}</button>
             <input ref={dataFile} type="file" accept=".csv,text/csv" className="hidden" tabIndex={-1} aria-hidden="true" onChange={(event) => { const f = event.target.files?.[0]; event.target.value = ""; if (f) { stashGapSheetImport(f); onPick(); navigate("/gapsheet"); } }} />
+            <p className="px-3 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{t("tools_group_chat")}</p>
+            {CHAT_ACTIONS.filter((a) => !needle || t(a.labelKey).toLowerCase().includes(needle) || a.id.includes(needle)).map((a) => (
+              <button key={a.id} type="button" role="menuitem" onClick={() => { onPick(); onAction(a.id); }} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-start text-sm text-foreground hover:bg-accent"><a.icon className="h-4 w-4 shrink-0" aria-hidden="true" />{t(a.labelKey)}</button>
+            ))}
           </div>
           {GROUPS.map((group) => {
             const items = CHAT_TOOLS.filter((x) => x.group === group && (x.id !== "knowledge" || owner) && (!needle || t(x.labelKey).toLowerCase().includes(needle) || x.id.includes(needle)));
