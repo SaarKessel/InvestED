@@ -3,7 +3,6 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LanguageProvider } from "@/context/languageContext";
-import type { TransportEvents as _TE } from "@/lib/dot/transport";
 
 const { getSessionMock, runToolMock, micStartMock, micStopMock, FakeTransport, getLastEvents } = vi.hoisted(() => {
   let lastEvents: import("@/lib/dot/transport").TransportEvents | null = null;
