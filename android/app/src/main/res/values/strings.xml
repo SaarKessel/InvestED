@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">InvestED</string>
+    <string name="title_activity_main">InvestED</string>
+    <string name="package_name">com.invested.app</string>
+    <string name="custom_url_scheme">com.invested.app</string>
+</resources>

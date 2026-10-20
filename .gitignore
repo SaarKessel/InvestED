@@ -19,3 +19,10 @@ npm-debug.log*
 vite.config.js
 vite.config.d.ts
 backups/
+# Capacitor build outputs (native project sources stay versioned)
+android/.gradle/
+android/app/build/
+android/build/
+ios/App/Pods/
+ios/App/build/
+ios/DerivedData/

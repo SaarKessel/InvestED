@@ -2,7 +2,7 @@
   "name": "invested",
   "private": true,
   "version": "1.0.0",
-  "description": "InvestED \u2014 \u05de\u05e2\u05e8\u05db\u05ea \u05dc\u05d9\u05de\u05d5\u05d3\u05d9\u05ea \u05d0\u05d9\u05e0\u05d8\u05e8\u05d0\u05e7\u05d8\u05d9\u05d1\u05d9\u05ea \u05dc\u05e2\u05d5\u05dc\u05dd \u05d4\u05d4\u05e9\u05e7\u05e2\u05d5\u05ea \u05d1\u05d0\u05de\u05e6\u05e2\u05d5\u05ea AI",
+  "description": "InvestED — מערכת לימודית אינטראקטיבית לעולם ההשקעות באמצעות AI",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -15,6 +15,7 @@
     "smoke": "node scripts/smoke.mjs"
   },
   "dependencies": {
+    "@capacitor/core": "^8.5.3",
     "@supabase/supabase-js": "^2.117.2",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
@@ -30,6 +31,10 @@
     "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@capacitor/android": "^8.5.3",
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^8.5.3",
+    "@capacitor/ios": "^8.5.3",
     "@types/node": "^20.14.10",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
