@@ -58,7 +58,8 @@ const whole = (n: number) => Number.isInteger(n) && n >= 1 && n <= 500;
 export function checkRule(rule: Rule): RuleCheck {
   const bad = (en: string, he: string): RuleCheck => ({ ok: false, reason: { en, he } });
   if (rule.kind === "rsi_below" || rule.kind === "rsi_above") {
-    if (!whole(rule.period)) return bad("RSI period must be a whole number from 1 to 500", "תקופת RSI חייבת להיות מספר שלם בין 1 ל-500");
+    // RSI needs at least 2 bars of changes to be defined; period 1 never stabilizes (trading-signals), so a strategy with it would silently never fire.
+    if (!whole(rule.period) || rule.period < 2) return bad("RSI period must be a whole number from 2 to 500", "תקופת RSI חייבת להיות מספר שלם בין 2 ל-500");
     if (!Number.isFinite(rule.level) || rule.level <= 0 || rule.level >= 100) return bad("RSI level must be between 0 and 100", "רמת RSI חייבת להיות בין 0 ל-100");
     return { ok: true };
   }

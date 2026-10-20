@@ -6,7 +6,7 @@ export const SUPPORTED_FUNCTIONS = ["SUM", "AVERAGE", "MIN", "MAX", "COUNT", "CO
 export type SupportedFunction = (typeof SUPPORTED_FUNCTIONS)[number];
 
 export interface FormulaNode {
-  type: "function" | "range" | "reference" | "literal" | "operator";
+  type: "function" | "range" | "reference" | "literal" | "operator" | "error";
   name?: string;
   value?: string | number;
   children?: FormulaNode[];
@@ -37,6 +37,7 @@ function tokenize(src: string): Tok[] {
       if (two === "<=" || two === ">=" || two === "<>") { toks.push({ k: "cmp", v: two }); i += 2; continue; }
       toks.push({ k: "cmp", v: c }); i++; continue;
     }
+    if (src.startsWith("#REF!", i)) { toks.push({ k: "id", v: "#REF!" }); i += 5; continue; }
     if ("+-*/^&%".includes(c)) { toks.push({ k: "op", v: c }); i++; continue; }
     if (c === "(") { toks.push({ k: "lp", v: c }); i++; continue; }
     if (c === ")") { toks.push({ k: "rp", v: c }); i++; continue; }
@@ -96,6 +97,7 @@ export function parseFormula(formula: string): FormulaNode {
     if (t.k === "str") return { type: "literal", value: t.v };
     if (t.k === "lp") { const e = comparison(); if (next()?.k !== "rp") throw new FormulaError("Missing )"); return e; }
     if (t.k === "id") {
+      if (t.v === "#REF!") return { type: "error", value: "#REF!" };
       if (peek()?.k === "lp") {
         next();
         const args: FormulaNode[] = [];
@@ -227,6 +229,7 @@ function lookupFn(fn: string, args: FormulaNode[], lookup: CellLookup): CellValu
 /** Evaluate a parsed formula. Circular refs are handled by the engine passing a guarded lookup. */
 export function evaluate(node: FormulaNode, lookup: CellLookup): CellValue {
   switch (node.type) {
+    case "error": throw new FormulaError(node.value as string);
     case "literal": return node.value === "TRUE" ? true : node.value === "FALSE" ? false : (node.value as string | number);
     case "reference": return lookup(node.value as string);
     case "range": throw new FormulaError("A range can only be used inside a function");
@@ -310,7 +313,11 @@ export function functionsUsed(node: FormulaNode): string[] {
 /** Shift relative row references down by `dRow` (fill down). `$` on the row keeps it fixed. */
 export function shiftFormulaRows(formula: string, dRow: number): string {
   return formula.split(/("[^"]*")/).map((part, i) => i % 2 === 1 ? part
-    : part.replace(/(\$?)([A-Z]{1,3})(\$?)([1-9][0-9]*)(?![0-9(A-Za-z!])/g, (_m, d1, col, d2, row) => d2 ? `${d1}${col}${d2}${row}` : `${d1}${col}${Number(row) + dRow}`)).join("");
+    : part.replace(/(\$?)([A-Z]{1,3})(\$?)([1-9][0-9]*)(?![0-9(A-Za-z!])/g, (_m, d1, col, d2, row) => {
+      if (d2) return `${d1}${col}${d2}${row}`; // absolute row never moves
+      const next = Number(row) + dRow;
+      return next < 1 ? "#REF!" : `${d1}${col}${next}`; // Excel: shifting above row 1 breaks the reference
+    })).join("");
 }
 
 

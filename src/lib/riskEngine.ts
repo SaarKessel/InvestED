@@ -364,6 +364,12 @@ export function computeRiskScore(
 
 
 
+  // "low" must stay below "moderate"; without a branch it fell through to the 5 default.
+  if(flags.riskLevel === "low")
+    score = 3;
+
+
+
   if(flags.riskLevel === "moderate")
     score = 5;
 
