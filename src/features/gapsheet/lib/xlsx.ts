@@ -46,9 +46,9 @@ export function sheetXml(sheet: Sheet, rtl: boolean): string {
       : typeof v === "boolean" ? `<c r="${ref}" t="b"><v>${v ? 1 : 0}</v></c>`
       : `<c r="${ref}" t="inlineStr"><is><t xml:space="preserve">${esc(String(v))}</t></is></c>`;
     if (!rows.has(p.row)) rows.set(p.row, []);
-    rows.get(p.row)!.push(xml);
+    rows.get(p.row)!.push(`${String(p.col).padStart(6, "0")}${xml}`); // numeric column order inside the row (lexicographic address order puts AA before B)
   }
-  const body = [...rows.entries()].sort((a, b) => a[0] - b[0]).map(([r, cs]) => `<row r="${r}">${cs.join("")}</row>`).join("");
+  const body = [...rows.entries()].sort((a, b) => a[0] - b[0]).map(([r, cs]) => `<row r="${r}">${cs.sort().map((c) => c.slice(6)).join("")}</row>`).join("");
   return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView${rtl ? ' rightToLeft="1"' : ""} workbookViewId="0"/></sheetViews><sheetData>${body}</sheetData></worksheet>`;
 }
 

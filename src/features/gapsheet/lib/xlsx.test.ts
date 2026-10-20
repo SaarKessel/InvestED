@@ -28,3 +28,17 @@ describe("xlsx writer", () => {
     expect(txt).toContain('name="Test Sheet"');
   });
 });
+
+describe("B202 cell order beyond column Z", () => {
+  it("writes cells in numeric column order inside a row", () => {
+    const sheet = { name: "S", cells: {} as Record<string, { value: string | number | boolean | null; formula: string | null; computedValue: string | number | boolean | null; type: "text" }> };
+    // AA1 (column 27) must be written after B1 (column 2), not before it
+    sheet.cells["AA1"] = { value: "aa", formula: null, computedValue: null, type: "text" };
+    sheet.cells["B1"] = { value: "b", formula: null, computedValue: null, type: "text" };
+    sheet.cells["Z1"] = { value: "z", formula: null, computedValue: null, type: "text" };
+    const xml = sheetXml(sheet as never, false);
+    const iB = xml.indexOf('r="B1"'), iZ = xml.indexOf('r="Z1"'), iAA = xml.indexOf('r="AA1"');
+    expect(iB).toBeGreaterThan(-1);
+    expect(iB < iZ && iZ < iAA).toBe(true);
+  });
+});

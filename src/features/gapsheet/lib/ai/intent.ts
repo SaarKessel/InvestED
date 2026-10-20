@@ -182,7 +182,7 @@ const HANDLERS: Handler[] = [
   { id: "REMOVE_DUPLICATES", matches: (m) => /(כפילויות|כפולות|כפולים|כפילות|\bduplicates?\b|\bdedupe\b)/i.test(m), resolve: (_m, ctx) => {
       if (ctx.columns.length === 0) return noTable();
       const first = Math.min(...ctx.columns.map((c) => c.firstRow)) - 1; const lastRow = Math.max(...ctx.columns.map((c) => c.lastRow));
-      const letters = ctx.columns.map((c) => c.letter).sort();
+      const letters = ctx.columns.map((c) => c.letter).sort((x, y) => x.length - y.length || (x < y ? -1 : x > y ? 1 : 0)); // spreadsheet order: Z before AA
       const range = `${letters[0]}${first}:${letters[letters.length - 1]}${lastRow}`;
       return { kind: "action", skillId: "dedupe", confidence: 0.9, stages: STAGES(L("הסרת הכפילויות", "removing the duplicates")), focus: range, actions: [{ type: "REMOVE_DUPLICATES", sheetId: ctx.sheetId, range }] };
     } },
@@ -196,7 +196,7 @@ const HANDLERS: Handler[] = [
       if (!val) return { kind: "clarification", question: L(`איזו עמודה לסכם לפי ${lab.header}?`, `Which column should be summarized by ${lab.header}?`), options: numeric.map((c) => L(`צור טבלת ציר של ${c.header} לפי ${lab.header}`, `Create a pivot table of ${c.header} by ${lab.header}`)) };
       const agg = /(ממוצע|\baverage\b|\bavg\b)/i.test(m) ? "average" : /(ספור|ספירה|כמה|\bcount\b)/i.test(m) ? "count" : "sum";
       const first = Math.min(...ctx.columns.map((c) => c.firstRow)) - 1; const lastRow = Math.max(...ctx.columns.map((c) => c.lastRow));
-      const colsAll = ctx.columns.map((c) => c.letter).sort();
+      const colsAll = ctx.columns.map((c) => c.letter).sort((x, y) => x.length - y.length || (x < y ? -1 : x > y ? 1 : 0)); // spreadsheet order: Z before AA
       return { kind: "action", skillId: "pivot", confidence: 0.9, stages: STAGES(L(`טבלת הציר של ${val.header}`, `the pivot table of ${val.header}`)), focus: L(`${val.header} לפי ${lab.header}`, `${val.header} by ${lab.header}`),
         actions: [{ type: "CREATE_PIVOT", sheetId: ctx.sheetId, range: `${colsAll[0]}${first}:${colsAll[colsAll.length - 1]}${lastRow}`, rowColumn: lab.letter, valueColumn: val.letter, agg }] };
     } },
