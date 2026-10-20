@@ -99,7 +99,7 @@ export function NewsCard({ item, compact = false, tone }: { item: NewsItem; comp
         )}
 
         <div className="mt-3">
-          <button type="button" aria-expanded={worksheetOpen} onClick={() => setWorksheetOpen((v) => !v)} className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline">
+          <button type="button" aria-expanded={worksheetOpen} onClick={() => setWorksheetOpen((v) => !v)} className="inline-flex min-h-6 items-center gap-1.5 py-1 text-xs font-semibold text-primary hover:underline">
             <ClipboardCheck className="h-3.5 w-3.5" />
             {lang === "he" ? "דף ראיות לכותרת" : "Evidence worksheet"}
           </button>
@@ -111,7 +111,7 @@ export function NewsCard({ item, compact = false, tone }: { item: NewsItem; comp
             href={item.url}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-primary hover:underline"
+            className="inline-flex min-h-6 items-center gap-1.5 py-1 text-xs font-semibold text-primary hover:underline"
           >
             <Newspaper className="h-3.5 w-3.5" />
             {t("news_source_article")}

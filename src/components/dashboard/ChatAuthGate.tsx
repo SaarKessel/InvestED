@@ -34,7 +34,7 @@ export function ChatAuthGate() {
       </label>
       {message && <p role="alert" className="text-xs text-destructive">{message}</p>}
       <button type="submit" disabled={busy} className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-primary text-sm font-semibold text-primary-foreground disabled:opacity-50">{busy && <Loader variant="arc" size={16} label={null} className="shrink-0" />}{t(mode === "in" ? "auth_submit_in" : "auth_submit_up")}</button>
-      <button type="button" onClick={() => { setMode(mode === "in" ? "up" : "in"); setMessage(null); }} className="w-full text-center text-xs font-semibold text-primary hover:underline">{t(mode === "in" ? "auth_switch_up" : "auth_switch_in")}</button>
+      <button type="button" onClick={() => { setMode(mode === "in" ? "up" : "in"); setMessage(null); }} className="w-full py-2 text-center text-xs font-semibold text-primary hover:underline">{t(mode === "in" ? "auth_switch_up" : "auth_switch_in")}</button>
       <p className="text-center text-[11px] text-muted-foreground">{t("auth_why")}</p>
     </form>
   );
