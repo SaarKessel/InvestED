@@ -12,6 +12,7 @@ import { explainActions } from "@/features/gapsheet/lib/ai/explain";
 import { executeActions } from "@/features/gapsheet/lib/actions/executor";
 import type { Lang } from "@/features/gapsheet/lib/i18n";
 import { csvToWorkbook, sheetToCsv, ImportError } from "@/features/gapsheet/lib/io";
+import { xlsxToWorkbook } from "@/features/gapsheet/lib/xlsxRead";
 import { takeGapSheetImport } from "@/features/gapsheet/lib/pendingImport";
 import { sheetToXlsx } from "@/features/gapsheet/lib/xlsx";
 import { LearnPanel } from "@/features/gapsheet/components/LearnPanel";
@@ -108,8 +109,8 @@ export default function GapSheetPage() {
   }
   async function importCsv(f: File) {
     setNote("");
-    if (!/\.csv$/i.test(f.name)) return setNote(t("אפשר לייבא כרגע רק קובץ CSV.", "Only CSV files can be imported for now."));
-    try { commit(csvToWorkbook(await f.text(), f.name)); setMsgs([]); setNote(t("הקובץ יובא. אפשר לבטל.", "File imported. You can undo.")); }
+    if (!/\.(csv|xlsx)$/i.test(f.name)) return setNote(t("אפשר לייבא קובץ CSV או Excel (‎.xlsx‎).", "You can import a CSV or Excel (.xlsx) file."));
+    try { commit(/\.xlsx$/i.test(f.name) ? await xlsxToWorkbook(await f.arrayBuffer(), f.name) : csvToWorkbook(await f.text(), f.name)); setMsgs([]); setNote(t("הקובץ יובא. אפשר לבטל.", "File imported. You can undo.")); }
     catch (e) { setNote(e instanceof ImportError ? t("הקובץ לא תקין, ריק או גדול מדי (עד 5MB, 5,000 שורות, 100 עמודות).", "The file is invalid, empty or too large (5MB, 5,000 rows, 100 columns max).") : t("לא הצלחתי לקרוא את הקובץ.", "Could not read the file.")); }
   }
   // A data file stashed by the chat "+" menu is imported once on mount.
@@ -127,11 +128,11 @@ export default function GapSheetPage() {
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
         <section aria-label={t("גיליון", "Sheet")} className="terminal-panel overflow-hidden" dir={lang === "he" ? "rtl" : "ltr"}>
           <div className="flex flex-wrap items-center gap-2 border-b border-border p-2 text-xs">
-            <button type="button" className="rounded border border-border px-2 py-1" onClick={() => fileRef.current?.click()}>{t("ייבוא CSV", "Import CSV")}</button>
+            <button type="button" className="rounded border border-border px-2 py-1" onClick={() => fileRef.current?.click()}>{t("ייבוא CSV/XLSX", "Import CSV/XLSX")}</button>
             <button type="button" className="rounded border border-border px-2 py-1" onClick={exportCsv}>{t("ייצוא CSV", "Export CSV")}</button>
             <button type="button" className="rounded border border-border bg-primary/10 px-2 py-1 font-semibold" onClick={exportXlsx}>{t("הורדה כקובץ Excel (.xlsx)", "Download as Excel (.xlsx)")}</button>
             <button type="button" className="rounded border border-border px-2 py-1" onClick={reset}>{t("איפוס לדוגמה", "Reset to sample")}</button>
-            <input ref={fileRef} type="file" accept=".csv,text/csv" className="sr-only" aria-label={t("בחירת קובץ CSV", "Choose a CSV file")} onChange={e => { const f = e.target.files?.[0]; e.target.value = ""; if (f) void importCsv(f); }} />
+            <input ref={fileRef} type="file" accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" className="sr-only" aria-label={t("בחירת קובץ CSV או Excel", "Choose a CSV or Excel file")} onChange={e => { const f = e.target.files?.[0]; e.target.value = ""; if (f) void importCsv(f); }} />
             <span className="text-muted-foreground" role="status">{note || t("נשמר אוטומטית במכשיר הזה בלבד.", "Saved automatically on this device only.")}</span>
           </div>
           <div dir="ltr">

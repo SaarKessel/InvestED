@@ -7,7 +7,6 @@ import { LanguageProvider } from "@/context/languageContext";
 import { ThemeProvider } from "@/context/themeContext";
 
 vi.mock("@/components/dashboard/AIChatCard", () => ({ AIChatCard: ({ workstation }: { workstation?: boolean }) => <div data-testid={workstation ? "chat-workstation" : "chat-only"} /> }));
-vi.mock("@/components/terminal/TerminalShell", () => ({ TerminalShell: ({ children }: { children: React.ReactNode }) => <div data-testid="terminal-shell">{children}</div> }));
 vi.mock("@/components/layout/NewsPopup", () => ({ NewsPopup: () => null }));
 let authed = true;
 vi.mock("@/context/useAuth", () => ({ useAuth: () => ({ user: authed ? { email: "owner@example.invalid", id: "u1" } : null, loading: false }) }));
@@ -23,22 +22,17 @@ function mount(path = "/") { act(() => root.render(<LanguageProvider><ThemeProvi
 it("signed-in users land in the chat-only shell", () => {
   mount();
   expect(el.querySelector('[data-testid="chat-only"]')).not.toBeNull();
-  expect(el.querySelector('[data-testid="terminal-shell"]')).toBeNull();
   expect(el.querySelector('.fx-waves')).not.toBeNull();
-  expect(el.querySelector('[aria-label="Workstation view"]')).not.toBeNull();
 });
 
-it("keeps the workstation shell as an explicit fallback", () => {
+it("ignores the removed ?shell=terminal fallback and stays in the chat shell", () => {
   mount("/news?shell=terminal");
-  expect(el.querySelector('[data-testid="terminal-shell"]')).not.toBeNull();
-  expect(el.querySelector('[data-testid="chat-workstation"]')).not.toBeNull();
-  expect(el.querySelector('.fx-waves')).toBeNull();
+  expect(el.querySelector('[data-testid="chat-only"]')).not.toBeNull();
+  expect(el.querySelector('.fx-waves')).not.toBeNull();
 });
 
 it("signed-out visitors see the entry screen without shell chrome", () => {
   authed = false;
   mount();
-  expect(el.querySelector('[data-testid="terminal-shell"]')).toBeNull();
-  expect(el.querySelector('[aria-label="Workstation view"]')).toBeNull();
   expect(el.querySelector('.fx-waves')).toBeNull();
 });

@@ -41,7 +41,7 @@ export function ChatToolMenu({ query, onPlus, onPick, onAttach, onAction, level,
           <div className="py-1">
             <button type="button" role="menuitem" onClick={() => { onPick(); onAttach(); }} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-start text-sm text-foreground hover:bg-accent"><Paperclip className="h-4 w-4 shrink-0" aria-hidden="true" />{t("tools_attach_file")}</button>
             <button type="button" role="menuitem" onClick={() => dataFile.current?.click()} className="flex w-full items-center gap-2 rounded-xl px-3 py-2 text-start text-sm text-foreground hover:bg-accent"><Table2 className="h-4 w-4 shrink-0" aria-hidden="true" />{t("tools_attach_data")}</button>
-            <input ref={dataFile} type="file" accept=".csv,text/csv" className="hidden" tabIndex={-1} aria-hidden="true" onChange={(event) => { const f = event.target.files?.[0]; event.target.value = ""; if (f) { stashGapSheetImport(f); onPick(); navigate("/gapsheet"); } }} />
+            <input ref={dataFile} type="file" accept=".csv,.xlsx,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" className="hidden" tabIndex={-1} aria-hidden="true" onChange={(event) => { const f = event.target.files?.[0]; event.target.value = ""; if (f) { stashGapSheetImport(f); onPick(); navigate("/gapsheet"); } }} />
             <p className="px-3 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">{t("level_title")}</p>
             <div role="listbox" aria-label={t("level_title")} className="px-1 pb-1">
               {LEVELS.map((l) => (
