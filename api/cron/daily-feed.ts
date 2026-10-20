@@ -35,9 +35,11 @@ export default async function handler(req: Req, res: Res): Promise<void> {
   const base = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL || "https://yltbcsmkpjosyovsvtmn.supabase.co";
   if (!key) { res.status(500).json({ error: "service_key_missing" }); return; }
 
-  const host = header(req, "host");
-  if (!host) { res.status(400).json({ error: "no_host" }); return; }
-  const origin = `https://${host}`;
+  // Vercel invokes crons on the deployment host, which is behind Deployment
+  // Protection - self-fetches to that host get the SSO page, not JSON. Always
+  // read the source APIs from the public production domain instead.
+  const prodHost = process.env.VERCEL_PROJECT_PRODUCTION_URL || "investeducationai.vercel.app";
+  const origin = `https://${prodHost}`;
   const now = new Date(), date = feedDate(now), iso = now.toISOString();
   const [movers, news] = await Promise.all([getJson(`${origin}/api/market-movers`), getJson(`${origin}/api/news`)]);
   const candidates: [string, FeedRow | null][] = [
