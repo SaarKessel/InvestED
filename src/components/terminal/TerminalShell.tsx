@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode, type CSSProperties } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Activity, BookOpen, BriefcaseBusiness, Calculator, ChevronLeft, ChevronRight, Globe, LayoutDashboard, Moon, Newspaper, Search, Settings, Sun, X, MoreHorizontal, Pin, RotateCcw } from "lucide-react";
+import { Activity, BookOpen, BriefcaseBusiness, Calculator, ChevronLeft, ChevronRight, Globe, LayoutDashboard, MessageSquare, Moon, Newspaper, Search, Settings, Sun, X, MoreHorizontal, Pin, RotateCcw } from "lucide-react";
 import { useLanguage } from "@/context/languageContext";
 import { useTheme } from "@/hooks/useTheme";
 import { useAuth } from "@/context/useAuth";
@@ -56,7 +56,7 @@ export function TerminalShell({ children }: { children: ReactNode }) {
       <HamburgerMenu className="terminal-icon terminal-mobile-menu" isOpen={mobileNav} onChange={setMobileNav} aria-controls="terminal-navigation" aria-label={he?"ניווט":"Navigation"} size={18}/>
       <Link to="/" aria-label="InvestED+"><Logo /></Link>
       <button type="button" className="terminal-search" onClick={()=>setCommand(true)}><Search size={15}/><span>{he?"שאלו, חפשו או פתחו סביבת עבודה":"Ask, search or open a workspace"}</span><kbd>⌘ / Ctrl K</kbd></button>
-      <div className="terminal-top-actions"><Tooltip label={he?"שפה":"Language"}><button className="terminal-icon" onClick={toggleLanguage} aria-label={he?t("nav_lang_en_label"):t("nav_lang_he_label")}><Globe size={16}/><span>{he?"EN":"HE"}</span></button></Tooltip><button className="terminal-icon" onClick={toggleTheme} aria-label={t("nav_switch_theme")}>{theme==="dark"?<Sun size={17}/>:<Moon size={17}/>}</button><span className="terminal-user" title={user?.email}>{user?.email?.split("@")[0]}</span></div>
+      <div className="terminal-top-actions"><Tooltip label={t("shell_chat_view")}><Link className="terminal-icon" to={{pathname,search:""}} aria-label={t("shell_chat_view")}><MessageSquare size={16}/></Link></Tooltip><Tooltip label={he?"שפה":"Language"}><button className="terminal-icon" onClick={toggleLanguage} aria-label={he?t("nav_lang_en_label"):t("nav_lang_he_label")}><Globe size={16}/><span>{he?"EN":"HE"}</span></button></Tooltip><button className="terminal-icon" onClick={toggleTheme} aria-label={t("nav_switch_theme")}>{theme==="dark"?<Sun size={17}/>:<Moon size={17}/>}</button><span className="terminal-user" title={user?.email}>{user?.email?.split("@")[0]}</span></div>
     </header>
     {mobileNav&&<button className="terminal-nav-scrim" onClick={()=>setMobileNav(false)} aria-label={he?"סגירת ניווט":"Close navigation"}/> }
     <aside id="terminal-navigation" className={`terminal-navigation ${mobileNav?"is-open":""}`} aria-label={he?"ניווט ראשי":"Primary navigation"}>

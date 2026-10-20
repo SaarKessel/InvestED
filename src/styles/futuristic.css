@@ -98,3 +98,25 @@
 .terminal-shell :is(a, button, input, select, textarea, [role="tab"]):focus-visible { outline: 2px solid hsl(var(--fx-a)); outline-offset: 2px; }
 .terminal-shell :is(input, select, textarea):focus { border-color: hsl(var(--fx-a) / .7); box-shadow: 0 0 0 3px hsl(var(--fx-a) / .18); }
 @media (prefers-reduced-motion: reduce) { .terminal-shell .terminal-panel { animation: none; transition: none; } .terminal-shell table tbody tr { transition: none; } }
+
+/* Chat-only shell: aurora + a slow double wave in the brand blue, reduced-motion safe. */
+.chat-shell { position:relative; isolation:isolate; display:flex; min-height:100vh; flex-direction:column; }
+.chat-shell > :not(.fx-aurora):not(.fx-waves) { position:relative; z-index:1; }
+.chat-shell-top { position:absolute; inset-block-start:.75rem; inset-inline-end:.75rem; z-index:2; display:flex; align-items:center; gap:.25rem; }
+.chat-shell-action { display:inline-flex; align-items:center; gap:.375rem; border-radius:9999px; padding:.5rem .625rem; font-size:.75rem; font-weight:600; color:hsl(var(--muted-foreground)); transition:color .15s ease, background-color .15s ease; }
+.chat-shell-action:hover { color:hsl(var(--foreground)); background:hsl(var(--accent)); }
+.fx-waves { position:absolute; inset-inline:0; inset-block-end:0; height:30vh; min-height:180px; overflow:hidden; pointer-events:none; z-index:0; }
+.fx-waves svg { position:absolute; inset-block-end:0; inset-inline-start:0; width:200%; height:100%; animation:fx-wave-slide 22s linear infinite; }
+.fx-waves svg:first-child path { fill:hsl(var(--fx-a) / .16); }
+.fx-waves svg:last-child { animation-duration:34s; animation-direction:reverse; }
+.fx-waves svg:last-child path { fill:hsl(var(--fx-b) / .12); }
+:root:not(.dark) .fx-waves svg:first-child path { fill:hsl(var(--fx-a) / .10); }
+:root:not(.dark) .fx-waves svg:last-child path { fill:hsl(var(--fx-b) / .08); }
+@keyframes fx-wave-slide { to { transform:translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { .fx-waves svg { animation:none; } }
+
+/* DOT entry inside the composer: the orb, inline, opening the voice experience. */
+.chat-dot { position:relative; width:2.5rem; height:2.5rem; flex-shrink:0; border-radius:9999px; padding:0; border:0; background:transparent; cursor:pointer; transition:transform .2s ease; }
+.chat-dot:hover { transform:scale(1.06); }
+.chat-dot:focus-visible { outline:2px solid hsl(var(--primary)); outline-offset:2px; }
+.chat-dot .orb-core { inset:0; }

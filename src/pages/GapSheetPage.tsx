@@ -12,6 +12,7 @@ import { explainActions } from "@/features/gapsheet/lib/ai/explain";
 import { executeActions } from "@/features/gapsheet/lib/actions/executor";
 import type { Lang } from "@/features/gapsheet/lib/i18n";
 import { csvToWorkbook, sheetToCsv, ImportError } from "@/features/gapsheet/lib/io";
+import { takeGapSheetImport } from "@/features/gapsheet/lib/pendingImport";
 import { sheetToXlsx } from "@/features/gapsheet/lib/xlsx";
 import { LearnPanel } from "@/features/gapsheet/components/LearnPanel";
 import type { LedgerEntry } from "@/features/gapsheet/lib/learning/ledger";
@@ -111,6 +112,9 @@ export default function GapSheetPage() {
     try { commit(csvToWorkbook(await f.text(), f.name)); setMsgs([]); setNote(t("הקובץ יובא. אפשר לבטל.", "File imported. You can undo.")); }
     catch (e) { setNote(e instanceof ImportError ? t("הקובץ לא תקין, ריק או גדול מדי (עד 5MB, 5,000 שורות, 100 עמודות).", "The file is invalid, empty or too large (5MB, 5,000 rows, 100 columns max).") : t("לא הצלחתי לקרוא את הקובץ.", "Could not read the file.")); }
   }
+  // A data file stashed by the chat "+" menu is imported once on mount.
+  useEffect(() => { const f = takeGapSheetImport(); if (f) void importCsv(f); // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   function reset() { commit(newWorkbook()); setMsgs([]); setNote(t("הגיליון אופס לדוגמה. אפשר לבטל.", "Sheet reset to the sample. You can undo.")); }
 
   return (
