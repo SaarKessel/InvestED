@@ -31,6 +31,35 @@ import { numbersIn, verifyNumbers } from "../src/lib/intelligence/verificationEn
 import { streamText, tool, stepCountIs } from "ai";
 import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { z } from "zod";
+import { createHash } from "node:crypto";
+
+// Best-effort rephrase cache (per warm instance): identical question+answer+
+// facts return the verified rephrase with zero model tokens and ~0ms latency.
+// Contextual turns are never cached (they are personalized). Cap + 24h TTL.
+const rephraseCache = new Map<string, { text: string; at: number }>();
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const CACHE_MAX = 500;
+
+function cacheKey(payload: GatewayRequestPayload, model: string): string | null {
+  if (payload.context?.length) return null;
+  return createHash("sha256")
+    .update([model, payload.question, payload.language, payload.answer, JSON.stringify(payload.facts ?? {})].join("\n"))
+    .digest("hex");
+}
+
+function cacheGet(key: string | null): string | null {
+  if (!key) return null;
+  const hit = rephraseCache.get(key);
+  if (!hit) return null;
+  if (Date.now() - hit.at > CACHE_TTL_MS) { rephraseCache.delete(key); return null; }
+  return hit.text;
+}
+
+function cacheSet(key: string | null, text: string): void {
+  if (!key) return;
+  if (rephraseCache.size >= CACHE_MAX) rephraseCache.clear();
+  rephraseCache.set(key, { text, at: Date.now() });
+}
 
 interface RawStreamResponse {
   write(chunk: string): void;
@@ -73,6 +102,9 @@ function buildCopilotTools(facts: string[]) {
 /** Stream mode: AI SDK streamText with tool-calling, persona from the bot registry, then the same no-new-facts verdict as the JSON path, sent as a trailer. */
 async function streamRephrase(payload: GatewayRequestPayload, config: GeminiConfig, res: CopilotChatResponse, botId: unknown): Promise<void> {
   const raw = res as unknown as RawStreamResponse;
+  const key = cacheKey(payload, config.model);
+  const cached = cacheGet(key);
+  if (cached) { raw.write(cached); raw.write(`${encodeFactsTrailer([])}${VERDICT_OK}`); raw.end(); return; }
   const facts: string[] = [];
   const bot = resolveBot(botId);
   const allTools = buildCopilotTools(facts);
@@ -97,10 +129,12 @@ async function streamRephrase(payload: GatewayRequestPayload, config: GeminiConf
       raw.write(chunk);
     }
     const trimmed = text.trim();
-    const numbersOk = verifyNumbers(numbersIn(trimmed).join(" "), [payload.answer, JSON.stringify(payload.facts ?? {}), payload.question, ...facts]).ok;
-    const factsOk = rephraseIntroducesNoNewFacts(payload.answer, payload.facts, trimmed);
+    const contextSources = (payload.context ?? []).flatMap((t) => [t.q, t.a]);
+    const numbersOk = verifyNumbers(numbersIn(trimmed).join(" "), [payload.answer, JSON.stringify(payload.facts ?? {}), payload.question, ...contextSources, ...facts]).ok;
+    const factsOk = rephraseIntroducesNoNewFacts(payload.answer, payload.facts, trimmed, contextSources);
     const guard = applyAdviceGuard(trimmed);
     if (!trimmed || !numbersOk || !factsOk || guard.guarded) return finish(`${VERDICT_FALLBACK}`);
+    cacheSet(key, trimmed);
     return finish(`${encodeFactsTrailer(facts)}${VERDICT_OK}`);
   } catch {
     return finish(VERDICT_FALLBACK);
@@ -163,6 +197,10 @@ export default async function handler(req: CopilotChatRequest, res: CopilotChatR
     return streamRephrase(payload, config, res, (req.body as { botId?: unknown })?.botId);
   }
 
+  const legacyKey = cacheKey(payload, config.model);
+  const legacyCached = cacheGet(legacyKey);
+  if (legacyCached) return res.status(200).json({ text: legacyCached, cacheHit: true });
+
   try {
     const response = await fetch(`${GEMINI_API_BASE}/${config.model}:generateContent`, {
       method: "POST",
@@ -177,7 +215,8 @@ export default async function handler(req: CopilotChatRequest, res: CopilotChatR
     }
     // Gemini is held to a JSON schema (text + numbers used). Every number it
     // quotes must trace to the validated answer or fact set, or we fall back.
-    const verdict = verifyStructuredAnswer(payload, parseStructuredResponse(await response.json()));
+    const legacyContextSources = (payload.context ?? []).flatMap((t) => [t.q, t.a]);
+    const verdict = verifyStructuredAnswer(payload, parseStructuredResponse(await response.json()), legacyContextSources);
     if (!verdict.ok) return res.status(200).json({ fallback: true, reason: verdict.reason });
     const text = verdict.text;
     // Deterministic advice guard: no buy/sell directives, personalized sizing or guaranteed returns.
@@ -186,6 +225,7 @@ export default async function handler(req: CopilotChatRequest, res: CopilotChatR
       console.warn("advice_guard_rejection", JSON.stringify({ violations: guard.violations }));
       return res.status(200).json({ text: guard.text, guarded: true });
     }
+    if (text) cacheSet(legacyKey, text);
     return res.status(200).json({ text });
   } catch {
     return res.status(200).json({ fallback: true, reason: "gemini_unreachable" });

@@ -14,6 +14,7 @@ import { processAIMessage, type AIConversationTurn } from "@/lib/aiConversationS
 import { rewordBudgetMs } from "@/lib/copilot/levels";
 import { groundAnswer, isUnknownAnswer } from "@/lib/copilot/groundedAnswer";
 import { acceptRephrase, getProvider } from "@/lib/ai/provider";
+import type { GatewayTurn } from "@/lib/copilot/gatewayPrompt";
 import { investorProfileFromResult } from "@/lib/aiConversationService";
 
 import { useLanguage } from "@/context/languageContext";
@@ -33,7 +34,7 @@ export interface AnalysisContextValue {
     data: string
   ) => Promise<boolean>;
 
-  askCopilot: (data: string, botId?: string) => Promise<AIConversationTurn>;
+  askCopilot: (data: string, botId?: string, context?: GatewayTurn[]) => Promise<AIConversationTurn>;
   /** Progressive rephrase text while the AI gateway streams; "" when idle. */
   streamingText: string;
 
@@ -86,7 +87,7 @@ export function AnalysisProvider({
   const sessionRef = useRef<ConversationSession | null>(null);
   if (!sessionRef.current) sessionRef.current = createConversationSession();
 
-  const runTurn = async (data: string, updateDashboardResult: boolean, replyLanguage: "he" | "en" = language === "he" ? "he" : "en", botId?: string) => {
+  const runTurn = async (data: string, updateDashboardResult: boolean, replyLanguage: "he" | "en" = language === "he" ? "he" : "en", botId?: string, context?: GatewayTurn[]) => {
     const turn = await processAIMessage(sessionRef.current!, data, replyLanguage);
     // Facelift phase 1: best-effort rephrase through the AI Gateway. The
     // deterministic answer is the fact source; any gateway failure keeps it.
@@ -101,13 +102,15 @@ export function AnalysisProvider({
         // Stream mode: chunks surface progressively; the commit still waits
         // for the server verdict and passes the client-side number check,
         // now with the server-tool facts added as accepted sources.
+        const contextSources = (context ?? []).flatMap((t) => [t.q, t.a]);
         const streamed = await provider.rephraseStream(data, replyLanguage, turn.response, {
           botId,
           timeoutMs: rewordBudgetMs() + 7_000,
           onChunk: (acc) => setStreamingText(acc),
+          context,
         });
         setStreamingText("");
-        if (streamed) rephrased = acceptRephrase(streamed.text, data, turn.response, streamed.acceptedFacts);
+        if (streamed) rephrased = acceptRephrase(streamed.text, data, turn.response, [...streamed.acceptedFacts, ...contextSources]);
       } else {
         rephrased = acceptRephrase(await provider.rephrase(data, replyLanguage, turn.response, rewordBudgetMs()), data, turn.response);
       }
@@ -120,9 +123,9 @@ export function AnalysisProvider({
     return turn;
   };
 
-  const askCopilot = async (data: string, botId?: string) => {
+  const askCopilot = async (data: string, botId?: string, context?: GatewayTurn[]) => {
     setIsAnalyzing(true);
-    try { return await runTurn(data, false, replyLanguageFor(data, language === "he" ? "he" : "en"), botId); } finally { setIsAnalyzing(false); setStreamingText(""); }
+    try { return await runTurn(data, false, replyLanguageFor(data, language === "he" ? "he" : "en"), botId, context); } finally { setIsAnalyzing(false); setStreamingText(""); }
   };
 
   const analyze = async (data:string) => {

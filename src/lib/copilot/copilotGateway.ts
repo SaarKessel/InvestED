@@ -9,7 +9,7 @@
 
 import type { CopilotResponse } from "../copilotResponse";
 import type { ConversationLanguage } from "../conversationContext";
-import { buildGatewayFacts } from "./gatewayPrompt";
+import { buildGatewayFacts, type GatewayTurn } from "./gatewayPrompt";
 
 const DEFAULT_TIMEOUT_MS = 8_000;
 
@@ -22,7 +22,8 @@ export async function rephraseWithGateway(
   question: string,
   language: ConversationLanguage,
   response: CopilotResponse,
-  timeoutMs: number = DEFAULT_TIMEOUT_MS
+  timeoutMs: number = DEFAULT_TIMEOUT_MS,
+  context?: GatewayTurn[]
 ): Promise<string | null> {
   try {
     const res = await fetch("/api/copilot-chat", {
@@ -33,6 +34,7 @@ export async function rephraseWithGateway(
         language,
         answer: response.text,
         facts: buildGatewayFacts(response),
+        ...(context?.length ? { context } : {}),
       }),
       signal: AbortSignal.timeout(timeoutMs),
     });
@@ -60,6 +62,7 @@ export interface StreamRephraseOptions {
   botId?: string;
   onChunk?: (visibleTextSoFar: string) => void;
   timeoutMs?: number;
+  context?: GatewayTurn[];
 }
 
 export async function rephraseWithGatewayStream(
@@ -79,6 +82,7 @@ export async function rephraseWithGatewayStream(
         facts: buildGatewayFacts(response),
         stream: true,
         ...(options.botId ? { botId: options.botId } : {}),
+        ...(options.context?.length ? { context: options.context } : {}),
       }),
       signal: AbortSignal.timeout(options.timeoutMs ?? DEFAULT_TIMEOUT_MS + 7_000),
     });

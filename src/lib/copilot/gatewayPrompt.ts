@@ -29,16 +29,26 @@ export interface GatewayFacts {
   clarification: string | null;
 }
 
+export interface GatewayTurn {
+  q: string;
+  a: string;
+}
+
 export interface GatewayRequestPayload {
   question: string;
   language: ConversationLanguage;
   answer: string;
   facts: GatewayFacts;
+  /** Recent conversation (oldest first), for tone and reference resolution.
+   *  Facts still come only from the validated answer and fact set. */
+  context?: GatewayTurn[];
 }
 
 export const MAX_QUESTION_LENGTH = 1000;
 export const MAX_ANSWER_LENGTH = 4000;
 export const MAX_REPHRASED_LENGTH = 6000;
+export const MAX_CONTEXT_TURNS = 3;
+export const MAX_CONTEXT_SIDE_LENGTH = 400;
 
 /** Extract the compact fact set the model may rely on. Nothing else exists. */
 export function buildGatewayFacts(response: CopilotResponse): GatewayFacts {
@@ -71,6 +81,8 @@ export function buildSystemPrompt(language: ConversationLanguage): string {
     "You are the voice of InvestED+, a financial-education product.",
     "You receive a user question and a VALIDATED ANSWER produced by InvestED+'s deterministic engines, plus the exact fact set those engines used.",
     "Your only job: rephrase the validated answer so it reads naturally, warmly, and concisely.",
+    "Voice: a friendly, encouraging teacher who enjoys helping - warm and human, never robotic or bureaucratic. A brief natural acknowledgment of the question (a few words) is welcome when it fits, within the same overall length.",
+    "When RECENT CONVERSATION is provided, use it for tone and to resolve references (like 'it', 'its fees', 'והעמלות שלה') - it is conversation history, not a fact source.",
     "Hard rules:",
     "- Never add, remove, or alter any number, symbol, date, or claim. Every fact in your reply must come from the validated answer or the provided fact set.",
     "- Never give investment advice, predictions, or guarantees. Keep every disclaimer and uncertainty the validated answer carries.",
@@ -94,6 +106,9 @@ export function buildGatewayMessages(payload: GatewayRequestPayload): ChatMessag
       role: "user",
       content: [
         `USER QUESTION:\n${payload.question}`,
+        ...(payload.context?.length
+          ? [`RECENT CONVERSATION (tone/reference only, NOT a fact source):\n${payload.context.map((t) => `User: ${t.q}\nInvestED: ${t.a}`).join("\n---\n")}`]
+          : []),
         `VALIDATED ANSWER (rephrase this):\n${payload.answer}`,
         `FACT SET (the only facts that exist):\n${JSON.stringify(payload.facts)}`,
       ].join("\n\n"),
@@ -128,7 +143,16 @@ export function normalizeGatewayPayload(body: unknown): GatewayRequestPayload | 
   const language: ConversationLanguage =
     raw.language === "en" || raw.language === "he" || raw.language === "mixed" ? raw.language : "mixed";
   const facts = (raw.facts ?? {}) as GatewayFacts;
-  return { question, answer, language, facts };
+  const context: GatewayTurn[] | undefined = Array.isArray(raw.context)
+    ? raw.context
+        .filter((t): t is { q: string; a: string } =>
+          !!t && typeof t === "object" &&
+          typeof (t as Record<string, unknown>).q === "string" &&
+          typeof (t as Record<string, unknown>).a === "string")
+        .slice(-MAX_CONTEXT_TURNS)
+        .map((t) => ({ q: t.q.slice(0, MAX_CONTEXT_SIDE_LENGTH), a: t.a.slice(0, MAX_CONTEXT_SIDE_LENGTH) }))
+    : undefined;
+  return { question, answer, language, facts, ...(context?.length ? { context } : {}) };
 }
 
 /**
@@ -216,9 +240,10 @@ const FOREIGN_SCRIPT = /[\u0400-\u04FF\u0600-\u06FF\u3040-\u30FF\u4E00-\u9FFF]/;
 export function rephraseIntroducesNoNewFacts(
   answer: string,
   facts: GatewayFacts,
-  text: string
+  text: string,
+  extraSources: string[] = []
 ): boolean {
-  const allowed = `${answer} ${JSON.stringify(facts ?? {})}`.replace(/,/g, "");
+  const allowed = `${answer} ${JSON.stringify(facts ?? {})} ${extraSources.join(" ")}`.replace(/,/g, "");
   // A model can slip a letter from another script into a word (an Arabic ت inside a Hebrew word was seen live). The stored answer has none, so the reworded text may not either.
   if (FOREIGN_SCRIPT.test(text) && !FOREIGN_SCRIPT.test(answer)) return false;
   const haystack = text.replace(/,/g, "");

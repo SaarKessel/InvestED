@@ -72,13 +72,13 @@ export function parseStructuredResponse(body: unknown): StructuredAnswer | null 
 export type StructuredVerdict = { ok: true; text: string } | { ok: false; reason: "bad_structure" | "undeclared_number" | "number_mismatch" | "fact_mismatch" };
 
 /** Accept the structured answer only when every quoted number traces to the engine's answer or facts. */
-export function verifyStructuredAnswer(payload: GatewayRequestPayload, parsed: StructuredAnswer | null): StructuredVerdict {
+export function verifyStructuredAnswer(payload: GatewayRequestPayload, parsed: StructuredAnswer | null, extraSources: string[] = []): StructuredVerdict {
   if (!parsed) return { ok: false, reason: "bad_structure" };
   const inText = new Set(numbersIn(parsed.text));
   const declared = new Set(parsed.numbersUsed.flatMap((n) => numbersIn(n)));
   for (const n of inText) if (!declared.has(n)) return { ok: false, reason: "undeclared_number" };
-  const sources = [payload.answer, JSON.stringify(payload.facts ?? {}), payload.question];
+  const sources = [payload.answer, JSON.stringify(payload.facts ?? {}), payload.question, ...extraSources];
   if (!verifyNumbers([...declared].join(" "), sources).ok) return { ok: false, reason: "number_mismatch" };
-  if (!rephraseIntroducesNoNewFacts(payload.answer, payload.facts, parsed.text)) return { ok: false, reason: "fact_mismatch" };
+  if (!rephraseIntroducesNoNewFacts(payload.answer, payload.facts, parsed.text, extraSources)) return { ok: false, reason: "fact_mismatch" };
   return { ok: true, text: parsed.text };
 }

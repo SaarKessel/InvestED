@@ -101,6 +101,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
   const { setTheme } = useTheme();
   const { askCopilot, isAnalyzing, reset, streamingText } = useAnalysis();
   const botIdRef = useRef<string | undefined>(undefined);
+  const historyRef = useRef<{ q: string; a: string }[]>([]);
   const navigate = useNavigate();
   const toolOpen = toolForPath(useLocation().pathname) !== null;
   const { user, loading: authLoading, signOut } = useAuth();
@@ -256,6 +257,13 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
     const text = raw.trim();
     if ((!text && !pendingFile) || isAnalyzing) return;
     setQuestion("");
+    // Recent exchanges (verbatim, user-visible) give the rephrase layer tone and reference context.
+    { const pairs: { q: string; a: string }[] = [];
+      for (let i = messages.length - 1; i > 0 && pairs.length < 3; i--) {
+        const a = messages[i], q = messages[i - 1];
+        if (a.role === "copilot" && q.role === "user" && a.text && q.text) pairs.unshift({ q: q.text.slice(0, 400), a: a.text.slice(0, 400) });
+      }
+      historyRef.current = pairs; }
     if (pendingFile) {
       const file = pendingFile; setPendingFile(null);
       setMessages((current) => [...current, { role: "user", text: text || file.name, fileNote: file.name }]);
@@ -519,7 +527,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
       return;
     }
     try {
-      const turn = await askCopilot(text, botIdRef.current);
+      const turn = await askCopilot(text, botIdRef.current, historyRef.current);
       let knowledge: KnowledgeItem[] = [];
       if (wantsKnowledgeLookup(turn.response.intent)) {
         knowledge = await searchKnowledge(text);

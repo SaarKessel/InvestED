@@ -3,6 +3,7 @@ import type { CopilotResponse } from "../copilotResponse";
 import type { ConversationLanguage } from "../conversationContext";
 import { rephraseWithGateway, rephraseWithGatewayStream, type StreamRephraseOptions } from "../copilot/copilotGateway";
 import type { StreamedRephrase } from "../copilot/streamGateway";
+import type { GatewayTurn } from "../copilot/gatewayPrompt";
 
 export type ProviderId = "rule-based" | "gemini" | "openai" | "anthropic" | "local";
 export interface AIProvider {
@@ -11,7 +12,7 @@ export interface AIProvider {
   /** Free tier only. Stubs are not selectable until a free, reviewed integration exists. */
   available: boolean;
   /** Returns reworded text, or null to keep the deterministic answer. Never throws. */
-  rephrase(question: string, language: ConversationLanguage, response: CopilotResponse, timeoutMs?: number): Promise<string | null>;
+  rephrase(question: string, language: ConversationLanguage, response: CopilotResponse, timeoutMs?: number, context?: GatewayTurn[]): Promise<string | null>;
   /** Streaming variant (optional): progressive chunks via onChunk; result carries server-tool facts accepted as number sources. Never throws. */
   rephraseStream?(question: string, language: ConversationLanguage, response: CopilotResponse, options?: StreamRephraseOptions): Promise<StreamedRephrase | null>;
 }
@@ -19,7 +20,7 @@ export interface AIProvider {
 export const ruleBasedProvider: AIProvider = { id: "rule-based", label: "Rules only", available: true, rephrase: async () => null };
 export const geminiProvider: AIProvider = {
   id: "gemini", label: "Gemini (free tier)", available: true,
-  rephrase: (question, language, response, timeoutMs) => rephraseWithGateway(question, language, response, timeoutMs),
+  rephrase: (question, language, response, timeoutMs, context) => rephraseWithGateway(question, language, response, timeoutMs, context),
   rephraseStream: (question, language, response, options) => rephraseWithGatewayStream(question, language, response, options),
 };
 const stub = (id: ProviderId, label: string): AIProvider => ({ id, label, available: false, rephrase: async () => null });

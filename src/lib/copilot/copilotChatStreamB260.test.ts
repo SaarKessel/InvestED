@@ -50,14 +50,28 @@ describe("POST /api/copilot-chat stream mode", () => {
     process.env.GEMINI_API_KEY = "test-key";
     streamTextMock.mockImplementation(() => ({ textStream: fakeStream(["המחיר הוא 999 דולר."]) }));
     const res = streamRecorder();
-    await handler(post(valid, "3.3.3.3"), res);
+    await handler(post({ ...valid, answer: "המחיר הוא 11 דולר." }, "3.3.3.3"), res);
+    expect(res.chunks.join("")).toContain("[[INVESTED_VERDICT:fallback]]");
+  });
+  it("accepts a number that appears only in the conversation context", async () => {
+    process.env.GEMINI_API_KEY = "test-key";
+    streamTextMock.mockImplementation(() => ({ textStream: fakeStream(["כמו שאמרנו, המחיר 887.25 דולר."]) }));
+    const res = streamRecorder();
+    await handler(post({ ...valid, answer: "המחיר הוא 44 דולר.", context: [{ q: "מה המחיר?", a: "המחיר הוא 887.25 דולר." }] }, "6.6.6.6"), res);
+    expect(res.chunks.join("")).toContain("[[INVESTED_VERDICT:ok]]");
+  });
+  it("rejects the same context number when context is absent", async () => {
+    process.env.GEMINI_API_KEY = "test-key";
+    streamTextMock.mockImplementation(() => ({ textStream: fakeStream(["כמו שאמרנו, המחיר 887.25 דולר."]) }));
+    const res = streamRecorder();
+    await handler(post({ ...valid, answer: "המחיר הוא 22 דולר." }, "6.6.6.7"), res);
     expect(res.chunks.join("")).toContain("[[INVESTED_VERDICT:fallback]]");
   });
   it("ends with a fallback verdict when streamText throws", async () => {
     process.env.GEMINI_API_KEY = "test-key";
     streamTextMock.mockImplementation(() => { throw new Error("boom"); });
     const res = streamRecorder();
-    await handler(post(valid, "4.4.4.4"), res);
+    await handler(post({ ...valid, answer: "המחיר הוא 33 דולר." }, "4.4.4.4"), res);
     expect(res.chunks.join("")).toContain("[[INVESTED_VERDICT:fallback]]");
   });
   it("non-stream requests keep the legacy JSON path even with write-capable res", async () => {
