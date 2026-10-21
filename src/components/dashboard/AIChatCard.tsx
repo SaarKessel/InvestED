@@ -63,8 +63,7 @@ import { hasVisuals, useWide } from "./chatPanelState";
 import { resolveSiteIntent, SITE_CAPABILITIES, type SiteCapability } from "@/lib/copilot/siteCapabilities";
 import { ChatDepth } from "./ChatDepth";
 import { depthSections } from "@/lib/copilot/depth";
-import { ChatAgentTag } from "./ChatAgentTag";
-import { getAgent, readPickedAgent, routeAgent, savePickedAgent, AGENTS } from "@/lib/agents";
+import { getAgent, readPickedAgent, routeAgent } from "@/lib/agents";
 import { parseSymbolQuestion, type SymbolInfo } from "@/lib/copilot/symbolDesk";
 import type { MarketEventResult } from "@/lib/simulator/marketEvents";
 import { type ScenarioPart } from "@/lib/copilot/scenarioDesk";
@@ -145,7 +144,6 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
   }
   const [pickedAgent, setPickedAgent] = useState<string | null>(() => readPickedAgent(user?.id));
   useEffect(() => { setPickedAgent(readPickedAgent(user?.id)); }, [user?.id]);
-  const pickAgent = (id: string | null) => { setPickedAgent(id); savePickedAgent(user?.id, id); };
   const [level, setLevel] = useState<Level>(() => readLevel(user?.id));
   useEffect(() => { setLevel(readLevel(user?.id)); }, [user?.id]);
   useEffect(() => { setActiveLevel(level); }, [level]);
@@ -596,7 +594,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
       {user && <ChatSidebar open={historyOpen} onClose={() => setHistoryOpen(false)} onNew={clearConversation}
         conversations={conversations} onOpenConversation={(id) => void openConversation(id)} onDeleteConversation={(id) => void removeConversation(id)}
         saved={saved} onAskSaved={(q) => void send(q)} onRemoveSaved={(id) => setSaved(removeSaved(user.id, id))}
-        modes={modes} onMode={(prompt) => setQuestion(prompt)} memoryApi={memoryApi} onExportCsv={messages.length ? exportCsv : undefined} onExportPdf={messages.length ? exportPdf : undefined} agents={AGENTS} pickedAgent={pickedAgent} onPickAgent={pickAgent} />}
+        modes={modes} onMode={(prompt) => setQuestion(prompt)} memoryApi={memoryApi} onExportCsv={messages.length ? exportCsv : undefined} onExportPdf={messages.length ? exportPdf : undefined} />}
       {started && (
         <div className="mb-2 flex justify-end">
           <button type="button" onClick={clearConversation} className="inline-flex items-center gap-1 rounded-full border border-border px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground"><RotateCcw className="h-3.5 w-3.5" aria-hidden="true" /><span>{t("copilot_clear")}</span></button>
@@ -609,7 +607,6 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
           return <div key={index} className={message.role === "user" ? "ms-auto w-fit max-w-[85%] rounded-3xl bg-[hsl(221_83%_44%)] px-4 py-2.5 text-sm leading-6 text-white [&_p]:text-white" : "group flex gap-3 text-sm leading-7"}>
             {message.role === "copilot" && <img src="/copilot-avatar-blue.png" alt="" width="36" height="36" className="mt-0.5 h-9 w-9 shrink-0 rounded-xl object-cover ring-1 ring-primary/30" />}
             <div className="min-w-0 flex-1">
-            {message.role === "copilot" && (() => { const prev = messages.slice(0, index).reverse().find((m) => m.role === "user"); return prev?.agent ? <ChatAgentTag agentId={prev.agent.id} switchTo={prev.agent.switchTo} onSwitch={pickAgent} /> : null; })()}
             {message.role === "copilot" && message.response ? <ChatLinkedText text={message.text} onAsk={(q) => void send(q)} /> : <p dir={/[א-ת]/.test(message.text) ? "rtl" : "ltr"} className="whitespace-pre-wrap break-words [overflow-wrap:anywhere]">{message.text}</p>}
             {message.siteCaps && <ChatSiteLaunch capabilities={message.siteCaps} />}
             {message.careerLaunch && <Link to="/career-lab" className="mt-3 inline-block rounded-lg border border-primary px-3 py-2 text-xs font-bold text-primary">{t("career_chat_open")}</Link>}

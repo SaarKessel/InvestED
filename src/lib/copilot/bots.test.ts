@@ -1,18 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { BOTS, DEFAULT_BOT_ID, botPersonaLine, resolveBot } from "./bots";
+import { BOTS, botPersonaLine, resolveBot } from "./bots";
 
-describe("bot registry", () => {
-  it("resolves known bots and falls back to the default for unknown ids", () => {
-    expect(resolveBot("investing").id).toBe("investing");
-    expect(resolveBot("nope").id).toBe(DEFAULT_BOT_ID);
-    expect(resolveBot(undefined).id).toBe(DEFAULT_BOT_ID);
-    expect(resolveBot(42).id).toBe(DEFAULT_BOT_ID);
-  });
-  it("mirrors the client agent ids", () => {
-    expect(BOTS.map((b) => b.id).sort()).toEqual(["credit", "general", "insurance", "investing", "savings"]);
+describe("single-bot voice", () => {
+  it("has exactly one bot and resolves every id to it", () => {
+    expect(BOTS).toHaveLength(1);
+    expect(resolveBot("investing").id).toBe("general");
+    expect(resolveBot("nope").id).toBe("general");
+    expect(resolveBot(undefined).id).toBe("general");
   });
   it("persona line follows the reply language", () => {
-    expect(botPersonaLine(resolveBot("savings"), "he")).toContain("טון");
-    expect(botPersonaLine(resolveBot("savings"), "en")).toContain("Voice:");
+    expect(botPersonaLine(resolveBot(), "he")).toContain("טון");
+    expect(botPersonaLine(resolveBot(), "en")).toContain("Voice:");
   });
 });

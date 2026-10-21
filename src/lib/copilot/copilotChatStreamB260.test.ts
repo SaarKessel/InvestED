@@ -27,7 +27,7 @@ async function* fakeStream(chunks: string[]) { for (const c of chunks) yield c; 
 afterEach(() => { vi.unstubAllGlobals(); streamTextMock.mockReset(); });
 
 describe("POST /api/copilot-chat stream mode", () => {
-  it("streams chunks, applies the bot persona, and ends with an ok trailer carrying tool facts", async () => {
+  it("streams chunks, applies the single bot voice, and ends with an ok trailer carrying tool facts", async () => {
     process.env.GEMINI_API_KEY = "test-key";
     vi.stubGlobal("fetch", vi.fn(async () => new Response(JSON.stringify({ price: 612.5 }), { status: 200 })));
     streamTextMock.mockImplementation((opts: { tools: Record<string, { execute: (a: { symbol: string }) => Promise<unknown> }> }) => {
@@ -43,7 +43,7 @@ describe("POST /api/copilot-chat stream mode", () => {
     expect(raw).toContain("[[INVESTED_VERDICT:ok]]");
     expect(raw).toContain("[[INVESTED_FACTS:");
     const call = streamTextMock.mock.calls[0][0] as { system: string; stopWhen: unknown; tools: Record<string, unknown> };
-    expect(call.system).toContain("מאמן השקעות");
+    expect(call.system).toContain("מורה חמים");
     expect(Object.keys(call.tools)).toEqual(["get_market_quote", "get_market_movers", "get_top_headlines"]);
   });
   it("ends with a fallback verdict when the model adds a new number", async () => {
