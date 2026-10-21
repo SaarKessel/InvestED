@@ -289,10 +289,33 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
       const d = decompose(text);
       if (shouldOrchestrate(text, d, planQuestion(text).route)) {
         const he = language === "he";
+        if (d.tasks.some((task) => isDeepRequest(task.text))) {
+          // Deep-research tasks update their own placeholder in place; run them one at a time.
+          const outcomes = await runPlan(d.tasks, async (task) => {
+            setMessages((current) => [...current, { role: "copilot", text: `${he ? "משימה" : "Task"} ${task.index + 1}/${d.tasks.length}: ${task.text}` }]);
+            await answerOne(task.text);
+          });
+          const bad = outcomes.filter((o) => o.status !== "done");
+          if (bad.length) setMessages((current) => [...current, { role: "copilot", text: he ? `לא הושלמו ${bad.length} משימות: ${bad.map((o) => o.task.index + 1).join(", ")}.` : `${bad.length} task(s) did not finish: ${bad.map((o) => o.task.index + 1).join(", ")}.` }]);
+          return;
+        }
+        // Engine tasks answer independent sub-questions: run them in parallel, buffer each
+        // task's messages, and flush whole tasks in order so the chat stays readable.
+        const buffers: Message[][] = d.tasks.map(() => []);
+        const settled: boolean[] = d.tasks.map(() => false);
+        let flushed = 0;
+        const flush = () => {
+          while (flushed < d.tasks.length && settled[flushed]) {
+            const buf = buffers[flushed];
+            if (buf.length) setMessages((current) => [...current, ...buf]);
+            flushed++;
+          }
+        };
         const outcomes = await runPlan(d.tasks, async (task) => {
-          setMessages((current) => [...current, { role: "copilot", text: `${he ? "משימה" : "Task"} ${task.index + 1}/${d.tasks.length}: ${task.text}` }]);
-          await answerOne(task.text);
-        });
+          buffers[task.index].push({ role: "copilot", text: `${he ? "משימה" : "Task"} ${task.index + 1}/${d.tasks.length}: ${task.text}` });
+          await answerOne(task.text, (m) => { buffers[task.index].push(m); });
+        }, { concurrency: Math.min(4, d.tasks.length), onSettled: (o) => { settled[o.task.index] = true; flush(); } });
+        flush();
         const bad = outcomes.filter((o) => o.status !== "done");
         if (bad.length) setMessages((current) => [...current, { role: "copilot", text: he ? `לא הושלמו ${bad.length} משימות: ${bad.map((o) => o.task.index + 1).join(", ")}.` : `${bad.length} task(s) did not finish: ${bad.map((o) => o.task.index + 1).join(", ")}.` }]);
         return;
@@ -312,17 +335,18 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
       if (hit.length) setMessages((current) => [...current, { role: "copilot", text: recallLine(hit, language === "he" ? "he" : "en") }]);
     } catch { /* memory unavailable: say nothing */ }
   }
-  async function answerOne(text: string) {
+  async function answerOne(text: string, emit?: (m: Message) => void) {
     if (isDeepRequest(text)) return answerCore(text);
     const plan = planQuestion(text);
     const started = Date.now();
     let ok = true;
-    try { await answerCore(text); } catch (e) { ok = false; throw e; } finally {
+    try { await answerCore(text, emit); } catch (e) { ok = false; throw e; } finally {
       recordTrace({ at: Date.now(), route: plan.route, tools: plan.tools, ms: Date.now() - started, ok, failedChecks: ok ? [] : ["error"], live: "none", question: text });
     }
   }
   /** Official announcements from the allow-listed public RSS feeds, through the rssnews tool with a trace and data check. */
-  async function answerNews(text: string): Promise<boolean> {
+  async function answerNews(text: string, emit?: (m: Message) => void): Promise<boolean> {
+    const push = emit ?? ((m: Message) => setMessages((current) => [...current, m]));
     if (!isOfficialNewsQuestion(text) || tickersIn(text).length > 0) return false;
     const out = await runTool<RssNewsResult>("rssnews", undefined, { agentId: pickedAgent });
     if (!out.ok && out.reason === "denied") return false;
@@ -333,11 +357,12 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
       { text: { en: "No model wrote or changed any headline.", he: "אף מודל לא כתב או שינה כותרת." } },
       ...(out.ok ? [{ text: dataCheckLine(out.result), trust: "ANALYSIS" as const }] : []),
     ];
-    setMessages((current) => [...current, { role: "copilot", text: formatRssNews(out.ok ? out.result.value : null, lang), trace, question: text }]);
+    push( { role: "copilot", text: formatRssNews(out.ok ? out.result.value : null, lang), trace, question: text });
     return true;
   }
   /** Real risk numbers for named tickers. Returns false when nothing applies, so the normal path continues. */
-  async function answerRisk(text: string, viaAgent: boolean): Promise<boolean> {
+  async function answerRisk(text: string, viaAgent: boolean, emit?: (m: Message) => void): Promise<boolean> {
+    const push = emit ?? ((m: Message) => setMessages((current) => [...current, m]));
     const named = viaAgent ? tickersIn(text) : parseRiskRequest(text);
     if (!named || named.length === 0) return false;
     const tickers = await knownTickers(named);
@@ -353,15 +378,16 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
       { text: { en: "Volatility, worst drop and beta were calculated by fixed code. No model wrote these numbers.", he: "תנודתיות, ירידה מקסימלית ובטא חושבו בקוד קבוע. אף מודל לא כתב את המספרים." }, trust: "CALCULATION" },
       ...(out.ok ? [{ text: dataCheckLine(out.result), trust: "ANALYSIS" as const }] : []),
     ];
-    setMessages((current) => [...current, { role: "copilot", text: formatRisk(value, lang), trace, question: text }]);
+    push( { role: "copilot", text: formatRisk(value, lang), trace, question: text });
     return true;
   }
 
-  async function answerCore(text: string) {
+  async function answerCore(text: string, emit?: (m: Message) => void) {
+    const push = emit ?? ((m: Message) => setMessages((current) => [...current, m]));
     const agentReq = parseAgentRequest(text);
-    if (agentReq && agentReq.agent.id === "risk" && await answerRisk(agentReq.question, true)) return;
-    if (!agentReq && await answerRisk(text, false)) return;
-    if (!agentReq && await answerNews(text)) return;
+    if (agentReq && agentReq.agent.id === "risk" && await answerRisk(agentReq.question, true, emit)) return;
+    if (!agentReq && await answerRisk(text, false, emit)) return;
+    if (!agentReq && await answerNews(text, emit)) return;
     if (agentReq) {
       const lang = /[א-ת]/.test(agentReq.question) ? "he" : "en";
       const result = agentReq.agent.run(agentReq.question, lang);
@@ -369,7 +395,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
         { text: { en: `Handed the question to the ${agentReq.agent.title.en.toLowerCase()}.`, he: `העברתי את השאלה ל${agentReq.agent.title.he}.` } },
         { text: { en: "Took stored explanations and links between stored concepts. No web, no live data, no model.", he: "לקחתי הסברים שמורים וקשרים בין מושגים שמורים. בלי רשת, בלי נתונים חיים ובלי מודל." }, trust: "EDUCATIONAL" },
       ];
-      setMessages((current) => [...current, { role: "copilot", text: formatAgentResult(result, lang), trace, question: agentReq.question }]);
+      push( { role: "copilot", text: formatAgentResult(result, lang), trace, question: agentReq.question });
       return;
     }
     if (isDeepRequest(text)) {
@@ -405,7 +431,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
           { text: { en: "Recognized a question about a ticker.", he: "זיהיתי שאלה על סימול." } },
           { text: { en: "Looked it up in a static list built from FinanceDatabase. It holds names and types, not prices.", he: "חיפשתי ברשימה סטטית שנבנתה מ-FinanceDatabase. היא כוללת שמות וסוגים, בלי מחירים." }, trust: "KNOWLEDGE" },
           { text: { en: "No model wrote this.", he: "אף מודל לא כתב את זה." } }];
-        setMessages((current) => [...current, { role: "copilot", trace, text: /[א-ת]/.test(text) ? `${info.symbol} הוא ${info.kind === "equity" ? "סימול של מניה" : "סימול של קרן סל או קרן"}:` : `${info.symbol} is ${info.kind === "equity" ? "a stock" : "an ETF or fund"}:`, symbol: info, prov: symOut.result.provenance }]);
+        push( { role: "copilot", trace, text: /[א-ת]/.test(text) ? `${info.symbol} הוא ${info.kind === "equity" ? "סימול של מניה" : "סימול של קרן סל או קרן"}:` : `${info.symbol} is ${info.kind === "equity" ? "a stock" : "an ETF or fund"}:`, symbol: info, prov: symOut.result.provenance });
         return;
       }
     }
@@ -414,115 +440,115 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
     const keywordPath = plan.toolPath ?? null;
     const keywordTool = keywordPath ? toolForPath(keywordPath) : null;
     if (keywordPath && keywordTool) {
-      setMessages((current) => [...current, { role: "copilot", trace, text: openingLine(text, keywordTool.tool?.labelKey) }]);
+      push( { role: "copilot", trace, text: openingLine(text, keywordTool.tool?.labelKey) });
       navigate(keywordPath);
       return;
     }
     if (isCareerLaunchRequest(text)) {
-      setMessages((current) => [...current, { role: "copilot", trace, text: t("career_chat_launch"), careerLaunch: true }]);
+      push( { role: "copilot", trace, text: t("career_chat_launch"), careerLaunch: true });
       return;
     }
     if (looksLikeLearningPathRequest(text)) {
-      setMessages((current) => [...current, { role: "copilot", trace, text: t("learnpath_lead"), learnPath: true }]);
+      push( { role: "copilot", trace, text: t("learnpath_lead"), learnPath: true });
       return;
     }
     const site = resolveSiteIntent(text);
     if (site) {
-      setMessages((current) => [...current, site.kind === "overview"
+      push( site.kind === "overview"
         ? { role: "copilot", trace, text: t("cap_overview"), siteCaps: SITE_CAPABILITIES }
-        : { role: "copilot", trace, text: t("cap_open_lead"), siteCaps: site.matches }]);
+        : { role: "copilot", trace, text: t("cap_open_lead"), siteCaps: site.matches });
       return;
     }
     const calcOut = plan.calc ? await runTool<CalcDeskResult>(plan.tools[0], text, { agentId: pickedAgent }) : null;
     const calc = calcOut && calcOut.ok ? calcOut.result.value : (plan.calc ?? null);
     if (calc) {
-      setMessages((current) => [...current, { role: "copilot", trace, text: /[א-ת]/.test(text) ? "הנה התחזית מהמשפט שלך." : "Here is the projection from your sentence.", calc, prov: calcOut && calcOut.ok ? calcOut.result.provenance : undefined }]);
+      push( { role: "copilot", trace, text: /[א-ת]/.test(text) ? "הנה התחזית מהמשפט שלך." : "Here is the projection from your sentence.", calc, prov: calcOut && calcOut.ok ? calcOut.result.provenance : undefined });
       return;
     }
     if (plan.scenario) {
       const scOut = await runTool(plan.tools[0], text, { agentId: pickedAgent });
-      setMessages((current) => [...current, { role: "copilot", trace, text: /[א-ת]/.test(text) ? "חילקתי את השאלה לחלקים והנה כל חישוב:" : "I split your question into parts. Here is each calculation:", scenario: plan.scenario, prov: scOut.ok ? scOut.result.provenance : undefined }]);
+      push( { role: "copilot", trace, text: /[א-ת]/.test(text) ? "חילקתי את השאלה לחלקים והנה כל חישוב:" : "I split your question into parts. Here is each calculation:", scenario: plan.scenario, prov: scOut.ok ? scOut.result.provenance : undefined });
       return;
     }
     if (plan.marketsim) {
       const simOut = await runTool<MarketEventResult>(plan.tools[0], plan.marketsim, { agentId: pickedAgent });
       const sim = simOut.ok ? simOut.result.value : null;
-      setMessages((current) => [...current, { role: "copilot", trace, text: sim ? (/[א-ת]/.test(text) ? "תרחיש לימודי, לא נתונים אמיתיים. זו הדמיה של אירוע שוק מומצא על מדד דמיוני:" : "Educational scenario, not real data. This is a simulation of an invented market event on a fictional index:") : (/[א-ת]/.test(text) ? "לא הצלחתי להריץ את התרחיש המומצא." : "I could not run the invented scenario."), marketsim: sim ?? undefined, prov: simOut.ok ? simOut.result.provenance : undefined }]);
+      push( { role: "copilot", trace, text: sim ? (/[א-ת]/.test(text) ? "תרחיש לימודי, לא נתונים אמיתיים. זו הדמיה של אירוע שוק מומצא על מדד דמיוני:" : "Educational scenario, not real data. This is a simulation of an invented market event on a fictional index:") : (/[א-ת]/.test(text) ? "לא הצלחתי להריץ את התרחיש המומצא." : "I could not run the invented scenario."), marketsim: sim ?? undefined, prov: simOut.ok ? simOut.result.provenance : undefined });
       return;
     }
     if (plan.ledger) {
       const ldOut = await runTool<LedgerResult>(plan.tools[0], plan.ledger, { agentId: pickedAgent });
       const ledger = ldOut.ok ? ldOut.result.value : null;
       const he = /[א-ת]/.test(text);
-      setMessages((current) => [...current, { role: "copilot", trace, text: ledger ? (he ? "רשומת התחזיות שלכם. סימולציה לימודית, לא ייעוץ:" : "Your prediction ledger. Educational simulation, not advice:") : (he ? "לא הצלחתי לפתוח את רשומת התחזיות עכשיו. נסו שוב בעוד רגע." : "I could not open the prediction ledger right now. Try again in a moment."), ledger, prov: ldOut.ok ? ldOut.result.provenance : undefined }]);
+      push( { role: "copilot", trace, text: ledger ? (he ? "רשומת התחזיות שלכם. סימולציה לימודית, לא ייעוץ:" : "Your prediction ledger. Educational simulation, not advice:") : (he ? "לא הצלחתי לפתוח את רשומת התחזיות עכשיו. נסו שוב בעוד רגע." : "I could not open the prediction ledger right now. Try again in a moment."), ledger, prov: ldOut.ok ? ldOut.result.provenance : undefined });
       return;
     }
     if (plan.wb) {
       const wbOut = await runTool<WbResult>(plan.tools[0], plan.wb, { agentId: pickedAgent });
       const wb = wbOut.ok ? wbOut.result.value : null;
-      setMessages((current) => [...current, { role: "copilot", trace, text: wb ? (/[א-ת]/.test(text) ? "הנה הנתון:" : "Here is the statistic:") : (/[א-ת]/.test(text) ? "לא הצלחתי לטעון עכשיו את הנתון מהבנק העולמי, ולכן לא מציגה כלום. נסו שוב בעוד רגע." : "I could not load that statistic from the World Bank right now, so I am not showing anything. Try again in a moment."), wb, prov: wbOut.ok ? wbOut.result.provenance : undefined }]);
+      push( { role: "copilot", trace, text: wb ? (/[א-ת]/.test(text) ? "הנה הנתון:" : "Here is the statistic:") : (/[א-ת]/.test(text) ? "לא הצלחתי לטעון עכשיו את הנתון מהבנק העולמי, ולכן לא מציגה כלום. נסו שוב בעוד רגע." : "I could not load that statistic from the World Bank right now, so I am not showing anything. Try again in a moment."), wb, prov: wbOut.ok ? wbOut.result.provenance : undefined });
       return;
     }
     if (plan.filings) {
       const flOut = await runTool<FilingsResult>(plan.tools[0], plan.filings, { agentId: pickedAgent });
       const filings = flOut.ok ? flOut.result.value : null;
       const he = /[א-ת]/.test(text);
-      setMessages((current) => [...current, { role: "copilot", trace: flOut.ok ? [...trace, { text: dataCheckLine(flOut.result), trust: "ANALYSIS" as const }] : trace, text: filings ? (he ? "הנה ההחזקות כפי שדווחו ל-SEC:" : "Here are the holdings as reported to the SEC:") : (he ? "לא הצלחתי לטעון עכשיו את הדוח מ-SEC, ולכן לא מציגה כלום. נסו שוב בעוד רגע." : "I could not load that filing from the SEC right now, so I am not showing anything. Try again in a moment."), filings, prov: flOut.ok ? flOut.result.provenance : undefined }]);
+      push( { role: "copilot", trace: flOut.ok ? [...trace, { text: dataCheckLine(flOut.result), trust: "ANALYSIS" as const }] : trace, text: filings ? (he ? "הנה ההחזקות כפי שדווחו ל-SEC:" : "Here are the holdings as reported to the SEC:") : (he ? "לא הצלחתי לטעון עכשיו את הדוח מ-SEC, ולכן לא מציגה כלום. נסו שוב בעוד רגע." : "I could not load that filing from the SEC right now, so I am not showing anything. Try again in a moment."), filings, prov: flOut.ok ? flOut.result.provenance : undefined });
       return;
     }
     if (plan.oos) {
       const oosOut = await runTool<OosDeskResult>(plan.tools[0], plan.oos, { agentId: pickedAgent });
       const oos = oosOut.ok ? oosOut.result.value : null;
       const he = /[א-ת]/.test(text);
-      setMessages((current) => [...current, { role: "copilot", trace, text: oos ? (he ? "סימולציה לימודית, לא ייעוץ. כך נראית הבדיקה מחוץ למדגם:" : "Educational simulation, not advice. Here is the out-of-sample check:") : (he ? "לא הצלחתי להריץ את הבדיקה עכשיו. נסו שוב בעוד רגע." : "I could not run the check right now. Try again in a moment."), oos, prov: oosOut.ok ? oosOut.result.provenance : undefined }]);
+      push( { role: "copilot", trace, text: oos ? (he ? "סימולציה לימודית, לא ייעוץ. כך נראית הבדיקה מחוץ למדגם:" : "Educational simulation, not advice. Here is the out-of-sample check:") : (he ? "לא הצלחתי להריץ את הבדיקה עכשיו. נסו שוב בעוד רגע." : "I could not run the check right now. Try again in a moment."), oos, prov: oosOut.ok ? oosOut.result.provenance : undefined });
       return;
     }
     if (plan.copyfund) {
       const cfOut = await runTool<CopyFundResult>(plan.tools[0], plan.copyfund, { agentId: pickedAgent });
       const copyfund = cfOut.ok ? cfOut.result.value : null;
       const he = /[א-ת]/.test(text);
-      setMessages((current) => [...current, { role: "copilot", trace, text: copyfund ? (he ? "סימולציה לימודית, לא ייעוץ. כך היה נראה ההעתקה של ה-13F:" : "Educational simulation, not advice. Here is how copying the 13F would have looked:") : (he ? "לא הצלחתי לטעון עכשיו את הדוח או את המחירים, ולכן לא מציגה כלום. נסו שוב בעוד רגע." : "I could not load the filing or the prices right now, so I am not showing anything. Try again in a moment."), copyfund, prov: cfOut.ok ? cfOut.result.provenance : undefined }]);
+      push( { role: "copilot", trace, text: copyfund ? (he ? "סימולציה לימודית, לא ייעוץ. כך היה נראה ההעתקה של ה-13F:" : "Educational simulation, not advice. Here is how copying the 13F would have looked:") : (he ? "לא הצלחתי לטעון עכשיו את הדוח או את המחירים, ולכן לא מציגה כלום. נסו שוב בעוד רגע." : "I could not load the filing or the prices right now, so I am not showing anything. Try again in a moment."), copyfund, prov: cfOut.ok ? cfOut.result.provenance : undefined });
       return;
     }
     if (plan.macro) {
       const macroOut = await runTool<MacroResult>(plan.tools[0], plan.macro, { agentId: pickedAgent });
       const macro = macroOut.ok ? macroOut.result.value : null;
       const he = /[א-ת]/.test(text);
-      setMessages((current) => [...current, { role: "copilot", trace: macroOut.ok ? [...trace, { text: dataCheckLine(macroOut.result), trust: "ANALYSIS" as const }] : trace, text: macro ? (he ? "הנה הנתון מהמקור הרשמי:" : "Here is the figure from the official source:") : (he ? "לא הצלחתי לטעון עכשיו את הנתון מהמקור הרשמי, ולכן לא מציגה כלום. נסו שוב בעוד רגע." : "I could not load that figure from the official source right now, so I am not showing anything. Try again in a moment."), macro, prov: macroOut.ok ? macroOut.result.provenance : undefined }]);
+      push( { role: "copilot", trace: macroOut.ok ? [...trace, { text: dataCheckLine(macroOut.result), trust: "ANALYSIS" as const }] : trace, text: macro ? (he ? "הנה הנתון מהמקור הרשמי:" : "Here is the figure from the official source:") : (he ? "לא הצלחתי לטעון עכשיו את הנתון מהמקור הרשמי, ולכן לא מציגה כלום. נסו שוב בעוד רגע." : "I could not load that figure from the official source right now, so I am not showing anything. Try again in a moment."), macro, prov: macroOut.ok ? macroOut.result.provenance : undefined });
       return;
     }
     if (plan.dividends) {
       const divOut = await runTool<DividendResult>(plan.tools[0], plan.dividends, { agentId: pickedAgent });
       const dividends = divOut.ok ? divOut.result.value : null;
       const he = /[א-ת]/.test(text);
-      setMessages((current) => [...current, { role: "copilot", trace: divOut.ok ? [...trace, { text: dataCheckLine(divOut.result), trust: "ANALYSIS" as const }] : trace, text: dividends ? (he ? "הנה הדיבידנדים ששולמו בפועל, ובנפרד הערכה למה שצפוי:" : "Here are the dividends actually paid, and separately an estimate of what to expect:") : (he ? "לא הצלחתי לטעון עכשיו נתוני דיבידנד לסימול הזה, ולכן לא מציגה כלום. בדקו את הסימול ונסו שוב." : "I could not load dividend data for that symbol right now, so I am not showing anything. Check the ticker and try again."), dividends, prov: divOut.ok ? divOut.result.provenance : undefined }]);
+      push( { role: "copilot", trace: divOut.ok ? [...trace, { text: dataCheckLine(divOut.result), trust: "ANALYSIS" as const }] : trace, text: dividends ? (he ? "הנה הדיבידנדים ששולמו בפועל, ובנפרד הערכה למה שצפוי:" : "Here are the dividends actually paid, and separately an estimate of what to expect:") : (he ? "לא הצלחתי לטעון עכשיו נתוני דיבידנד לסימול הזה, ולכן לא מציגה כלום. בדקו את הסימול ונסו שוב." : "I could not load dividend data for that symbol right now, so I am not showing anything. Check the ticker and try again."), dividends, prov: divOut.ok ? divOut.result.provenance : undefined });
       return;
     }
     if (plan.etf) {
       const etfOut = await runTool<EtfResult>(plan.tools[0], plan.etf, { agentId: pickedAgent });
       const etf = etfOut.ok ? etfOut.result.value : null;
       const he = /[א-ת]/.test(text);
-      setMessages((current) => [...current, { role: "copilot", trace: etfOut.ok ? [...trace, { text: dataCheckLine(etfOut.result), trust: "ANALYSIS" as const }] : trace, text: etf ? (he ? "הנה ההחזקות כפי שהקרן דיווחה ל-SEC:" : "Here are the holdings as the fund reported them to the SEC:") : (he ? "לא מצאתי דוח החזקות של SEC עבור הקרן הזו, או שהוא לא נטען עכשיו, ולכן לא מציגה כלום. קרנות מסוימות, כמו SPY, לא מגישות דוח כזה." : "I could not find or load an SEC holdings report for that fund, so I am not showing anything. Some funds, such as SPY, file no such report."), etf, prov: etfOut.ok ? etfOut.result.provenance : undefined }]);
+      push( { role: "copilot", trace: etfOut.ok ? [...trace, { text: dataCheckLine(etfOut.result), trust: "ANALYSIS" as const }] : trace, text: etf ? (he ? "הנה ההחזקות כפי שהקרן דיווחה ל-SEC:" : "Here are the holdings as the fund reported them to the SEC:") : (he ? "לא מצאתי דוח החזקות של SEC עבור הקרן הזו, או שהוא לא נטען עכשיו, ולכן לא מציגה כלום. קרנות מסוימות, כמו SPY, לא מגישות דוח כזה." : "I could not find or load an SEC holdings report for that fund, so I am not showing anything. Some funds, such as SPY, file no such report."), etf, prov: etfOut.ok ? etfOut.result.provenance : undefined });
       return;
     }
     if (plan.fx) {
       const fxOut = await runTool<FxResult>(plan.tools[0], plan.fx, { agentId: pickedAgent });
       const fx = fxOut.ok ? fxOut.result.value : null;
-      setMessages((current) => [...current, { role: "copilot", trace: fxOut.ok ? [...trace, { text: dataCheckLine(fxOut.result), trust: "ANALYSIS" as const }] : trace, text: fx ? (/[א-ת]/.test(text) ? "הנה ההמרה:" : "Here is the conversion:") : (/[א-ת]/.test(text) ? "לא הצלחתי לטעון עכשיו את שער היחס, ולכן לא המרתי. נסו שוב בעוד רגע." : "I could not load the reference rate right now, so I did not convert anything. Try again in a moment."), fx, prov: fxOut.ok ? fxOut.result.provenance : undefined }]);
+      push( { role: "copilot", trace: fxOut.ok ? [...trace, { text: dataCheckLine(fxOut.result), trust: "ANALYSIS" as const }] : trace, text: fx ? (/[א-ת]/.test(text) ? "הנה ההמרה:" : "Here is the conversion:") : (/[א-ת]/.test(text) ? "לא הצלחתי לטעון עכשיו את שער היחס, ולכן לא המרתי. נסו שוב בעוד רגע." : "I could not load the reference rate right now, so I did not convert anything. Try again in a moment."), fx, prov: fxOut.ok ? fxOut.result.provenance : undefined });
       return;
     }
     if (plan.math) {
       const mOut = await runTool(plan.tools[0], text, { agentId: pickedAgent });
-      setMessages((current) => [...current, { role: "copilot", trace, text: /[א-ת]/.test(text) ? "הנה החישוב:" : "Here is the calculation:", math: plan.math, prov: mOut.ok ? mOut.result.provenance : undefined }]);
+      push( { role: "copilot", trace, text: /[א-ת]/.test(text) ? "הנה החישוב:" : "Here is the calculation:", math: plan.math, prov: mOut.ok ? mOut.result.provenance : undefined });
       return;
     }
     const deskKind = plan.desk ?? null;
     if (deskKind) {
       try {
         const desk = await loadDataDesk(deskKind);
-        setMessages((current) => [...current, { role: "copilot", trace, text: t(`desk_${deskKind}_lead`), desk }]);
+        push( { role: "copilot", trace, text: t(`desk_${deskKind}_lead`), desk });
       } catch {
-        setMessages((current) => [...current, { role: "copilot", text: t("desk_unavailable") }]);
+        push( { role: "copilot", text: t("desk_unavailable") });
       }
       return;
     }
@@ -538,9 +564,9 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
       if (isUnknownAnswer(turn.response.text) && !knowledge.length && wantsKnowledgeLookup(turn.response.intent)) turn.response = { ...turn.response, text: notKnownText(asked) };
       const mainText = turn.response.text;
       const retrieved = wantsKnowledgeLookup(turn.response.intent) && !knowledge.length ? retrieve(text, asked, 3).filter((r) => r.score >= MIN_RETRIEVE_SCORE && !mainText.includes(r.text.slice(0, 30))).slice(0, 2) : [];
-      setMessages((current) => [...current, { role: "copilot", trace, text: turn.response.text, response: turn.response, question: text, knowledge, retrieved }]);
+      push( { role: "copilot", trace, text: turn.response.text, response: turn.response, question: text, knowledge, retrieved });
     } catch {
-      setMessages((current) => [...current, { role: "copilot", text: t("copilot_error") }]);
+      push( { role: "copilot", text: t("copilot_error") });
     }
   }
 
