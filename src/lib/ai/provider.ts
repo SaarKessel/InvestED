@@ -1,7 +1,8 @@
 /** AIProvider: the one seam between the deterministic engines and any language model. A provider may only rephrase; facts always come from the engines. */
 import type { CopilotResponse } from "../copilotResponse";
 import type { ConversationLanguage } from "../conversationContext";
-import { rephraseWithGateway } from "../copilot/copilotGateway";
+import { rephraseWithGateway, rephraseWithGatewayStream, type StreamRephraseOptions } from "../copilot/copilotGateway";
+import type { StreamedRephrase } from "../copilot/streamGateway";
 
 export type ProviderId = "rule-based" | "gemini" | "openai" | "anthropic" | "local";
 export interface AIProvider {
@@ -11,12 +12,15 @@ export interface AIProvider {
   available: boolean;
   /** Returns reworded text, or null to keep the deterministic answer. Never throws. */
   rephrase(question: string, language: ConversationLanguage, response: CopilotResponse, timeoutMs?: number): Promise<string | null>;
+  /** Streaming variant (optional): progressive chunks via onChunk; result carries server-tool facts accepted as number sources. Never throws. */
+  rephraseStream?(question: string, language: ConversationLanguage, response: CopilotResponse, options?: StreamRephraseOptions): Promise<StreamedRephrase | null>;
 }
 
 export const ruleBasedProvider: AIProvider = { id: "rule-based", label: "Rules only", available: true, rephrase: async () => null };
 export const geminiProvider: AIProvider = {
   id: "gemini", label: "Gemini (free tier)", available: true,
   rephrase: (question, language, response, timeoutMs) => rephraseWithGateway(question, language, response, timeoutMs),
+  rephraseStream: (question, language, response, options) => rephraseWithGatewayStream(question, language, response, options),
 };
 const stub = (id: ProviderId, label: string): AIProvider => ({ id, label, available: false, rephrase: async () => null });
 export const PROVIDERS: Record<ProviderId, AIProvider> = {
@@ -32,8 +36,8 @@ export function getProvider(id: string | null | undefined): AIProvider {
 
 import { verifyNumbers } from "../intelligence/verificationEngine";
 /** Second line of defence after the server check: a reworded answer is accepted only when every number in it already appears in the deterministic answer, its facts or the question. */
-export function acceptRephrase(rephrased: string | null, question: string, response: CopilotResponse): string | null {
+export function acceptRephrase(rephrased: string | null, question: string, response: CopilotResponse, extraSources: string[] = []): string | null {
   if (!rephrased) return null;
-  const { ok } = verifyNumbers(rephrased, [response.text, JSON.stringify(response), question]);
+  const { ok } = verifyNumbers(rephrased, [response.text, JSON.stringify(response), question, ...extraSources]);
   return ok ? rephrased : null;
 }

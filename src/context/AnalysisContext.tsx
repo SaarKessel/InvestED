@@ -33,7 +33,9 @@ export interface AnalysisContextValue {
     data: string
   ) => Promise<boolean>;
 
-  askCopilot: (data: string) => Promise<AIConversationTurn>;
+  askCopilot: (data: string, botId?: string) => Promise<AIConversationTurn>;
+  /** Progressive rephrase text while the AI gateway streams; "" when idle. */
+  streamingText: string;
 
   copilotTurn: AIConversationTurn | null;
 
@@ -77,13 +79,14 @@ export function AnalysisProvider({
 
 
   const [isAnalyzing,setIsAnalyzing] = useState(false);
+  const [streamingText,setStreamingText] = useState("");
   const [clarification,setClarification] = useState<string | null>(null);
   const [lastResolution,setLastResolution] = useState<TurnResolution | null>(null);
   const [copilotTurn,setCopilotTurn] = useState<AIConversationTurn | null>(null);
   const sessionRef = useRef<ConversationSession | null>(null);
   if (!sessionRef.current) sessionRef.current = createConversationSession();
 
-  const runTurn = async (data: string, updateDashboardResult: boolean, replyLanguage: "he" | "en" = language === "he" ? "he" : "en") => {
+  const runTurn = async (data: string, updateDashboardResult: boolean, replyLanguage: "he" | "en" = language === "he" ? "he" : "en", botId?: string) => {
     const turn = await processAIMessage(sessionRef.current!, data, replyLanguage);
     // Facelift phase 1: best-effort rephrase through the AI Gateway. The
     // deterministic answer is the fact source; any gateway failure keeps it.
@@ -92,7 +95,22 @@ export function AnalysisProvider({
     const grounded = found?.kind === "grounded" ? found : null;
     if (grounded) turn.response = { ...turn.response, text: grounded.text };
     if (!grounded && !isUnknownAnswer(turn.response.text) && !turn.clarification && turn.response.text) {
-      const rephrased = acceptRephrase(await getProvider(undefined).rephrase(data, replyLanguage, turn.response, rewordBudgetMs()), data, turn.response);
+      const provider = getProvider(undefined);
+      let rephrased: string | null = null;
+      if (provider.rephraseStream) {
+        // Stream mode: chunks surface progressively; the commit still waits
+        // for the server verdict and passes the client-side number check,
+        // now with the server-tool facts added as accepted sources.
+        const streamed = await provider.rephraseStream(data, replyLanguage, turn.response, {
+          botId,
+          timeoutMs: rewordBudgetMs() + 7_000,
+          onChunk: (acc) => setStreamingText(acc),
+        });
+        setStreamingText("");
+        if (streamed) rephrased = acceptRephrase(streamed.text, data, turn.response, streamed.acceptedFacts);
+      } else {
+        rephrased = acceptRephrase(await provider.rephrase(data, replyLanguage, turn.response, rewordBudgetMs()), data, turn.response);
+      }
       if (rephrased) turn.response = { ...turn.response, text: rephrased };
     }
     setLastResolution(turn.resolution);
@@ -102,9 +120,9 @@ export function AnalysisProvider({
     return turn;
   };
 
-  const askCopilot = async (data: string) => {
+  const askCopilot = async (data: string, botId?: string) => {
     setIsAnalyzing(true);
-    try { return await runTurn(data, false, replyLanguageFor(data, language === "he" ? "he" : "en")); } finally { setIsAnalyzing(false); }
+    try { return await runTurn(data, false, replyLanguageFor(data, language === "he" ? "he" : "en"), botId); } finally { setIsAnalyzing(false); setStreamingText(""); }
   };
 
   const analyze = async (data:string) => {
@@ -169,6 +187,8 @@ export function AnalysisProvider({
         lastResolution,
 
         isAnalyzing,
+
+        streamingText,
 
       }}
 

@@ -21,9 +21,91 @@
 // Vercel's own counters. POST /api/copilot-chat
 // ---------------------------------------------------------------------------
 
-import { GEMINI_API_BASE, normalizeGatewayPayload, resolveGeminiConfig } from "../src/lib/copilot/gatewayPrompt.js";
+import { GEMINI_API_BASE, buildGatewayMessages, normalizeGatewayPayload, resolveGeminiConfig, type GatewayRequestPayload, type GeminiConfig } from "../src/lib/copilot/gatewayPrompt.js";
+import { rephraseIntroducesNoNewFacts } from "../src/lib/copilot/gatewayPrompt.js";
 import { buildStructuredRequest, parseStructuredResponse, verifyStructuredAnswer } from "../src/lib/copilot/structuredAnswer.js";
 import { applyAdviceGuard } from "../src/lib/copilot/adviceGuard.js";
+import { resolveBot, botPersonaLine } from "../src/lib/copilot/bots.js";
+import { encodeFactsTrailer, VERDICT_OK, VERDICT_FALLBACK } from "../src/lib/copilot/streamGateway.js";
+import { numbersIn, verifyNumbers } from "../src/lib/intelligence/verificationEngine.js";
+import { streamText, tool, stepCountIs } from "ai";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { z } from "zod";
+
+interface RawStreamResponse {
+  write(chunk: string): void;
+  end(): void;
+}
+
+const PUBLIC_ORIGIN = process.env.INVESTED_PUBLIC_ORIGIN ?? "https://investeducationai.vercel.app";
+
+/** Server-side AI SDK tools: thin wrappers over our own deterministic data endpoints. Results are recorded as accepted facts for the number check. */
+function buildCopilotTools(facts: string[]) {
+  const record = (label: string, value: unknown) => {
+    const text = `${label}: ${JSON.stringify(value)}`;
+    facts.push(text.length > 800 ? `${text.slice(0, 800)}…` : text);
+    return value;
+  };
+  const getJson = async (url: string) => {
+    const res = await fetch(url, { signal: AbortSignal.timeout(6_000) });
+    if (!res.ok) throw new Error(`tool_http_${res.status}`);
+    return res.json() as Promise<unknown>;
+  };
+  return {
+    get_market_quote: tool({
+      description: "Get the latest verified quote for one ticker symbol from the InvestED market service.",
+      inputSchema: z.object({ symbol: z.string().min(1).max(12).describe("Ticker symbol, e.g. VOO or AAPL") }),
+      execute: async ({ symbol }) => record(`quote ${symbol.toUpperCase()}`, await getJson(`${PUBLIC_ORIGIN}/api/market-quote?symbols=${encodeURIComponent(symbol.toUpperCase())}&range=5d`)),
+    }),
+    get_market_movers: tool({
+      description: "Get today's verified market movers from the InvestED market service.",
+      inputSchema: z.object({}),
+      execute: async () => record("market movers", await getJson(`${PUBLIC_ORIGIN}/api/market-movers`)),
+    }),
+    get_top_headlines: tool({
+      description: "Get the latest verified financial headlines from the InvestED news service.",
+      inputSchema: z.object({}),
+      execute: async () => record("headlines", await getJson(`${PUBLIC_ORIGIN}/api/news-feeds?limit=5`)),
+    }),
+  };
+}
+
+/** Stream mode: AI SDK streamText with tool-calling, persona from the bot registry, then the same no-new-facts verdict as the JSON path, sent as a trailer. */
+async function streamRephrase(payload: GatewayRequestPayload, config: GeminiConfig, res: CopilotChatResponse, botId: unknown): Promise<void> {
+  const raw = res as unknown as RawStreamResponse;
+  const facts: string[] = [];
+  const bot = resolveBot(botId);
+  const allTools = buildCopilotTools(facts);
+  const tools = bot.tools ? Object.fromEntries(Object.entries(allTools).filter(([id]) => bot.tools!.includes(id))) : allTools;
+  const finish = (verdict: string) => { raw.write(verdict); raw.end(); };
+  try {
+    const provider = createGoogleGenerativeAI({ apiKey: config.apiKey });
+    const messages = buildGatewayMessages(payload);
+    const lang = payload.language === "he" ? "he" : "en";
+    const result = streamText({
+      model: provider(config.model),
+      system: `${messages[0].content}\n${botPersonaLine(bot, lang)}`,
+      prompt: messages[1].content,
+      temperature: 0.2,
+      tools,
+      stopWhen: stepCountIs(3),
+    });
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    let text = "";
+    for await (const chunk of result.textStream) {
+      text += chunk;
+      raw.write(chunk);
+    }
+    const trimmed = text.trim();
+    const numbersOk = verifyNumbers(numbersIn(trimmed).join(" "), [payload.answer, JSON.stringify(payload.facts ?? {}), payload.question, ...facts]).ok;
+    const factsOk = rephraseIntroducesNoNewFacts(payload.answer, payload.facts, trimmed);
+    const guard = applyAdviceGuard(trimmed);
+    if (!trimmed || !numbersOk || !factsOk || guard.guarded) return finish(`${VERDICT_FALLBACK}`);
+    return finish(`${encodeFactsTrailer(facts)}${VERDICT_OK}`);
+  } catch {
+    return finish(VERDICT_FALLBACK);
+  }
+}
 
 interface CopilotChatRequest {
   method?: string;
@@ -73,6 +155,13 @@ export default async function handler(req: CopilotChatRequest, res: CopilotChatR
 
   const config = resolveGeminiConfig(process.env);
   if (!config) return res.status(200).json({ fallback: true, reason: "auth_not_configured" });
+
+  // Stream mode opt-in; requires a raw Node-style response (production). Test
+  // doubles without write() keep the legacy JSON path.
+  const wantsStream = (req.body as { stream?: unknown })?.stream === true;
+  if (wantsStream && typeof (res as unknown as Partial<RawStreamResponse>).write === "function") {
+    return streamRephrase(payload, config, res, (req.body as { botId?: unknown })?.botId);
+  }
 
   try {
     const response = await fetch(`${GEMINI_API_BASE}/${config.model}:generateContent`, {

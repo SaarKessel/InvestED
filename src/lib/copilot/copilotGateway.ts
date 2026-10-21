@@ -45,3 +45,57 @@ export async function rephraseWithGateway(
     return null;
   }
 }
+
+// ---------------------------------------------------------------------------
+// Stream mode (phase 2): progressive rephrase through the same endpoint.
+// The server streams plain-text chunks and ends with a verdict trailer.
+// onChunk receives the visible text so far for progressive display; the
+// returned value is committed only after the server-side no-new-facts
+// verdict arrives ok. Any failure -> null -> deterministic answer stands.
+// ---------------------------------------------------------------------------
+
+import { splitStreamTrailer, visibleStreamText, type StreamedRephrase } from "./streamGateway";
+
+export interface StreamRephraseOptions {
+  botId?: string;
+  onChunk?: (visibleTextSoFar: string) => void;
+  timeoutMs?: number;
+}
+
+export async function rephraseWithGatewayStream(
+  question: string,
+  language: ConversationLanguage,
+  response: CopilotResponse,
+  options: StreamRephraseOptions = {}
+): Promise<StreamedRephrase | null> {
+  try {
+    const res = await fetch("/api/copilot-chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        question,
+        language,
+        answer: response.text,
+        facts: buildGatewayFacts(response),
+        stream: true,
+        ...(options.botId ? { botId: options.botId } : {}),
+      }),
+      signal: AbortSignal.timeout(options.timeoutMs ?? DEFAULT_TIMEOUT_MS + 7_000),
+    });
+    if (!res.ok || !res.body) return null;
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+    let raw = "";
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      raw += decoder.decode(value, { stream: true });
+      options.onChunk?.(visibleStreamText(raw));
+    }
+    raw += decoder.decode();
+    const parsed = splitStreamTrailer(raw);
+    return parsed.ok ? parsed : null;
+  } catch {
+    return null;
+  }
+}

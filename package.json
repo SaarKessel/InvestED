@@ -15,8 +15,10 @@
     "smoke": "node scripts/smoke.mjs"
   },
   "dependencies": {
+    "@ai-sdk/google": "^4.0.102",
     "@capacitor/core": "^8.5.3",
     "@supabase/supabase-js": "^2.117.2",
+    "ai": "^7.0.148",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "framer-motion": "^11.3.19",

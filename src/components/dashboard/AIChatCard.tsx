@@ -100,7 +100,8 @@ interface Message { ledger?: LedgerResult | null; dividends?: DividendResult | n
 export function AIChatCard({ workstation = false }: { workstation?: boolean } = {}) {
   const { t, language, setLanguage } = useLanguage();
   const { setTheme } = useTheme();
-  const { askCopilot, isAnalyzing, reset } = useAnalysis();
+  const { askCopilot, isAnalyzing, reset, streamingText } = useAnalysis();
+  const botIdRef = useRef<string | undefined>(undefined);
   const navigate = useNavigate();
   const toolOpen = toolForPath(useLocation().pathname) !== null;
   const { user, loading: authLoading, signOut } = useAuth();
@@ -247,7 +248,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
   async function removeConversation(id: string) {
     try { await deleteConversation(id); setConversations((c) => c.filter((x) => x.id !== id)); if (conversationId.current === id) clearConversation(); } catch { /* ignore */ }
   }
-  useEffect(() => { endRef.current?.scrollIntoView({ block: "end", behavior: "smooth" }); }, [messages, isAnalyzing]);
+  useEffect(() => { endRef.current?.scrollIntoView({ block: "end", behavior: "smooth" }); }, [messages, isAnalyzing, streamingText]);
 
   const exportable = () => messages.filter((m) => m.text).map((m) => ({ role: m.role, text: m.text }));
   function exportCsv() { downloadText("invested-chat.csv", "text/csv;charset=utf-8", toCsv(exportable(), language === "he" ? "he" : "en")); }
@@ -266,7 +267,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
       setMessages((current) => [...current, { role: "copilot", text: reply ?? t("file_failed"), fromFile: reply !== null }]);
       return;
     }
-    { const r = routeAgent(text, pickedAgent); setMessages((current) => [...current, { role: "user", text, agent: { id: r.agentId, switchTo: r.suggestSwitchTo } }]); }
+    { const r = routeAgent(text, pickedAgent); botIdRef.current = r.agentId ?? undefined; setMessages((current) => [...current, { role: "user", text, agent: { id: r.agentId, switchTo: r.suggestSwitchTo } }]); }
     if (isDailyBrief(text)) { const d = new Date(), lang3 = language === "he" ? "he" : "en"; setMessages((current) => [...current, { role: "copilot", text: briefHeader(d, lang3) }]); await send(conceptOfTheDay(d, lang3).ask); await send(lang3 === "he" ? "מובילי השוק" : "market movers"); const a = askNext(examRef.current, buildQuizBank(t), lang3); examRef.current = a.state; setMessages((current) => [...current, { role: "copilot", text: a.text }]); return; }
     { const ex = examRef.current; const pick = ex.current ? parseExamAnswer(text, ex.current.options.length) : null; const lang2 = language === "he" ? "he" : "en";
       if (ex.current && pick !== null) { const qid = ex.current.id, was = ex.missed.includes(qid); const g = gradeAnswer(ex, pick, lang2); examRef.current = g.state; setMessages((current) => [...current, { role: "copilot", text: g.text }]);
@@ -520,7 +521,7 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
       return;
     }
     try {
-      const turn = await askCopilot(text);
+      const turn = await askCopilot(text, botIdRef.current);
       let knowledge: KnowledgeItem[] = [];
       if (wantsKnowledgeLookup(turn.response.intent)) {
         knowledge = await searchKnowledge(text);
@@ -626,7 +627,8 @@ export function AIChatCard({ workstation = false }: { workstation?: boolean } = 
           </div>;
         })}
         {toolOpen && !workstation && <ChatToolPanel />}
-        {(isAnalyzing || fileBusy) && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader variant="arc" size={16} label={null} className="shrink-0" />{t("copilot_working")}</div>}
+        {streamingText && <div className="rounded-2xl bg-muted/60 px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap">{streamingText}<span className="animate-pulse">▍</span></div>}
+        {(isAnalyzing || fileBusy) && !streamingText && <div className="flex items-center gap-2 text-sm text-muted-foreground"><Loader variant="arc" size={16} label={null} className="shrink-0" />{t("copilot_working")}</div>}
         <div ref={endRef} className="scroll-mb-48" aria-hidden="true" />
       </div>
       {talk && <VoiceOrb accent={(() => { const last = [...messages].reverse().find((m) => m.role === "user"); return getAgent(last?.agent?.id ?? pickedAgent)?.color ?? null; })()} state={speakingIdx !== null ? "speaking" : isAnalyzing ? "thinking" : listening ? "listening" : (voiceError || speechNote || !SpeechCtor) ? "error" : "idle"} onClose={toggleTalk} onTapOrb={() => { if (speakingIdx !== null) { stopSpeaking(); setSpeakingIdx(null); } else toggleVoice(); }} onStopSpeech={() => { stopSpeaking(); setSpeakingIdx(null); }} speechLang={orbLang} onLang={changeVoiceLang} heard={heard} reply={(() => { const last = [...messages].reverse().find((m) => m.role === "copilot"); return last ? cleanForSpeech(last.text).slice(0, 280) : ""; })()} note={speechNote === "no_voice" ? t("speak_no_voice") : speechNote === "unsupported" ? t("speak_unsupported") : voiceNote} code={voiceError ? voiceCode : null} trace={voiceError ? voiceTrace : undefined} />}
